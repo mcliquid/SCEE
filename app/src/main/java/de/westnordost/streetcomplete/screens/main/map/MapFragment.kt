@@ -178,7 +178,7 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
         map.uiSettings.isLogoEnabled = false
         map.uiSettings.flingThreshold = 250
         map.uiSettings.flingAnimationBaseTime = 500
-        map.uiSettings.isDisableRotateWhenScaling = true
+        map.uiSettings.isDisableRotateWhenScaling = false
 
         map.addOnMoveListener(object : MapLibreMap.OnMoveListener {
             override fun onMoveBegin(detector: MoveGestureDetector) {

@@ -271,7 +271,7 @@ class PinsMapComponent(
         private const val SOURCE = "pins-source"
         private const val GEOMETRY_SOURCE = "pins-geometry-source"
         private const val DOT_SOURCE = "pins-dot-source"
-        private const val CLUSTER_MAX_ZOOM = 16
+        private const val CLUSTER_MAX_ZOOM = 14
     }
 }
 

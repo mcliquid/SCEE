@@ -1347,7 +1347,7 @@ If used for single points, then this highlights exceptionally difficult spots. O
 
     <string name="quest_pedestrian_crossing_island">"Does this crossing have an island?"</string>
 
-    <string name="quest_pedestrian_crossing_markings">"Does this crossing have markings on the ground?"</string>
+    <string name="quest_pedestrian_crossing_markings">"Does this crossing have markings across the roadway?"</string>
 
     <string name="quest_amenityCover_title">Is this covered (protected from rain)?</string>
 

@@ -24,7 +24,7 @@ class AddCaravanSiteType : OsmFilterQuestType<String>() {
     override fun getTitle(tags: Map<String, String>) = R.string.quest_caravanSiteType_title
 
     override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry) =
-        getMapData().filter("nodes, ways, relations with tourism = caravan_site")
+        getMapData().filter("nodes, ways, relations with tourism ~ caravan_site|camp_site")
 
     override fun createForm() = AddCaravanSiteTypeForm()
 

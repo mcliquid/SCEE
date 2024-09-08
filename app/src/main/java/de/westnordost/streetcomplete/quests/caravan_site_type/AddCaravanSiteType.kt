@@ -19,7 +19,7 @@ class AddCaravanSiteType : OsmFilterQuestType<String>() {
     override val changesetComment = "Add caravan site type info"
     override val defaultDisabledMessage = R.string.default_disabled_msg_caravanSiteType
     override val wikiLink = "Key:caravan_site:type"
-    override val icon = R.drawable.ic_quest_caravan
+    override val icon = R.drawable.ic_quest_caravan_site
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_caravanSiteType_title
 

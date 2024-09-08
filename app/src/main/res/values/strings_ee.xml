@@ -494,7 +494,7 @@
     <string name="quest_caravanSiteType_harbour">"Harbour - for a site at a harbour or marina."</string>
     <string name="quest_caravanSiteType_winery">"Winery - staying at a winery, often right next to wineyards."</string>
     <string name="quest_caravanSiteType_camp_site">"Camp site - a separate motorhome stopover at a campsite."</string>
-    <string name="quest_caravanSiteType_museum">"Museum - a stopover located a museum or similiar"</string>
+    <string name="quest_caravanSiteType_museum">"Museum - a stopover located a museum or similar."</string>
     <string name="quest_caravanSiteType_restaurant">"Restaurant - at restaurant or cafe, often on the parking lot."</string>
     <string name="quest_caravanSiteType_farm">"Farm - staying at a farm."</string>
     <string name="quest_caravanSiteType_beach">"Beach - next to a beach."</string>

@@ -360,7 +360,7 @@ tourism_information_termina... CC-BY 4.0         https://wiki.openstreetmap.org/
 valves_schrader.jpg            Copyleft          BohwaZ https://commons.wikimedia.org/wiki/File:Valve_Schrader.jpg
 valves_sclaverand.jpg          Copyleft          BohwaZ https://commons.wikimedia.org/wiki/File:Valve_Presta.JPG
 valves_dunlop.jpg              Copyleft          BohwaZ https://commons.wikimedia.org/wiki/File:Valve_Dunlop.JPG
-valves_regina.jpg              Copyleft          BohwaZ https://en.wikipedia.org/wiki/File:Valve_Regina_avec_son_bouchon.jpg
+valves_regina.jpg              Copyleft          BohwaZ https://commons.wikimedia.org/wiki/File:Valve_Regina_avec_son_bouchon.jpg
 
 
 via_ferrata_scale_0.jpg        CC-BY-SA-2.0      https://wiki.openstreetmap.org/wiki/File:Super_easy_ferrata.jpg

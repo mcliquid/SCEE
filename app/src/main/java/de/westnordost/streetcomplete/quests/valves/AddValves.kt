@@ -21,7 +21,7 @@ class AddValves : OsmFilterQuestType<List<Valves>>() {
     """
     override val changesetComment = "Specify valves types for air pumps or compressed air"
     override val wikiLink = "Key:valves"
-    override val icon = R.drawable.ic_quest_bicycle_pump
+    override val icon = R.drawable.ic_quest_valve
     override val isDeleteElementEnabled = true
     override val achievements = listOf(BICYCLIST)
 

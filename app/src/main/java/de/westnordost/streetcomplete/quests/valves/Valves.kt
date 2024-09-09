@@ -1,8 +1,8 @@
 package de.westnordost.streetcomplete.quests.valves
 
-enum class ValvesType(val osmValue: String) {
+enum class Valves(val osmValue: String) {
     SCLAVERAND("sclaverand"),
     DUNLOP("dunlop"),
     SCHRADER("schrader"),
-    REGINA("regina")
+    REGINA("regina");
 }

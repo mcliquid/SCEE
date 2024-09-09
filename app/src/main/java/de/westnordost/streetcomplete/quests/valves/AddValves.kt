@@ -9,7 +9,7 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddValves : OsmFilterQuestType<ValvesType>() {
+class AddValves : OsmFilterQuestType<List<Valves>>() {
 
     override val elementFilter = """
         nodes, ways with
@@ -27,12 +27,12 @@ class AddValves : OsmFilterQuestType<ValvesType>() {
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_valves_title
 
+    override fun createForm() = AddValvesForm()
+
     override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry) =
         getMapData().filter("nodes, ways with amenity = compressed_air or service:bicycle:pump = yes or compressed_air = yes")
 
-    override fun createForm() = AddValvesForm()
-
-    override fun applyAnswerTo(answer: ValvesType, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
-        tags["valves"] = answer.osmValue
+    override fun applyAnswerTo(answer: List<Valves>, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+        tags["valves"] = answer.joinToString(";") { it.osmValue }
     }
 }

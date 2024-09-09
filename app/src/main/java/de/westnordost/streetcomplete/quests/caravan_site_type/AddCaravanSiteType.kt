@@ -6,6 +6,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.osm.Tags
 
 class AddCaravanSiteType : OsmFilterQuestType<String>() {
@@ -20,6 +21,7 @@ class AddCaravanSiteType : OsmFilterQuestType<String>() {
     override val defaultDisabledMessage = R.string.default_disabled_msg_caravanSiteType
     override val wikiLink = "Key:caravan_site:type"
     override val icon = R.drawable.ic_quest_caravan_site
+    override val achievements = listOf(OUTDOORS)
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_caravanSiteType_title
 

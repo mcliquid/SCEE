@@ -357,9 +357,9 @@ tourism_information_map.jpg    CC0               https://commons.wikimedia.org/w
 tourism_information_office.jpg CC-BY-SA 4.0      https://commons.wikimedia.org/wiki/File:Tourist_information_shop,_Delft_(2018).jpg (Donald Trung)
 tourism_information_termina... CC-BY 4.0         https://wiki.openstreetmap.org/wiki/File:Uh%C5%99%C3%ADn%C4%9Bves,_Nov%C3%A9_n%C3%A1m%C4%9Bst%C3%AD,_informa%C4%8Dn%C3%AD_stojan.jpg (ŠJů)
 
-valves_schrader.jpg            Copyright         Ralf Roletschek / Roletschek.at https://en.wikipedia.org/wiki/File:Schrader-ventil.jpg
-valves_sclaverand.jpg          Copyright         Ralf Roletschek / Roletschek.at https://en.wikipedia.org/wiki/File:Presta_valve_close.jpg
-valves_dunlop.jpg              Copyright         Ralf Roletschek / Roletschek.at https://en.wikipedia.org/wiki/File:Dunlop_valve.jpg
+valves_schrader.jpg            Copyleft          BohwaZ https://commons.wikimedia.org/wiki/File:Valve_Schrader.jpg
+valves_sclaverand.jpg          Copyleft          BohwaZ https://commons.wikimedia.org/wiki/File:Valve_Presta.JPG
+valves_dunlop.jpg              Copyleft          BohwaZ https://commons.wikimedia.org/wiki/File:Valve_Dunlop.JPG
 valves_regina.jpg              Copyleft          BohwaZ https://en.wikipedia.org/wiki/File:Valve_Regina_avec_son_bouchon.jpg
 
 

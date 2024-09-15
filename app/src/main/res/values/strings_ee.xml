@@ -407,6 +407,14 @@
     <string name="quest_shelter_type_field_shelter">Field shelter</string>
     <string name="quest_shelter_type_rock_shelter">Rock shelter</string>
 
+    <!-- valves (air compressor or bicycle pump) -->
+    <string name="quest_valves_title">What types of valves are available here?</string>
+    <string name="quest_valves_disabled_msg">This quest is disabled by default because it requires a very close inspection of the available valves.</string>
+    <string name="quest_valves_sclaverand">SV: Sclaverand / Presta / French valve</string>
+    <string name="quest_valves_dunlop">DV/NV: Dunlop / Woods</string>
+    <string name="quest_valves_schrader">AV: Schrader / Car valve</string>
+    <string name="quest_valves_regina">RV: Regina / Italian</string>
+
     <!-- artwork type -->
     <string name="quest_artwork_title">What kind of artwork is this?</string>
     <string name="quest_artwork_sculpture">Sculpture</string>
@@ -492,7 +500,7 @@
     <string name="quest_caravanSiteType_lake">"Lake - the site is located directly on the lake."</string>
     <string name="quest_caravanSiteType_parking_lot">"Parking Lot - directly on a parking lot."</string>
     <string name="quest_caravanSiteType_harbour">"Harbor - at a harbor or marina."</string>
-    <string name="quest_caravanSiteType_winery">"Winery - staying at a winery, often right next to wineyards."</string>
+    <string name="quest_caravanSiteType_winery">"Winery - staying at a winery, often right next to vineyards."</string>
     <string name="quest_caravanSiteType_camp_site">"Camp site - a separate motorhome stopover at a campsite."</string>
     <string name="quest_caravanSiteType_museum">"Museum - located at a museum, exhibition or similar."</string>
     <string name="quest_caravanSiteType_restaurant">"Restaurant - at a restaurant or cafe, often on the parking lot."</string>

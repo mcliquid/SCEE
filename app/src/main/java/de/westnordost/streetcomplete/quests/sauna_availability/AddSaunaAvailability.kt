@@ -21,6 +21,7 @@ class AddSaunaAvailability : OsmFilterQuestType<Boolean>() {
     override val changesetComment = "Survey sauna availabilities"
     override val wikiLink = "Key:sauna"
     override val icon = R.drawable.ic_quest_sauna
+    override val defaultDisabledMessage: Int = R.string.default_disabled_msg_ee
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_saunaAvailability_title
 

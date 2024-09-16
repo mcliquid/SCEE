@@ -12,7 +12,7 @@ class AddSaunaAvailability : OsmFilterQuestType<Boolean>() {
     override val elementFilter = """
         nodes, ways with
         (
-          leisure ~ fitness_centre|resort|sports_centre|water_park
+          leisure ~ fitness_centre
           or leisure = sports_hall and sport = swimming
           or tourism ~ camp_site|hotel
         )

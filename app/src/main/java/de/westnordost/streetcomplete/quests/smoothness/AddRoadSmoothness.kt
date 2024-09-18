@@ -60,11 +60,13 @@ class AddRoadSmoothness : OsmFilterQuestType<SmoothnessAnswer>() {
 // surfaces that are actually used in AddSmoothnessForm
 // should only contain values that are in the Surface class
 val SURFACES_FOR_SMOOTHNESS = listOf(
-    "asphalt", "concrete", "concrete:plates", "sett", "paving_stones", "compacted", "gravel", "fine_gravel"
+    "asphalt", "concrete", "concrete:plates", "sett", "paving_stones", "compacted", "gravel", "fine_gravel", "chipseal", "concrete:lanes", "paving_stones:lanes", "unhewn_cobblestone",
+    "cobblestone", "bricks", "metal", "wood", "stepping_stones", "rubber", "shells", "rock", "pebblestone", "ground", "dirt", "earth", "grass", "grass_paver", "metal_grid",
+    "mud", "sand", "woodchips", "snow", "ice", "salt", "clay", "tartan", "plastic", "acrylic", "carpet"
 )
 
 private val ROADS_TO_ASK_SMOOTHNESS_FOR = arrayOf(
-    // "trunk","trunk_link","motorway","motorway_link", // too much, motorways are almost by definition smooth asphalt (or concrete)
+    "trunk","trunk_link","motorway","motorway_link", // too much, motorways are almost by definition smooth asphalt (or concrete)
     "primary", "primary_link", "secondary", "secondary_link", "tertiary", "tertiary_link",
     "unclassified", "residential", "living_street", "pedestrian", "track", "busway",
     // "service", // this is too much (e.g. includes driveways), and the information value is very low

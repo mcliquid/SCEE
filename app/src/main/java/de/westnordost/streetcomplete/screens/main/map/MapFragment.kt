@@ -179,7 +179,7 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
         map.uiSettings.isLogoEnabled = false
         map.uiSettings.flingThreshold = 250
         map.uiSettings.flingAnimationBaseTime = 500
-        map.uiSettings.isDisableRotateWhenScaling = true
+        map.uiSettings.isDisableRotateWhenScaling = false
         // workaround for https://github.com/maplibre/maplibre-native/issues/2792
         map.gesturesManager.moveGestureDetector.moveThreshold = resources.dpToPx(5f)
         map.gesturesManager.rotateGestureDetector.angleThreshold = 1.5f

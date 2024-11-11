@@ -46,6 +46,19 @@ app icon/
 assembly point/
     assembly_point.svg          Epop, License: Public domain; https://commons.wikimedia.org/wiki/File:E011.svg
 
+boat_rental/
+    canoe.svg                   mashup of different images from Australian Water Safety Council, License: PD
+    houseboat.svg               parts taken from Twemoji: U+26F4
+    jetski.svg                  Australian Water Safety Council, License: PD
+    kayak.svg                   Australian Water Safety Council, License: PD
+    motorboat.svg               modified images from Australian Water Safety Council, License: PD
+    pedalboat.svg               
+    rowboat.svg                 mashup of different images from Australian Water Safety Council, License: PD
+    sailboard.svg               Australian Water Safety Council, License: PD
+    sailboat.svg                Australian Water Safety Council, License: PD
+    standup_paddleboard.svg     Australian Water Safety Council, License: PD
+    surfboard.svg               Australian Water Safety Council, License: PD
+
 bridge structure/
     arch.svg                    Jay Turner, License: CC0 1.0
     beam.svg                    Jay Turner, License: CC0 1.0
@@ -372,6 +385,7 @@ quest/
     restaurant_vegetarian.svg        parts taken from Twemoji: U+1F37D and U+1F955
     road_construction.svg
     roof_shape.svg
+    sauna.svg                        modified by mcliquid based on Geozeisig CC0 1.0 from https://wiki.openstreetmap.org/wiki/File:Sauna-14.svg
     seating.svg
     shelter_type.svg                 modified from https://wiki.openstreetmap.org/wiki/File:Shelter-14.svg
     shower.svg
@@ -397,6 +411,7 @@ quest/
     summit_cross.svg                based on peak.svg which is (c) 2020 Mateusz Konieczny and Tobias Zwick (CC-BY-SA 4.0), with cross added by Flo Edelmann (so also CC-BY-SA 4.0)
     surveillance.svg
     surveillance_camera.svg
+    swimming_pool.svg               modified by mcliquid based on Kocio CC0 1.0 from https://wiki.openstreetmap.org/wiki/File:Swimming-16.svg
     tent.svg
     toilets.svg
     toilet_fee.svg

@@ -322,6 +322,16 @@
     <string name="quest_utility_sewerage">Sewerage</string>
     <string name="quest_utility_telecom">Telecommunication</string>
 
+    <!-- sauna availability quest -->
+    <string name="quest_saunaAvailability_title">Is there a sauna here?</string>
+
+    <!-- swimming pool availability quest -->
+    <string name="quest_swimmingPoolAvailability_title">Is there a swimming pool here?</string>
+    <string name="quest_swimming_pool_indoor_and_outdoor">Both (indoor and outdoor)</string>
+    <string name="quest_swimming_pool_indoor_only">Only indoor</string>
+    <string name="quest_swimming_pool_outdoor_only">Only outdoor</string>
+    <string name="quest_swimming_pool_no">No swimming pool</string>
+
     <!-- service building type -->
     <string name="quest_service_building_type_title">What kind of service building is this?</string>
     <string name="quest_service_building_type_substation">Electrical substation</string>
@@ -385,10 +395,10 @@
     <string name="quest_seating_pedestrian_zone">In a pedestrian zone</string>
     <string name="quest_seating_street">In a street area</string>
     <string name="quest_seating_sidewalk">On the sidewalk</string>
-    <string name="quest_seating_patio">In a patio</string>
-    <string name="quest_seating_terrace">On a terrace</string>
-    <string name="quest_seating_balcony">On a balcony</string>
-    <string name="quest_seating_veranda">On a veranda/porch </string>
+    <string name="quest_seating_patio">In a patio (unroofed, courtyard)</string>
+    <string name="quest_seating_terrace">On a terrace (unroofed, not courtyard)</string>
+    <string name="quest_seating_balcony">On a balcony (not on the ground floor)</string>
+    <string name="quest_seating_veranda">On a veranda/porch (roofed, can be slightly above ground)</string>
     <string name="quest_seating_roof">On a roof</string>
     <string name="quest_seating_garden">In a garden area</string>
     <string name="quest_seating_beach">At a beach</string>
@@ -540,6 +550,8 @@
     <string name="quest_barrier_height_title">"How tall is this barrier?"</string>
 
     <!-- additional strings for quests available in StreetComplete -->
+    <string name="quest_bicycle_parking_type_safeloops">Safe Loops (supports wheel and frame)</string>
+    <string name="quest_bicycle_parking_type_saddleholder">Saddle holder</string>
     <string name="quest_surface_value_metal_grid">Metal grid</string>
     <string name="quest_surface_value_stepping_stones">Stepping stones</string>
     <string name="quest_surface_value_chipseal">"Chipseal"</string>

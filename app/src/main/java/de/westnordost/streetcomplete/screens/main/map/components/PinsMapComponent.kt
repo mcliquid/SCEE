@@ -134,6 +134,9 @@ class PinsMapComponent(
                 textSize(sum(literal(15f), division(log2(get("point_count")), literal(1.5f)))),
                 iconAllowOverlap(true),
                 textAllowOverlap(true),
+                iconIgnorePlacement(true),
+                textIgnorePlacement(true),
+                symbolSortKey(50f)
             ),
         CircleLayer("pin-dot-layer", SOURCE)
             .withFilter(any(
@@ -147,6 +150,9 @@ class PinsMapComponent(
                 circleStrokeWidth(1f),
                 circleTranslate(arrayOf(0f, if (prefs.prefs.getBoolean(Prefs.OFFSET_FIX, false)) 0f else -8f)), // so that it hides behind the pin
                 circleTranslateAnchor(Property.CIRCLE_TRANSLATE_ANCHOR_VIEWPORT),
+                symbolSortKey(40f),
+                iconAllowOverlap(true),
+                iconIgnorePlacement(true),
             ),
         CircleLayer("pin-quest-dot-layer", DOT_SOURCE)
             .withFilter(all(gt(zoom(), CLUSTER_MAX_ZOOM)))
@@ -166,11 +172,10 @@ class PinsMapComponent(
                 // results in a lot of flickering.
                 iconSize(1f),
 
-                // better would be arrayOf(-2.5f, 0f, -7f, 2.5f) or something like that, but setting
-                // different paddings per side is not supported by MapLibre Native yet. See
-                // https://github.com/maplibre/maplibre-native/issues/2368
-                iconPadding(-2f),
-                iconOffset(listOf(-4.5f, -34.5f).toTypedArray()),
+                iconPadding(arrayOf(-2.5f, 0f, -7f, 2.5f)),
+                iconOffset(arrayOf(-4.5f, -34.5f)),
+                iconAllowOverlap(false),
+                iconIgnorePlacement(false),
                 symbolSortKey(get("icon-order")),
             )
     )
@@ -255,7 +260,7 @@ class PinsMapComponent(
         if (color != null) return null
         val p = JsonObject()
         p.addProperty("icon-image", context.resources.getResourceEntryName(icon))
-        p.addProperty("icon-order", order)
+        p.addProperty("icon-order", order + 50)
         properties.forEach { p.addProperty(it.first, it.second) }
         return Feature.fromGeometry(position.toPoint(), p)
     }

@@ -19,7 +19,6 @@ import de.westnordost.streetcomplete.util.html.HtmlNode
 fun WhatsNewDialog(
     changelog: Map<String, List<HtmlNode>>,
     onDismissRequest: () -> Unit,
-    onClickLink: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ScrollableAlertDialog(
@@ -27,14 +26,11 @@ fun WhatsNewDialog(
         modifier = modifier,
         title = { Text(stringResource(R.string.title_whats_new)) },
         content = {
-            Divider()
             ChangelogList(
                 changelog = changelog,
-                onClickLink = onClickLink,
                 paddingValues = PaddingValues(vertical = 16.dp),
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
-            Divider()
         },
         buttons = {
             TextButton(onClick = onDismissRequest) {

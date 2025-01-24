@@ -68,10 +68,12 @@ object Prefs {
     const val SHOW_CUSTOM_GEOMETRY = "show_custom_geometry"
     const val THEME_BACKGROUND = "theme.background_type"
     const val REALLY_ALL_NOTES = "really_all_notes"
+    const val ROTATE_WHILE_ZOOMING = "rotate_while_zooming"
+    const val ROTATE_ANGLE_THRESHOLD = "rotate_angle_threshold"
 
-    enum class DayNightBehavior {
-        IGNORE,
-        PRIORITY,
-        VISIBILITY
+    enum class DayNightBehavior(val titleResId: Int) {
+        IGNORE(R.string.day_night_ignore),
+        PRIORITY(R.string.day_night_priority),
+        VISIBILITY(R.string.day_night_visibility)
     }
 }

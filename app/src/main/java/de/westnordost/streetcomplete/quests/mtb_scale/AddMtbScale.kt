@@ -16,6 +16,7 @@ class AddMtbScale : OsmFilterQuestType<MtbScale>() {
           and !mtb:scale
           and access !~ no|private
           and bicycle !~ no|private
+          and (vehicle !~ no|private and bicycle !~ yes|designated)
           and (!lit or lit = no)
           and surface ~ "grass|sand|dirt|soil|fine_gravel|compacted|wood|gravel|pebblestone|rock|ground|earth|mud|woodchips|snow|ice|salt|stone"
     """

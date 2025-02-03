@@ -14,7 +14,7 @@ class AddGeneralRef : OsmFilterQuestType<GeneralRefAnswer>() {
     override val elementFilter = """
         nodes, ways with
           (
-            (information = guidepost or guidepost) and guidepost != simple and hiking = yes
+            (information = guidepost or guidepost) and guidepost != simple and (hiking = yes or bicycle = yes)
             or railway = subway_entrance and highway != elevator
             or building = service and power = substation
             or man_made = street_cabinet

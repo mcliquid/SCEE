@@ -9,13 +9,13 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddGuidepostEle : OsmFilterQuestType<String>() {
+class AddGuidepostEle : OsmFilterQuestType<GuidepostEleAnswer>() {
 
     override val elementFilter = """
         nodes with
         (information = guidepost or guidepost) and guidepost != simple
         and !ele and !~"ele:.*"
-        and hiking = yes
+        and (hiking = yes or bicycle=yes)
     """
     override val changesetComment = "Specify guidepost elevation"
     override val wikiLink = "Tag:information=guidepost"
@@ -33,8 +33,10 @@ class AddGuidepostEle : OsmFilterQuestType<String>() {
 
     override fun createForm() = AddGuidepostEleForm()
 
-    override fun applyAnswerTo(answer: String, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
-        tags["ele"] = answer
-
+    override fun applyAnswerTo(answer: GuidepostEleAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+        when (answer) {
+            is NoVisibleGuidepostEle -> tags["ele:signed"] = "no"
+            is GuidepostEle ->          tags["ele"] = answer.ele
+        }
     }
 }

@@ -38,7 +38,7 @@ class AddGeneralRef : OsmFilterQuestType<GeneralRefAnswer>() {
     override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry) =
         getMapData().filter("""
             nodes with
-              information ~ guidepost|map
+              information ~ guidepost|route_marker|map
               or railway = subway_entrance
               or man_made = street_cabinet
               or highway = street_lamp

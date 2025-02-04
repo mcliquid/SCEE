@@ -78,7 +78,6 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuest
 import de.westnordost.streetcomplete.data.osmnotes.edits.NotesWithEditsSource
 import de.westnordost.streetcomplete.data.osmnotes.notequests.OsmNoteQuest
-import de.westnordost.streetcomplete.data.osmnotes.notequests.OsmNoteQuestsHiddenSource
 import de.westnordost.streetcomplete.data.osmtracks.Trackpoint
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuest
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
@@ -86,12 +85,14 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestController
 import de.westnordost.streetcomplete.data.overlays.OverlayRegistry
 import de.westnordost.streetcomplete.data.overlays.SelectedOverlayController
 import de.westnordost.streetcomplete.data.preferences.Preferences
+import de.westnordost.streetcomplete.data.quest.OsmNoteQuestKey
 import de.westnordost.streetcomplete.data.quest.Quest
 import de.westnordost.streetcomplete.data.quest.QuestAutoSyncer
 import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.data.quest.QuestType
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.data.quest.VisibleQuestsSource
+import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenSource
 import de.westnordost.streetcomplete.databinding.ActivityMainBinding
 import de.westnordost.streetcomplete.data.visiblequests.LevelFilter
 import de.westnordost.streetcomplete.databinding.EffectQuestPlopBinding
@@ -213,7 +214,7 @@ class MainActivity :
     private val visibleQuestsSource: VisibleQuestsSource by inject()
     private val mapDataWithEditsSource: MapDataWithEditsSource by inject()
     private val notesSource: NotesWithEditsSource by inject()
-    private val noteQuestsHiddenSource: OsmNoteQuestsHiddenSource by inject()
+    private val questsHiddenSource: QuestsHiddenSource by inject()
     private val featureDictionary: Lazy<FeatureDictionary> by inject(named("FeatureDictionaryLazy"))
     private val soundFx: SoundFx by inject()
     private val levelFilter: LevelFilter by inject()
@@ -230,6 +231,7 @@ class MainActivity :
 
     private lateinit var binding: ActivityMainBinding
 
+    // for freezing the map while sidebar is open
     private var wasFollowingPosition: Boolean? = null
     private var wasNavigationMode: Boolean? = null
 
@@ -287,6 +289,10 @@ class MainActivity :
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         Log.i(TAG, "onCreate")
+
+        if (savedInstanceState == null) {
+            handleIntent(intent)
+        }
 
         LocalBroadcastManager.getInstance(this).registerReceiver(
             requestLocationPermissionResultReceiver,
@@ -347,6 +353,8 @@ class MainActivity :
         observe(viewModel.geoUri) { geoUri ->
             if (geoUri != null) {
                 mapFragment?.setInitialCameraPosition(geoUri)
+                viewModel.isFollowingPosition.value = mapFragment?.isFollowingPosition ?: false
+                viewModel.isNavigationMode.value = mapFragment?.isNavigationMode ?: false
             }
         }
         observe(viewModel.reverseQuestOrder) {
@@ -388,6 +396,10 @@ class MainActivity :
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
         if (intent.action != Intent.ACTION_VIEW) return
         val data = intent.data?.toString() ?: return
         viewModel.setUri(data)
@@ -405,9 +417,6 @@ class MainActivity :
         visibleQuestsSource.removeListener(this)
         mapDataWithEditsSource.removeListener(this)
         locationAvailabilityReceiver.removeListener(::updateLocationAvailability)
-
-        wasFollowingPosition = mapFragment?.isFollowingPosition
-        wasNavigationMode = mapFragment?.isNavigationMode
 
         locationManager.removeUpdates()
         StreetCompleteApplication.preferences.unregisterOnSharedPreferenceChangeListener(this)
@@ -604,7 +613,7 @@ class MainActivity :
         Log.i(TAG, "edited: ${editType.name}")
         showQuestSolvedAnimation(editType.icon, geometry.center)
         if (editType is OsmElementQuestType<*> && prefs.getBoolean(Prefs.SHOW_NEXT_QUEST_IMMEDIATELY, false)) {
-            visibleQuestsSource.getAllVisible(geometry.center.enclosingBoundingBox(1.0))
+            visibleQuestsSource.getAll(geometry.center.enclosingBoundingBox(1.0))
                 .filterIsInstance<OsmQuest>()
                 .firstOrNull { it.geometry == geometry && it.type.dotColor == null } // this is not great, but we don't have key on the edited element any more
                 ?.let { runBlocking { lifecycleScope.launch { showQuestDetails(it) } } }
@@ -753,7 +762,7 @@ class MainActivity :
     /* ---------------------------------- VisibleQuestListener ---------------------------------- */
 
     @AnyThread
-    override fun onUpdatedVisibleQuests(added: Collection<Quest>, removed: Collection<QuestKey>) {
+    override fun onUpdated(added: Collection<Quest>, removed: Collection<QuestKey>) {
         lifecycleScope.launch {
             val f = bottomSheetFragment
             // open quest has been deleted
@@ -764,7 +773,7 @@ class MainActivity :
     }
 
     @AnyThread
-    override fun onVisibleQuestsInvalidated() {
+    override fun onInvalidated() {
         lifecycleScope.launch {
             val f = bottomSheetFragment
             if (f is IsShowingQuestDetails) {
@@ -832,7 +841,7 @@ class MainActivity :
         mapFragment?.startPositionTracking()
         questAutoSyncer.startPositionTracking()
 
-        setIsFollowingPosition(wasFollowingPosition ?: true)
+        mapFragment?.centerCurrentPositionIfFollowing()
         locationManager.getCurrentLocation()
     }
 
@@ -1221,7 +1230,7 @@ class MainActivity :
             notesSource
                 .getAll(BoundingBox(center, center).enlargedBy(0.2)).filterNot { it.isClosed }
                 .firstOrNull { it.position.truncateTo6Decimals() == center.truncateTo6Decimals() }
-                ?.takeIf { noteQuestsHiddenSource.getHidden(it.id) == null }
+                ?.takeIf { questsHiddenSource.get(OsmNoteQuestKey(it.id)) == null }
         }
         if (note != null) {
             showQuestDetails(OsmNoteQuest(note.id, note.position))

@@ -207,10 +207,9 @@ private val IS_THING_EXPRESSION by lazy {
             "stele",
             "street_cabinet",
             "surveillance",
-            // "survey_point" - this can be very very small -> verifiability issue
-            //                  danger that mapper deletes it because he can't find it
+            "survey_point"
             // "telephone_box" - it just describes the structure, but not its use
-            // "utility_pole" - usually a vertex
+            "utility_pole"
             "video_wall", // basically an advertising=*
             "water_tap",
             "water_well",

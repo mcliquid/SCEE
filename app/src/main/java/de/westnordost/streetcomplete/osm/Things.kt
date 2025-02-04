@@ -224,6 +224,27 @@ private val IS_THING_EXPRESSION by lazy {
             "tree",
             "tree_stump",
         ),
+        "power" to listOf(
+            "substation",
+            "transformer",
+            "generator",
+        ),
+        "marker" to listOf(
+            "yes",
+            "post",
+            "aerial",
+            "pedestal",
+            "stone",
+            "plate",
+            "ground"
+        ),
+        "utility" to listOf(
+            "yes",
+            "gas",
+            "power",
+            "water",
+            "telecom"
+        ),
         "tourism" to listOf(
             "artwork",
             // "information", only if it is not an office, see below
@@ -239,6 +260,9 @@ private val IS_THING_EXPRESSION by lazy {
         or advertising
         or amenity = recycling and recycling_type = container
         or attraction
+        or marker
+        or marker = utility
+        or (marker and utility)
         or boundary = marker
         or leisure = pitch and sport ~ chess|table_soccer|table_tennis|teqball
         or playground
@@ -253,28 +277,32 @@ private val IS_THING_EXPRESSION by lazy {
 }
 
 val POPULAR_THING_FEATURE_IDS = listOf(
-    "natural/tree/broadleaved",    // 4.8 M
+    // found most often on hiking routes where there are not that many "things" features anyway
+    "tourism/information/guidepost",       // 0.5M
+    "tourism/information/route_marker",
+    "marker/utility",
+    "marker",
+    "marker/utility/power",
+    "man_made/street_cabinet",
     "highway/street_lamp",         // 4.3 M
     "amenity/bench",               // 2.6 M
     "emergency/fire_hydrant",      // 2.1 M
-
     "amenity/waste_basket",        // 0.9 M
     "amenity/bicycle_parking",     // 0.7 M
-    "amenity/shelter",             // 0.5 M
-
-    "amenity/recycling_container", // 0.4 M
+    //"tourism/information/board",   // 0.3M
     "amenity/toilets",             // 0.4 M
-
+    "amenity/drinking_water",      // 0.3 M
     "amenity/post_box",            // 0.4 M
-
+    "natural/tree/broadleaved",    // 4.8 M
+    "amenity/shelter",             // 0.5 M
+    "power/substation",
+    "amenity/recycling_container", // 0.4 M
     // More:
 
     // mostly found in parks/plazas, i.e. specific places instead of ~everywhere
     // "historic/memorial",           // 0.4 M (if this is displayed in quick select, artwork should probably too)
     // "amenity/drinking_water",      // 0.3 M
     // "leisure/picnic_table",        // 0.3 M
-
-    // found most often on hiking routes where there are not that many "things" features anyway
-    // "information/guidepost",       // 0.5M
-    // "tourism/information/board",   // 0.3M
+    "historic/wayside_cross",
+    "historic/wayside_shrine",
 )

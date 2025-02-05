@@ -207,9 +207,9 @@ private val IS_THING_EXPRESSION by lazy {
             "stele",
             "street_cabinet",
             "surveillance",
-            "survey_point"
+            "survey_point",
             // "telephone_box" - it just describes the structure, but not its use
-            "utility_pole"
+            "utility_pole",
             "video_wall", // basically an advertising=*
             "water_tap",
             "water_well",

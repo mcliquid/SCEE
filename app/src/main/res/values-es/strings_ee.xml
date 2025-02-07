@@ -136,12 +136,12 @@
     <string name="quest_osmose_message_for_element">Tipo de elemento %1$s: %2$s</string>
     <string name="quest_poi_business_title">POI: Negocios</string>
     <string name="quest_custom_quest_add_node">Agregar nodo</string>
-    <string name="quest_benchMaterial_wood">Madera</string>
-    <string name="quest_benchMaterial_metal">Metal</string>
-    <string name="quest_benchMaterial_plastic">Plástico</string>
-    <string name="quest_benchMaterial_concrete">Cemento</string>
-    <string name="quest_benchMaterial_stone">Piedra</string>
-    <string name="quest_benchMaterial_brick">Ladrillos</string>
+    <string name="quest_material_wood">Madera</string>
+    <string name="quest_material_metal">Metal</string>
+    <string name="quest_material_plastic">Plástico</string>
+    <string name="quest_material_concrete">Cemento</string>
+    <string name="quest_material_stone">Piedra</string>
+    <string name="quest_material_brick">Ladrillos</string>
     <string name="quest_osmose_select_element">Seleccionar elemento</string>
     <string name="quest_poi_cycling_title">POI: Ciclismo</string>
     <string name="quest_poi_camera_title">POI: Cámara</string>
@@ -158,9 +158,9 @@
     <string name="default_disabled_msg_poi_camera">Esta \"tarea\" muestra las características de vigilancia como puntos rosas. Haga clic en el punto para mostrar detalles y otras respuestas.</string>
     <string name="quest_poi_has_atm_title">POI: Cajero automático</string>
     <string name="quest_benchMaterial_title">¿De qué está hecho\?</string>
-    <string name="quest_seating_patio">En un patio</string>
-    <string name="quest_seating_balcony">En un balcón</string>
-    <string name="quest_seating_veranda">En una terraza/porche</string>
+    <string name="quest_seating_patio">En un patio (sin techo, patio)</string>
+    <string name="quest_seating_balcony">En un balcón (no en la planta baja)</string>
+    <string name="quest_seating_veranda">En una terraza/porche (techado, puede estar ligeramente por encima del suelo)</string>
     <string name="quest_seating_roof">En un tejado</string>
     <string name="quest_seating_garden">En una zona ajardinada</string>
     <string name="quest_seating_beach">En la playa</string>
@@ -285,7 +285,7 @@
     <string name="closed_note_action_title">Lo cerraste</string>
     <string name="restriction_overlay_other_restrictions">Otras restricciones de esta vía:</string>
     <string name="quest_settings_resurvey_all_opening_hours_no">Por defecto</string>
-    <string name="quest_seating_terrace">En una terraza</string>
+    <string name="quest_seating_terrace">En una terraza (sin tejado, sin patio)</string>
     <string name="quest_generic_answer_show_edit_tags">Mostrar/editar etiquetas</string>
     <string name="custom_overlay_title">Superposición personalizada</string>
     <string name="pref_show_next_quest_title">Mostrar la próxima tarea inmediatamente</string>
@@ -340,16 +340,7 @@
     <string name="custom_overlay_filter_message">Haga clic en el enlace a continuación para abrir información sobre la sintaxis de selección de elementos en un navegador. Tenga en cuenta que al seleccionar elementos por edad, la configuración del intervalo de repregunta puede influir en el resultado.
 \nLas casillas de verificación reemplazan la parte \"nodos, vías con\".</string>
     <string name="restriction_overlay_title">Restricciones de tráfico</string>
-    <string name="pref_expert_mode_message">Esto permitirá usar las misiones añadidas en SCEE, y las formas de
-\n \u0020<li>Edición de etiquetas sin procesar</li>
-\n \u0020<li>Nodos móviles que forman parte de vías o relaciones</li>
-\n \u0020<li>Eliminación de cualquier nodo flotante</li>
-\n \u0020<li>Editar elementos que deben ser bloqueados por una nota</li>
-\n \u0020<li>Adición de nodos flotantes libres en cualquier lugar</li>
-\n \u0020<li>Cambiar la selección de elementos de las misiones</li>
-\n
-\n \u0020Esto sigue siendo menos de lo que la mayoría de los otros editores permiten, pero el uso imprudente puede dañar los datos de formas que no son posibles en StreetComplete. \u0020Tenga en cuenta que al habilitar el modo experto, tiene una responsabilidad significativamente mayor por sus ediciones.
-\n \u0020Por favor, solo habilite esta configuración si tiene experiencia en OSM fuera de StreetComplete y entiende lo que está haciendo. \u0020</string>
+    <string name="pref_expert_mode_message">Esto permitirá usar las misiones añadidas en SCEE, y las formas de \n \u0020<li>Edición de etiquetas sin procesar</li> \n \u0020<li>Nodos móviles que forman parte de vías o relaciones</li> \n \u0020<li>Eliminación de cualquier nodo flotante</li> \n \u0020<li>Editar elementos que deben ser bloqueados por una nota</li> \n \u0020<li>Adición de nodos flotantes libres en cualquier lugar</li> \n \u0020<li>Cambiar la selección de elementos de las misiones</li> \n \n \u0020Esto sigue siendo menos de lo que la mayoría de los otros editores permiten, pero el uso imprudente puede dañar los datos de formas que no son posibles en StreetComplete. \u0020Tenga en cuenta que al habilitar el modo experto, tiene una responsabilidad significativamente mayor por sus ediciones. \n \u0020Por favor, solo habilite esta configuración si tiene experiencia en OSM fuera de StreetComplete y entiende lo que está haciendo. \u0020</string>
     <string name="restriction_overlay_relation_incomplete">La relación de restricción está incompleta, se requiere la descarga del área circundante</string>
     <string name="show_nearby_quests_distance">Mostrar tareas dentro de esta distancia (limitado a 10 metros)</string>
     <string name="import_presets_overlays_message">¿Añadir importado o reemplazar el existente\? Si elige reemplazar, se eliminarán todos los existentes actualmente.</string>
@@ -581,4 +572,43 @@
     <string name="quest_crossing_marking_value_no">No</string>
     <string name="quest_crossing_marking_value_zebra">Cebra</string>
     <string name="quest_crossing_marking_value_lines">Líneas</string>
+    <string name="quest_crossing_marking_value_ladder">Escalera</string>
+    <string name="quest_caravanSiteType_village">Pueblo - una parada cerca de un pueblo más pequeño.</string>
+    <string name="default_disabled_msg_caravanSiteType">Este tipo de búsqueda está desactivado por defecto porque la clasificación y el uso de la etiqueta no se utilizan habitualmente.</string>
+    <string name="quest_caravanSiteType_title">¿Dónde está situado este camping para caravanas?</string>
+    <string name="quest_caravanSiteType_town">Ciudad - una parada cerca de una ciudad más grande.</string>
+    <string name="quest_caravanSiteType_river">Río: el emplazamiento está situado directamente en el río.</string>
+    <string name="quest_caravanSiteType_lake">Lago: el emplazamiento está situado directamente en el lago.</string>
+    <string name="quest_caravanSiteType_parking_lot">Aparcamiento - directamente sobre un aparcamiento.</string>
+    <string name="quest_caravanSiteType_harbour">Puerto - en un puerto o puerto deportivo.</string>
+    <string name="quest_caravanSiteType_winery">Bodega - alojarse en una bodega, a menudo junto a viñedos.</string>
+    <string name="quest_caravanSiteType_camp_site">Camping: una parada separada para autocaravanas en un camping.</string>
+    <string name="quest_caravanSiteType_farm">Granja - estancia en una granja.</string>
+    <string name="quest_caravanSiteType_supermarket">Supermercado - en el aparcamiento de un supermercado.</string>
+    <string name="quest_caravanSiteType_beach">Playa - junto a una playa o junto al mar.</string>
+    <string name="quest_valves_title">¿Qué tipos de válvulas hay aquí?</string>
+    <string name="quest_saunaAvailability_title">¿Hay una sauna aquí?</string>
+    <string name="quest_bicycle_parking_type_saddleholder">Soporte para sillín</string>
+    <string name="quest_swimmingPoolAvailability_title">¿Hay una piscina aquí?</string>
+    <string name="quest_swimming_pool_indoor_and_outdoor">Ambos (interior y exterior)</string>
+    <string name="quest_swimming_pool_indoor_only">Sólo interior</string>
+    <string name="quest_swimming_pool_outdoor_only">Sólo exterior</string>
+    <string name="quest_swimming_pool_no">No piscina</string>
+    <string name="quest_lampType_title">¿Qué tipo de lámpara es ésta?</string>
+    <string name="quest_lampType_disabled_msg">Esta búsqueda está desactivada por defecto porque no es fácil de responder y podría ser spam dependiendo de la región.</string>
+    <string name="quest_lampType_led">Lámpara LED</string>
+    <string name="quest_lampType_gaslight">Luz de gas</string>
+    <string name="quest_valves_sclaverand">SV: Válvula Sclaverand / Presta / Francesa</string>
+    <string name="quest_valves_dunlop">DV/NV: Dunlop / Woods</string>
+    <string name="quest_valves_schrader">AV: Schrader / Válvula de coche</string>
+    <string name="quest_valves_regina">RV: Regina / Italiano</string>
+    <string name="quest_caravanSiteType_restaurant">Restaurante - en un restaurante o cafetería, a menudo en el aparcamiento.</string>
+    <string name="quest_crossing_marking_value_dashes">Guiones</string>
+    <string name="quest_crossing_marking_value_dots">Puntos</string>
+    <string name="quest_crossing_marking_value_pictograms">Pictogramas</string>
+    <string name="quest_sacScale_strolling">Paseando</string>
+    <string name="pref_offset_fix_title2">Eliminar desplazamientos de puntos blancos</string>
+    <string name="quest_valves_disabled_msg">Esta búsqueda está desactivada por defecto porque requiere una inspección muy minuciosa de las válvulas disponibles.</string>
+    <string name="quest_caravanSiteType_museum">Museo - situado en un museo, exposición o similar.</string>
+    <string name="quest_sacScale_strolling_description">Sendero liso y llano, sin obstáculos, apto para todo tipo de calzado, cochecitos o muletas, y que no requiere habilidades de orientación.</string>
 </resources>

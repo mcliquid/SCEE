@@ -15,6 +15,8 @@ Functionality added in SCEE is considerably less tested than what you might be u
 
 [StreetComplete readme](README_StreetComplete.md)
 
+[SCEE FAQ](https://wiki.openstreetmap.org/wiki/SCEE/FAQ)
+
 ## Download SCEE
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/de.westnordost.streetcomplete.expert/)
@@ -39,7 +41,6 @@ SCEE asks for two more permissions than StreetComplete: `ACCESS_BACKGROUND_LOCAT
   * Prevent short scroll to user location at app start when map was at a different position
   * Downloading data will interrupt upload queue (will resume afterwards)
   * Manual downloads can be queued instead of always cancelling the previous one
-  * Show all hidden quests on long press undo button (works only for downloaded areas)
   * Additional answers for some quests
     * Additional building types
     * Additional path surfaces
@@ -128,6 +129,7 @@ SCEE asks for two more permissions than StreetComplete: `ACCESS_BACKGROUND_LOCAT
     * Highlight geometries for nearby quests
     * Disable quest solved animation
     * Provide GPX track and have it always shown on the map
+    * Provide GeoJson file and have geometries shown on the map (and text from _name_ property)
   * Quest settings
     * Hide or increase priority of quests depending on time of day
     * Force resurvey for specific tags

@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.util.ktx
 import android.Manifest.permission.ACCESS_FINE_LOCATION
 import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.LocationManager
@@ -10,11 +11,13 @@ import android.os.Build
 import android.view.Display
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.location.LocationManagerCompat
 import androidx.core.net.toUri
+import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.BuildConfig
 import de.westnordost.streetcomplete.R
 
@@ -43,10 +46,10 @@ val Context.currentDisplay: Display get() =
         getSystemService<WindowManager>()!!.defaultDisplay
     }
 
-fun Context.sendEmail(email: String, subject: String, text: String? = null) {
+fun Context.sendEmail(to: String, subject: String, text: String? = null) {
     val intent = Intent(Intent.ACTION_SENDTO).apply {
         data = "mailto:".toUri()
-        putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
+        putExtra(Intent.EXTRA_EMAIL, arrayOf(to))
         putExtra(Intent.EXTRA_SUBJECT, "SCEE " + BuildConfig.VERSION_NAME + " " + subject)
         if (text != null) {
             putExtra(Intent.EXTRA_TEXT, text)
@@ -60,6 +63,12 @@ fun Context.sendEmail(email: String, subject: String, text: String? = null) {
     }
 }
 
+fun Context.sendErrorReportEmail(errorReport: String) = sendEmail(
+    to = ApplicationConstants.ERROR_REPORTS_EMAIL,
+    subject = ApplicationConstants.USER_AGENT + " " + "Error Report",
+    text = "Describe how to reproduce it here:\n\n\n\n$errorReport"
+)
+
 fun Context.openUri(uri: String): Boolean =
     try {
         startActivity(Intent(Intent.ACTION_VIEW, uri.toUri()))
@@ -67,3 +76,12 @@ fun Context.openUri(uri: String): Boolean =
     } catch (e: ActivityNotFoundException) {
         false
     }
+
+fun Context.getActivity(): ComponentActivity? {
+    val componentActivity = when (this) {
+        is ComponentActivity -> this
+        is ContextWrapper -> baseContext.getActivity()
+        else -> null
+    }
+    return componentActivity
+}

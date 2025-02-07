@@ -28,6 +28,7 @@ import de.westnordost.streetcomplete.data.quest.VisibleQuestsSource
 import de.westnordost.streetcomplete.data.visiblequests.LevelFilter
 import de.westnordost.streetcomplete.data.visiblequests.QuestTypeOrderSource
 import de.westnordost.streetcomplete.screens.main.map.components.CurrentLocationMapComponent
+import de.westnordost.streetcomplete.screens.main.map.components.CustomGeometryMapComponent
 import de.westnordost.streetcomplete.screens.main.map.components.DownloadedAreaMapComponent
 import de.westnordost.streetcomplete.screens.main.map.components.FocusGeometryMapComponent
 import de.westnordost.streetcomplete.screens.main.map.components.GeometryMarkersMapComponent
@@ -35,9 +36,11 @@ import de.westnordost.streetcomplete.screens.main.map.components.PinsMapComponen
 import de.westnordost.streetcomplete.screens.main.map.components.SelectedPinsMapComponent
 import de.westnordost.streetcomplete.screens.main.map.components.StyleableOverlayMapComponent
 import de.westnordost.streetcomplete.screens.main.map.components.TracksMapComponent
+import de.westnordost.streetcomplete.screens.main.map.maplibre.CameraPosition
 import de.westnordost.streetcomplete.screens.main.map.maplibre.MapImages
 import de.westnordost.streetcomplete.screens.main.map.maplibre.camera
 import de.westnordost.streetcomplete.screens.main.map.maplibre.toLatLon
+import de.westnordost.streetcomplete.screens.settings.loadCustomGeometryText
 import de.westnordost.streetcomplete.screens.settings.loadGpxTrackPoints
 import de.westnordost.streetcomplete.util.ktx.currentDisplay
 import de.westnordost.streetcomplete.util.ktx.dpToPx
@@ -90,6 +93,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
     private var downloadedAreaManager: DownloadedAreaManager? = null
     private var locationMapComponent: CurrentLocationMapComponent? = null
     private var tracksMapComponent: TracksMapComponent? = null
+    private var customGeometryMapComponent: CustomGeometryMapComponent? = null
 
     interface Listener {
         fun onClickedQuest(questKey: QuestKey)
@@ -135,7 +139,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
             if (valueChanged) onUpdatedNavigationMode()
         }
 
-    enum class PinMode { NONE, QUESTS, EDITS, HIDDEN_QUESTS }
+    enum class PinMode { NONE, QUESTS, EDITS }
     var pinMode: PinMode = PinMode.QUESTS
         set(value) {
             if (field == value) return
@@ -218,6 +222,8 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
 
         selectedPinsMapComponent = SelectedPinsMapComponent(context, map, mapImages!!)
         viewLifecycleOwner.lifecycle.addObserver(selectedPinsMapComponent!!)
+
+        customGeometryMapComponent = CustomGeometryMapComponent(context, map)
     }
 
     private fun setupLayers(style: Style) {
@@ -250,7 +256,8 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
             geometryMapComponent?.layers,
             locationMapComponent?.layers,
             pinsMapComponent?.layers,
-            selectedPinsMapComponent?.layers
+            selectedPinsMapComponent?.layers,
+            customGeometryMapComponent?.layers
         ).flatten()) {
             style.addLayer(layer)
         }
@@ -265,11 +272,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         viewLifecycleOwner.lifecycle.addObserver(questPinsManager!!)
 
         editHistoryPinsManager = EditHistoryPinsManager(pinsMapComponent!!, editHistorySource)
-        editHistoryPinsManager!!.isVisible = when (pinMode) {
-            PinMode.EDITS -> 1
-            PinMode.HIDDEN_QUESTS -> 2
-            else -> 0
-        }
+        editHistoryPinsManager!!.isVisible = pinMode == PinMode.EDITS
         viewLifecycleOwner.lifecycle.addObserver(editHistoryPinsManager!!)
 
         styleableOverlayManager = StyleableOverlayManager(map, styleableOverlayMapComponent!!, mapDataSource, selectedOverlaySource, levelFilter)
@@ -281,6 +284,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         onSelectedOverlayChanged()
         selectedOverlaySource.addListener(overlayListener)
         loadGpxTrack()
+        loadCustomGeometry()
 
         locationMapComponent?.targetLocation = displayedLocation
 
@@ -316,6 +320,11 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         tracksMapComponent?.setGpxTrack(gpxPoints)
     }
 
+    fun loadCustomGeometry() {
+        val text = context?.let { loadCustomGeometryText(it) }
+        if (text == null || !prefs.getBoolean(Prefs.SHOW_CUSTOM_GEOMETRY, false)) customGeometryMapComponent?.clear()
+        else customGeometryMapComponent?.set(text)
+    }
 
     //region Tracking GPS, Rotation, location availability, pin mode, click ...
 
@@ -324,7 +333,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
             PinMode.QUESTS -> {
                 questPinsManager?.getQuestKey(properties)?.let { listener?.onClickedQuest(it) }
             }
-            PinMode.EDITS, PinMode.HIDDEN_QUESTS -> {
+            PinMode.EDITS -> {
                 editHistoryPinsManager?.getEditKey(properties)?.let { listener?.onClickedEdit(it) }
             }
             PinMode.NONE -> {}
@@ -370,8 +379,8 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         listener?.onDisplayedLocationDidChange()
     }
 
-    override fun onMapIsChanging(position: LatLon, rotation: Double, tilt: Double, zoom: Double) {
-        super.onMapIsChanging(position, rotation, tilt, zoom)
+    override fun onMapIsChanging(camera: CameraPosition) {
+        super.onMapIsChanging(camera)
         questPinsManager?.onNewScreenPosition()
         styleableOverlayManager?.onNewScreenPosition()
     }
@@ -382,20 +391,16 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
          */
         when (pinMode) {
             PinMode.QUESTS -> {
-                editHistoryPinsManager?.isVisible = 0
+                editHistoryPinsManager?.isVisible = false
                 questPinsManager?.isVisible = true
             }
             PinMode.EDITS -> {
                 questPinsManager?.isVisible = false
-                editHistoryPinsManager?.isVisible = 1
-            }
-            PinMode.HIDDEN_QUESTS -> {
-                questPinsManager?.isVisible = false
-                editHistoryPinsManager?.isVisible = 2
+                editHistoryPinsManager?.isVisible = true
             }
             else -> {
                 questPinsManager?.isVisible = false
-                editHistoryPinsManager?.isVisible = 0
+                editHistoryPinsManager?.isVisible = false
             }
         }
     }
@@ -499,11 +504,9 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         }
     }
 
-    fun reverseQuests() {
-        questPinsManager?.reverseQuestOrder()
+    fun setQuestOrder(reverse: Boolean) {
+        questPinsManager?.setQuestOrder(reverse)
     }
-
-    fun isOrderReversed() = questPinsManager?.reversedOrder
 
     @UiThread override fun deleteMarkerForCurrentHighlighting(geometry: ElementGeometry) {
         geometryMarkersMapComponent?.delete(geometry)
@@ -591,6 +594,15 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
     //endregion
 
     //region Save and restore state
+
+    override fun setInitialCameraPosition(camera: CameraPosition) {
+        super.setInitialCameraPosition(camera)
+        isFollowingPosition = false
+        isNavigationMode = false
+        if (map == null) {
+            saveMapState()
+        }
+    }
 
     private fun restoreMapState() {
         isFollowingPosition = prefs.mapIsFollowing

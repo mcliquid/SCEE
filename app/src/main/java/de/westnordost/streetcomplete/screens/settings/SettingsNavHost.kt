@@ -42,7 +42,11 @@ import org.koin.androidx.compose.koinViewModel
                 onClickPresetSelection = { navController.navigate(SettingsDestination.QuestPresets) },
                 onClickQuestSelection = { navController.navigate(SettingsDestination.QuestSelection) },
                 onClickBack = ::goBack,
-                onClickSceeFragment = onClickSceeFragment
+                onClickSceeFragment = onClickSceeFragment,
+                onClickQuestSettings = { navController.navigate(SettingsDestination.QuestSettings) },
+                onClickUiSettings = { navController.navigate(SettingsDestination.UiSettings) },
+                onClickDisplaySettings = { navController.navigate(SettingsDestination.DisplaySettings) },
+                onClickNoteSettings = { navController.navigate(SettingsDestination.NoteSettings) },
             )
         }
         composable(SettingsDestination.QuestPresets) {
@@ -64,6 +68,26 @@ import org.koin.androidx.compose.koinViewModel
                 onClickBack = ::goBack,
             )
         }
+        composable(SettingsDestination.QuestSettings) {
+            QuestSettingsScreen(
+                onClickBack = ::goBack
+            )
+        }
+        composable(SettingsDestination.UiSettings) {
+            UiSettingsScreen(
+                onClickBack = ::goBack
+            )
+        }
+        composable(SettingsDestination.DisplaySettings) {
+            DisplaySettingsScreen(
+                onClickBack = ::goBack
+            )
+        }
+        composable(SettingsDestination.NoteSettings) {
+            NoteSettingsScreen(
+                onClickBack = ::goBack
+            )
+        }
     }
 }
 
@@ -72,4 +96,8 @@ object SettingsDestination {
     const val QuestPresets = "quest_presets"
     const val QuestSelection = "quest_selection"
     const val ShowQuestForms = "show_quest_forms"
+    const val QuestSettings = "scee_quest_settings"
+    const val UiSettings = "scee_ui_settings"
+    const val DisplaySettings = "scee_display_settings"
+    const val NoteSettings = "scee_note_settings"
 }

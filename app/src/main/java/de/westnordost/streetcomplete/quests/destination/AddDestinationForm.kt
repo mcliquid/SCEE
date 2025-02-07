@@ -38,7 +38,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
-import kotlin.math.PI
 
 class AddDestinationForm : AbstractOsmQuestForm<Pair<DestinationLanes?, DestinationLanes?>>() {
 
@@ -51,7 +50,7 @@ class AddDestinationForm : AbstractOsmQuestForm<Pair<DestinationLanes?, Destinat
     /* // todo: add later, once more lanes are allowed
     override val otherAnswers get() = listOf(AnswerItem(R.string.quest_lanes_title) { // todo: text
         // show lanes quest, because just removing lanes doesn't necessarily show lanes quest!
-        (parentFragment as? MainFragment)
+        (activity as? MainActivity)
         val lanesQuestType = questTypeRegistry.getByName("AddLanes")!!
         val key = (questKey as OsmQuestKey).copy(questTypeName = lanesQuestType.name)
         val f = AddLanesForm()
@@ -241,11 +240,11 @@ class AddDestinationForm : AbstractOsmQuestForm<Pair<DestinationLanes?, Destinat
 
     @AnyThread
     override fun onMapOrientation(rotation: Double, tilt: Double) {
-        val mapRotation = (rotation * 180 / PI).toFloat()
-        val mapTilt = (tilt * 180 / PI).toFloat()
+        val mapRotation = rotation.toFloat()
+        val mapTilt = tilt.toFloat()
 
-        binding.sideSelect.puzzleViewRotateContainer.streetRotation = wayRotation + mapRotation
-        binding.sideSelect.littleCompass.root.rotation = mapRotation
+        binding.sideSelect.puzzleViewRotateContainer.streetRotation = wayRotation - mapRotation
+        binding.sideSelect.littleCompass.root.rotation = -mapRotation
         binding.sideSelect.littleCompass.root.rotationX = mapTilt
     }
 

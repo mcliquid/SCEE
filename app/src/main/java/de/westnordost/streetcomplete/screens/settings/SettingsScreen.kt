@@ -12,9 +12,15 @@ import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.AppBarDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Switch
@@ -65,6 +71,10 @@ fun SettingsScreen(
     onClickQuestSelection: () -> Unit,
     onClickBack: () -> Unit,
     onClickSceeFragment: (Int) -> Unit,
+    onClickQuestSettings: () -> Unit,
+    onClickUiSettings: () -> Unit,
+    onClickDisplaySettings: () -> Unit,
+    onClickNoteSettings: () -> Unit,
 ) {
     val hiddenQuestCount by viewModel.hiddenQuestCount.collectAsState()
     val questTypeCount by viewModel.questTypeCount.collectAsState()
@@ -111,9 +121,15 @@ fun SettingsScreen(
     Column(Modifier.fillMaxSize()) {
         TopAppBar(
             title = { Text(stringResource(R.string.action_settings)) },
+            windowInsets = AppBarDefaults.topAppBarWindowInsets,
             navigationIcon = { IconButton(onClick = onClickBack) { BackIcon() } },
         )
-        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+        Column(Modifier
+            .verticalScroll(rememberScrollState())
+            .windowInsetsPadding(WindowInsets.safeDrawing.only(
+                WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+            ))
+        ) {
             PreferenceCategory(stringResource(R.string.pref_category_quests)) {
 
                 Preference(
@@ -231,29 +247,24 @@ fun SettingsScreen(
 
                 Preference(
                     name = stringResource(R.string.pref_screen_ui),
-                    onClick = { onClickSceeFragment(1) },
+                    onClick = onClickUiSettings,
                 )
-
                 Preference(
                     name = stringResource(R.string.pref_screen_display),
-                    onClick = { onClickSceeFragment(2) },
+                    onClick = onClickDisplaySettings,
                 )
-
                 Preference(
                     name = stringResource(R.string.pref_screen_quests),
-                    onClick = { onClickSceeFragment(3) },
+                    onClick = onClickQuestSettings,
                 )
-
                 Preference(
                     name = stringResource(R.string.pref_screen_notes),
-                    onClick = { onClickSceeFragment(4) },
+                    onClick = onClickNoteSettings,
                 )
-
                 Preference(
                     name = stringResource(R.string.pref_screen_data_management),
                     onClick = { onClickSceeFragment(5) },
                 )
-
                 if (BuildConfig.DEBUG) {
                     Preference(
                         name = "Debug log reader",
@@ -271,7 +282,6 @@ fun SettingsScreen(
                     }
                 }
             }
-
             if (BuildConfig.DEBUG) {
                 PreferenceCategory("Debug") {
                     Preference(

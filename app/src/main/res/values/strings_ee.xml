@@ -43,6 +43,8 @@
     <string name="pref_swap_gpx_note_button">Swap OSM and GPX note buttons</string>
     <string name="pref_hide_keyboard_title">Hide keyboard before creating note</string>
     <string name="pref_hide_keyboard_summary">Hides the keyboard when open before the note is actually created (to allow re-view of position)</string>
+    <string name="pref_really_all_notes_title">“Show all notes“ means ALL notes</string>
+    <string name="pref_really_all_notes_summary">When requesting to show all notes, show even notes created (or commented on) by yourself</string>
     <string name="pref_save_gpx">Get GPX notes and attached photos and tracks</string>
     <string name="pref_save_file_error">Error saving file</string>
     <string name="pref_files_not_found">No files found</string>
@@ -69,11 +71,17 @@
     <string name="pref_gpx_track_loading_error">Error loading GPX track file</string>
     <string name="pref_gpx_track_enable">Display GPX track</string>
     <string name="pref_gpx_track_download">Download area covered by GPX track</string>
+    <string name="pref_custom_geometry_title">Display map features from GeoJson file</string>
+    <string name="pref_custom_geometry_info">If you want to display text, it must be in the \"name\" property</string>
+    <string name="file_provide">Select file</string>
+    <string name="file_loading_error">Error loading file</string>
 
     <!-- ui settings -->
     <string name="pref_screen_ui">UI</string>
     <string name="pref_volume_zoom_title">Volume button zoom</string>
     <string name="pref_volume_zoom_summary">Zoom using volume buttons</string>
+    <string name="pref_rotate_while_zooming_title">Allow rotate while zooming</string>
+    <string name="pref_rotate_angle_threshold_title">Threshold for rotate gesture</string>
     <string name="pref_show_quick_settings_title">Show quick settings button</string>
     <string name="pref_select_first_edit_title">Select first edit on opening history</string>
     <string name="pref_select_first_edit_summary">Allows for quicker undo, but moves camera automatically</string>
@@ -132,6 +140,7 @@
     <string name="pref_tile_source_title">Tile source for satellite / aerial images</string>
     <string name="pref_tile_source_message">Tile URL must contain {x}, {y} and {z}</string>
     <string name="pref_tile_source_hide_labels">Hide labels</string>
+    <string name="pref_tile_maxzoom">Max supported zoom</string>
     <string name="pref_tree_custom_quest_summary">See message when enabling quest for details</string>
     <string name="pref_update_local_statistics">Update statistics on upload</string>
     <string name="pref_update_local_statistics_summary">Disabling accelerates upload and stops achievement messages</string>
@@ -189,10 +198,11 @@
     <string name="quest_settings_level_title">Show this quest for:</string>
     <string name="quest_settings_level_default">Shops &amp; similar in malls (default)</string>
     <string name="quest_settings_level_more">Doctors and many more nodes inside multi-level buildings</string>
+<!-- not needed any more due to SC changes
     <string name="quest_generic_surface_message">Allow generic surface answers without requiring a note?</string>
     <string name="quest_generic_surface_button">Generic surface answers</string>
     <string name="quest_generic_surface_yes">Allow without note</string>
-    <string name="quest_generic_surface_no">Only with note (default)</string>
+    <string name="quest_generic_surface_no">Only with note (default)</string> -->
     <string name="quest_settings_osmose_level_title">Select issue severity levels to download and display</string>
     <string name="quest_settings_osmose_level_high">High</string>
     <string name="quest_settings_osmose_level_medium">Medium</string>
@@ -255,12 +265,12 @@
 
     <!-- bench material -->
     <string name="quest_benchMaterial_title">What’s this made of?</string>
-    <string name="quest_benchMaterial_wood">Wood</string>
-    <string name="quest_benchMaterial_metal">Metal</string>
-    <string name="quest_benchMaterial_plastic">Plastic</string>
-    <string name="quest_benchMaterial_concrete">Concrete</string>
-    <string name="quest_benchMaterial_stone">Stone</string>
-    <string name="quest_benchMaterial_brick">Bricks</string>
+    <string name="quest_material_wood">Wood</string>
+    <string name="quest_material_metal">Metal</string>
+    <string name="quest_material_plastic">Plastic</string>
+    <string name="quest_material_concrete">Concrete</string>
+    <string name="quest_material_stone">Stone</string>
+    <string name="quest_material_brick">Bricks</string>
 
     <!-- guidepost sports -->
     <string name="quest_guidepost_sports_title">For which sport is this guidepost intended?</string>
@@ -550,7 +560,6 @@
     <string name="quest_barrier_height_title">"How tall is this barrier?"</string>
 
     <!-- additional strings for quests available in StreetComplete -->
-    <string name="quest_bicycle_parking_type_safeloops">Safe Loops (supports wheel and frame)</string>
     <string name="quest_bicycle_parking_type_saddleholder">Saddle holder</string>
     <string name="quest_surface_value_metal_grid">Metal grid</string>
     <string name="quest_surface_value_stepping_stones">Stepping stones</string>
@@ -655,6 +664,19 @@
     <string name="quest_sacScale_six">"T6 - difficult alpine hiking"</string>
     <string name="quest_sacScale_six_description">"Severe exposure. Difficult craggy terrain. Glaciers with high risk of sliding."</string>
 
+    <!-- lamp type -->
+    <string name="quest_lampType_title">What kind of lamp is this?</string>
+    <string name="quest_lampType_disabled_msg">This quest is disabled by default because it’s not easy to answer and might be spammy depending on the region.</string>
+    <string name="quest_lampType_led">LED lamp</string>
+    <string name="quest_lampType_highPressureSodium">High-pressure sodium lamp</string>
+    <string name="quest_lampType_lowPressureSodium">Low-pressure sodium lamp</string>
+    <string name="quest_lampType_gaslight">Gaslight</string>
+    <string name="quest_lampType_fluorescent">Fluorescent lamp</string>
+    <string name="quest_lampType_incandescent">Incandescent lamp</string>
+    <string name="quest_lampType_metalHalide">Metal-halide lamp</string>
+    <string name="quest_lampType_mercury">Mercury-vapor lamp</string>
+    <string name="quest_lampType_halogen">Halogen lamp</string>
+
     <!-- new overlays -->
 
     <!-- custom overlay -->
@@ -702,8 +724,7 @@ This especially applies to the possibility of editing raw tags and deleting node
 Quests added in SCEE <i>may not be answerable</i> in all cases and are disabled by default. Please hide them in case you can’t answer them, and <i>do not spam notes</i>.\n\n
 Out of the box SCEE is configured to behave very similar to StreetComplete.</string>
     <string name="fork_about_title_repository">SCEE project home</string>
-<!-- ban_check_fails is currently unused, translating it would be a waste of time if it's not put to use again
-    <string name="ban_check_fails">Check for banned versions keeps failing. You might run an outdated version, please consider upgrading.</string>-->
+    <string name="ban_check_fails">Check for banned versions keeps failing. You might run an outdated version, please consider upgrading.</string>
     <string name="enqueue_download">Start after current search is done</string>
     <string name="create_poi">Add POI</string>
     <string name="insert_node">Insert node into way</string>
@@ -737,4 +758,5 @@ Out of the box SCEE is configured to behave very similar to StreetComplete.</str
     <string name="outside_downloaded_area_warning">This position is outside the downloaded area. Continue?</string>
     <!-- actually there are still SC translations available, as only the main string has been removed from SC. -->
     <string name="close">Close</string>
+    <string name="fixme_for_object">Another person added a fixme:</string>
 </resources>

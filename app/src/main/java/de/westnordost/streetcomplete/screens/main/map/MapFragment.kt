@@ -4,7 +4,6 @@ import android.graphics.PointF
 import android.os.Bundle
 import android.view.View
 import androidx.annotation.UiThread
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.russhwolf.settings.SettingsListener
@@ -28,11 +27,8 @@ import de.westnordost.streetcomplete.screens.main.map.maplibre.toLatLon
 import de.westnordost.streetcomplete.screens.main.map.maplibre.updateCamera
 import de.westnordost.streetcomplete.util.ktx.dpToPx
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
-import de.westnordost.streetcomplete.util.ktx.openUri
-import de.westnordost.streetcomplete.util.ktx.setMargins
 import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
 import de.westnordost.streetcomplete.util.viewBinding
-import de.westnordost.streetcomplete.view.insets_animation.respectSystemInsets
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
@@ -73,7 +69,7 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
         /** Called when the map has been completely initialized */
         fun onMapInitialized()
         /** Called during camera animation and while the map is being controlled by a user */
-        fun onMapIsChanging(position: LatLon, rotation: Double, tilt: Double, zoom: Double)
+        fun onMapIsChanging(camera: CameraPosition)
         /** Called when the user begins to pan the map */
         fun onPanBegin()
         /** Called when the user long-presses the map */
@@ -95,11 +91,6 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
         super.onViewCreated(view, savedInstanceState)
         binding.map.onCreate(savedInstanceState)
         binding.map.foreground = view.context.getDrawable(R.color.background)
-
-        binding.openstreetmapLink.setOnClickListener { showOpenUrlDialog("https://www.openstreetmap.org/copyright") }
-        binding.mapTileProviderLink.setOnClickListener { showOpenUrlDialog("https://www.jawg.io") }
-
-        binding.attributionContainer.respectSystemInsets(View::setMargins)
 
         initOfflineCacheSize()
         cleanOldOfflineRegions()
@@ -124,15 +115,6 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
             val oldDataTimestamp = nowAsEpochMilliseconds() - retainTime
             OfflineManager.getInstance(requireContext()).deleteRegionsOlderThan(oldDataTimestamp)
         }
-    }
-
-    private fun showOpenUrlDialog(url: String) {
-        AlertDialog.Builder(requireContext())
-            .setTitle(R.string.open_url)
-            .setMessage(url)
-            .setPositiveButton(android.R.string.ok) { _, _ -> openUri(url) }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
     }
 
     override fun onStart() {
@@ -179,10 +161,11 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
         map.uiSettings.isLogoEnabled = false
         map.uiSettings.flingThreshold = 250
         map.uiSettings.flingAnimationBaseTime = 500
-        map.uiSettings.isDisableRotateWhenScaling = true
+        map.uiSettings.isDisableRotateWhenScaling = !prefs.getBoolean(Prefs.ROTATE_WHILE_ZOOMING, false)
+
         // workaround for https://github.com/maplibre/maplibre-native/issues/2792
         map.gesturesManager.moveGestureDetector.moveThreshold = resources.dpToPx(5f)
-        map.gesturesManager.rotateGestureDetector.angleThreshold = 1.5f
+        map.gesturesManager.rotateGestureDetector.angleThreshold = prefs.getFloat(Prefs.ROTATE_ANGLE_THRESHOLD, 1.5f)
         map.gesturesManager.shoveGestureDetector.pixelDeltaThreshold = resources.dpToPx(8f)
 
         map.addOnMoveListener(object : MapLibreMap.OnMoveListener {
@@ -192,8 +175,8 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
         })
         map.addOnCameraMoveListener {
             val camera = cameraPosition ?: return@addOnCameraMoveListener
-            onMapIsChanging(camera.position, camera.rotation, camera.tilt, camera.zoom)
-            listener?.onMapIsChanging(camera.position, camera.rotation, camera.tilt, camera.zoom)
+            onMapIsChanging(camera)
+            listener?.onMapIsChanging(camera)
         }
         map.addOnMapLongClickListener { pos ->
             onLongPress(map.projection.toScreenLocation(pos), pos.toLatLon())
@@ -223,7 +206,7 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
 
     protected open suspend fun onMapStyleLoaded(map: MapLibreMap, style: Style) {}
 
-    protected open fun onMapIsChanging(position: LatLon, rotation: Double, tilt: Double, zoom: Double) {}
+    protected open fun onMapIsChanging(camera: CameraPosition) {}
 
     /* ---------------------- Overridable callbacks for map interaction ------------------------ */
 
@@ -271,7 +254,7 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
         map?.updateCamera(duration, requireContext().contentResolver, builder)
     }
 
-    fun setInitialCameraPosition(camera: CameraPosition) {
+    open fun setInitialCameraPosition(camera: CameraPosition) {
         if (map != null) {
             map?.camera = camera
         } else {

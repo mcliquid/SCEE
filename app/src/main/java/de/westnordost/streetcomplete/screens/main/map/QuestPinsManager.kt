@@ -85,7 +85,7 @@ class QuestPinsManager(
     private var isStarted: Boolean = false
 
     private val visibleQuestsListener = object : VisibleQuestsSource.Listener {
-        override fun onUpdatedVisibleQuests(added: Collection<Quest>, removed: Collection<QuestKey>) {
+        override fun onUpdated(added: Collection<Quest>, removed: Collection<QuestKey>) {
             val oldUpdateJob = updateJob
             updateJob = viewLifecycleScope.launch {
                 oldUpdateJob?.join() // don't cancel, as updateQuestPins only updates existing data
@@ -93,7 +93,7 @@ class QuestPinsManager(
             }
         }
 
-        override fun onVisibleQuestsInvalidated() {
+        override fun onInvalidated() {
             invalidate()
         }
     }
@@ -193,7 +193,7 @@ class QuestPinsManager(
 
     private suspend fun setQuestPins(bbox: BoundingBox) {
         val quests = visibleQuestsSourceMutex.withLock {
-            withContext(Dispatchers.IO) { visibleQuestsSource.getAllVisible(bbox) }
+            withContext(Dispatchers.IO) { visibleQuestsSource.getAll(bbox) }
         }
         val pins = questsInViewMutex.withLock {
             /* Usually, we would call questsInView.clear() here. However,
@@ -239,8 +239,8 @@ class QuestPinsManager(
         pinsMapComponent.set(pins)
     }
 
-    fun reverseQuestOrder() {
-        reversedOrder = !reversedOrder
+    fun setQuestOrder(reverse: Boolean) {
+        reversedOrder = reverse
         reinitializeQuestTypeOrders()
     }
 

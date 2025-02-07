@@ -33,6 +33,10 @@ object ApplicationConstants {
 
     const val NOTE_MIN_ZOOM = 15
 
+    /** default maximum zoom for satellite imagery */
+    const val RASTER_DEFAULT_MAXZOOM = 21
+    const val RASTER_DEFAULT_URL = "https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?blankTile=false"
+
     /** when new quests that are appearing due to download of an area, show the hint that he can
      *  disable quests in the settings if more than X quests did appear */
     const val QUEST_COUNT_AT_WHICH_TO_SHOW_QUEST_SELECTION_HINT = 600
@@ -47,15 +51,17 @@ object ApplicationConstants {
 
     const val AVATARS_CACHE_DIRECTORY = "osm_user_avatars"
 
-    const val SC_PHOTO_SERVICE_URL = "https://westnordost.de/streetcomplete/photo-upload/" // must have trailing /
+    const val SC_PHOTO_SERVICE_URL = "https://streetcomplete.app/photo-upload/" // must have trailing /
 
-    const val ATTACH_PHOTO_QUALITY = 80
-    const val ATTACH_PHOTO_MAXWIDTH = 1280 // WXGA
-    const val ATTACH_PHOTO_MAXHEIGHT = 1280 // WXGA
+    const val ATTACH_PHOTO_QUALITY = 65 // doesn't need to look super pretty
+    const val ATTACH_PHOTO_MAX_SIZE = 1920 // Full HD
 
     // name is "downloading" for historic reasons, not sure if it has any side-effects if it is changed now
     const val NOTIFICATIONS_CHANNEL_SYNC = "downloading"
     const val NOTIFICATIONS_ID_SYNC = 1
+
+    // where to send the error reports to
+    const val ERROR_REPORTS_EMAIL = "helium@vivaldi.net"
 
     const val STREETMEASURE = "de.westnordost.streetmeasure"
 
@@ -79,4 +85,14 @@ object ApplicationConstants {
     )
 
     const val EE_QUEST_OFFSET = 2222 // must be larger than the largest SC ordinal, and should not be changed to allow preset transfer
+
+    /*
+    During development it might be better to work against the Test-API, rather than the
+    Live-API. Developers are reminded that they need a separate login for the Test-API and
+    can register/logon via https://master.apis.dev.openstreetmap.org/
+    Note that test actions not applied to the database do not require test API (test edits that are reverted
+    locally before an upload etc) and that test API has a separate database that is mostly empty
+    (test data needs to be created there).
+     */
+    const val USE_TEST_API = false
 }

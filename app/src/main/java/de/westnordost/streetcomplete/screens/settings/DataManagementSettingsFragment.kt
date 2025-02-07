@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.text.InputType
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -21,6 +22,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
+import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.StreetCompleteApplication
@@ -41,6 +43,8 @@ import de.westnordost.streetcomplete.data.visiblequests.VisibleQuestTypeControll
 import de.westnordost.streetcomplete.data.visiblequests.VisibleQuestTypeTable
 import de.westnordost.streetcomplete.overlays.custom.getCustomOverlayIndices
 import de.westnordost.streetcomplete.overlays.custom.getIndexedCustomOverlayPref
+import de.westnordost.streetcomplete.quests.amenity_cover.AddAmenityCover
+import de.westnordost.streetcomplete.quests.custom.CustomQuest
 import de.westnordost.streetcomplete.quests.custom.FILENAME_CUSTOM_QUEST
 import de.westnordost.streetcomplete.quests.osmose.OsmoseDao
 import de.westnordost.streetcomplete.quests.tree.FILENAME_TREES
@@ -143,7 +147,7 @@ class DataManagementSettingsFragment :
 
         findPreference<Preference>("raster_tile_url")?.setOnPreferenceClickListener {
             var d: AlertDialog? = null
-            val currentUrl = prefs.getString(Prefs.RASTER_TILE_URL, "https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}")!!
+            val currentUrl = prefs.getString(Prefs.RASTER_TILE_URL, ApplicationConstants.RASTER_DEFAULT_URL)!!
             val urlText = EditText(requireContext()).apply {
                 setText(currentUrl)
                 doAfterTextChanged {
@@ -155,10 +159,16 @@ class DataManagementSettingsFragment :
                 setText(R.string.pref_tile_source_hide_labels)
                 isChecked = prefs.getBoolean(Prefs.NO_SATELLITE_LABEL, false)
             }
+            val maxZoom = EditText(requireContext()).apply {
+                inputType = InputType.TYPE_CLASS_NUMBER
+                setText(prefs.getInt(Prefs.RASTER_TILE_MAXZOOM, ApplicationConstants.RASTER_DEFAULT_MAXZOOM).toString())
+            }
             val layout = LinearLayout(requireContext()).apply {
                 orientation = LinearLayout.VERTICAL
                 addView(TextView(requireContext()).apply { setText(R.string.pref_tile_source_message) })
                 addView(urlText)
+                addView(TextView(requireContext()).apply { setText(R.string.pref_tile_maxzoom) })
+                addView(maxZoom)
                 addView(hideLabelsSwitch)
             }
             d = AlertDialog.Builder(requireContext())
@@ -168,12 +178,14 @@ class DataManagementSettingsFragment :
                 .setNeutralButton(R.string.action_reset) { _, _ ->
                     prefs.edit {
                         remove(Prefs.RASTER_TILE_URL)
+                        remove(Prefs.RASTER_TILE_MAXZOOM)
                         remove(Prefs.NO_SATELLITE_LABEL)
                     }
                 }
                 .setPositiveButton(android.R.string.ok) { _, _ ->
                     prefs.edit {
                         putString(Prefs.RASTER_TILE_URL, urlText.text.toString())
+                        putInt(Prefs.RASTER_TILE_MAXZOOM, maxZoom.text.toString().toInt())
                         putBoolean(Prefs.NO_SATELLITE_LABEL, hideLabelsSwitch.isChecked)
                     }
 
@@ -741,9 +753,12 @@ class DataManagementSettingsFragment :
 // when importing, names should be updated!
 private fun List<String>.renameUpdatedQuests() = map { it.renameUpdatedQuests() }
 
-fun String.renameUpdatedQuests() = replace("ExternalQuest", "CustomQuest")
-    .replace("AddPicnicTableCover", "AddAmenityCover")
-val oldQuestNames = listOf("ExternalQuest", "AddPicnicTableCover")
+val renamedQuests = mapOf(
+    "ExternalQuest" to CustomQuest::class.simpleName!!,
+    "AddPicnicTableCover" to AddAmenityCover::class.simpleName!!,
+)
+fun String.renameUpdatedQuests() =
+    renamedQuests.entries.fold(this) { acc, (old, new) -> acc.replace(old, new) }
 
 private const val REQUEST_CODE_SETTINGS_EXPORT = 532527
 private const val REQUEST_CODE_HIDDEN_EXPORT = 532528

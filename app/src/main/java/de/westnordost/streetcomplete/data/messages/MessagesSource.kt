@@ -25,7 +25,7 @@ class MessagesSource(
     private val changelog: Changelog,
 ) {
     /* Must be a singleton because there is a listener that should respond to a change in the
-     * database table*/
+     * database table */
 
     interface UpdateListener {
         fun onNumberOfMessagesUpdated(messageCount: Int)
@@ -55,7 +55,7 @@ class MessagesSource(
             }
         })
         visibleQuestsSource.addListener(object : VisibleQuestsSource.Listener {
-            override fun onUpdatedVisibleQuests(added: Collection<Quest>, removed: Collection<QuestKey>) {
+            override fun onUpdated(added: Collection<Quest>, removed: Collection<QuestKey>) {
                 if (prefs.questSelectionHintState == QuestSelectionHintState.NOT_SHOWN) {
                     if (added.size >= QUEST_COUNT_AT_WHICH_TO_SHOW_QUEST_SELECTION_HINT) {
                         prefs.questSelectionHintState = QuestSelectionHintState.SHOULD_SHOW
@@ -63,7 +63,7 @@ class MessagesSource(
                 }
             }
 
-            override fun onVisibleQuestsInvalidated() {}
+            override fun onInvalidated() {}
         })
 
         // must hold a reference because the listener is a weak reference

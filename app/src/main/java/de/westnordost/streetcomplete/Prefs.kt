@@ -48,6 +48,7 @@ object Prefs {
     const val QUEST_MONITOR_DOWNLOAD = "quest_monitor_download"
     const val SHOW_GPX_TRACK = "show_gpx_track"
     const val RASTER_TILE_URL = "raster_tile_url"
+    const val RASTER_TILE_MAXZOOM = "raster_tile_maxzoom"
     const val CREATE_EXTERNAL_QUESTS = "create_external_quests"
     const val SAVE_PHOTOS = "save_photos"
     const val EXPERT_MODE = "expert_mode"
@@ -64,11 +65,15 @@ object Prefs {
     const val MAIN_MENU_SWITCH_PRESETS = "main_menu_switch_presets"
     const val DISABLE_NAVIGATION_MODE = "disable_navigation_mode"
     const val TEMP_LOGGER = "temp_logger"
+    const val SHOW_CUSTOM_GEOMETRY = "show_custom_geometry"
     const val THEME_BACKGROUND = "theme.background_type"
+    const val REALLY_ALL_NOTES = "really_all_notes"
+    const val ROTATE_WHILE_ZOOMING = "rotate_while_zooming"
+    const val ROTATE_ANGLE_THRESHOLD = "rotate_angle_threshold"
 
-    enum class DayNightBehavior {
-        IGNORE,
-        PRIORITY,
-        VISIBILITY
+    enum class DayNightBehavior(val titleResId: Int) {
+        IGNORE(R.string.day_night_ignore),
+        PRIORITY(R.string.day_night_priority),
+        VISIBILITY(R.string.day_night_visibility)
     }
 }

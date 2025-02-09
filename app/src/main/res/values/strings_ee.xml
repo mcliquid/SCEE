@@ -600,7 +600,6 @@
     <string name="quest_guidepostRef_hint">Reference number of this map or guidepost, not the reference number of signed routes.</string>
     <string name="quest_guidepostName_hint">Signed (location) name of this map or guidepost. Do not enter a reference number here.</string>
     <string name="quest_guidepost_disabled_msg">This quest is disabled by default because what is signed strongly varies by region and operator. You may need to refine the element selection for your area (e.g. add or remove maps, only select elements with hiking=yes, etc.)</string>
-    <string name="quest_guidepostEle_noanswer">"There is no elevation sign…"</string>
     <!-- maxheight_answer_noSign strings removed in SC, could take existing translations from https://github.com/streetcomplete/StreetComplete/blob/312dd4135ad75beff9f13c446040d1c3afbc9a80/app/src/main/res/values/strings.xml -->
     <string name="quest_maxheight_answer_noSign_question">Is there easily enough space for even the tallest trucks (at least about 4.5 meters / 15 feet) to pass through?</string>
     <string name="quest_maxheight_answer_noSign_question_yes">Tall trucks can pass through</string>
@@ -680,10 +679,9 @@
 
     <!-- post office -->
     <string name="quest_postOffice_title">What type is this post office?</string>
-    <string name="quest_postOffice_disabled_msg">This quest is disabled by default because it’s not easy to answer.</string>
     <string name="quest_postOffice_bureau">Full (official) post office</string>
     <string name="quest_postOffice_postAnnex">Post office (privatly owned, perhaps with restricted service)</string>
-    <string name="quest_postOffice_postOffice">Post relay point in shops or amenities (as a service)</string>
+    <string name="quest_postOffice_postPartner">Post relay point in shops or amenities (as a service)</string>
 
     <!-- new overlays -->
 

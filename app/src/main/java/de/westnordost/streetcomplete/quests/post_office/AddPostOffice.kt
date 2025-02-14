@@ -17,7 +17,7 @@ class AddPostOffice : OsmFilterQuestType<String>() {
           and !post_office
     """
     override val changesetComment = "Add post office"
-    override val defaultDisabledMessage = R.string.quest_postOffice_disabled_msg
+    override val defaultDisabledMessage = R.string.default_disabled_msg_ee
     override val wikiLink = "Key:post_office"
     override val icon = R.drawable.ic_preset_maki_post
     override val isReplacePlaceEnabled = true

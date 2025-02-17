@@ -651,7 +651,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 52 to AddSaunaAvailability(),
     EE_QUEST_OFFSET + 53 to AddSwimmingPoolAvailability(),
     EE_QUEST_OFFSET + 54 to AddLampType(),
-    EE_QUEST_OFFSET + 55 to AddPostOfficeType(),
+    EE_QUEST_OFFSET + 56 to AddPostOfficeType(),
     EE_QUEST_OFFSET + 10 to OsmoseQuest(osmoseDao),
     EE_QUEST_OFFSET + 11 to CustomQuest(customQuestList),
     // POI quests

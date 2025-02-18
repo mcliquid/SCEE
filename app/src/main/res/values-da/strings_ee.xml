@@ -517,7 +517,7 @@
     <string name="quest_street_cabinet_traffic_monitoring">Trafikovervågning</string>
     <string name="quest_seating_parklet">Ved kantstenen, eller hvor der plejede at være parkering</string>
     <string name="quest_artwork_sculpture">Skulptur</string>
-    <string name="default_disabled_msg_roofColour">Denne opgavetype er som standard deaktiveret, fordi tagfarver ofte ikke er let synlige fra gaden. Denne opgavetype er også ret tidskrævende; i de fleste tilfælde er det nemmere og mere effektivt at kortlægge dette ud fra luftfotos derhjemme.</string>
+    <string name="default_disabled_msg_roof">Denne opgavetype er som standard deaktiveret, fordi tage ofte ikke er let synlige fra gaden. Denne opgavetype er også ret tidskrævende; i de fleste tilfælde er det nemmere og mere effektivt at kortlægge dette ud fra luftfotos derhjemme.</string>
     <string name="quest_viaFerrataScale_two_description">Stejle eller lodrette passager er udstyret med stiger eller jerntrin. Stålkabler og kæder sikrer klatreren, selv i mindre vanskeligt terræn. Ferrata-sæt anbefales på det kraftigste.</string>
     <string name="quest_tree_disabled_msg">Denne opgave er deaktiveret som standard, fordi den ikke er let at besvare. Art/slægt skal vælges fra forslag, som er taget fra de mest brugte værdier. Du kan give forslag fra din egen liste over arter med søgbare navne ved at angive en fil i menuen for datahåndteringsindstillinger, der indeholder &lt;species&gt; (&lt;name&gt;).</string>
     <string name="quest_building_entrance_parking">Indgang til parkering</string>
@@ -634,4 +634,8 @@
     <string name="fixme_for_object">En anden person tilføjede et fixme:</string>
     <string name="pref_rotate_while_zooming_title">Tillad rotation, mens der zoomes</string>
     <string name="pref_rotate_angle_threshold_title">Tærskel for rotationsbevægelse</string>
+    <string name="quest_postOffice_title">Hvilken type postkontor er dette?</string>
+    <string name="quest_postOffice_bureau">Fuldt (officielt) posthus</string>
+    <string name="quest_postOffice_postAnnex">Postkontor (privatejet, måske med begrænset service)</string>
+    <string name="quest_postOffice_postPartner">Postafhentning og aflevering i butikker eller faciliteter (som en service)</string>
 </resources>

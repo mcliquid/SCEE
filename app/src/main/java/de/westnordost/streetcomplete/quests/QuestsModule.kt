@@ -154,7 +154,7 @@ import de.westnordost.streetcomplete.quests.pitch_lit.AddPitchLit
 import de.westnordost.streetcomplete.quests.place_name.AddPlaceName
 import de.westnordost.streetcomplete.quests.playground_access.AddPlaygroundAccess
 import de.westnordost.streetcomplete.quests.police_type.AddPoliceType
-import de.westnordost.streetcomplete.quests.post_office.AddPostOffice
+import de.westnordost.streetcomplete.quests.post_office.AddPostOfficeType
 import de.westnordost.streetcomplete.quests.postbox_collection_times.AddPostboxCollectionTimes
 import de.westnordost.streetcomplete.quests.postbox_ref.AddPostboxRef
 import de.westnordost.streetcomplete.quests.postbox_royal_cypher.AddPostboxRoyalCypher
@@ -169,6 +169,7 @@ import de.westnordost.streetcomplete.quests.religion.AddReligionToPlaceOfWorship
 import de.westnordost.streetcomplete.quests.religion.AddReligionToWaysideShrine
 import de.westnordost.streetcomplete.quests.road_name.AddRoadName
 import de.westnordost.streetcomplete.quests.roof_colour.AddRoofColour
+import de.westnordost.streetcomplete.quests.roof_orientation.AddRoofOrientation
 import de.westnordost.streetcomplete.quests.roof_shape.AddRoofShape
 import de.westnordost.streetcomplete.quests.sanitary_dump_station.AddSanitaryDumpStation
 import de.westnordost.streetcomplete.quests.seating.AddOutdoorSeatingType
@@ -609,6 +610,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 0 to AddBenchMaterial(),
     EE_QUEST_OFFSET + 27 to AddBuildingColour(),
     EE_QUEST_OFFSET + 24 to AddRoofColour(),
+    EE_QUEST_OFFSET + 55 to AddRoofOrientation(),
     EE_QUEST_OFFSET + 1 to AddContactPhone(),
     EE_QUEST_OFFSET + 2 to AddContactWebsite(),
     EE_QUEST_OFFSET + 4 to AddCuisine(),
@@ -647,7 +649,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 52 to AddSaunaAvailability(),
     EE_QUEST_OFFSET + 53 to AddSwimmingPoolAvailability(),
     EE_QUEST_OFFSET + 54 to AddLampType(),
-    EE_QUEST_OFFSET + 55 to AddPostOffice(),
+    EE_QUEST_OFFSET + 55 to AddPostOfficeType(),
     EE_QUEST_OFFSET + 10 to OsmoseQuest(osmoseDao),
     EE_QUEST_OFFSET + 11 to CustomQuest(customQuestList),
     // POI quests

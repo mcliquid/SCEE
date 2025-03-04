@@ -1592,7 +1592,7 @@ If used for single points, then this highlights exceptionally difficult spots. O
     <string name="quest_manySports_confirmation_specific">"Specifically these"</string>
     <string name="quest_manySports_confirmation_generic">"General purpose"</string>
 
-    <string name="quest_steps_incline_title">Which direction leads upwards for these steps?</string>
+    <string name="quest_steps_incline_title">Which direction leads upwards here?</string>
     <string name="quest_steps_incline_up">This way up</string>
 
     <string name="quest_step_count_title">How many steps are here?</string>

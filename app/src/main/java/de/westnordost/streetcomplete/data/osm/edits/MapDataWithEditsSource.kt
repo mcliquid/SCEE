@@ -1,9 +1,9 @@
 package de.westnordost.streetcomplete.data.osm.edits
 
 import de.westnordost.streetcomplete.data.ConflictException
-import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
 import de.westnordost.streetcomplete.data.osm.edits.move.MoveNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.move.RevertMoveNodeAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometryCreator
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometryEntry
@@ -165,7 +165,6 @@ class MapDataWithEditsSource internal constructor(
                 synchronized(isReplacingForBBoxLock) { isReplacingForBBox = false }
 
                 callOnUpdated(updated, deleted)
-
             }
         }
 
@@ -204,9 +203,6 @@ class MapDataWithEditsSource internal constructor(
             val mapData = MutableMapDataWithGeometry()
             val deletedElementKeys: MutableList<ElementKey>
             synchronized(this) {
-                // if we just deleted synced edits, nothing will actually change
-                // if user undid a synced edit, the revered edit will come soon anyway
-                if (edits.all { it.isSynced }) return
                 rebuildLocalChanges()
 
                 deletedElementKeys = edits
@@ -292,10 +288,7 @@ class MapDataWithEditsSource internal constructor(
         val nodes = getNodes(ids)
 
         // If the way is (now) not complete, this is not acceptable
-        if (nodes.size < ids.size) {
-            Log.w(TAG, "could not find nodes ${ids - nodes.map { it.id }} for way $way")
-            return null
-        }
+        if (nodes.size < ids.size) return null
 
         return nodes
     }

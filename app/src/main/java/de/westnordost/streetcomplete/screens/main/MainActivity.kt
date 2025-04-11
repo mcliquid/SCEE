@@ -109,7 +109,11 @@ import de.westnordost.streetcomplete.quests.AbstractQuestForm
 import de.westnordost.streetcomplete.quests.IsShowingQuestDetails
 import de.westnordost.streetcomplete.quests.LeaveNoteInsteadFragment
 import de.westnordost.streetcomplete.quests.TagEditor
+import de.westnordost.streetcomplete.quests.custom.CustomQuestList
+import de.westnordost.streetcomplete.quests.custom.FILENAME_CUSTOM_QUEST
+import de.westnordost.streetcomplete.quests.custom.readFromUriToExternalFile
 import de.westnordost.streetcomplete.quests.note_discussion.NoteDiscussionForm
+import de.westnordost.streetcomplete.quests.tree.FILENAME_TREES
 import de.westnordost.streetcomplete.screens.BaseActivity
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.CreateNoteFragment
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.CreatePoiFragment
@@ -223,6 +227,7 @@ class MainActivity :
     private val overlayRegistry: OverlayRegistry by inject()
     private val osmQuestController: OsmQuestController by inject()
     private val selectedOverlaySource: SelectedOverlayController by inject()
+    private val customQuestList: CustomQuestList by inject()
 
     private lateinit var locationManager: FineLocationManager
 
@@ -401,8 +406,21 @@ class MainActivity :
 
     private fun handleIntent(intent: Intent) {
         if (intent.action != Intent.ACTION_VIEW) return
-        val data = intent.data?.toString() ?: return
-        viewModel.setUri(data)
+        val uri = intent.data ?: return
+        if (intent.type == "text/comma-separated-values") {
+            AlertDialog.Builder(this)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.pref_custom_title) { _, _ ->
+                    readFromUriToExternalFile(uri, FILENAME_CUSTOM_QUEST, this)
+                    customQuestList.reload()
+                    visibleQuestsSource.clearCache()
+                }
+                .setNeutralButton(R.string.pref_trees_title) { _, _ ->
+                    readFromUriToExternalFile(uri, FILENAME_TREES, this)
+                }
+                .show()
+        }
+        viewModel.setUri(uri.toString())
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -1062,7 +1080,7 @@ class MainActivity :
     private fun selectPoiType(pos: LatLon) {
         val country = countryBoundaries.value.getIds(pos.longitude, pos.latitude).firstOrNull()
         val defaultFeatureIds: List<String> = prefs.getString(Prefs.CREATE_POI_RECENT_FEATURE_IDS, "")
-            .split("§").filter { it.isNotBlank() }
+            .split("§").filter { it.isNotBlank() && it != "shop" }
             .ifEmpty { POPULAR_PLACE_FEATURE_IDS }
 
         SearchFeaturesDialog(
@@ -1071,7 +1089,7 @@ class MainActivity :
             GeometryType.POINT,
             country,
             null, // pre-filled search text
-            { true }, // filter, but we want everything
+            { it.addTags.isNotEmpty() }, // require non-empty tags, avoids the crash reported in https://github.com/Helium314/SCEE/issues/757
             { addPoi(pos, it) },
             defaultFeatureIds.reversed(),
             false,

@@ -584,6 +584,7 @@
     <string name="quest_wheelchair_description_no_language">no language specified</string>
     <string name="quest_seating_no">No seating, but not takeout only</string>
     <string name="quest_private">It’s private</string>
+    <string name="quest_disused">It’s disused</string>
     <string name="quest_building_demolished">It’s demolished (traces visible)</string>
     <string name="quest_construction">It’s under construction until…</string>
     <string name="quest_construction_value">Set \"construction=…\", or leave empty if unknown</string>
@@ -677,6 +678,19 @@
     <string name="quest_lampType_metalHalide">Metal-halide lamp</string>
     <string name="quest_lampType_mercury">Mercury-vapor lamp</string>
     <string name="quest_lampType_halogen">Halogen lamp</string>
+
+    <!-- lamp type -->
+    <string name="quest_lampMount_title">How is this lamp mounted?</string>
+    <string name="quest_lampMount_disabled_msg">This quest is disabled by default because it might be spammy depending on the region.</string>
+    <string name="quest_lampMount_straightMast">Straight pole</string>
+    <string name="quest_lampMount_bentMast">Bent pole</string>
+    <string name="quest_lampMount_suspended">Suspended by a wire</string>
+    <string name="quest_lampMount_angledMast">Angled pole</string>
+    <string name="quest_lampMount_highMast">Tall pole (greater than 30m)</string>
+    <string name="quest_lampMount_bollard">Bollard</string>
+    <string name="quest_lampMount_wall">Wall</string>
+    <string name="quest_lampMount_ceiling">Ceiling</string>
+    <string name="quest_lampMount_transitShelter">Transit shelter</string>
 
     <!-- post office -->
     <string name="quest_postOffice_title">What type is this post office?</string>

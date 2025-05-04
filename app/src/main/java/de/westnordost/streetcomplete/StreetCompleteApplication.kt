@@ -7,6 +7,7 @@ import android.content.ComponentCallbacks2
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
+import android.os.LocaleList
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.getSystemService
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -52,7 +53,8 @@ import de.westnordost.streetcomplete.data.user.UserUpdater
 import de.westnordost.streetcomplete.data.user.achievements.achievementsModule
 import de.westnordost.streetcomplete.data.user.statistics.statisticsModule
 import de.westnordost.streetcomplete.data.user.userModule
-import de.westnordost.streetcomplete.data.visiblequests.questPresetsModule
+import de.westnordost.streetcomplete.data.presets.editTypePresetsModule
+import de.westnordost.streetcomplete.data.visiblequests.visibleQuestsModule
 import de.westnordost.streetcomplete.overlays.overlaysModule
 import de.westnordost.streetcomplete.quests.questsModule
 import de.westnordost.streetcomplete.screens.about.aboutScreenModule
@@ -71,7 +73,6 @@ import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
 import de.westnordost.streetcomplete.util.logs.AndroidLogger
 import de.westnordost.streetcomplete.util.logs.DatabaseLogger
 import de.westnordost.streetcomplete.util.logs.Log
-import de.westnordost.streetcomplete.util.setDefaultLocales
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -141,7 +142,8 @@ class StreetCompleteApplication : Application() {
                 osmQuestModule,
                 preferencesModule,
                 questModule,
-                questPresetsModule,
+                editTypePresetsModule,
+                visibleQuestsModule,
                 allEditTypesModule,
                 questsModule,
                 settingsModule,
@@ -242,7 +244,7 @@ class StreetCompleteApplication : Application() {
     }
 
     private fun updateDefaultLocales() {
-        setDefaultLocales(getSelectedLocales(prefs))
+        LocaleList.setDefault(getSelectedLocales(prefs))
     }
 
     private fun getMemString(): String {

@@ -140,6 +140,7 @@ import de.westnordost.streetcomplete.screens.settings.gpx_track_changed
 import de.westnordost.streetcomplete.util.SoundFx
 import de.westnordost.streetcomplete.util.buildGeoUri
 import de.westnordost.streetcomplete.util.getFakeCustomOverlays
+import de.westnordost.streetcomplete.util.getSystemLocales
 import de.westnordost.streetcomplete.util.ktx.dpToPx
 import de.westnordost.streetcomplete.util.ktx.getLocationInWindow
 import de.westnordost.streetcomplete.util.ktx.hasLocationPermission
@@ -318,6 +319,7 @@ class MainActivity :
                 editHistoryViewModel = editHistoryViewModel,
                 onClickZoomIn = ::onClickZoomIn,
                 onClickZoomOut = ::onClickZoomOut,
+                onZoom = ::onZoom,
                 onClickCompass = ::onClickCompassButton,
                 onClickLocation = ::onClickLocationButton,
                 onClickLocationPointer = ::onClickLocationPointer,
@@ -459,7 +461,7 @@ class MainActivity :
             val eeAllowed = if (prefs.getBoolean(Prefs.EXPERT_MODE, false)) true
                 else overlayRegistry.getOrdinalOf(it)!! < ApplicationConstants.EE_QUEST_OFFSET
             eeAllowed && it !is CustomOverlay
-        } + getFakeCustomOverlays(prefs, this)
+        } + getFakeCustomOverlays(prefs, this.resources)
         val params = ViewGroup.LayoutParams(resources.dpToPx(52).toInt(), resources.dpToPx(52).toInt())
         overlays.forEach { overlay ->
             val view = ImageView(this)
@@ -535,11 +537,13 @@ class MainActivity :
         viewModel.isNavigationMode.value = mapFragment?.isNavigationMode ?: false
         viewModel.isRecordingTracks.value = mapFragment?.isRecordingTracks ?: false
         viewModel.mapCamera.value = mapFragment?.cameraPosition
+        viewModel.metersPerDp.value = mapFragment?.getMetersPerPixel() ?: 0.0
         updateDisplayedPosition()
     }
 
     override fun onMapIsChanging(camera: CameraPosition) {
         viewModel.mapCamera.value = camera
+        viewModel.metersPerDp.value = mapFragment?.getMetersPerPixel() ?: 0.0
         updateDisplayedPosition()
 
         val f = bottomSheetFragment
@@ -554,6 +558,10 @@ class MainActivity :
         if (mapFragment?.displayedLocation != null) {
             setIsFollowingPosition(false)
         }
+    }
+
+    override fun onUserCameraMoveStarted() {
+        viewModel.userHasMovedCamera.value = true
     }
 
     override fun onLongPress(point: PointF, position: LatLon) {
@@ -911,6 +919,10 @@ class MainActivity :
 
     fun onClickZoomIn() {
         mapFragment?.updateCameraPosition(300) { zoomBy = +1.0 }
+    }
+
+    fun onZoom(zoomDelta: Float) {
+        mapFragment?.updateCameraPosition(300) { zoomBy = zoomDelta.toDouble() }
     }
 
     private fun onClickTracksStop() {
@@ -1372,7 +1384,7 @@ class MainActivity :
             }
         if (elements == emptySequence<Element>()) return emptyList()
         val levels = element?.let { parseLevelsOrNull(it.tags) }
-        val localLanguages = ConfigurationCompat.getLocales(resources.configuration).toList().map { it.language }
+        val localLanguages = getSystemLocales().toList().map { it.language }
         return elements.mapNotNull { e ->
             // don't highlight "this" element
             if (element == e) return@mapNotNull null

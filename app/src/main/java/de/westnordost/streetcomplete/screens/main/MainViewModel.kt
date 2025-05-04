@@ -1,6 +1,5 @@
 package de.westnordost.streetcomplete.screens.main
 
-import android.content.Context
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
@@ -33,6 +32,9 @@ abstract class MainViewModel : ViewModel() {
     /* intro */
     abstract var hasShownTutorial: Boolean
 
+    /* HUD */
+    abstract var showZoomButtons: StateFlow<Boolean>
+
     /* messages */
     abstract val messagesCount: StateFlow<Int>
     abstract suspend fun popMessage(): Message?
@@ -40,7 +42,7 @@ abstract class MainViewModel : ViewModel() {
 
     /* overlays */
     abstract val selectedOverlay: StateFlow<Overlay?>
-    abstract fun getOverlays(context: Context): List<Overlay>
+    abstract val overlays: StateFlow<List<Overlay>>
 
     abstract var hasShownOverlaysTutorial: Boolean
 
@@ -75,17 +77,19 @@ abstract class MainViewModel : ViewModel() {
     abstract val isShowingStarsCurrentWeek: StateFlow<Boolean>
     abstract fun toggleShowingCurrentWeek()
 
-    /* map */
     // NOTE: currently filled from MainActivity (communication to compose view), i.e. the source of
     //       truth is actually the MapFragment
     abstract val locationState: MutableStateFlow<LocationState>
     abstract val mapCamera: MutableStateFlow<CameraPosition?>
+    abstract val metersPerDp: MutableStateFlow<Double>
     abstract val displayedPosition: MutableStateFlow<Offset?>
 
     abstract val isFollowingPosition: MutableStateFlow<Boolean>
     abstract val isNavigationMode: MutableStateFlow<Boolean>
 
     abstract val isRecordingTracks: MutableStateFlow<Boolean>
+
+    abstract val userHasMovedCamera: MutableStateFlow<Boolean>
 
     abstract val showQuickSettings: StateFlow<Boolean>
     abstract val reverseQuestOrder: MutableStateFlow<Boolean>

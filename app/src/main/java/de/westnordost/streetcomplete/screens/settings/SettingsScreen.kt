@@ -69,6 +69,7 @@ fun SettingsScreen(
     onClickShowQuestForms: () -> Unit,
     onClickPresetSelection: () -> Unit,
     onClickQuestSelection: () -> Unit,
+    onClickOverlaySelection: () -> Unit,
     onClickBack: () -> Unit,
     onClickQuestSettings: () -> Unit,
     onClickUiSettings: () -> Unit,
@@ -78,7 +79,8 @@ fun SettingsScreen(
 ) {
     val hiddenQuestCount by viewModel.hiddenQuestCount.collectAsState()
     val questTypeCount by viewModel.questTypeCount.collectAsState()
-    val selectedPresetName by viewModel.selectedQuestPresetName.collectAsState()
+    val overlayCount by viewModel.overlayCount.collectAsState()
+    val selectedPresetName by viewModel.selectedEditTypePresetName.collectAsState()
     val selectableLanguageCodes by viewModel.selectableLanguageCodes.collectAsState()
 
     val resurveyIntervals by viewModel.resurveyIntervals.collectAsState()
@@ -86,6 +88,7 @@ fun SettingsScreen(
     val autosync by viewModel.autosync.collectAsState()
     val theme by viewModel.theme.collectAsState()
     val keepScreenOn by viewModel.keepScreenOn.collectAsState()
+    val showZoomButtons by viewModel.showZoomButtons.collectAsState()
     val selectedLanguage by viewModel.selectedLanguage.collectAsState()
     val expertMode by viewModel.expertMode.collectAsState()
 
@@ -150,6 +153,14 @@ fun SettingsScreen(
                 ) { NextScreenIcon() }
 
                 Preference(
+                    name = stringResource(R.string.pref_title_overlays),
+                    onClick = onClickOverlaySelection,
+                    description = overlayCount?.let {
+                        stringResource(R.string.pref_subtitle_quests, it.enabled, it.total)
+                    }
+                ) { NextScreenIcon() }
+
+                Preference(
                     name = stringResource(R.string.pref_title_resurvey_intervals),
                     onClick = { showResurveyIntervalsSelect = true },
                     description = stringResource(R.string.pref_title_resurvey_intervals_summary)
@@ -198,6 +209,16 @@ fun SettingsScreen(
                     onClick = { showThemeSelect = true },
                 ) {
                     Text(stringResource(theme.titleResId))
+                }
+
+                Preference(
+                    name = stringResource(R.string.pref_title_zoom_buttons),
+                    onClick = { viewModel.setShowZoomButtons(!showZoomButtons) },
+                ) {
+                    Switch(
+                        checked = showZoomButtons,
+                        onCheckedChange = { viewModel.setShowZoomButtons(it) }
+                    )
                 }
 
                 Preference(

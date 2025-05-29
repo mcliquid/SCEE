@@ -1,5 +1,98 @@
 # Changelog
 
+## v61.1
+
+### Fixes
+- Fix map attribution was shown in front of Next-button in tutorial 😬 (#6255)
+- Fix opening the app at certain location would open it always at that location (#6264)
+- Wheelchair accessible toilets: Fix "no" answer shouldn't imply that there are toilets at all (#6257)
+- Places overlay: Fix some brand features were not selectable (#6272)
+- Building levels: Fix keyboard popped up automatically (#6284)
+
+### Improvements 
+- Halal: Also ask for vegan-only places (#6280), by @mnalis
+- Road width: Disable by default (#6256)
+- Track type: Use better pictures (#6242), by @Caerbannog
+- Track type: Align wording with wiki (#6272)
+- Max speed: For implicit max speeds, tag the country subdivision when it is relevant (#6259)
+- Surface: Remove concrete plates as selectable option (#6290)
+- Specify Shop type: Clear properties related to the previous shop when answering that it is vacant now (#6291)
+
+## v61.0
+
+### Android below 7.1 no longer supported (#6210)
+
+In reality, support for Android versions below 7.1 has already been just on-paper for a while now, 
+as more and more issues with old Androids have been popping up lately that cannot be fixed on our 
+side. Luckily, it seems that >99.6% of app users already use Android 7.1 and above. (See #6210)
+
+### Main screen improvements (#6213)
+
+Cleaned up the appearance of the main screen a bit:
+
+- Merged the +/- buttons into one button, not shown by default, it's a setting. By the way, you can also zoom with one finger by double-tapping, then moving the finger up or down. This works in any app in which you can zoom, actually.
+- The upload button is now in the main menu
+- The pointer pin button moves more smoothly (in an ellipsis near the screen border)
+- Added a scale bar on the lower right (#5765)
+- Replaced the static map attribution text with an info button
+
+### New overlays
+
+- _MTB difficulty_: Add the difficulty ratings for mountainbike trails (#1850, #5726), thanks @RubenKelevra and @ravenfield. It is disabled by default because you need to be a domain expert to accurately record this data. (#6226)
+
+### New quests
+
+- _"Are gluten-free products offered here?"_, disabled by default (#3031, #6143), by @mnalis
+
+### Quest and Overlay improvements
+
+- Opening hours: Fix semantic issue when specifying off-days at the top (#6191)
+- Surfaces: Fix surface was asked twice when a generic surface was selected (#6172)
+- Smoothness: Don't ask if surface is still correct just after specifying the surface smoothness (#6178)
+- Baby changing tables: Ask at more places (#6167), by @agent-redd
+- Sidewalk overlay: Align which roads are selectable with the bike paths overlay, for consistency (#6185), by @mnalis
+- Roadwork: Also ask whether minor roadwork (i.e. construction without full road closure) is completed (#6090)
+- Various: Ask about more features of alpine and wilderness huts (#6200, #6201), thanks @tiptoptom
+- Building levels: Prettified input form a bit (#6022), by @GaeaKat
+- Bus stop ref: Also ask in Iran (#6227)
+- Other small things (#6209, #6216, #6217, #6229…), thanks @mnalis, @peternewman
+
+### General Improvements
+
+- Performance improvements on upload and download (#6150) as well as significantly decreased data download size (#6218)
+- Performance improvements in the quest selection screen (#6205), by @irakliy01
+- Added a few new links to unlock via achievements. Newly added links do not unlock silently for old users anymore (#6220)
+- Render parks and playgrounds with an outline (#6221), by @doniks
+
+## v60.3
+
+- downgraded third-party component because it caused crashes due to memory leaks (see #6166)
+- fix undoing hiding a quest seemingly didn't work (#6162)
+- improve location permission wording (#6156)
+- Bus stop quests: Don't ask for private ones (#6158), by @k-yle
+
+## v60.2
+
+### Fixes
+
+- fixes for opening app from Geo URIs (#6101)
+- fix on rare occasions, a solved quest would immediately reappear (#5545), thanks @Helium314
+- Road surfaces: fix quest immediately reappeared when answer conflicted with the recorded information for the track visibility (#6116)
+- Opening hours: fix don't consider a rare but valid syntax for opening hours as invalid (#6125)
+- fix escalators were previously labeled as steps (#5728)
+- Car lanes: fix crash on Android < 35 when changing number of lanes
+- Fix upload issue when solved quests are far apart enough to trigger OSM vandalism protection (#6151)
+- Steps incline: Improve wording (#6135), by @andrewharvey
+
+### Improvements
+
+- Hairdresser customers: Don't ask for barber shops (#6108)
+- Bus stop names: Suggest names of nearby bus stops (e.g. the one from the other side of the road) (#6097, #5187) by @kmpoppe
+- Baby changing table: Also ask when information about toilets isn't recorded yet (#6115), by @agent-redd
+- Places overlay: Display correctly and allow to select some generic places (some office, some club, some healthcare facility, some shop) (#6140)
+- small improvements on the places overlay (#6100, #5985, #6086, #6085, #6140)
+- more small improvements (#6139, ...)
+
 ## v60.1
 
 ### Improvements
@@ -1378,7 +1471,7 @@ Special thanks to @FloEdelmann for helping with the refactor.
 - Enhance maxspeed collection for the United Kingdom (#2745, #2748, #2750, #2811), by @arrival-spring
 - Periodically ask for the existence of BBQ spots, ticket validators, emergency life rings and emergency phones (#2679), thanks @arrival-spring
 - Also ask for the surface of service roads as long as they are not driveways (#2783)
-- Don't remove the check_date tag if it is already tagged, instead, update it (#2861, #2883)
+- Don't remove the `check_date` tag if it is already tagged, instead, update it (#2861, #2883)
 - Don't tag `foot=use_sidepath` on the road if there is a separate sidewalk (#2895)
 
 ### Other Enhancements
@@ -1506,7 +1599,7 @@ Did you already [take the survey](https://osmf.limequery.org/281662) of the Open
 - Check existence: Display brand name if object has no name (#2512)
 - Sidewalks: Ask for residential roads even if they are not lit (#2519, #2531), by @riQQ
 - Recycling materials: Do not ask for private containers (#2515)
-- Road name: Do not ask if name:left or name:right is defined already (#2526)
+- Road name: Do not ask if `name:left` or `name:right` is defined already (#2526)
 - A few clarifications in wording (#2467, #2431, #2539)
 
 ### Fixes & More
@@ -2957,7 +3050,7 @@ minor bugfix update: bugfixes, updated translations
 
 ## v0.10
 
-fixed #108: opening_hours used wrong separator
+fixed #108: `opening_hours` used wrong separator
 
 ## v0.9
 

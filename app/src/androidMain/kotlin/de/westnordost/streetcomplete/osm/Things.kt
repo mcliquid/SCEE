@@ -284,9 +284,9 @@ val POPULAR_THING_FEATURE_IDS = listOf(
     // found most often on hiking routes where there are not that many "things" features anyway
     "tourism/information/guidepost",       // 0.5M
     "tourism/information/route_marker",
-    "marker/utility",
-    "marker",
-    "marker/utility/power",
+    "marker/utility/gas",
+    //"marker",
+    //"marker/utility/power",
     "man_made/street_cabinet",
     "highway/street_lamp",         // 4.3 M
     "amenity/bench",               // 2.6 M
@@ -301,6 +301,8 @@ val POPULAR_THING_FEATURE_IDS = listOf(
     "amenity/shelter",             // 0.5 M
     "power/substation",
     "amenity/recycling_container", // 0.4 M
+    "amenity/toilets",
+    "amenity/bicycle_wash",
     // More:
 
     // mostly found in parks/plazas, i.e. specific places instead of ~everywhere

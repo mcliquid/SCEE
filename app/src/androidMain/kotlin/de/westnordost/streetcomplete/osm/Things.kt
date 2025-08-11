@@ -139,8 +139,8 @@ private val IS_THING_EXPRESSION by lazy {
             "lifeguard",
             "phone",
             "siren",
-            // "suction_point" is rather intangible / difficult to verify
-            // "water_tank" is more of a structure and would also need to include "fire_water_pond" etc. then
+            "suction_point", // is rather intangible / difficult to verify
+            "water_tank", //is more of a structure and would also need to include "fire_water_pond" etc. then
         ),
         "highway" to listOf(
             // "bus_stop", handled in filter below to skip some common bad tagging
@@ -149,10 +149,10 @@ private val IS_THING_EXPRESSION by lazy {
             "milestone",
             // "speed_camera", - while not directly a sign, it definitely belongs into the traffic
             //                   signals/controls category
-            // "speed_display", this is rather like a sign - signs should not go in here
+            "speed_display", // this is rather like a sign - signs should not go in here
             "street_lamp", // maybe should appear also in lit overlay, but is a good reference point while surveying - and more importantly, it would be confusing if they would be missing in Things overlay
             "trailhead",
-            // "traffic_mirror" is rather like a sign - signs should not go in here, though mirrors are borderline
+            "traffic_mirror" // is rather like a sign - signs should not go in here, though mirrors are borderline
         ),
         "historic" to listOf(
             "aircraft",
@@ -190,7 +190,7 @@ private val IS_THING_EXPRESSION by lazy {
         "man_made" to listOf(
             // larger structures are rather alike buildings, they shouldn't be editable here
             // e.g. "water_tower", "watermill", "windmill", "tower", "telescope", "stupa" ...
-            // "antenna" - I think those small-ish antennas for cellular network would be fine
+            "antenna", // I think those small-ish antennas for cellular network would be fine
             //             but quite large structures also fall under this tag
             "beehive",
             "cairn",
@@ -232,6 +232,8 @@ private val IS_THING_EXPRESSION by lazy {
             "substation",
             "transformer",
             "generator",
+            "pole",
+            "tower",
         ),
         "marker" to listOf(
             "yes",
@@ -253,6 +255,22 @@ private val IS_THING_EXPRESSION by lazy {
             "artwork",
             // "information", only if it is not an office, see below
             "viewpoint",
+        ),
+        "waterway" to listOf(
+            "fuel",                  // iD-Preset: waterway/fuel
+            "sanitary_dump_station",  // iD-Preset: waterway/sanitary_dump_station
+            "boatyard",
+            "dock",
+            "water_point",
+        ),
+        "seamark:type" to listOf(
+            "mooring",
+            "beacon_cardinal",
+            "beacon_lateral",
+            "buoy_cardinal",
+            "buoy_lateral",
+            "notice",
+            "pile",
         )
     )
     .map { it.key + " ~ " + it.value.joinToString("|") }

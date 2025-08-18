@@ -91,7 +91,7 @@ private val IS_THING_EXPRESSION by lazy {
             "give_box",
             "karaoke_box",
             "kitchen", // usually an amenity within campsites etc, i.e. like shower, toilets, ...
-            // "letter_box", - it would be very spammy to comprehensively map this
+            "letter_box", // it would be very spammy to comprehensively map this
             "library_dropoff",
             "locker",
             "lounger",
@@ -152,7 +152,8 @@ private val IS_THING_EXPRESSION by lazy {
             "speed_display", // this is rather like a sign - signs should not go in here
             "street_lamp", // maybe should appear also in lit overlay, but is a good reference point while surveying - and more importantly, it would be confusing if they would be missing in Things overlay
             "trailhead",
-            "traffic_mirror" // is rather like a sign - signs should not go in here, though mirrors are borderline
+            "traffic_mirror", // is rather like a sign - signs should not go in here, though mirrors are borderline
+            "traffic_sign",
         ),
         "historic" to listOf(
             "aircraft",
@@ -176,7 +177,7 @@ private val IS_THING_EXPRESSION by lazy {
         "leisure" to listOf(
             "bandstand",
             "bird_hide", // though it is possible to go inside, it's similar to a shelter
-            // "bathing_place" - is rather intangible  / difficult to verify,
+            "bathing_place", // is rather intangible  / difficult to verify,
             //                   also would probably need to include "beach_resort", etc. too
             "firepit",
             // "fishing" is rather intangible / difficult to verify
@@ -190,6 +191,7 @@ private val IS_THING_EXPRESSION by lazy {
         "man_made" to listOf(
             // larger structures are rather alike buildings, they shouldn't be editable here
             // e.g. "water_tower", "watermill", "windmill", "tower", "telescope", "stupa" ...
+            "antenna", // - I think those small-ish antennas for cellular network would be fine
             "antenna", // I think those small-ish antennas for cellular network would be fine
             //             but quite large structures also fall under this tag
             "beehive",
@@ -203,6 +205,7 @@ private val IS_THING_EXPRESSION by lazy {
             "flagpole",
             "insect_hotel",
             // "manhole", - too many of them, it's madness to waste your time mapping these
+            "mast",
             "maypole",
             "monitoring_station", // a little large, on the other hand, sizes vary
             "nesting_site",
@@ -212,9 +215,10 @@ private val IS_THING_EXPRESSION by lazy {
             "stele",
             "street_cabinet",
             "surveillance",
-            "survey_point",
+            "survey_point", // this can be very very small -> verifiability issue
             // "telephone_box" - it just describes the structure, but not its use
-            "utility_pole",
+            "tower",
+            "utility_pole", // usually a vertex
             "video_wall", // basically an advertising=*
             "water_tap",
             "water_well",
@@ -229,6 +233,7 @@ private val IS_THING_EXPRESSION by lazy {
             "tree_stump",
         ),
         "power" to listOf(
+            "catenary_mast",
             "substation",
             "transformer",
             "generator",

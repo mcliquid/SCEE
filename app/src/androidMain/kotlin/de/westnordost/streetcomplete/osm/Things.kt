@@ -191,9 +191,7 @@ private val IS_THING_EXPRESSION by lazy {
         "man_made" to listOf(
             // larger structures are rather alike buildings, they shouldn't be editable here
             // e.g. "water_tower", "watermill", "windmill", "tower", "telescope", "stupa" ...
-            "antenna", // - I think those small-ish antennas for cellular network would be fine
-            "antenna", // I think those small-ish antennas for cellular network would be fine
-            //             but quite large structures also fall under this tag
+            "antenna",
             "beehive",
             "cairn",
             "carpet_hanger",

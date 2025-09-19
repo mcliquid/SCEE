@@ -506,6 +506,7 @@ Teilweise bedeutet, dass man die Toilette schon im Rollstuhl benutzen kann, aber
     <string name="quest_busStopShelter_covered">"Gesamte Haltestelle ist überdacht"</string>
     <string name="quest_ferry_pedestrian_title">"Kann man als Fußgänger diese Fährverbindung nutzen?"</string>
     <string name="quest_ferry_motor_vehicle_title">"Kann man mit Kraftfahrzeugen diese Fährverbindung nutzen?"</string>
+    <string name="quest_ferry_bicycle_title">"Kann man mit Fahrrädern diese Fährverbindung nutzen?"</string>
     <string name="quest_leave_new_note_photos_are_useful">"Ein Foto macht einen Hinweis viel nützlicher."</string>
     <string name="create_new_note_hint">"Schreibe möglichst in der lokal gesprochenen Sprache oder ansonsten auf Englisch."</string>
     <string name="quest_leafType_title">"Haben die Bäume hier Nadeln oder Blätter?"</string>

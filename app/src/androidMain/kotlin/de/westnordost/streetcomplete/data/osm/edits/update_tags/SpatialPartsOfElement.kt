@@ -18,7 +18,7 @@ private fun isNodeGeometrySubstantiallyDifferent(node: Node, newNode: Node) =
        building counts as substantial change. Also, the maximum distance should be not (much)
        bigger than the usual GPS inaccuracy in the city.
        Current value is equal to max move distance of the MoveNodeAction */
-    node.position.distanceTo(newNode.position) > 30
+    node.position.distanceTo(newNode.position) > 5000
 
 private fun isWayGeometrySubstantiallyDifferent(way: Way, newWay: Way): Boolean {
     /*

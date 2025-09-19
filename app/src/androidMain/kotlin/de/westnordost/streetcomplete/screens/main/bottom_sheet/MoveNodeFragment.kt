@@ -257,9 +257,9 @@ class MoveNodeFragment :
 // whether something really is misplaced without good aerial imagery.
 // Also, POIs are objects with a certain extent, so as long as the node is within this extent, it's
 // fine, there is little value of putting the point at exactly the center point of the POI
-private const val MIN_MOVE_DISTANCE = 1.0
+private const val MIN_MOVE_DISTANCE = 0.1
 // Move node functionality is meant for fixing slightly misplaced elements. If something moved far
 // away, it is reasonable to assume there are more substantial changes required, also to nearby
 // elements. Additionally, the default radius for highlighted elements is 30 m, so moving outside
 // should not be allowed.
-private const val MAX_MOVE_DISTANCE = 30.0
+private const val MAX_MOVE_DISTANCE = 5000.0

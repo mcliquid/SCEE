@@ -15,7 +15,7 @@ class AddGeneralFee : OsmFilterQuestType<Boolean>() {
          (
            tourism ~ museum|gallery|caravan_site
            or leisure = beach_resort
-           or amenity = sanitary_dump_station
+           or amenity ~ sanitary_dump_station|compressed_air
          )
          and access !~ private|no
          and !fee

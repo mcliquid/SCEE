@@ -10,14 +10,15 @@ import de.westnordost.streetcomplete.osm.Tags
 class AddDrinkingWaterType : OsmFilterQuestType<DrinkingWaterType>() {
 
     override val elementFilter = """
-        nodes with
+        nodes, ways with
         (
             (amenity = drinking_water and !disused:amenity)
             or
             (disused:amenity = drinking_water and !amenity and older today -1 years)
+            or
+            (amenity = fountain  and !disused:amenity)
         )
         and (!intermittent or intermittent = no)
-        and (!seasonal or seasonal = no)
         and !man_made and !natural and !fountain and !pump
     """
 

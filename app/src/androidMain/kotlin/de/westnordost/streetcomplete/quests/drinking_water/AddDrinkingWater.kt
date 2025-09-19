@@ -16,11 +16,11 @@ class AddDrinkingWater : OsmFilterQuestType<DrinkingWater>() {
           man_made = water_tap
           or man_made = water_well
           or natural = spring
+          or amenity = fountain
         )
-        and access !~ private|no and indoor != yes
+        and access !~ private|no
         and !drinking_water and !drinking_water:legal and amenity != drinking_water
         and (!intermittent or intermittent = no)
-        and (!seasonal or seasonal = no)
         and (!disused or disused = no)
         and (!ruins or ruins = no)
     """
@@ -39,6 +39,7 @@ class AddDrinkingWater : OsmFilterQuestType<DrinkingWater>() {
                  man_made = water_tap
                  or man_made = water_well
                  or natural = spring
+                 or amenity = fountain
                  or amenity = drinking_water
              )
              and access !~ private|no

@@ -24,6 +24,7 @@ class AddOneway : OsmElementQuestType<OnewayAnswer> {
         highway ~ ${ALL_ROADS.joinToString("|")}
         or highway = cycleway
         or (highway = path and bicycle ~ yes|designated)
+        or (highway = footway and bicycle ~ yes|designated)
       )
       and area != yes
 """.toElementFilterExpression() }
@@ -37,6 +38,8 @@ class AddOneway : OsmElementQuestType<OnewayAnswer> {
         or
         (highway = cycleway)
         or
+        (highway = footway and bicycle ~ yes|designated)
+        or
         (highway = path and bicycle ~ yes|designated)
       )
       and !oneway
@@ -45,7 +48,7 @@ class AddOneway : OsmElementQuestType<OnewayAnswer> {
       and (access !~ private|no or (foot and foot !~ private|no))
 """.toElementFilterExpression() }
 
-    override val changesetComment = "Specify whether narrow roads are one-ways"
+    override val changesetComment = "Specify whether roads are one-ways"
     override val wikiLink = "Key:oneway"
     override val icon = R.drawable.ic_quest_oneway
     override val hasMarkersAtEnds = true
@@ -91,9 +94,15 @@ class AddOneway : OsmElementQuestType<OnewayAnswer> {
         return null
     }
 
+    private fun isYesOrDesignated(v: String?) = v == "yes" || v == "designated"
+
     private fun isBikeFacility(tags: Map<String, String>): Boolean {
-        val h = tags["highway"]
-        return h == "cycleway" || (h == "path" && (tags["bicycle"] == "yes" || tags["bicycle"] == "designated"))
+        return when (tags["highway"]) {
+            "cycleway" -> true
+            "path" -> isYesOrDesignated(tags["bicycle"]) || isYesOrDesignated(tags["footway"])
+            "footway" -> isYesOrDesignated(tags["bicycle"]) // für footway + bicycle=yes|designated
+            else -> false
+        }
     }
 
     private fun isOnewayRoadCandidate(road: Element): Boolean {

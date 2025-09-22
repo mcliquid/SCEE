@@ -27,7 +27,7 @@ class AddChargingStationCapacity : OsmFilterQuestType<Int>() {
     override fun getTitle(tags: Map<String, String>) = R.string.quest_charging_station_capacity_title
 
     override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry) =
-        getMapData().filter("nodes, ways with amenity = charging_station and motorcar != no")
+        getMapData().filter("nodes, ways with amenity = charging_station")
 
     override fun createForm() = AddChargingStationCapacityForm()
 

@@ -13,7 +13,7 @@ class AddFerryAccessBicycle : OsmFilterQuestType<Boolean>() {
     override val elementFilter = "ways, relations with route = ferry and !bicycle"
     override val changesetComment = "Specify ferry access for bicycles"
     override val wikiLink = "Tag:route=ferry"
-    override val icon = R.drawable.ic_quest_ferry
+    override val icon = R.drawable.ic_quest_ferry_bicycle
     override val hasMarkersAtEnds = true
     override val achievements = listOf(RARE)
 

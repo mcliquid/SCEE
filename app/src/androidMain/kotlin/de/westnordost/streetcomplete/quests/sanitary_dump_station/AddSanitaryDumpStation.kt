@@ -3,12 +3,13 @@ package de.westnordost.streetcomplete.quests.sanitary_dump_station
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.YesNoQuestForm
 import de.westnordost.streetcomplete.util.ktx.toYesNo
 
-class AddSanitaryDumpStation : OsmFilterQuestType<Boolean>() {
+class AddSanitaryDumpStation : OsmFilterQuestType<Boolean>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -22,7 +23,7 @@ class AddSanitaryDumpStation : OsmFilterQuestType<Boolean>() {
 
     override val changesetComment = "Specify if there is a sanitary dump station at camp or caravan site"
     override val wikiLink = "Key:sanitary_dump_station"
-    override val icon = R.drawable.ic_quest_caravan
+    override val icon = R.drawable.quest_caravan
     override val achievements = listOf(EditTypeAchievement.OUTDOORS)
 
     override val hint = R.string.quest_sanitary_dump_station_description

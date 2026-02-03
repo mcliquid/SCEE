@@ -8,8 +8,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_caravanSiteType
 
-class AddCaravanSiteType : OsmFilterQuestType<String>() {
+class AddCaravanSiteType : OsmFilterQuestType<String>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways, relations with
@@ -18,7 +21,7 @@ class AddCaravanSiteType : OsmFilterQuestType<String>() {
         )
     """
     override val changesetComment = "Add caravan site type info"
-    override val defaultDisabledMessage = R.string.default_disabled_msg_caravanSiteType
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_caravanSiteType
     override val wikiLink = "Key:caravan_site:type"
     override val icon = R.drawable.ic_quest_caravan_site
     override val achievements = listOf(OUTDOORS)

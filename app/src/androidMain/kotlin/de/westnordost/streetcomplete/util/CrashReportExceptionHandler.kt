@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.util
 import android.content.Context
 import android.os.Build
 import com.russhwolf.settings.ObservableSettings
+import androidx.compose.ui.text.intl.Locale
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.BuildConfig
 import de.westnordost.streetcomplete.Prefs
@@ -14,7 +15,6 @@ import de.westnordost.streetcomplete.util.ktx.systemTimeNow
 import de.westnordost.streetcomplete.util.ktx.toLocalDateTime
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.io.IOException
-import java.util.Locale
 
 /** Exception handler that takes care of storing the last crash as a file.
  *  When a crash occurs, the stack trace is saved to [crashReportFile] so that it can be accessed
@@ -44,9 +44,7 @@ class CrashReportExceptionHandler(
     override fun uncaughtException(thread: Thread, error: Throwable) {
         val report = createErrorReport(error, thread)
 
-        val stacktrace = error.stackTraceToString()
-        if (!stacktrace.contains(".getBinding") && !stacktrace.contains(".Fragment.getViewLifecycleOwner"))
-            saveCrashReport(report)
+        saveCrashReport(report)
         defaultUncaughtExceptionHandler?.uncaughtException(thread, error)
     }
 
@@ -70,7 +68,7 @@ class CrashReportExceptionHandler(
         report.append("""
             App version: ${BuildConfig.VERSION_NAME}
             Device: ${Build.BRAND}  ${Build.DEVICE}, Android ${Build.VERSION.RELEASE}
-            Locale: ${Locale.getDefault()}
+            Locale: ${Locale.current}
 
             Stack trace:
 

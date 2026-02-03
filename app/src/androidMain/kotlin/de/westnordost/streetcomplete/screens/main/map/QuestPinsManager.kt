@@ -62,7 +62,7 @@ class QuestPinsManager(
 
     // draw order in which the quest types should be rendered on the map
     private val questTypeOrdersLock = ReentrantLock()
-    private val questTypeOrders: MutableMap<QuestType, Int> = mutableMapOf()
+    private val questTypeOrders: MutableMap<QuestType, Int> = hashMapOf()
     // last displayed rect of (zoom 16) tiles
     private var lastDisplayedRect: TilesRect? = null
     // quests in current view: key -> [pin, ...]
@@ -76,6 +76,7 @@ class QuestPinsManager(
     private val viewLifecycleScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO) // todo: remove?
 
     private var updateJob: Job? = null
+    private val m = Mutex() // todo: remove?
 
     /** Switch visibility of quest pins layer */
     var isVisible: Boolean = false
@@ -212,7 +213,7 @@ class QuestPinsManager(
                 // or has no pins in the current view
                 pins.none { it.position in bbox }
             }
-            quests.forEach { questsInView[it.key] = createQuestPins(it) }
+            quests.forEach { questsInView[it.key] = it.pins ?: createQuestPins(it) }
             questsInView.values.flatten()
         }
         pinsMapComponent.set(pins)

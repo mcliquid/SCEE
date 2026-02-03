@@ -14,8 +14,11 @@ import de.westnordost.streetcomplete.util.math.flatDistanceToArc
 import de.westnordost.streetcomplete.util.math.measuredLength
 import kotlin.math.abs
 import kotlin.math.max
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_roof
 
-class AddRoofOrientation : OsmElementQuestType<String> {
+class AddRoofOrientation : OsmElementQuestType<String>, AndroidQuest {
 
     private val roofsFilter by lazy { """
         ways with
@@ -32,7 +35,7 @@ class AddRoofOrientation : OsmElementQuestType<String> {
     override val wikiLink = "Key:roof:orientation"
     override val icon = R.drawable.ic_quest_roof_orientation
     override val achievements = listOf(BUILDING)
-    override val defaultDisabledMessage = R.string.default_disabled_msg_roof
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_roof
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_roofOrientation_title
 
@@ -155,3 +158,4 @@ private fun Quadrangle.sidesWithLengths() = setOf(
     Pair(corner2 to corner3, sideC),
     Pair(corner3 to corner0, sideD),
 )
+

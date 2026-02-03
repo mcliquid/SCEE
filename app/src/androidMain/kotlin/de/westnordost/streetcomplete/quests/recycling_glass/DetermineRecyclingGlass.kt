@@ -7,12 +7,13 @@ import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.quest.AllCountriesExcept
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.recycling_glass.RecyclingGlass.ANY
 import de.westnordost.streetcomplete.quests.recycling_glass.RecyclingGlass.BOTTLES
 
-class DetermineRecyclingGlass : OsmFilterQuestType<RecyclingGlass>() {
+class DetermineRecyclingGlass : OsmFilterQuestType<RecyclingGlass>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -24,7 +25,7 @@ class DetermineRecyclingGlass : OsmFilterQuestType<RecyclingGlass>() {
     """
     override val changesetComment = "Determine whether any glass or just glass bottles can be recycled here"
     override val wikiLink = "Key:recycling"
-    override val icon = R.drawable.ic_quest_recycling_glass
+    override val icon = R.drawable.quest_recycling_glass
     // see isUsuallyAnyGlassRecyclableInContainers.yml
     override val enabledInCountries = AllCountriesExcept("CZ")
     override val isDeleteElementEnabled = true

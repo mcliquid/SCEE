@@ -1,30 +1,30 @@
 package de.westnordost.streetcomplete.quests.trail_visibility
 
 import android.os.Bundle
-import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.quests.AImageListQuestForm
-import de.westnordost.streetcomplete.view.image_select.DisplayItem
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import de.westnordost.streetcomplete.quests.AItemSelectQuestForm
+import de.westnordost.streetcomplete.ui.common.item_select.ImageWithDescription
+import kotlinx.serialization.serializer
 
-class AddTrailVisibilityForm : AImageListQuestForm<TrailVisibility, TrailVisibility>() {
+class AddTrailVisibilityForm : AItemSelectQuestForm<TrailVisibility, TrailVisibility>() {
 
-    override val items: List<DisplayItem<TrailVisibility>> get() = listOf(
-        TrailVisibility.EXCELLENT,
-        TrailVisibility.GOOD,
-        TrailVisibility.INTERMEDIATE,
-        TrailVisibility.BAD,
-        TrailVisibility.HORRIBLE,
-        TrailVisibility.NO
-    ).toItems()
+    override val items = TrailVisibility.entries
 
     override val itemsPerRow = 2
     override val moveFavoritesToFront = false
+    override val serializer = serializer<TrailVisibility>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        imageSelector.cellLayoutId = R.layout.cell_labeled_icon_select_trail_visibility
+//        imageSelector.cellLayoutId = R.layout.cell_labeled_icon_select_trail_visibility
     }
 
-    override fun onClickOk(selectedItems: List<TrailVisibility>) {
-        applyAnswer(selectedItems.first())
+    @Composable override fun ItemContent(item: TrailVisibility) {
+        ImageWithDescription(null, stringResource(item.titleResId), stringResource(item.descriptionResId))
+    }
+
+    override fun onClickOk(selectedItem: TrailVisibility) {
+        applyAnswer(selectedItem)
     }
 }

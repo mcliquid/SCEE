@@ -9,15 +9,18 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BUILDING
 import de.westnordost.streetcomplete.osm.BUILDINGS_WITH_LEVELS
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.numberSelectionDialog
 import de.westnordost.streetcomplete.quests.questPrefix
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_roofShape
 
 class AddRoofShape(
     private val getCountryInfoByLocation: (location: LatLon) -> CountryInfo,
-) : OsmElementQuestType<RoofShape> {
+) : OsmElementQuestType<RoofShape>, AndroidQuest {
 
     private val filter by lazy { """
         ways, relations with
@@ -31,9 +34,9 @@ class AddRoofShape(
 
     override val changesetComment = "Specify roof shapes"
     override val wikiLink = "Key:roof:shape"
-    override val icon = R.drawable.ic_quest_roof_shape
+    override val icon = R.drawable.quest_roof_shape
     override val achievements = listOf(BUILDING)
-    override val defaultDisabledMessage = R.string.default_disabled_msg_roofShape
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_roofShape
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_roofShape_title
 

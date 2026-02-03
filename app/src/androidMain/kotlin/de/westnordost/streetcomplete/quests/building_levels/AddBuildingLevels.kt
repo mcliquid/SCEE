@@ -2,17 +2,19 @@ package de.westnordost.streetcomplete.quests.building_levels
 
 import android.content.Context
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.edit
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestController
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BUILDING
 import de.westnordost.streetcomplete.osm.BUILDINGS_WITH_LEVELS
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.questPrefix
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_difficult_and_time_consuming
 
-class AddBuildingLevels : OsmFilterQuestType<BuildingLevels>() {
+class AddBuildingLevels : OsmFilterQuestType<BuildingLevels>(), AndroidQuest {
 
     override val elementFilter = """
         ways, relations with
@@ -32,9 +34,9 @@ class AddBuildingLevels : OsmFilterQuestType<BuildingLevels>() {
     """
     override val changesetComment = "Specify building and roof levels"
     override val wikiLink = "Key:building:levels"
-    override val icon = R.drawable.ic_quest_building_levels
+    override val icon = R.drawable.quest_building_levels
     override val achievements = listOf(BUILDING)
-    override val defaultDisabledMessage = R.string.default_disabled_msg_difficult_and_time_consuming
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_difficult_and_time_consuming
 
     override val hint = R.string.quest_buildingLevels_hint
 
@@ -60,9 +62,9 @@ class AddBuildingLevels : OsmFilterQuestType<BuildingLevels>() {
         return AlertDialog.Builder(context)
             .setSingleChoiceItems(array, if (prefs.getBoolean(questPrefix(prefs) + MANDATORY_ROOF_LEVELS, true)) 0 else 1) { d, i ->
                 if (i == 0)
-                    prefs.edit { remove(questPrefix(prefs) + MANDATORY_ROOF_LEVELS) }
+                    prefs.remove(questPrefix(prefs) + MANDATORY_ROOF_LEVELS)
                 else
-                    prefs.edit { putBoolean(questPrefix(prefs) + MANDATORY_ROOF_LEVELS, false) }
+                    prefs.putBoolean(questPrefix(prefs) + MANDATORY_ROOF_LEVELS, false)
                 d.dismiss()
                 OsmQuestController.reloadQuestTypes()
             }

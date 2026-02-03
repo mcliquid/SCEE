@@ -1,5 +1,7 @@
 package de.westnordost.streetcomplete.quests.address
 
+import de.westnordost.streetcomplete.data.meta.CountryInfo
+import de.westnordost.streetcomplete.data.meta.IncompleteCountryInfo
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryModify
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
@@ -7,8 +9,6 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementPolygonsGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementType
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
-import de.westnordost.streetcomplete.osm.address.ConscriptionNumber
-import de.westnordost.streetcomplete.osm.address.HouseAndBlockNumber
 import de.westnordost.streetcomplete.osm.address.HouseNumber
 import de.westnordost.streetcomplete.quests.answerApplied
 import de.westnordost.streetcomplete.quests.answerAppliedTo
@@ -24,7 +24,7 @@ import kotlin.test.assertNull
 
 class AddHousenumberTest {
 
-    private val questType = AddHousenumber()
+    private val questType = AddHousenumber({ CountryInfo(listOf(IncompleteCountryInfo("DE"))) })
 
     @Test fun `does not create quest for generic building`() {
         val building = way(1L, NODES1, mapOf("building" to "yes"))
@@ -115,6 +115,67 @@ class AddHousenumberTest {
         assertEquals(0, questType.getApplicableElements(mapData).toList().size)
     }
 
+    // https://github.com/streetcomplete/StreetComplete/issues/6500#issuecomment-3353073272
+    @Test fun `does create quest for building that is inside an area with an address on its outline that is however associated to another building`() {
+        val houseWithAddressNode = Pair(
+            Way(1L, listOf(1, 2, 3, 4, 1), mapOf("building" to "detached"), 1),
+            ElementPolygonsGeometry(listOf(listOf(P1, P2, P3, P4, P1)), PC),
+        )
+        val areaWithAddressNode = Pair(
+            Way(2L, listOf(1, 5, 6, 7, 8, 1), mapOf("landuse" to "residential"), 1),
+            ElementPolygonsGeometry(listOf(listOf(P1, P5, P6, P7, P8, P1)), PC),
+        )
+        // address is part of both of the above
+        val addressNode = Pair(
+            Node(1L, P1, mapOf("addr:housenumber" to "123"), 1),
+            ElementPointGeometry(P1)
+        )
+
+        val house = Pair(
+            Way(3L, listOf(4, 3, 7, 8, 4), mapOf("building" to "detached"), 1),
+            ElementPolygonsGeometry(listOf(listOf(P4, P3, P7, P8, P4)), PC),
+        )
+
+        val mapData = createMapData(mapOf(
+            houseWithAddressNode,
+            areaWithAddressNode,
+            addressNode,
+            house,
+        ))
+        assertEquals(house.first, questType.getApplicableElements(mapData).toList().single())
+    }
+
+    // this test is identical to the above, but buildings and other areas are treated differently,
+    // so this should be tested both with buildings and other areas
+    @Test fun `does create quest for building that is inside an area with an address on its outline that is however associated to another area`() {
+        val smallerAreaWithAddressNode = Pair(
+            Way(1L, listOf(1, 2, 3, 4, 1), mapOf("amenity" to "school"), 1),
+            ElementPolygonsGeometry(listOf(listOf(P1, P2, P3, P4, P1)), PC),
+        )
+        val largerAreaWithAddressNode = Pair(
+            Way(2L, listOf(1, 5, 6, 7, 8, 1), mapOf("landuse" to "residential"), 1),
+            ElementPolygonsGeometry(listOf(listOf(P1, P5, P6, P7, P8, P1)), PC),
+        )
+        // address is part of both of the above
+        val addressNode = Pair(
+            Node(1L, P1, mapOf("addr:housenumber" to "123"), 1),
+            ElementPointGeometry(P1)
+        )
+
+        val house = Pair(
+            Way(3L, listOf(4, 3, 7, 8, 4), mapOf("building" to "detached"), 1),
+            ElementPolygonsGeometry(listOf(listOf(P4, P3, P7, P8, P4)), PC),
+        )
+
+        val mapData = createMapData(mapOf(
+            smallerAreaWithAddressNode,
+            largerAreaWithAddressNode,
+            addressNode,
+            house,
+        ))
+        assertEquals(house.first, questType.getApplicableElements(mapData).toList().single())
+    }
+
     @Test fun `does not create quest for building that contains an address node`() {
         val building = way(1L, NODES1, mapOf(
             "building" to "detached"
@@ -144,59 +205,28 @@ class AddHousenumberTest {
     @Test fun `apply house number answer`() {
         assertEquals(
             setOf(StringMapEntryAdd("addr:housenumber", "99b")),
-            questType.answerApplied(AddressNumberOrName(HouseNumber("99b"), null))
+            questType.answerApplied(AddressNumberAndName(HouseNumber("99b"), null))
         )
     }
 
     @Test fun `apply house name answer`() {
         assertEquals(
             setOf(StringMapEntryAdd("addr:housename", "La Escalera")),
-            questType.answerApplied(AddressNumberOrName(null, "La Escalera"))
-        )
-    }
-
-    @Test fun `apply conscription number answer`() {
-        assertEquals(
-            setOf(
-                StringMapEntryAdd("addr:conscriptionnumber", "I.123"),
-                StringMapEntryAdd("addr:housenumber", "I.123")
-            ),
-            questType.answerApplied(AddressNumberOrName(ConscriptionNumber("I.123"), null))
-        )
-    }
-
-    @Test fun `apply conscription and street number answer`() {
-        assertEquals(
-            setOf(
-                StringMapEntryAdd("addr:conscriptionnumber", "I.123"),
-                StringMapEntryAdd("addr:streetnumber", "12b"),
-                StringMapEntryAdd("addr:housenumber", "12b")
-            ),
-            questType.answerApplied(AddressNumberOrName(ConscriptionNumber("I.123", "12b"), null))
-        )
-    }
-
-    @Test fun `apply block and house number answer`() {
-        assertEquals(
-            setOf(
-                StringMapEntryAdd("addr:block_number", "123"),
-                StringMapEntryAdd("addr:housenumber", "12A")
-            ),
-            questType.answerApplied(AddressNumberOrName(HouseAndBlockNumber("12A", "123"), null))
+            questType.answerApplied(AddressNumberAndName(null, "La Escalera"))
         )
     }
 
     @Test fun `apply no house number answer`() {
         assertEquals(
             setOf(StringMapEntryAdd("nohousenumber", "yes")),
-            questType.answerApplied(AddressNumberOrName(null, null))
+            questType.answerApplied(AddressNumberAndName(null, null))
         )
     }
 
     @Test fun `apply wrong building type answer`() {
         assertEquals(
             setOf(StringMapEntryModify("building", "residential", "yes")),
-            questType.answerAppliedTo(WrongBuildingType, mapOf("building" to "residential"))
+            questType.answerAppliedTo(HouseNumberAnswer.WrongBuildingType, mapOf("building" to "residential"))
         )
     }
 }

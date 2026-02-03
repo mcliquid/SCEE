@@ -29,10 +29,10 @@
         style="@style/BottomSheetButtonBarItem"
         android:text="@string/quest_destination_add_more" />
 
-    <include
+    <!--include
         android:id="@+id/side_select"
         android:visibility="gone"
-        layout="@layout/quest_street_lanes_puzzle"/>
+        layout="@layout/quest_street_lanes_puzzle"/ is it compose now?-->
 
     <!-- container currently unused, planned for destination:lanes -->
     <HorizontalScrollView

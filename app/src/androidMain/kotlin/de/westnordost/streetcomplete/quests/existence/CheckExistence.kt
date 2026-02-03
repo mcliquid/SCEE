@@ -2,10 +2,12 @@ package de.westnordost.streetcomplete.quests.existence
 
 import de.westnordost.osmfeatures.Feature
 import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
-import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.osm.LAST_CHECK_DATE_KEYS
@@ -15,9 +17,9 @@ import de.westnordost.streetcomplete.util.ktx.containsAll
 
 class CheckExistence(
     private val getFeature: (Element) -> Feature?
-) : OsmFilterQuestType<Unit>() {
+) : OsmElementQuestType<Unit>, AndroidQuest {
 
-    override val elementFilter = """
+    private val nodesFilter by lazy { """
         nodes with ((
           (
             amenity = atm
@@ -42,6 +44,7 @@ class CheckExistence(
             or amenity = grit_bin and seasonal = no
             or amenity = vending_machine and vending ~ parking_tickets|public_transport_tickets
             or amenity = ticket_validator
+            or amenity = bicycle_repair_station
             or tourism = information and information ~ board|terminal|map
             or advertising ~ column|board|poster_box
             or (highway = emergency_access_point or emergency = access_point) and ref
@@ -60,13 +63,14 @@ class CheckExistence(
             or amenity = waste_basket
             or amenity = recycling and recycling_type = container
             or amenity = toilets
+            or amenity = shower
             or amenity = drinking_water
             or man_made = planter
           )
           and (${lastChecked(6.0)})
         ) or (
           (
-            amenity ~ bicycle_parking|motorcycle_parking|taxi
+            amenity ~ bicycle_parking|motorcycle_parking|taxi|shelter
           )
           and (${lastChecked(10.0)})
         ) or (
@@ -80,7 +84,7 @@ class CheckExistence(
         and (!seasonal or seasonal = no)
         and (!intermittent or intermittent = no)
         and (!permanent or permanent = yes)
-    """
+    """.toElementFilterExpression() }
     // - traffic_calming = table is often used as a property of a crossing: we don't want the app
     //    to delete the crossing if the table is not there anymore, so exclude that
     // - postboxes are in 4 years category so that postbox collection times is asked instead more often
@@ -91,10 +95,16 @@ class CheckExistence(
 
     override val changesetComment = "Survey if places still exist"
     override val wikiLink: String? = null
-    override val icon = R.drawable.ic_quest_check
+    override val icon = R.drawable.quest_check
     override val achievements = listOf(CITIZEN, OUTDOORS)
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_existence_title2
+
+    override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> =
+        mapData.filter { isApplicableTo(it) }
+
+    override fun isApplicableTo(element: Element) =
+        nodesFilter.matches(element) && getFeature(element) != null
 
     override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry): Sequence<Element> {
         /* put markers for objects that are exactly the same as for which this quest is asking for

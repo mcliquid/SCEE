@@ -3,10 +3,11 @@ package de.westnordost.streetcomplete.quests.incline_direction
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddStepsIncline : OsmFilterQuestType<Incline>() {
+class AddStepsIncline : OsmFilterQuestType<Incline>(), AndroidQuest {
 
     override val elementFilter = """
         ways with highway = steps
@@ -17,7 +18,7 @@ class AddStepsIncline : OsmFilterQuestType<Incline>() {
     """
     override val changesetComment = "Specify which way leads up for steps"
     override val wikiLink = "Key:incline"
-    override val icon = R.drawable.ic_quest_steps
+    override val icon = R.drawable.quest_steps
     override val achievements = listOf(PEDESTRIAN)
 
     override val hint = R.string.quest_arrow_tutorial

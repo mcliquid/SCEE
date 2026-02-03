@@ -7,6 +7,7 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.getLastCheckDateKeys
@@ -21,7 +22,7 @@ import kotlinx.datetime.toLocalDateTime
 
 class CheckOpeningHoursSigned(
     private val getFeature: (Element) -> Feature?
-) : OsmElementQuestType<Boolean> {
+) : OsmElementQuestType<Boolean>, AndroidQuest {
 
     private val filter by lazy { """
         nodes, ways with
@@ -44,7 +45,7 @@ class CheckOpeningHoursSigned(
 
     override val changesetComment = "Survey whether opening hours are signed"
     override val wikiLink = "Key:opening_hours:signed"
-    override val icon = R.drawable.ic_quest_opening_hours_signed
+    override val icon = R.drawable.quest_opening_hours_signed
     override val isReplacePlaceEnabled = true
     override val achievements = listOf(CITIZEN)
 

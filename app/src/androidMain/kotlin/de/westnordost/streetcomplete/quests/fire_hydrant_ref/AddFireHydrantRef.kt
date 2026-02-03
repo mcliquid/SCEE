@@ -3,11 +3,12 @@ package de.westnordost.streetcomplete.quests.fire_hydrant_ref
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.quest.NoCountriesExcept
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddFireHydrantRef : OsmFilterQuestType<FireHydrantRefAnswer>() {
+class AddFireHydrantRef : OsmFilterQuestType<FireHydrantRefAnswer>(), AndroidQuest {
 
     override val elementFilter = """
         nodes with
@@ -16,7 +17,7 @@ class AddFireHydrantRef : OsmFilterQuestType<FireHydrantRefAnswer>() {
     """
     override val changesetComment = "Determine fire hydrant refs"
     override val wikiLink = "Key:ref"
-    override val icon = R.drawable.ic_quest_fire_hydrant_ref
+    override val icon = R.drawable.quest_fire_hydrant_ref
     override val achievements = listOf(EditTypeAchievement.LIFESAVER)
     override val isDeleteElementEnabled = true
     override val enabledInCountries = NoCountriesExcept(

@@ -10,12 +10,13 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Relation
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.quest.AllCountriesExcept
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.POSTMAN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.address.StreetOrPlaceName
 import de.westnordost.streetcomplete.osm.address.applyTo
 
-class AddAddressStreet : OsmElementQuestType<StreetOrPlaceName> {
+class AddAddressStreet : OsmElementQuestType<StreetOrPlaceName>, AndroidQuest {
 
     private val filter by lazy { """
         nodes, ways, relations with
@@ -30,11 +31,13 @@ class AddAddressStreet : OsmElementQuestType<StreetOrPlaceName> {
     """.toElementFilterExpression() }
 
     override val changesetComment = "Specify street/place names to addresses"
-    override val icon = R.drawable.ic_quest_housenumber_street
+    override val icon = R.drawable.quest_housenumber_street
     override val wikiLink = "Key:addr"
     // In Japan, housenumbers usually have block numbers, not streets
     override val enabledInCountries = AllCountriesExcept("JP")
     override val achievements = listOf(POSTMAN)
+
+    override val hint = R.string.quest_streetName_hint
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_address_street_title2
 

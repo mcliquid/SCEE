@@ -149,7 +149,7 @@
     <string name="quest_buildingType_stable">Pferdestall</string>
     <string name="restriction_overlay_sign_stop">Halt</string>
     <string name="quest_poi_traffic_title">POI: Verkehr</string>
-    <string name="quest_settings_element_selection">Lege die für diese Aufgabe berechtigten Elemente fest. &lt;a href="https://github.com/Helium314/SCEE/blob/modified/CONTRIBUTING_A_NEW_QUEST.md#element-selection"&gt;Klicke hier&lt;/a&gt;, um Informationen zur Syntax der Elementauswahl in einem Browser anzuzeigen.</string>
+    <string name="quest_settings_element_selection">Lege die für diese Aufgabe berechtigten Elemente fest. <a href="https://github.com/Helium314/SCEE/blob/modified/CONTRIBUTING_A_NEW_QUEST.md#element-selection">Klicke hier</a>, um Informationen zur Syntax der Elementauswahl in einem Browser anzuzeigen.</string>
     <string name="close_note_checkbox">Schließe den Hinweis (mach das nur, wenn du den Hinweis tatsächlich löst!)</string>
     <string name="quest_lanes_answer_noLanes_known_count">Keine Markierungen, offensichtliche Anzahl von Fahrspuren</string>
     <string name="quest_buildingType_barn">Scheune</string>
@@ -534,9 +534,9 @@
     <string name="quest_parking_capacity_disabled_title">Wie viele Behindertenparkplätze gibt es hier?</string>
     <string name="quest_parking_capacity_disabled_answer_yes">Es gibt sie, aber die Anzahl ist unklar</string>
     <string name="quest_parking_orientation_title">In welcher Ausrichtung parken Autos hier?</string>
-    <string name="quest_parking_capacity_hint">Dazu gehören auch Sonderparkplätze wie für Behinderte, Familien, zum Aufladen von Elektrofahrzeugen usw. Blende die Aufgabe aus, wenn die Parkplätze nicht markiert und somit nicht zählbar sind.</string>
+    <string name="quest_parking_capacity_hint">Dazu gehören auch spezielle Plätze für Menschen mit Behinderung, Familien oder zum Aufladen von Elektrofahrzeugen. Blende diese Aufgabe aus, wenn die Parkplätze nicht markiert sind und daher nicht gezählt werden können</string>
     <string name="quest_parking_capacity_title">Wie viele Autos können hier parken?</string>
-    <string name="quest_parking_capacity_disabled_default_disabled_msg">In SCEE hinzugefügte Aufgaben sind standardmäßig immer deaktiviert, da sie nicht immer beantwortet werden können und möglicherweise Wissen über das Thema und die Kennzeichnung erfordern. \nDiese Aufgabe wird nicht gestellt, wenn capacity:disabled=yes gesetzt ist. Wenn du sie auch angeben möchtest, ändere die Elementauswahl von „and !capacity:disabled“ in „and (!capacity:disabled or capacity:disabled=yes)“.</string>
+    <string name="quest_parking_capacity_disabled_default_disabled_msg">In SCEE hinzugefügte Aufgaben sind standardmäßig immer deaktiviert, da sie nicht immer beantwortet werden können und möglicherweise Wissen über das Thema und die Kennzeichnung erfordern.\nDiese Aufgabe wird nicht gestellt, wenn capacity:disabled=yes gesetzt ist. Wenn du sie auch angeben möchtest, ändere die Elementauswahl von „and !capacity:disabled“ in „and (!capacity:disabled or capacity:disabled=yes)“</string>
     <string name="quest_subwayEntranceRef_hint">Referenznummer für diesen Eingang:</string>
     <string name="quest_subwayEntranceRef_disabled_msg">Dieser Quest ist standardmäßig deaktiviert, da die Beschilderung je nach Region und Betreiber sehr unterschiedlich ist.</string>
     <string name="quest_generalRef_hint">Referenznummer</string>

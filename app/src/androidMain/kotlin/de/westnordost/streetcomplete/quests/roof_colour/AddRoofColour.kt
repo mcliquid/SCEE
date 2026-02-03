@@ -5,8 +5,11 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BUILDING
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_roof
 
-class AddRoofColour : OsmFilterQuestType<RoofColour>() {
+class AddRoofColour : OsmFilterQuestType<RoofColour>(), AndroidQuest {
 
     override val elementFilter = """
         ways, relations with
@@ -22,7 +25,7 @@ class AddRoofColour : OsmFilterQuestType<RoofColour>() {
     override val wikiLink = "Key:roof:colour"
     override val icon = R.drawable.ic_quest_roof_colour
     override val achievements = listOf(BUILDING)
-    override val defaultDisabledMessage = R.string.default_disabled_msg_roof
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_roof
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_roofColour_title
 
@@ -37,3 +40,4 @@ class AddRoofColour : OsmFilterQuestType<RoofColour>() {
         tags["roof:colour"] = answer.osmValue
     }
 }
+

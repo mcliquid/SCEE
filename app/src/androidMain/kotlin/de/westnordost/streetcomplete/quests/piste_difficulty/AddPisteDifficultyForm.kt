@@ -1,21 +1,24 @@
 package de.westnordost.streetcomplete.quests.piste_difficulty
 
-import android.os.Bundle
-import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.quests.AImageListQuestForm
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import de.westnordost.streetcomplete.quests.AItemSelectQuestForm
+import de.westnordost.streetcomplete.ui.common.item_select.ImageWithLabel
+import kotlinx.serialization.serializer
 
-class AddPisteDifficultyForm : AImageListQuestForm<PisteDifficulty, PisteDifficulty>() {
+class AddPisteDifficultyForm : AItemSelectQuestForm<PisteDifficulty, PisteDifficulty>() {
 
-    override val items get() = PisteDifficulty.values().mapNotNull { it.asItem(countryInfo.countryCode) }
+    override val items get() = PisteDifficulty.entries.filter { it.isAvailable(countryInfo.countryCode) }
     override val itemsPerRow = 2
     override val moveFavoritesToFront = false
+    override val serializer = serializer<PisteDifficulty>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        imageSelector.cellLayoutId = R.layout.cell_labeled_icon_select_with_description
+    @Composable override fun ItemContent(item: PisteDifficulty) {
+        ImageWithLabel(painterResource(item.getIcon(countryInfo.countryCode)), stringResource(item.title))
     }
 
-    override fun onClickOk(selectedItems: List<PisteDifficulty>) {
-        applyAnswer(selectedItems.single())
+    override fun onClickOk(selectedItem: PisteDifficulty) {
+        applyAnswer(selectedItem)
     }
 }

@@ -44,7 +44,6 @@ import androidx.core.graphics.ColorUtils
 import androidx.compose.ui.geometry.Offset
 import androidx.core.graphics.Insets
 import androidx.core.net.toUri
-import androidx.core.os.ConfigurationCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.doOnNextLayout
 import androidx.core.view.isGone
@@ -62,7 +61,6 @@ import de.westnordost.osmfeatures.GeometryType
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.StreetCompleteApplication
 import de.westnordost.streetcomplete.data.download.tiles.asBoundingBoxOfEnclosingTiles
 import de.westnordost.streetcomplete.data.edithistory.EditKey
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
@@ -84,14 +82,17 @@ import de.westnordost.streetcomplete.data.osm.mapdata.isWayComplete
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuest
 import de.westnordost.streetcomplete.data.osmnotes.edits.NotesWithEditsSource
-import de.westnordost.streetcomplete.data.osmnotes.notequests.OsmNoteQuest
+import de.westnordost.streetcomplete.data.osmnotes.notequests.createOsmNoteQuest
 import de.westnordost.streetcomplete.data.osmtracks.Trackpoint
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuest
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestController
 import de.westnordost.streetcomplete.data.overlays.OverlayRegistry
 import de.westnordost.streetcomplete.data.overlays.SelectedOverlayController
+import de.westnordost.streetcomplete.data.overlays.AndroidOverlay
+import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.preferences.Preferences
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.quest.OsmNoteQuestKey
 import de.westnordost.streetcomplete.data.quest.Quest
 import de.westnordost.streetcomplete.data.quest.QuestAutoSyncer
@@ -110,7 +111,6 @@ import de.westnordost.streetcomplete.osm.level.parseLevelsOrNull
 import de.westnordost.streetcomplete.overlays.AbstractOverlayForm
 import de.westnordost.streetcomplete.overlays.IsShowingElement
 import de.westnordost.streetcomplete.overlays.custom.CustomOverlay
-import de.westnordost.streetcomplete.overlays.Overlay
 import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
 import de.westnordost.streetcomplete.quests.AbstractQuestForm
 import de.westnordost.streetcomplete.quests.IsShowingQuestDetails
@@ -414,7 +414,7 @@ class MainActivity :
         mapDataWithEditsSource.addListener(this)
         locationAvailabilityReceiver.addListener(::updateLocationAvailability)
         updateLocationAvailability(isLocationAvailable)
-        StreetCompleteApplication.preferences.registerOnSharedPreferenceChangeListener(this)
+        Prefs.sharedPreferences.registerOnSharedPreferenceChangeListener(this)
         reloadOverlaySelector()
         stopQuestMonitor()
     }
@@ -457,7 +457,7 @@ class MainActivity :
         locationAvailabilityReceiver.removeListener(::updateLocationAvailability)
 
         locationManager.removeUpdates()
-        StreetCompleteApplication.preferences.unregisterOnSharedPreferenceChangeListener(this)
+        Prefs.sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
         clearOverlaySelector()
         startQuestMonitor()
     }
@@ -785,7 +785,7 @@ class MainActivity :
 
     override fun onCreatedNote(position: LatLon) {
         Log.i(TAG, "created note at $position")
-        showQuestSolvedAnimation(R.drawable.ic_quest_create_note, position)
+        showQuestSolvedAnimation(R.drawable.quest_create_note, position)
         closeBottomSheet()
     }
 
@@ -1251,7 +1251,7 @@ class MainActivity :
             return
         }
 
-        val f = overlay.createForm(null) ?: return
+        val f = (overlay as? AndroidOverlay)?.createForm(null) ?: return
         if (f.arguments == null) f.arguments = bundleOf()
         val rotation = camera?.rotation ?: 0.0
         val tilt = camera?.tilt ?: 0.0
@@ -1284,12 +1284,12 @@ class MainActivity :
                 ?.takeIf { questsHiddenSource.get(OsmNoteQuestKey(it.id)) == null }
         }
         if (note != null) {
-            showQuestDetails(OsmNoteQuest(note.id, note.position))
+            showQuestDetails(createOsmNoteQuest(note.id, note.position))
             return
         }
 
         val element = withContext(Dispatchers.IO) { mapDataWithEditsSource.get(elementKey.type, elementKey.id) } ?: return
-        val f = overlay.createForm(element) ?: return
+        val f = (overlay as? AndroidOverlay)?.createForm(element) ?: return
         if (f.arguments == null) f.arguments = bundleOf()
 
         val camera = mapFragment.cameraPosition
@@ -1324,7 +1324,7 @@ class MainActivity :
         val mapFragment = mapFragment ?: return
         if (isQuestDetailsCurrentlyDisplayedFor(quest.key)) return
 
-        val f = quest.type.createForm()
+        val f = (quest.type as? AndroidQuest)?.createForm() ?: return
         if (f.arguments == null) f.arguments = bundleOf()
 
         val camera = mapFragment.cameraPosition
@@ -1333,7 +1333,7 @@ class MainActivity :
         val args = AbstractQuestForm.createArguments(quest.key, quest.type, quest.geometry, rotation, tilt)
         f.requireArguments().putAll(args)
 
-        val element = if (quest is OsmQuest) withContext(Dispatchers.IO) {
+        val element = if (f is AbstractOsmQuestForm<*> && quest is OsmQuest) withContext(Dispatchers.IO) {
             val e = mapDataWithEditsSource.get(quest.elementType, quest.elementId)
             if (e == null) // this sometimes occurred in tests... until reason is found, just remove the quest
                 osmQuestController.delete(quest.key)

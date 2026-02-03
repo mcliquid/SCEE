@@ -5,12 +5,15 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.isPlaceOrDisusedPlace
 import de.westnordost.streetcomplete.osm.updateWithCheckDate
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_go_inside_regional_warning
 
-class AddSmoking : OsmFilterQuestType<SmokingAllowed>() {
+class AddSmoking : OsmFilterQuestType<SmokingAllowed>(), AndroidQuest {
     /*
         - some places are eligible as we assume they probably have seating (unless
           they are explicitly marked as having no seating at all):
@@ -40,10 +43,10 @@ class AddSmoking : OsmFilterQuestType<SmokingAllowed>() {
     """
     override val changesetComment = "Survey whether smoking is allowed or prohibited"
     override val wikiLink = "Key:smoking"
-    override val icon = R.drawable.ic_quest_smoking
+    override val icon = R.drawable.quest_smoking
     override val isReplacePlaceEnabled = true
     override val achievements = listOf(CITIZEN)
-    override val defaultDisabledMessage = R.string.default_disabled_msg_go_inside_regional_warning
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_go_inside_regional_warning
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_smoking_title2
 

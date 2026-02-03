@@ -15,8 +15,6 @@ import androidx.core.content.getSystemService
 import androidx.core.location.LocationListenerCompat
 import androidx.core.location.LocationManagerCompat
 import androidx.core.util.Consumer
-import de.westnordost.streetcomplete.util.ktx.elapsedDuration
-import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.minutes
 
 /** Convenience wrapper around the location manager with easier API, making use of both the GPS
@@ -72,13 +70,13 @@ class FineLocationManager(context: Context, locationUpdateCallback: (Location) -
     fun getLastLocation() : Location? {
         if (deviceHasGPS) {
             locationManager.getLastKnownLocation(GPS_PROVIDER)?.let {
-                if ((SystemClock.elapsedRealtimeNanos().nanoseconds - it.elapsedDuration) < 2.minutes)
+                if ((SystemClock.elapsedRealtimeNanos() - it.elapsedRealtimeNanos) < 2.minutes.inWholeNanoseconds)
                     return it
             }
         }
         if (deviceHasNetworkLocationProvider) {
             locationManager.getLastKnownLocation(NETWORK_PROVIDER)?.let {
-                if ((SystemClock.elapsedRealtimeNanos().nanoseconds - it.elapsedDuration) < 2.minutes)
+                if ((SystemClock.elapsedRealtimeNanos() - it.elapsedRealtimeNanos) < 2.minutes.inWholeNanoseconds)
                     return it
             }
         }

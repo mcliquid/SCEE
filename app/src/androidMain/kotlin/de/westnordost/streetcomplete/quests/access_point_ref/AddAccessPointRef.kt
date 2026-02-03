@@ -3,10 +3,11 @@ package de.westnordost.streetcomplete.quests.access_point_ref
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddAccessPointRef : OsmFilterQuestType<AccessPointRefAnswer>() {
+class AddAccessPointRef : OsmFilterQuestType<AccessPointRefAnswer>(), AndroidQuest {
 
     override val elementFilter = """
         nodes with
@@ -18,7 +19,7 @@ class AddAccessPointRef : OsmFilterQuestType<AccessPointRefAnswer>() {
     """
     override val changesetComment = "Determine emergency access point refs"
     override val wikiLink = "Key:ref"
-    override val icon = R.drawable.ic_quest_access_point
+    override val icon = R.drawable.quest_access_point
     override val achievements = listOf(EditTypeAchievement.LIFESAVER, EditTypeAchievement.RARE)
     override val isDeleteElementEnabled = true
 

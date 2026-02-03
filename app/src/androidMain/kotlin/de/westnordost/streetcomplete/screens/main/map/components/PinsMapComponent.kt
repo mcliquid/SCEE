@@ -8,8 +8,6 @@ import androidx.core.graphics.Insets
 import com.google.gson.JsonObject
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
-import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.preferences.Theme
 import de.westnordost.streetcomplete.screens.main.map.createPinBitmap
@@ -136,7 +134,6 @@ class PinsMapComponent(
                 textAllowOverlap(true),
                 iconIgnorePlacement(true),
                 textIgnorePlacement(true),
-                symbolSortKey(50f)
             ),
         CircleLayer("pin-dot-layer", SOURCE)
             .withFilter(any(
@@ -150,9 +147,6 @@ class PinsMapComponent(
                 circleStrokeWidth(1f),
                 circleTranslate(arrayOf(0f, if (prefs.prefs.getBoolean(Prefs.OFFSET_FIX, false)) 0f else -8f)), // so that it hides behind the pin
                 circleTranslateAnchor(Property.CIRCLE_TRANSLATE_ANCHOR_VIEWPORT),
-                symbolSortKey(40f),
-                iconAllowOverlap(true),
-                iconIgnorePlacement(true),
             ),
         CircleLayer("pin-quest-dot-layer", DOT_SOURCE)
             .withFilter(all(gt(zoom(), CLUSTER_MAX_ZOOM)))
@@ -287,15 +281,6 @@ class PinsMapComponent(
         private const val CLUSTER_MAX_ZOOM = 14
     }
 }
-
-data class Pin(
-    val position: LatLon,
-    val icon: Int,
-    val properties: Collection<Pair<String, String>> = emptyList(),
-    val order: Int = 0,
-    val geometry: ElementGeometry? = null,
-    val color: String? = null,
-)
 
 private fun JsonObject.toMap(): Map<String, String> =
     entrySet().associate { it.key to it.value.asString }

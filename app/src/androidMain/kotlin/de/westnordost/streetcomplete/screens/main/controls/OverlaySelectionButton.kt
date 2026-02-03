@@ -9,11 +9,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.preferences.Preferences
-import de.westnordost.streetcomplete.overlays.Overlay
 import de.westnordost.streetcomplete.overlays.custom.CustomOverlay
 import de.westnordost.streetcomplete.overlays.custom.getIndexedCustomOverlayPref
+import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.ui.common.OverlaysIcon
 import org.koin.compose.koinInject
+import androidx.compose.ui.platform.LocalResources
 
 /** Overlay selection button that shows the icon of the currently selected overlay */
 @Composable
@@ -25,7 +26,7 @@ fun OverlaySelectionButton(
     val prefs: Preferences = koinInject()
     val icon = if (overlay is CustomOverlay){
         val index = prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, 0)
-        LocalContext.current.resources.getIdentifier(
+        LocalResources.current.getIdentifier(
             prefs.getString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_ICON, index), "ic_custom_overlay"),
             "drawable", LocalContext.current.packageName
         )

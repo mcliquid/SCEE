@@ -8,8 +8,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.quest_lampMount_disabled_msg
 
-class AddLampMount : OsmFilterQuestType<LampMountAnswer>() {
+class AddLampMount : OsmFilterQuestType<LampMountAnswer>(), AndroidQuest {
 
     override val elementFilter = """
         nodes with
@@ -18,7 +21,7 @@ class AddLampMount : OsmFilterQuestType<LampMountAnswer>() {
           and !support
     """
     override val changesetComment = "Add lamp mount"
-    override val defaultDisabledMessage = R.string.quest_lampMount_disabled_msg
+    override val defaultDisabledMessage = Res.string.quest_lampMount_disabled_msg
     override val wikiLink = "Key:lamp_mount"
     override val icon = R.drawable.ic_quest_lamp_mount
     override val isReplacePlaceEnabled = true
@@ -42,3 +45,4 @@ class AddLampMount : OsmFilterQuestType<LampMountAnswer>() {
         }
     }
 }
+

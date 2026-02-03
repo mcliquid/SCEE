@@ -167,6 +167,7 @@
           "terms": "centre artistique,centre culturel,centre des arts,établissement artistique,établissement culturel,artistique,culturel,arts center"
         },
         "amenity/atm": {
+          "name": "Distributeur de billets",
           "terms": "distributeur de billets,distributeur automatique,distributeur automatique de billets,guichet automatique,dab,gab,billets de banque,retrait d'argent,retrait de liquide,guichet de retrait,retrait automatique,atm,amenity atm,mister cash,bancontact"
         },
         "amenity/baking_oven": {
@@ -256,6 +257,9 @@
           "name": "Café",
           "terms": "café,américano,café moulu,cappuccino,expresso,thé,boisson chaude"
         },
+        "amenity/cafe/teahouse": {
+          "name": "Salon de thé"
+        },
         "amenity/car_pooling": {
           "name": "Aire de covoiturage",
           "terms": "covoiturage,co-voiturage,autopartage"
@@ -311,10 +315,6 @@
         "amenity/clock/sundial": {
           "name": "Cadran solaire",
           "terms": "cadran,solaire,horloge,gnomon,ombre,heure"
-        },
-        "amenity/college": {
-          "name": "Enseignement supérieur (non universitaire) - institution ou campus (terrain)",
-          "terms": "enseignement supérieur non universitaire,enseignement supérieur,non universitaire,école supérieure,grande école,établissement d'enseignement supérieur,post-bac,post bac,institut,haute école,cegep,cégep,etablissement d'enseignement superieur,enseignement superieur,ecole superieure,grande ecole,école,ecole,college,amenity college,université,university"
         },
         "amenity/community_centre": {
           "name": "Centre communautaire",
@@ -516,10 +516,6 @@
           "name": "Circuit d'essai de stages de conduite",
           "terms": "auto-école,permis de conduite,stage,test,circuit,conduire"
         },
-        "amenity/driving_school": {
-          "name": "Auto-école",
-          "terms": "auto-école,école de conduite,auto ecole,ecole de conduite,code de la route,permis de conduire,driving school,moto école,moto-école"
-        },
         "amenity/embassy": {
           "name": "Ambassade"
         },
@@ -532,7 +528,7 @@
           "terms": "centre d'exposition,parc des expositions,expo"
         },
         "amenity/fast_food": {
-          "name": "Fast Food",
+          "name": "Restauration rapide",
           "terms": "fast food,restauration rapide,service au comptoir,vente à emporter,à emporter,a emporter,burger,sandwich,kebab,kébab,panini,tacos"
         },
         "amenity/fast_food/bagel": {
@@ -606,6 +602,7 @@
           "terms": "aire de restauration,zone de restauration,foodcourt,food-court,food court,restauration rapide,restaurants rapides,restaurant rapide,service au comptoir,vente à emporter,repas à emporter,fast food,restaurants,cuisines,cafeteria,cafétéria,repas"
         },
         "amenity/fountain": {
+          "name": "Fontaine",
           "terms": "fontaine,fontaine d'ornement,fontaine décorative,fontaine sculpturale,fontaine récréative,grande fontaine,jet d'eau,jets d'eau,fontaine d'eau,fontaine d'eau non potable,eau non potable,non potable,fountain"
         },
         "amenity/fuel": {
@@ -645,6 +642,7 @@
           "terms": "mirador"
         },
         "amenity/ice_cream": {
+          "name": "Boutique de glaces",
           "terms": "magasin de glaces"
         },
         "amenity/ice_cream/frozen_yogurt": {
@@ -659,17 +657,9 @@
           "name": "Karaoke",
           "terms": "karaoke,karaoké"
         },
-        "amenity/kindergarten": {
-          "name": "Crèche, garderie, jardin d'enfants (terrain)",
-          "terms": "créche,crêche,creche,nurserie,garde d'enfants,halte-garderie,nourricerie,childcare,kindergarten,jardin d'enfants,enfant"
-        },
         "amenity/kneipp_water_cure": {
           "name": "Bain Kneipp",
           "terms": "bain,piscine,eau,pied,hydrothérapie,thérapie,soin,kneipp"
-        },
-        "amenity/language_school": {
-          "name": "École de langues",
-          "terms": "école de langues,langues étrangères"
         },
         "amenity/lavoir": {
           "name": "Lavoir",
@@ -725,10 +715,6 @@
         "amenity/motorcycle_rental": {
           "name": "Location de motos",
           "terms": "location,moto,mobylette,motocyclette,scooter"
-        },
-        "amenity/music_school": {
-          "name": "École de musique",
-          "terms": "école de musique"
         },
         "amenity/nightclub": {
           "name": "Boîte de nuit",
@@ -864,10 +850,6 @@
           "name": "Bureau de poste",
           "terms": "bureau de poste"
         },
-        "amenity/prep_school": {
-          "name": "École préparatoire",
-          "terms": "académique,école,devoirs,tests,examens,tutorat"
-        },
         "amenity/prison": {
           "name": "Prison (terrain)",
           "terms": "prison,terrains carcéraux,pénitencier,maison d'arrêt,centre correctionnel,centre de détention,geôle."
@@ -894,8 +876,7 @@
         },
         "amenity/public_bookcase": {
           "name": "Boîte à livres",
-          "terms": "bibliothèque en libre service,micro-bibliothèque,boîte à livres,armoire à livres",
-          "aliases": "Microbibliothèque"
+          "terms": "bibliothèque en libre service,micro-bibliothèque,boîte à livres,armoire à livres"
         },
         "amenity/ranger_station": {
           "name": "Centre d'accueil du parc",
@@ -1031,10 +1012,6 @@
         "amenity/sanitary_dump_station": {
           "name": "Station de vidange sanitaire",
           "terms": "station de vidange,sanitaires,mobilehome,camping,toilettes chimiques"
-        },
-        "amenity/school": {
-          "name": "École élémentaire ou secondaire (terrain)",
-          "terms": "école élémentaire,école primaire,école secondaire,collège,lycée,cycles primaires et secondaires,enseignements élémentaire et secondaire,enseignement élémentaire,enseignement secondaire,établissement d'enseignement élémentaire,établissement d'enseignement secondaire,école,écoliers,cp-ce1-ce2-cm1-cm2,ecole,college,lycee,school"
         },
         "amenity/shelter": {
           "name": "Abri",
@@ -1191,10 +1168,6 @@
         "amenity/trolley_bay": {
           "name": "Abri à chariots",
           "terms": "abri à chariots"
-        },
-        "amenity/university": {
-          "name": "Université, établissement d'enseignement supérieur, campus (terrain)",
-          "terms": "université,campus universitaire,campus,enseignement supérieur universitaire,enseignement supérieur,universitaire,établissement d'enseignement supérieur,post-bac,post bac,institut,etablissement d'enseignement superieur,école,ecole,university,amenity university,college,école supérieure,grande école,haute école,ecole superieure,grande ecole"
         },
         "amenity/vacuum_cleaner": {
           "name": "Station d'aspirateurs pour nettoyage automobile",
@@ -1506,7 +1479,7 @@
           "terms": "barrière,portail,accès,fil,fer,barré,barbelé"
         },
         "barrier/handrail": {
-          "name": "Rampe"
+          "name": "Rampe, Main courante"
         },
         "barrier/hedge": {
           "name": "Haie",
@@ -1686,8 +1659,7 @@
         },
         "building/commercial": {
           "name": "Bâtiment de bureaux et d'affaires",
-          "terms": "bâtiment d'affaires,bureaux,parc d'activités,parc d'affaires,quartier d'affaires,zone d'activités,entreprises,sociétés,building commercial,commercial building",
-          "aliases": "Bâtiment tertiaire"
+          "terms": "bâtiment d'affaires,bureaux,parc d'activités,parc d'affaires,quartier d'affaires,zone d'activités,entreprises,sociétés,building commercial,commercial building"
         },
         "building/construction": {
           "name": "Bâtiment en construction",
@@ -1824,8 +1796,7 @@
         },
         "building/semidetached_house": {
           "name": "Maison mitoyenne",
-          "terms": "maison jumelée,maison jumelle,maison mitoyenne,maison avec mur mitoyen,pavillon mitoyen,maisons jumelées,maisons jumelles,maisons mitoyennes,maisons avec mur mitoyen,pavillons mitoyens,building semidetached house,semidetached house,semi detached house",
-          "aliases": "Maison jumelée"
+          "terms": "maison jumelée,maison jumelle,maison mitoyenne,maison avec mur mitoyen,pavillon mitoyen,maisons jumelées,maisons jumelles,maisons mitoyennes,maisons avec mur mitoyen,pavillons mitoyens,building semidetached house,semidetached house,semi detached house"
         },
         "building/service": {
           "name": "Bâtiment de service (technique)",
@@ -1892,6 +1863,16 @@
         "cemetery/sector": {
           "name": "Section de cimetière",
           "terms": "tombe,enterrement,cimetière,mausolée"
+        },
+        "climbing/crag": {
+          "name": "Site d'escalade"
+        },
+        "climbing/route": {
+          "name": "Voie d'escalade"
+        },
+        "climbing/route_bottom": {
+          "name": "Début d'une voie d'escalade",
+          "terms": "départ de la voie d'escalade"
         },
         "club": {
           "name": "Club",
@@ -2143,9 +2124,41 @@
         "disused/shop": {
           "name": "Magasin désaffecté"
         },
+        "education": {
+          "name": "Structure éducative"
+        },
+        "education/college": {
+          "name": "Enseignement supérieur (non universitaire) - institution ou campus (terrain)"
+        },
+        "education/dancing_school": {
+          "name": "École de danse"
+        },
+        "education/driving_school": {
+          "name": "Auto-école"
+        },
+        "education/kindergarten": {
+          "name": "Crèche, garderie, jardin d'enfants (terrain)"
+        },
+        "education/language_school": {
+          "name": "École de langues"
+        },
+        "education/music_school": {
+          "name": "École de musique"
+        },
+        "education/prep_school": {
+          "name": "École préparatoire"
+        },
+        "education/school": {
+          "name": "École élémentaire ou secondaire (terrain)"
+        },
+        "education/university": {
+          "name": "Université, établissement d'enseignement supérieur, campus (terrain)"
+        },
+        "education/yes": {
+          "name": "Structure éducative (non spécifiée)"
+        },
         "embankment": {
-          "name": "Terre-plein",
-          "aliases": "Remblai"
+          "name": "Terre-plein"
         },
         "emergency": {
           "name": "Éléments de secours"
@@ -2161,12 +2174,6 @@
         "emergency/defibrillator": {
           "name": "Défibrillateur",
           "terms": "défibrillateur automatique,défibrillateur automatisé externe,dae"
-        },
-        "emergency/designated": {
-          "name": "Accès aux services d'urgences désigné"
-        },
-        "emergency/destination": {
-          "name": "Accessible aux services d'urgences"
         },
         "emergency/disaster_response": {
           "name": "Centre de réponse d'urgence",
@@ -2186,8 +2193,7 @@
         },
         "emergency/fire_hydrant": {
           "name": "Point d'eau incendie",
-          "terms": "borne incendie,borne-fontaine,borne fontaine,bouche d'incendie,poteau incendie,hydrant,fire hydrant,point d'eau incendie",
-          "aliases": "Borne incendie"
+          "terms": "borne incendie,borne-fontaine,borne fontaine,bouche d'incendie,poteau incendie,hydrant,fire hydrant,point d'eau incendie"
         },
         "emergency/fire_hydrant/pillar": {
           "name": "Poteau incendie",
@@ -2225,18 +2231,9 @@
           "name": "Secours de montagne",
           "terms": "secours,pghm"
         },
-        "emergency/no": {
-          "name": "Non accessible aux services d'urgences"
-        },
-        "emergency/official": {
-          "name": "Accès d'urgence officiel"
-        },
         "emergency/phone": {
           "name": "Téléphone de secours",
           "terms": "téléphone d'urgence"
-        },
-        "emergency/private": {
-          "name": "Accès d'urgence privé"
         },
         "emergency/siren": {
           "name": "Sirène",
@@ -2253,9 +2250,6 @@
         "emergency/water_tank": {
           "name": "Réservoir d'eau de secours",
           "terms": "réservoir d'eau de secours,secours,urgence,reservoir"
-        },
-        "emergency/yes": {
-          "name": "Accessible aux services d'urgences"
         },
         "entrance": {
           "name": "Entrée / sortie",
@@ -2466,8 +2460,7 @@
         },
         "highway/crossing": {
           "name": "Passage",
-          "terms": "passage piéton",
-          "aliases": "Traversée"
+          "terms": "passage piéton"
         },
         "highway/crossing/informal": {
           "name": "Passage piéton informel"
@@ -2522,8 +2515,7 @@
           "name": "Îlot central"
         },
         "highway/cyclist_waiting_aid": {
-          "name": "Sas vélo",
-          "terms": "sas à vélo,sas cycliste,sas pour vélo"
+          "name": "Aide pour cyclistes"
         },
         "highway/elevator": {
           "name": "Ascenseur",
@@ -2555,8 +2547,7 @@
         },
         "highway/footway/conveying": {
           "name": "Tapis roulant marchable",
-          "terms": "tapis roulant marchable,trottoir roulant",
-          "aliases": "Trottoir roulant"
+          "terms": "tapis roulant marchable,trottoir roulant"
         },
         "highway/footway/crossing": {
           "name": "Passage piéton",
@@ -2609,10 +2600,6 @@
           "name": "Autoroute",
           "terms": "autoroute,voie rapide"
         },
-        "highway/motorway_junction": {
-          "name": "Sortie / Échangeur",
-          "terms": "sortie,échangeur,échangeur autoroutier,croisement d'autoroutes,intersection d'autoroutes"
-        },
         "highway/motorway_link": {
           "name": "Bretelle d'autoroute",
           "terms": "bretelle,accès,entrée,sortie,voie,autoroute"
@@ -2623,7 +2610,7 @@
         },
         "highway/path": {
           "name": "Chemin",
-          "terms": "chemin"
+          "terms": "chemin,sentier"
         },
         "highway/path/boardwalk": {
           "name": "Promenade",
@@ -2643,12 +2630,11 @@
         },
         "highway/path/informal": {
           "name": "Chemin informel",
-          "terms": "chemin informel,chemin officieux,chemin spontané,raccourci,ligne de désire"
+          "terms": "chemin informel,sentier informel,chemin officieux,chemin spontané,raccourci,ligne de désire"
         },
         "highway/pedestrian_area": {
           "name": "Aire piétonne",
-          "terms": "zone piétonne,zone piétonnière,piétonnier",
-          "aliases": "Zone piétonne"
+          "terms": "zone piétonne,zone piétonnière,piétonnier"
         },
         "highway/pedestrian_line": {
           "name": "Rue piétonne",
@@ -2704,8 +2690,7 @@
         },
         "highway/service/alley": {
           "name": "Ruelle",
-          "terms": "allée",
-          "aliases": "Voie de service d'une dépendance, d'un arrière-local, d'un arrière-jardin, d'une aire de stockage etc"
+          "terms": "allée"
         },
         "highway/service/drive-through": {
           "name": "Drive (service au volant)",
@@ -2792,8 +2777,7 @@
         },
         "highway/turning_circle": {
           "name": "Zone de manœuvre",
-          "terms": "point de retournement",
-          "aliases": "Point de retournement"
+          "terms": "point de retournement"
         },
         "highway/turning_loop": {
           "name": "Boucle de retournement (îlot central)",
@@ -2806,6 +2790,9 @@
         "historic": {
           "name": "Site historique",
           "terms": "site historique"
+        },
+        "historic/aircraft": {
+          "name": "Avion historique"
         },
         "historic/archaeological_site": {
           "name": "Site archéologique",
@@ -2854,6 +2841,9 @@
         "historic/memorial": {
           "name": "Mémorial",
           "terms": "mémorial,monument aux morts,statue,buste,stèle,plaque"
+        },
+        "historic/memorial/blue_plaque-GB-IE": {
+          "name": "Plaque bleue"
         },
         "historic/memorial/plaque": {
           "name": "Plaque commémorative",
@@ -2931,8 +2921,7 @@
         },
         "junction": {
           "name": "Jonction routière",
-          "terms": "jonction routière,jonction,carrefour,intersection routière,intersection",
-          "aliases": "Carrefour"
+          "terms": "jonction routière,jonction,carrefour,intersection routière,intersection"
         },
         "landuse": {
           "name": "Utilisation du sol"
@@ -2961,16 +2950,11 @@
         },
         "landuse/commercial": {
           "name": "Zone tertiaire",
-          "terms": "zone tertiaire,zone de bureaux,cité administrative",
-          "aliases": "Zone de bureaux"
+          "terms": "zone tertiaire,zone de bureaux,cité administrative"
         },
         "landuse/construction": {
           "name": "Site en construction",
           "terms": "zone de construction,construction,démolition,développement,infrastructure,grue"
-        },
-        "landuse/education": {
-          "name": "Zone dédiée à l'éducation",
-          "terms": "zone,groupe,aire,campus,éducation,école,scolaire"
         },
         "landuse/farm": {
           "name": "Terre cultivée"
@@ -3177,10 +3161,6 @@
         "leisure/dance": {
           "name": "Salle de danse",
           "terms": "piste de danse,salle de bal,dancing"
-        },
-        "leisure/dancing_school": {
-          "name": "École de danse",
-          "terms": "école de danse,swing,tango,valse,danse"
         },
         "leisure/disc_golf_course": {
           "name": "Parcours de disc golf",
@@ -3679,6 +3659,12 @@
           "name": "Cintre à tapis",
           "terms": "cintre à tapis,support de tapis,râtelier à tapis"
         },
+        "man_made/ceremonial_gate/paifang": {
+          "name": "Paifang"
+        },
+        "man_made/ceremonial_gate/torii": {
+          "name": "Torii"
+        },
         "man_made/charge_point": {
           "name": "Borne de recharge pour véhicules électriques",
           "terms": "borne de recharge pour véhicules électriques"
@@ -3732,8 +3718,7 @@
         },
         "man_made/embankment": {
           "name": "Terre-plein",
-          "terms": "terre-plein,digue",
-          "aliases": "Remblai"
+          "terms": "terre-plein,digue"
         },
         "man_made/flagpole": {
           "name": "Mât de drapeau",
@@ -3952,10 +3937,6 @@
         "man_made/telescope/radio": {
           "name": "Radiotélescope",
           "terms": "radiotélescope"
-        },
-        "man_made/torii": {
-          "name": "Torii",
-          "terms": "torii,portique,portail,shinto,temple shinto"
         },
         "man_made/tower": {
           "name": "Tour",
@@ -4787,10 +4768,6 @@
           "name": "Tunnel",
           "terms": "tunnel,jeux"
         },
-        "playground/water": {
-          "name": "Appareils pour jouer avec de l'eau",
-          "terms": "appareils,jeux,pompe,vis,eau"
-        },
         "playground/zipwire": {
           "name": "Tyrolienne (jeu)",
           "terms": "tyrolienne"
@@ -4958,6 +4935,9 @@
         "public_transport/platform/light_rail": {
           "name": "Station de métro léger",
           "terms": "gare de métro léger,station de métro léger,quai de métro léger,arrêt de métro léger,gare,stop,arrêt,station,attente voyageur,métro léger"
+        },
+        "public_transport/platform/light_rail_point": {
+          "name": "Arrêt de métro léger"
         },
         "public_transport/platform/monorail": {
           "name": "Quai de monorail",
@@ -5587,6 +5567,7 @@
           "terms": "magasin général,magasin de village"
         },
         "shop/gift": {
+          "name": "Magasin de souvenirs",
           "terms": "boutique de souvenirs"
         },
         "shop/gold_buyer": {
@@ -6105,10 +6086,6 @@
           "name": "Carte",
           "terms": "plan"
         },
-        "tourism/information/office": {
-          "name": "Centre d'accueil des visiteurs",
-          "terms": "office de tourisme,centre d'informations touristique,agence de tourisme"
-        },
         "tourism/information/route_marker": {
           "name": "Repère",
           "terms": "repère,piste,chemin,gr,pr,marqueur,randonnée"
@@ -6151,8 +6128,7 @@
         },
         "tourism/zoo": {
           "name": "Zoo",
-          "terms": "zoo",
-          "aliases": "Parc zoologique"
+          "terms": "zoo"
         },
         "tourism/zoo/petting": {
           "name": "Zoo pour enfants",
@@ -6228,6 +6204,9 @@
         "traffic_sign/variable_message": {
           "name": "Panneau à messages variables",
           "terms": "panneau,signalisation,pmv,message,lumineux"
+        },
+        "type/associatedStreet": {
+          "name": "Rue associée"
         },
         "type/boundary": {
           "name": "Type de frontière",
@@ -6313,6 +6292,9 @@
           "name": "Itinéraire de bus",
           "terms": "trajet d'autobus"
         },
+        "type/route/climbing": {
+          "name": "Voie d'escalade"
+        },
         "type/route/detour": {
           "name": "Déviation",
           "terms": "détour"
@@ -6388,6 +6370,12 @@
         "type/site": {
           "name": "Site",
           "terms": "site"
+        },
+        "type/site/climbing/area": {
+          "name": "Zone de grimpe"
+        },
+        "type/site/climbing/crag": {
+          "name": "Rocher de grimpe"
         },
         "type/waterway": {
           "name": "Cours d'eau",

@@ -7,8 +7,11 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.questPrefix
 import de.westnordost.streetcomplete.quests.singleTypeElementSelectionDialog
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_poi_fixme
 
-class ShowFixme : OsmFilterQuestType<Boolean>() {
+class ShowFixme : OsmFilterQuestType<Boolean>(), AndroidQuest {
     override val elementFilter = """
         nodes, ways, relations with
           (fixme or FIXME)
@@ -19,7 +22,7 @@ class ShowFixme : OsmFilterQuestType<Boolean>() {
     override val wikiLink = "Key:fixme"
     override val icon = R.drawable.ic_quest_poi_fixme
     override val dotColor = "red"
-    override val defaultDisabledMessage = R.string.default_disabled_msg_poi_fixme
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_poi_fixme
     override val dotLabelSources = listOf("fixme", "FIXME")
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_fixme_title

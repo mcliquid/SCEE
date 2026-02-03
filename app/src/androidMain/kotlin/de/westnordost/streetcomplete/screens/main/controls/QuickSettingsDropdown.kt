@@ -9,12 +9,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
+import de.westnordost.streetcomplete.data.overlays.SelectedOverlaySource
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.visiblequests.LevelFilter
 import de.westnordost.streetcomplete.data.presets.EditTypePresetsController
+import de.westnordost.streetcomplete.data.quest.VisibleQuestsSource
+import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeController
 import de.westnordost.streetcomplete.screens.main.MainViewModel
 import de.westnordost.streetcomplete.ui.common.DropdownMenuItem
-import de.westnordost.streetcomplete.util.dialogs.showProfileSelectionDialog
+import de.westnordost.streetcomplete.util.dialogs.showLevelFilterDialog
+import de.westnordost.streetcomplete.util.showProfileSelectionDialog
 import org.koin.compose.koinInject
 
 @Composable
@@ -24,11 +29,14 @@ fun QuickSettingsDropdown(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier,
 ) {
-
     val editTypePresetsController: EditTypePresetsController = koinInject()
     val levelFilter: LevelFilter = koinInject()
     val prefs: Preferences = koinInject()
     val ctx = LocalContext.current
+    val mapDataSource: MapDataWithEditsSource = koinInject()
+    val visibleEditTypeController: VisibleEditTypeController = koinInject()
+    val visibleQuestsSource: VisibleQuestsSource = koinInject()
+    val selectedOverlaySource: SelectedOverlaySource = koinInject()
 
     DropdownMenu(
         expanded = expanded,
@@ -45,7 +53,7 @@ fun QuickSettingsDropdown(
         DropdownMenuItem(
             onClick = {
                 onDismissRequest()
-                levelFilter.showLevelFilterDialog(ctx, viewModel.mapCamera.value)
+                showLevelFilterDialog(ctx, viewModel.mapCamera.value, levelFilter, prefs, visibleEditTypeController, visibleQuestsSource, selectedOverlaySource, mapDataSource)
             })
         {
             Text(text = stringResource(R.string.level_filter))

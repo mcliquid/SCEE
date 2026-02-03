@@ -5,7 +5,6 @@ import android.app.ActivityManager.MemoryInfo
 import android.app.Application
 import android.content.ComponentCallbacks2
 import android.content.Context
-import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.os.LocaleList
 import androidx.appcompat.app.AppCompatDelegate
@@ -19,13 +18,11 @@ import de.westnordost.streetcomplete.data.CleanerWorker
 import de.westnordost.streetcomplete.data.DatabaseInitializer
 import de.westnordost.streetcomplete.data.Preloader
 import de.westnordost.streetcomplete.data.allEditTypesModule
-import de.westnordost.streetcomplete.data.dbModule
 import de.westnordost.streetcomplete.data.download.downloadModule
 import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesController
 import de.westnordost.streetcomplete.data.edithistory.EditHistoryController
 import de.westnordost.streetcomplete.data.edithistory.editHistoryModule
 import de.westnordost.streetcomplete.data.logs.logsModule
-import de.westnordost.streetcomplete.data.maptiles.maptilesModule
 import de.westnordost.streetcomplete.data.messages.messagesModule
 import de.westnordost.streetcomplete.data.meta.metadataModule
 import de.westnordost.streetcomplete.data.osm.created_elements.createdElementsModule
@@ -39,7 +36,6 @@ import de.westnordost.streetcomplete.data.osmnotes.notequests.osmNoteQuestModule
 import de.westnordost.streetcomplete.data.osmnotes.notesModule
 import de.westnordost.streetcomplete.data.externalsource.externalSourceModule
 import de.westnordost.streetcomplete.data.overlays.overlayModule
-import de.westnordost.streetcomplete.data.platform.platformModule
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.preferences.ResurveyIntervalsUpdater
 import de.westnordost.streetcomplete.data.preferences.Theme
@@ -50,7 +46,9 @@ import de.westnordost.streetcomplete.data.upload.uploadModule
 import de.westnordost.streetcomplete.data.urlconfig.urlConfigModule
 import de.westnordost.streetcomplete.data.user.UserLoginController
 import de.westnordost.streetcomplete.data.user.UserUpdater
+import de.westnordost.streetcomplete.data.user.achievements.achievementDefinitionsModule
 import de.westnordost.streetcomplete.data.user.achievements.achievementsModule
+import de.westnordost.streetcomplete.data.user.achievements.editTypeAliasesModule
 import de.westnordost.streetcomplete.data.user.statistics.statisticsModule
 import de.westnordost.streetcomplete.data.user.userModule
 import de.westnordost.streetcomplete.data.visiblequests.visibleQuestsModule
@@ -109,7 +107,7 @@ class StreetCompleteApplication : Application() {
 
         // got a crash report where prefs were not initialized, not sure how this can happen for a
         // single person and not for everyone, but this should help (means that we keep using android-specific prefs interface)
-        preferences = getSharedPreferences(packageName + "_preferences", Context.MODE_PRIVATE)
+        Prefs.sharedPreferences = getSharedPreferences(packageName + "_preferences", Context.MODE_PRIVATE)
 
         deleteDatabase(ApplicationConstants.OLD_DATABASE_NAME)
 
@@ -118,11 +116,12 @@ class StreetCompleteApplication : Application() {
             workManagerFactory()
             modules(
                 achievementsModule,
+                achievementDefinitionsModule,
+                editTypeAliasesModule,
                 appModule,
                 aboutScreenModule,
                 userScreenModule,
                 createdElementsModule,
-                dbModule,
                 logsModule,
                 downloadModule,
                 editHistoryModule,
@@ -130,7 +129,6 @@ class StreetCompleteApplication : Application() {
                 elementGeometryModule,
                 mapDataModule,
                 mainModule,
-                maptilesModule,
                 metadataModule,
                 noteEditsModule,
                 notesModule,
@@ -153,7 +151,7 @@ class StreetCompleteApplication : Application() {
                 overlayModule,
                 urlConfigModule,
                 urlConfigModule,
-                platformModule,
+                androidModule,
                 externalSourceModule,
             )
         }
@@ -164,6 +162,8 @@ class StreetCompleteApplication : Application() {
             editHistoryController.deleteSyncedOlderThan(nowAsEpochMilliseconds() - ApplicationConstants.MAX_UNDO_HISTORY_AGE)
             preloader.preload()
         }
+
+        Prefs.preferences = prefs
 
         // Force logout users who are logged in with OAuth 1.0a, they need to re-authenticate with OAuth 2
         if (prefs.hasOAuth1AccessToken) {
@@ -191,11 +191,11 @@ class StreetCompleteApplication : Application() {
                 onNewVersion()
             }
             // update prefs referring to renamed quests
-            val prefsToRename = preferences.all.filter { pref ->
+            val prefsToRename = Prefs.sharedPreferences.all.filter { pref ->
                 val v = pref.value
                 renamedQuests.keys.any { pref.key.contains(it) || (v is String && v.contains(it)) }
             }
-            val e = preferences.edit()
+            val e = Prefs.sharedPreferences.edit()
             prefsToRename.forEach {
                 e.remove(it.key)
                 when (it.value) {
@@ -276,10 +276,6 @@ class StreetCompleteApplication : Application() {
                 1, TimeUnit.DAYS,
             ).setInitialDelay(1, TimeUnit.HOURS).build()
         )
-    }
-
-    companion object {
-        lateinit var preferences: SharedPreferences
     }
 
     private val isConnected: Boolean

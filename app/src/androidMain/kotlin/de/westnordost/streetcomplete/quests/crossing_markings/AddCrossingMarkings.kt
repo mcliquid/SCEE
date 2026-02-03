@@ -8,12 +8,12 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.isCrossing
-import de.westnordost.streetcomplete.osm.updateCheckDateForKey
 
-class AddCrossingMarkings : OsmElementQuestType<CrossingMarkings> {
+class AddCrossingMarkings : OsmElementQuestType<CrossingMarkings>, AndroidQuest {
 
     private val crossingFilter by lazy { """
         nodes with
@@ -38,7 +38,7 @@ class AddCrossingMarkings : OsmElementQuestType<CrossingMarkings> {
 
     override val changesetComment = "Specify type or existence of pedestrian crossing markings"
     override val wikiLink = "Key:crossing:markings"
-    override val icon = R.drawable.ic_quest_pedestrian_crossing
+    override val icon = R.drawable.quest_pedestrian_crossing
     override val achievements = listOf(PEDESTRIAN)
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_pedestrian_crossing_markings
@@ -75,10 +75,10 @@ class AddCrossingMarkings : OsmElementQuestType<CrossingMarkings> {
         AlertDialog.Builder(context)
             .setMessage(R.string.pref_quest_pedestrian_crossing_markings_extended)
             .setPositiveButton(R.string.quest_generic_hasFeature_yes) { _, _ ->
-                prefs.edit().putBoolean(PREF_CROSSING_MARKING_EXTENDED, true).apply()
+                prefs.putBoolean(PREF_CROSSING_MARKING_EXTENDED, true)
             }
             .setNegativeButton(R.string.quest_generic_hasFeature_no) { _, _ ->
-                prefs.edit().putBoolean(PREF_CROSSING_MARKING_EXTENDED, false).apply()
+                prefs.putBoolean(PREF_CROSSING_MARKING_EXTENDED, false)
             }
             .create()
 

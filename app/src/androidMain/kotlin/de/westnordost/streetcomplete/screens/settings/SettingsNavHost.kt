@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import de.westnordost.streetcomplete.data.quest.QuestType
 import de.westnordost.streetcomplete.screens.settings.debug.ShowQuestFormsScreen
+import de.westnordost.streetcomplete.screens.settings.language_selection.LanguageSelectionScreen
 import de.westnordost.streetcomplete.screens.settings.overlay_selection.OverlaySelectionScreen
 import de.westnordost.streetcomplete.screens.settings.presets.EditTypePresetsScreen
 import de.westnordost.streetcomplete.screens.settings.quest_selection.QuestSelectionScreen
@@ -42,12 +43,13 @@ import org.koin.androidx.compose.koinViewModel
                 onClickPresetSelection = { navController.navigate(SettingsDestination.EditTypePresets) },
                 onClickQuestSelection = { navController.navigate(SettingsDestination.QuestSelection) },
                 onClickOverlaySelection = { navController.navigate(SettingsDestination.OverlaySelection) },
-                onClickBack = ::goBack,
+                onClickLanguageSelection = { navController.navigate(SettingsDestination.LanguageSelection) },
                 onClickQuestSettings = { navController.navigate(SettingsDestination.QuestSettings) },
                 onClickUiSettings = { navController.navigate(SettingsDestination.UiSettings) },
                 onClickDisplaySettings = { navController.navigate(SettingsDestination.DisplaySettings) },
                 onClickNoteSettings = { navController.navigate(SettingsDestination.NoteSettings) },
                 onClickDataSettings = { navController.navigate(SettingsDestination.DataManagementSettings) },
+                onClickBack = ::goBack
             )
         }
         composable(SettingsDestination.EditTypePresets) {
@@ -64,6 +66,12 @@ import org.koin.androidx.compose.koinViewModel
         }
         composable(SettingsDestination.OverlaySelection) {
             OverlaySelectionScreen(
+                viewModel = koinViewModel(),
+                onClickBack = ::goBack
+            )
+        }
+        composable(SettingsDestination.LanguageSelection) {
+            LanguageSelectionScreen(
                 viewModel = koinViewModel(),
                 onClickBack = ::goBack
             )
@@ -108,6 +116,7 @@ object SettingsDestination {
     const val EditTypePresets = "edit_type_presets"
     const val QuestSelection = "quest_selection"
     const val OverlaySelection = "overlay_selection"
+    const val LanguageSelection = "language_selection"
     const val ShowQuestForms = "show_quest_forms"
     const val QuestSettings = "scee_quest_settings"
     const val UiSettings = "scee_ui_settings"

@@ -16,8 +16,11 @@ import de.westnordost.streetcomplete.quests.shop_type.IsShopVacant
 import de.westnordost.streetcomplete.quests.shop_type.ShopType
 import de.westnordost.streetcomplete.quests.shop_type.ShopTypeAnswer
 import de.westnordost.streetcomplete.quests.shop_type.ShopTypeForm
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_poi_vacant
 
-class ShowVacant : OsmFilterQuestType<ShopTypeAnswer>() {
+class ShowVacant : OsmFilterQuestType<ShopTypeAnswer>(), AndroidQuest {
     override val elementFilter = """
         nodes, ways, relations with
         shop = vacant
@@ -29,7 +32,7 @@ class ShowVacant : OsmFilterQuestType<ShopTypeAnswer>() {
     override val wikiLink = "Key:disused:"
     override val icon = R.drawable.ic_quest_poi_vacant
     override val dotColor = "grey"
-    override val defaultDisabledMessage = R.string.default_disabled_msg_poi_vacant
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_poi_vacant
     override val dotLabelSources = getLabelSources("label", this, prefs)
 
     override fun getTitle(tags: Map<String, String>) =

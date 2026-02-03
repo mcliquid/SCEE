@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.quests.bus_stop_shelter
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.updateWithCheckDate
@@ -10,7 +11,7 @@ import de.westnordost.streetcomplete.quests.bus_stop_shelter.BusStopShelterAnswe
 import de.westnordost.streetcomplete.quests.bus_stop_shelter.BusStopShelterAnswer.NO_SHELTER
 import de.westnordost.streetcomplete.quests.bus_stop_shelter.BusStopShelterAnswer.SHELTER
 
-class AddBusStopShelter : OsmFilterQuestType<BusStopShelterAnswer>() {
+class AddBusStopShelter : OsmFilterQuestType<BusStopShelterAnswer>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways, relations with
@@ -32,7 +33,7 @@ class AddBusStopShelter : OsmFilterQuestType<BusStopShelterAnswer>() {
 
     override val changesetComment = "Specify whether public transport stops have shelters"
     override val wikiLink = "Key:shelter"
-    override val icon = R.drawable.ic_quest_bus_stop_shelter
+    override val icon = R.drawable.quest_bus_stop_shelter
     override val achievements = listOf(PEDESTRIAN)
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_busStopShelter_title2

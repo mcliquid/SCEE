@@ -6,6 +6,7 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BLIND
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.isCrossingWithTrafficSignals
@@ -13,7 +14,7 @@ import de.westnordost.streetcomplete.osm.updateWithCheckDate
 import de.westnordost.streetcomplete.quests.YesNoQuestForm
 import de.westnordost.streetcomplete.util.ktx.toYesNo
 
-class AddTrafficSignalsSound : OsmElementQuestType<Boolean> {
+class AddTrafficSignalsSound : OsmElementQuestType<Boolean>, AndroidQuest {
 
     private val crossingFilter by lazy { """
         nodes with
@@ -35,7 +36,7 @@ class AddTrafficSignalsSound : OsmElementQuestType<Boolean> {
 
     override val changesetComment = "Specify whether traffic signals have sound signals"
     override val wikiLink = "Key:$SOUND_SIGNALS"
-    override val icon = R.drawable.ic_quest_blind_traffic_lights_sound
+    override val icon = R.drawable.quest_blind_traffic_lights_sound
     override val achievements = listOf(BLIND)
 
     override val hint = R.string.quest_traffic_signals_sound_description

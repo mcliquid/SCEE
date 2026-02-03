@@ -12,22 +12,20 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.osm.ALL_ROADS
 import de.westnordost.streetcomplete.overlays.AbstractOverlayForm
-import de.westnordost.streetcomplete.overlays.Color
-import de.westnordost.streetcomplete.overlays.Overlay
-import de.westnordost.streetcomplete.overlays.PointStyle
-import de.westnordost.streetcomplete.overlays.PolylineStyle
-import de.westnordost.streetcomplete.overlays.StrokeStyle
-import de.westnordost.streetcomplete.overlays.Style
+import de.westnordost.streetcomplete.data.overlays.AndroidOverlay
+import de.westnordost.streetcomplete.data.overlays.Overlay
+import de.westnordost.streetcomplete.data.overlays.OverlayColor
+import de.westnordost.streetcomplete.data.overlays.OverlayStyle
 import de.westnordost.streetcomplete.quests.max_weight.MaxWeightSign
 import de.westnordost.streetcomplete.quests.max_weight.osmKey
 import de.westnordost.streetcomplete.util.ktx.containsAnyKey
 import de.westnordost.streetcomplete.util.ktx.isArea
 import de.westnordost.streetcomplete.util.ktx.toHexColor
-
-class RestrictionOverlay : Overlay {
+/*
+class RestrictionOverlay : Overlay, AndroidOverlay {
     // show restriction icons? will need to add property for rotation / angle
     // but according to tangram docs, angle is a number or string, this would need a function...
-    override fun getStyledElements(mapData: MapDataWithGeometry): Sequence<Pair<Element, Style>> {
+    override fun getStyledElements(mapData: MapDataWithGeometry): Sequence<Pair<Element, OverlayStyle>> {
         val restrictions = mapData.relations.filter { it.tags["type"] == "restriction" }
         val restrictionsByWayMemberId = HashMap<Long, MutableList<Relation>>(restrictions.size)
         restrictions.forEach { restriction ->
@@ -112,7 +110,7 @@ private fun getColor(role: String, restriction: String): String = when {
     role == "via" -> Color.LIME
     else -> Color.BLACK
 }
-
+*/
 // support restrictions with 1 from way, 1 to way, 1 via node or 1+ via ways
 // and additionally, ways need to be connected (but that is more complicated, and not checked)
 // there are some more restrictions which are not supported currently, e.g. no_entry, stop, give_way
@@ -140,8 +138,9 @@ val turnRestrictionTypes = linkedSetOf(
     "only_left_turn",
     "only_straight_on",
 )
-
+/*
 private val maxWeightKeys = MaxWeightSign.entries.map { it.osmKey }.toTypedArray()
 
 private val darkerGold = ColorUtils.blendARGB(parseColor(Color.GOLD), parseColor(Color.BLACK), 0.75f).toHexColor()
 private val darkerOrange = ColorUtils.blendARGB(parseColor(Color.ORANGE), parseColor(Color.BLACK), 0.75f).toHexColor()
+*/

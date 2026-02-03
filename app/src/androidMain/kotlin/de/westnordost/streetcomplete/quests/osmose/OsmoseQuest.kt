@@ -8,7 +8,6 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
-import androidx.core.content.edit
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.edits.ElementEdit
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
@@ -21,8 +20,11 @@ import de.westnordost.streetcomplete.util.dialogs.setViewWithDefaultPadding
 import de.westnordost.streetcomplete.util.ktx.dpToPx
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.quest_osmose_message
 
-class OsmoseQuest(private val osmoseDao: OsmoseDao) : ExternalSourceQuestType {
+class OsmoseQuest(private val osmoseDao: OsmoseDao) : ExternalSourceQuestType, AndroidQuest {
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_osmose_title
 
@@ -67,13 +69,13 @@ class OsmoseQuest(private val osmoseDao: OsmoseDao) : ExternalSourceQuestType {
     override val changesetComment = "Fix osmose issues"
     override val wikiLink = "Osmose"
     override val icon = R.drawable.ic_quest_osmose
-    override val defaultDisabledMessage = R.string.quest_osmose_message
+    override val defaultDisabledMessage = Res.string.quest_osmose_message
     override val source = "osmose"
 
     override fun createForm() = OsmoseForm()
 
     override fun getQuestSettingsDialog(context: Context): AlertDialog {
-        val levels = prefs.getString(questPrefix(prefs) + PREF_OSMOSE_LEVEL, "")!!.split("%2C").mapNotNull { it.toIntOrNull() }
+        val levels = prefs.getString(questPrefix(prefs) + PREF_OSMOSE_LEVEL, "").split("%2C").mapNotNull { it.toIntOrNull() }
         val high = CheckBox(context).apply {
             setText(R.string.quest_settings_osmose_level_high)
             isChecked = levels.contains(1)
@@ -121,12 +123,12 @@ class OsmoseQuest(private val osmoseDao: OsmoseDao) : ExternalSourceQuestType {
                     if (low.isChecked) 3 else null,
                 ).takeIf { it.isNotEmpty() }?.joinToString("%2C") ?: ""
                 if (levelString != prefs.getString(questPrefix(prefs) + PREF_OSMOSE_LEVEL, OSMOSE_DEFAULT_IGNORED_ITEMS)) {
-                    prefs.edit { putString(questPrefix(prefs) + PREF_OSMOSE_LEVEL, levelString) }
+                    prefs.putString(questPrefix(prefs) + PREF_OSMOSE_LEVEL, levelString)
                     downloadEnabled = levelString != ""
                     osmoseDao.reloadIgnoredItems()
                     OsmQuestController.reloadQuestTypes() // actually this is doing a bit more than necessary, but whatever
                 }
-                prefs.edit { putBoolean(PREF_OSMOSE_APP_LANGUAGE, appLanguage.isChecked) }
+                prefs.putBoolean(PREF_OSMOSE_APP_LANGUAGE, appLanguage.isChecked)
             }
             .create()
     }
@@ -136,7 +138,7 @@ class OsmoseQuest(private val osmoseDao: OsmoseDao) : ExternalSourceQuestType {
     //  anyway, with current short button text all buttons are in one line, and there should be no problem
     private fun showIgnoredItemsDialog(context: Context) {
         val pref = questPrefix(prefs) + PREF_OSMOSE_ITEMS
-        val items = prefs.getString(pref, OSMOSE_DEFAULT_IGNORED_ITEMS)!!.split("§§").filter { it.isNotEmpty() }.toTypedArray()
+        val items = prefs.getString(pref, OSMOSE_DEFAULT_IGNORED_ITEMS).split("§§").filter { it.isNotEmpty() }.toTypedArray()
         val itemsForRemoval = mutableSetOf<String>()
         var d: AlertDialog? = null
         d = AlertDialog.Builder(context)
@@ -146,13 +148,13 @@ class OsmoseQuest(private val osmoseDao: OsmoseDao) : ExternalSourceQuestType {
                 d?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = itemsForRemoval.isNotEmpty()
             }
             .setPositiveButton(R.string.quest_osmose_remove_checked) { _, _ ->
-                prefs.edit { putString(pref, items.filterNot { it in itemsForRemoval }.joinToString("§§")) }
+                prefs.putString(pref, items.filterNot { it in itemsForRemoval }.joinToString("§§"))
                 osmoseDao.reloadIgnoredItems()
                 OsmQuestController.reloadQuestTypes()
             }
             .setNegativeButton(android.R.string.cancel, null)
             .setNeutralButton(R.string.quest_settings_reset) { _, _ ->
-                prefs.edit { remove(pref) }
+                prefs.remove(pref)
                 osmoseDao.reloadIgnoredItems()
                 OsmQuestController.reloadQuestTypes()
             }.create()

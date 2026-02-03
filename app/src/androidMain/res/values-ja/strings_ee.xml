@@ -4,14 +4,14 @@
     <string name="pref_read_log_title">記録読み取り</string>
     <string name="pref_read_log_save">ファイルに完全な記録を保存</string>
     <string name="pref_read_reverse_button">逆順</string>
-    <string name="pref_read_filter_hint">抄出…</string>
+    <string name="pref_read_filter_hint">フィルタ…</string>
     <string name="pref_screen_notes">メモ</string>
     <string name="pref_hide_notes_hint">カンマを使用して、利用者名もしくはIDを区切ってください</string>
     <string name="pref_hide_notes_message">無視する利用者名もしくはIDを入力してください</string>
     <string name="pref_show_gpx_button_title">GPXメモのボタンを表示</string>
     <string name="pref_swap_gpx_note_button">OSMとGPXのメモのボタンを入れ替える</string>
     <string name="pref_show_gpx_button_summary">OSMメモとは反対に、GPXメモを追加しても、影響を受けた場所のクエストは非表示になりません</string>
-    <string name="pref_hide_notes_title">定めた利用者によるメモを非表示</string>
+    <string name="pref_hide_notes_title">特定の利用者によるメモを非表示</string>
     <string name="pref_save_gpx">GPXメモ、添付された写真、経路を取得</string>
     <string name="pref_save_file_error">ファイル保存中にエラー</string>
     <string name="pref_files_not_found">ファイルが見つかりません</string>
@@ -34,8 +34,8 @@
     <string name="pref_volume_zoom_summary">拡大に音量ボタンを使用します</string>
     <string name="pref_show_next_quest_title">即座に次のクエストを表示</string>
     <string name="pref_main_menu_grid">格子状に主メニューを全表示</string>
-    <string name="pref_caps_word_name_input">名称入力時に全単語を利用</string>
-    <string name="pref_hide_button_summary">クリックでクエストを暫時非表示に、長いクリックで継続的に非表示にします</string>
+    <string name="pref_caps_word_name_input">名前入力時に各単語の最初の文字を大文字にする</string>
+    <string name="pref_hide_button_summary">クリックでクエストを一時的に非表示にし、長いクリックで完全に非表示にします</string>
     <string name="pref_recent_answers_first_min_lines">前方に最近の回答を移動</string>
     <string name="pref_recent_answers_first_min_lines_summary">枠に %d 個以上ある場合</string>
     <string name="pref_show_nearby_quests_title">付近のクエストを表示</string>
@@ -48,7 +48,7 @@
     <string name="pref_search_more_languages_title">多言語で地物を検索</string>
     <string name="pref_create_node_show_keyboard_title">ノード追加時にキーボードを自動表示</string>
     <string name="pref_main_menu_switch_presets_title">主メニュー内でプリセットボタンを切り替え</string>
-    <string name="pref_disable_navigation_mode_title">走行方式を無効化</string>
+    <string name="pref_disable_navigation_mode_title">ナビゲーションモードを無効化</string>
     <string name="pref_screen_data_management">データ管理</string>
     <string name="pref_auto_download_title">自動ダウンロード</string>
     <string name="pref_auto_download_summary">付近の領域内のデータを自動的にダウンロードします</string>
@@ -84,14 +84,14 @@
     <string name="advanced_resurvey_hint_keys">カンマを使用して複数のキーを区切ってください</string>
     <string name="advanced_resurvey_hint_date">使用する形式: YYYY-MM-DD ({4桁の西暦年}-{2桁の月}-{2桁の日})</string>
     <string name="day_night_priority">現在の時間帯に適したクエストの優先度を上げる</string>
-    <string name="pref_day_night_title">時間帯の抽出クエスト</string>
+    <string name="pref_day_night_title">時間帯でクエストをフィルタ</string>
     <string name="day_night_ignore">時間帯を無視</string>
     <string name="pref_quest_settings_preset_title">プリセット毎のクエスト設定</string>
     <string name="pref_dynamic_quest_creation_title">動的にクエストを作成</string>
     <string name="pref_dynamic_quest_creation_summary">クエストは表示領域を読み込むときに作成されます。いくらか遅くなりますが、変更されたクエスト設定を即座に適用します。</string>
     <string name="pref_quest_monitor_title">付近のクエストについて通知</string>
-    <string name="pref_quest_monitor_summary">戻るボタンで背部にした場合を除いて、アプリが背部にある場合、位置情報を監視する</string>
-    <string name="quest_monitor_permission_warning">近くのクエスト監視が機能するには、背部での位置情報権限が必要です</string>
+    <string name="pref_quest_monitor_summary">戻るボタンでバックグラウンドにした場合を除いて、アプリがバックグラウンドにある場合、位置情報を監視する</string>
+    <string name="quest_monitor_permission_warning">近くのクエスト監視が機能するには、バックグラウンドでの位置情報権限が必要です</string>
     <string name="quest_monitor_gps">活発にGPS位置情報を要求しますか?</string>
     <string name="quest_monitor_net">活発にネットワーク位置情報を要求しますか?</string>
     <string name="pref_quest_monitor_download">必要に応じてデータをダウンロードしますか?　これは転送量と電池を激しく消費する可能性があり、電池を節約するためにAndroidによって使用できなくなる状態にされる可能性があります。</string>
@@ -100,8 +100,8 @@
     <string name="pref_interval_summary">%d 秒</string>
     <string name="pref_interval_message">更新間隔を秒単位で</string>
     <string name="quest_settings_reset">リセット</string>
-    <string name="quest_settings_eligible_highways">このクエストに適格な道路を、カンマで区切って設定します</string>
-    <string name="element_selection_button">要素選抜</string>
+    <string name="quest_settings_eligible_highways">このクエストの対象となる道路を、カンマで区切って設定します</string>
+    <string name="element_selection_button">要素選択</string>
     <string name="quest_settings_osmose_level_title">ダウンロードして表示する問題の深刻度を選択</string>
     <string name="quest_settings_osmose_level_high">高</string>
     <string name="quest_settings_osmose_level_medium">中</string>
@@ -118,7 +118,7 @@
     <string name="quest_custom_quest_title">任意クエスト:</string>
     <string name="quest_custom_quest_remove">一覧から削除</string>
     <string name="quest_custom_quest_add_node">ノードを追加</string>
-    <string name="quest_custom_quest_add_node_text">右を付けてノードを追加できます: %s</string>
+    <string name="quest_custom_quest_add_node_text">次のタグを付けてノードを追加できます: %s</string>
     <string name="quest_benchMaterial_title">これは何の素材で作られていますか?</string>
     <string name="quest_material_wood">木材</string>
     <string name="quest_material_metal">金属</string>
@@ -193,7 +193,7 @@
     <string name="pref_gpx_track_download">GPX経路が存在する領域をダウンロード</string>
     <string name="pref_hide_keyboard_summary">(位置の確認を可能にするため、)実際に作成されたメモを開く前にキーボードを非表示にする</string>
     <string name="pref_recent_answers_first_min_lines_message">クエスト回答枠にこの数以上の画像がある場合、最近の回答を前方に移動します</string>
-    <string name="pref_show_quick_settings_title">敏速な設定のボタンを表示</string>
+    <string name="pref_show_quick_settings_title">クイック設定ボタンを表示</string>
     <string name="pref_search_more_languages_summary">地物検索は全てのシステムと地域の言語で表示されます</string>
     <string name="pref_manual_download_cache_summary">無効の場合、12時間以上経過していない限り、手動ダウンロード時にデータは再ダウンロードされません</string>
     <string name="pref_expert_mode_title">上級者方式</string>
@@ -215,7 +215,7 @@
     <string name="advanced_resurvey_message_keys">確認日時キーがない場合、これらのキーを常に再調査します。確認日時は関連したクエストに回答すると、常に追加されます</string>
     <string name="day_night_visibility">現在の時間帯に不適なクエストを表示しない</string>
     <string name="pref_quest_settings_preset_summary">有効なとき、クエスト設定は現在のクエストのプリセットのみに効果があります</string>
-    <string name="quest_settings_element_selection">このクエストに適格な要素を設定します。ブラウザ内で要素選抜表記法についての情報を開くには、<a href="https://github.com/Helium314/SCEE/blob/modified/CONTRIBUTING_A_NEW_QUEST.md#element-selection">ここをクリック</a>してください。</string>
+    <string name="quest_settings_element_selection">このクエストの対象となる要素を設定します。ブラウザ内で要素選択構文についての情報を開くには、<a href="https://github.com/Helium314/SCEE/blob/modified/CONTRIBUTING_A_NEW_QUEST.md#element-selection">ここをクリック</a>してください。</string>
     <string name="default_disabled_msg_poi_camera">この「クエスト」では、監視地物を桃色の点で表示します。点をクリックすると、詳細や他の回答が表示されます。</string>
     <string name="quest_service_building_type_substation">変電設備</string>
     <string name="quest_service_building_type_minor_substation_description">配電網の最下流にある小さな変電設備です</string>
@@ -233,13 +233,13 @@
 \n　Osmoseのメッセージはクエストに付随して表示され、いかなる編集も解決済みとして報告します。
 \n　また、誤検知として問題を報告することも可能です。これは取り消せません。</string>
     <string name="quest_service_building_ventilation_description">鉄道以外の基幹施設の空気交換を可能にする垂直構造物です</string>
-    <string name="quest_service_building_monitoring_station_description">自分が所有する建物内にあり、何かを監視する施設です</string>
+    <string name="quest_service_building_monitoring_station_description">何かを観測するために専用の建物に設置された設備です</string>
     <string name="quest_service_building_internet_exchange_description">インターネット回線加入者を電気通信サービス機器に接続する場所です</string>
     <string name="quest_shelter_type_disabled_msg">回答が容易ではないため、初期設定ではこのクエストは無効化されています。避難所の種類は最もよく使用される値から取得され、大抵、区別が容易でない提案から選択しなければなりません。</string>
     <string name="pref_offset_fix_summary">それらはクエスト留針によって非表示にされ、白い点で存在します</string>
-    <string name="pref_screen_ui">利用者接触部</string>
-    <string name="pref_select_first_edit_title">最初の編集で、開いた履歴を選択</string>
-    <string name="pref_trees_title">木構造のクエストファイルを読み込み</string>
+    <string name="pref_screen_ui">インターフェース</string>
+    <string name="pref_select_first_edit_title">履歴を開いたときに最初の編集を選択</string>
+    <string name="pref_trees_title">樹木のクエストファイルを読み込む</string>
     <string name="pref_hide_overlay_quests">オーバーレイ固有のクエストを非表示にする</string>
     <string name="theme_dark_contrast">暗(明暗差が増加)</string>
     <string name="resurvey_intervals_even_less_often">質問頻度を更に減らす</string>
@@ -248,7 +248,7 @@
     <string name="quest_settings_sidewalk_distance_button">距離</string>
     <string name="quest_settings_max_roof_levels">クエストに表示する、(建物の階数)から(屋根の階数)を引いた最大値</string>
     <string name="quest_settings_max_steps_length">クエストに表示する、階段のメートル単位の最大長</string>
-    <string name="quest_settings_level_title">右でこのクエストを表示:</string>
+    <string name="quest_settings_level_title">このクエストを表示する対象:</string>
     <string name="quest_settings_level_default">ショッピングモール内の店舗および類似の施設(初期設定)</string>
     <string name="quest_settings_level_more">複数階建ての建物内部の医師や多量のノード</string>
     <string name="quest_generic_surface_message">メモを必要とせずに一般的な地表の回答を許可しますか?</string>
@@ -306,7 +306,7 @@
     <string name="quest_healthcare_speciality_title">この場所にはどのようなヘルスケアの専門家がいますか?</string>
     <string name="quest_tree_genus_title">この樹木の属または種は何ですか?</string>
     <string name="quest_tree_error">識別できません。樹木の属、種または英名の入力を試してください。不可能ならば、メモを残すことを検討してください。</string>
-    <string name="default_disabled_msg_ee">SCEE内に追加されたクエストは、常に回答可能でない可能性と、当該題目とタグ付けの知識が必要な可能性があるため、初期設定では常に無効化されています。</string>
+    <string name="default_disabled_msg_ee">SCEE内に追加されたクエストは、初期設定では常に無効になっています。これは、それらが常に回答可能であるとは限らず、トピックやタグ付けに関する知識を必要とする場合があるためです。</string>
     <string name="quest_guidepostName_title">ここの名前は何ですか?</string>
     <string name="quest_guidepostRef_hint">記された道順の参照番号ではなく、この地図または道標やガイドポストの参照番号です。</string>
     <string name="quest_buildingType_barn">納屋</string>
@@ -338,7 +338,7 @@
     <string name="create_custom_quest_button">任意クエストを作成</string>
     <string name="create_custom_quest_title_message">表示されるメッセージを入力</string>
     <string name="general_warning">警告</string>
-    <string name="dialog_button_understood">承知</string>
+    <string name="dialog_button_understood">了解</string>
     <string name="move_node_with_geometry">このノードの移動は、従属するウェイの配置やマルチポリゴンのリレーションを変化させます: %s。
 \n いかなる変更も、背景の地図上で即座に視認可能にならないことを心得てください。</string>
     <string name="move_node_of_other_relation">このノードは、非マルチポリゴンのリレーションに従属する部分です: %s</string>
@@ -358,22 +358,17 @@
     <string name="quest_guidepostName_hint">この地図または道標やガイドポストの記された(場所)の名前です。ここには参照番号を入力しないでください。</string>
     <string name="quest_tree_disabled_msg">回答が容易ではないため、初期設定ではこのクエストは無効化されています。種と属は、最もよく使用される値から取得される提案から選択する必要があります。検索可能な名前を持つ種の独自の一覧から候補を提供するには、 &lt;species&gt; (&lt;name&gt;) を含むファイルをデータ管理設定メニュー内に提供します。</string>
     <string name="quest_guidepost_disabled_msg">このクエストは、記される内容が地域や管理者によって大きく異なるため、初期設定では無効化されています。地域用の要素選択で絞り込む必要があるかもしれません(例:地図を追加または削除する、hiking=yesで要素のみを選択するなど)</string>
-    <string name="quest_parking_capacity_disabled_default_disabled_msg">SCEE内に追加されたクエストは、常に回答可能でない可能性と、当該題目とタグ付けの知識が必要な可能性があるため、初期設定では常に無効化されています。 \nこのクエストは、 capacity:disabled=yes が設定されている場合は尋ねられません。これらも指定する場合は、要素選抜を「and !capacity:disabled」から「and (!capacity:disabled or capacity:disabled=yes)」に変更します</string>
+    <string name="quest_parking_capacity_disabled_default_disabled_msg">SCEE内に追加されたクエストは、初期設定では常に無効になっています。これは、それらが常に回答可能であるとは限らず、トピックやタグ付けに関する知識を必要とする場合があるためです。 \nこのクエストは、 capacity:disabled=yes が設定されている場合は尋ねられません。これらも指定する場合は、要素選択を「and !capacity:disabled」から「and (!capacity:disabled or capacity:disabled=yes)」に変更します</string>
     <string name="hide_button">非表示</string>
     <string name="move_node_message_external_source_addition">このクエストの場所はノードと共に移動しない可能性があることを心得てください。</string>
     <string name="quest_surface_value_metal_grid">格子状の金属</string>
-    <string name="tutorial_info_fork_message"><b>SCEE</b>
-\n
-\n これはStreetCompleteの変更版です。OSMについて高度な知識を持つ、経験がある利用者向けにするつもりです。更なる制御力を与えますが、更なる<i>責任</i>もあります。
-\n これは特に、生のタグの編集やノードの削除で当て嵌まる可能性がありますが、クエスト用の要素選抜にもその可能性があります。SCEEに追加されたクエストは、全ての事例で<i>回答可能ではない可能性</i>があり、初期設定では無効化されています。回答不可能なクエストは非表示にしてください。<i>大量のメモを送信しないでください</i>。
-\n
-\n SCEEは初回起動してすぐの初期状態では、StreetCompleteと非常によく似た動作をするように設定されています。</string>
+    <string name="tutorial_info_fork_message"><b>SCEE</b> \n \n これはStreetCompleteの変更版です。OSMについて高度な知識を持つ、経験がある利用者向けにするつもりです。更なる制御力を与えますが、更なる<i>責任</i>もあります。 \n これは特に、生のタグの編集やノードの削除で当て嵌まる可能性がありますが、クエスト用の要素選択にもその可能性があります。SCEEに追加されたクエストは、全ての事例で<i>回答可能ではない可能性</i>があり、初期設定では無効化されています。回答不可能なクエストは非表示にしてください。<i>大量のメモを送信しないでください</i>。 \n \n SCEEは初回起動してすぐの初期状態では、StreetCompleteと非常によく似た動作をするように設定されています。</string>
     <string name="quest_settings_dot_labels_message">ラベルに使用するべきタグを、指定された順序で設定します。空の文字列はいかなるラベルも表示せず、 「ラベル」はname(名称)、brand(ブランド)、ref(参照番号・記号)、local_ref及びoperator(管理者)を使用して、規定のStreetCompleteラベル名を表示します。</string>
-    <string name="level_filter">ラベルを抄出</string>
+    <string name="level_filter">フロア番号フィルタ</string>
     <string name="level_filter_title">確認するキーを選択</string>
-    <string name="level_filter_message">ラベル値を入力、もしくは &gt; と &lt; を使用して抄出してください。 * を使用すると、可能な段階のキーを含む全ての要素に一致します</string>
+    <string name="level_filter_message">フロア番号の値を入力するか、 &gt; と &lt; を使用してフィルタします。* を使用すると、有効化されたフロア番号のキーを含む全ての要素に一致します</string>
     <string name="level_filter_hint">タグ付けなしを表示するには、空白のままにします</string>
-    <string name="level_filter_enable">段階抄出を有効化</string>
+    <string name="level_filter_enable">フロア番号フィルタを有効化</string>
     <string name="quest_poi_machine_title">POI: 機械</string>
     <string name="quest_poi_has_atm_title">POI: ATM有</string>
     <string name="quest_poi_vending_title">POI: 販売</string>
@@ -414,7 +409,7 @@
     <string name="quest_brewery_is_various">ここでは多種のビールのブランドが提供されます</string>
     <string name="quest_brewery_is_not_available">ここではビールは販売されていません</string>
     <string name="quest_service_building_operator_title">仕事用のこの建物の管理者は誰ですか?</string>
-    <string name="quest_healthcare_speciality_switch_ui">利用者接触部を切り替え</string>
+    <string name="quest_healthcare_speciality_switch_ui">インターフェースを切り替え</string>
     <string name="quest_railwayPlatformRef_title">ここの線路番号は何ですか?</string>
     <string name="quest_destination_title">この道の標識はどの行き先を示していますか?</string>
     <string name="quest_destination_add_more">他の行き先を追加</string>
@@ -433,10 +428,10 @@
     <string name="quest_maxheight_answer_noSign_question_yes">大型トラックが通れる</string>
     <string name="quest_maxheight_answer_noSign_question_no">大型トラックは大きさが合わない</string>
     <string name="quest_maxheight_answer_noSign_question_unclear">不明瞭</string>
-    <string name="quest_generalRef_disabled_msg">これは、地域または管理者によって何を示すか大きく異なるため、初期設定では無効化されています。当該領域で要素選抜から抽出してください(例: 街灯を除去、地図を追加、 hiking=yes が付いている道標だけ選択、なと。)</string>
+    <string name="quest_generalRef_disabled_msg">これは、地域または管理者によって何を示すか大きく異なるため、初期設定では無効化されています。当該領域で要素選択から抽出してください(例: 街灯を除去、地図を追加、 hiking=yes が付いている道標だけ選択、など。)</string>
     <string name="quest_generalRef_hint">参照番号またはコード</string>
     <string name="custom_overlay_title">任意オーバーレイ</string>
-    <string name="custom_overlay_filter_message">ブラウザ内で要素選抜構文についての情報を開くには、以下のリンクをクリックしてください。経過時間で要素を選抜する場合、再調査間隔の設定が結果に影響を与える可能性があることを心得てください。 \nチェックボックスは、「ノード、ウェイ」の部分を置き換えます。</string>
+    <string name="custom_overlay_filter_message">ブラウザ内で要素選択構文についての情報を開くには、以下のリンクをクリックしてください。経過時間で要素を選択する場合、再調査間隔の設定が結果に影響を与える可能性があることを心得てください。 \nチェックボックスは、「nodes, ways with」の部分を置き換えます。</string>
     <string name="custom_overlay_color_hint">同じ色で全て表示するには、空のままにしてください</string>
     <string name="custom_overlay_highlight_missing">欠落データを強調表示</string>
     <string name="custom_overlay_color_info">色付け詳細</string>
@@ -569,4 +564,11 @@
     <string name="quest_postOffice_bureau">完全な(正式)郵便局</string>
     <string name="quest_lampMount_title">この照明は、どのように取り付けられていますか?</string>
     <string name="quest_lampMount_straightMast">真っ直ぐな柱</string>
+    <string name="default_disabled_msg_roof">屋根はしばしば道路から用意には見えないため、初期設定ではこのクエスト種別は無効化されています。また、このクエスト種別は相当な時間を消費し、大抵は自宅で空中写真から屋根をマッピングする方が容易かつ効率的です。</string>
+    <string name="pref_rotate_while_zooming_title">拡大中に回転を有効化</string>
+    <string name="pref_rotate_angle_threshold_title">回転操作の閾値</string>
+    <string name="quest_street_cabinet_postal_service">郵便業務</string>
+    <string name="quest_street_cabinet_street_lighting">街路照明</string>
+    <string name="quest_maxspeed_conditional_limited_enter_default">この回答を選択する前に、規定の制限を選択してください</string>
+    <string name="quest_material_tiles">タイル、陶磁器、瓦</string>
 </resources>

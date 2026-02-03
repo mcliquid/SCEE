@@ -19,7 +19,6 @@ import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.data.osmnotes.deleteImages
 import de.westnordost.streetcomplete.databinding.FragmentAttachPhotoBinding
 import de.westnordost.streetcomplete.util.decodeScaledBitmapAndNormalize
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
@@ -124,7 +123,12 @@ class AttachPhotoFragment : Fragment(R.layout.fragment_attach_photo) {
     }
 
     fun deleteImages() {
-        deleteImages(imagePaths)
+        for (path in imagePaths) {
+            val file = File(path)
+            if (file.exists()) {
+                file.delete()
+            }
+        }
     }
 
     companion object {

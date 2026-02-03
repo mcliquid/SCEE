@@ -8,6 +8,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
 import de.westnordost.streetcomplete.osm.ALL_PATHS
 import de.westnordost.streetcomplete.osm.ALL_ROADS
@@ -15,7 +16,7 @@ import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.util.ktx.containsAny
 import de.westnordost.streetcomplete.util.math.intersects
 
-class AddMaxHeight : OsmElementQuestType<MaxHeightAnswer> {
+class AddMaxHeight : OsmElementQuestType<MaxHeightAnswer>, AndroidQuest {
 
     private val nodeFilter by lazy { """
         nodes with
@@ -55,7 +56,13 @@ class AddMaxHeight : OsmElementQuestType<MaxHeightAnswer> {
     """.toElementFilterExpression() }
 
     private val tunnelFilter by lazy { """
-        ways with highway and (covered = yes or tunnel ~ yes|building_passage|avalanche_protector)
+        ways with
+          highway
+          and (
+            covered = yes
+            or tunnel ~ yes|building_passage|avalanche_protector
+            or bridge = covered
+          )
     """.toElementFilterExpression() }
 
     private val bridgeFilter by lazy { """
@@ -82,7 +89,7 @@ class AddMaxHeight : OsmElementQuestType<MaxHeightAnswer> {
 
     override val changesetComment = "Specify maximum heights"
     override val wikiLink = "Key:maxheight"
-    override val icon = R.drawable.ic_quest_max_height
+    override val icon = R.drawable.quest_max_height
     override val achievements = listOf(CAR)
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_maxheight_sign_title
@@ -173,8 +180,6 @@ class AddMaxHeight : OsmElementQuestType<MaxHeightAnswer> {
             }
             is NoMaxHeightSign -> {
                 tags["maxheight:signed"] = "no"
-                if (answer.isTallEnough == true) tags["maxheight"] = "default"
-                else if (answer.isTallEnough == false) tags["maxheight"] = "below_default"
             }
         }
     }

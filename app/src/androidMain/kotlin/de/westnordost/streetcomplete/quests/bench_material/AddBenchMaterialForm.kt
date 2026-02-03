@@ -1,34 +1,32 @@
 package de.westnordost.streetcomplete.quests.bench_material
 
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.quests.AImageListQuestForm
+import de.westnordost.streetcomplete.quests.AItemSelectQuestForm
 import de.westnordost.streetcomplete.quests.AnswerItem
-import de.westnordost.streetcomplete.quests.bench_material.BenchMaterial.WOOD
-import de.westnordost.streetcomplete.quests.bench_material.BenchMaterial.METAL
-import de.westnordost.streetcomplete.quests.bench_material.BenchMaterial.PLASTIC
-import de.westnordost.streetcomplete.quests.bench_material.BenchMaterial.CONCRETE
-import de.westnordost.streetcomplete.quests.bench_material.BenchMaterial.STONE
-import de.westnordost.streetcomplete.quests.bench_material.BenchMaterial.BRICK
-import de.westnordost.streetcomplete.view.image_select.Item
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.runtime.Composable
+import de.westnordost.streetcomplete.ui.common.item_select.ImageWithLabel
+import kotlinx.serialization.serializer
 
-class AddBenchMaterialForm : AImageListQuestForm<BenchMaterial, BenchMaterial>() {
+class AddBenchMaterialForm : AItemSelectQuestForm<BenchMaterial, BenchMaterial>() {
 
-    override val items = listOf(
-        Item(WOOD, R.drawable.bench_wood, R.string.quest_material_wood),
-        Item(METAL, R.drawable.bench_metal, R.string.quest_material_metal),
-        Item(PLASTIC, R.drawable.bench_plastic, R.string.quest_material_plastic),
-        Item(CONCRETE, R.drawable.bench_concrete, R.string.quest_material_concrete),
-        Item(STONE, R.drawable.bench_stone, R.string.quest_material_stone),
-        Item(BRICK, R.drawable.bench_brick, R.string.quest_material_brick)
-    )
+    override val items = BenchMaterial.entries.filterNot { it == BenchMaterial.PICNIC }
+    override val serializer = serializer<BenchMaterial>()
 
-    override val otherAnswers by lazy { if (element.tags["amenity"] == "bench")
-        listOf(AnswerItem(R.string.quest_bench_answer_picnic_table) { applyAnswer(BenchMaterial.PICNIC, true) })
-    else emptyList() }
+    override val otherAnswers by lazy {
+        if (element.tags["amenity"] == "bench")
+            listOf(AnswerItem(R.string.quest_bench_answer_picnic_table) { applyAnswer(BenchMaterial.PICNIC, true) })
+        else emptyList()
+    }
+
+    @Composable override fun ItemContent(item: BenchMaterial) {
+        ImageWithLabel(painterResource(item.icon!!), stringResource(item.title!!))
+    }
 
     override val itemsPerRow = 3
 
-    override fun onClickOk(selectedItems: List<BenchMaterial>) {
-        applyAnswer(selectedItems.single())
+    override fun onClickOk(selectedItem: BenchMaterial) {
+        applyAnswer(selectedItem)
     }
 }

@@ -6,6 +6,7 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BLIND
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
 import de.westnordost.streetcomplete.osm.Tags
@@ -13,7 +14,7 @@ import de.westnordost.streetcomplete.osm.isCrossing
 import de.westnordost.streetcomplete.quests.YesNoQuestForm
 import de.westnordost.streetcomplete.util.ktx.toYesNo
 
-class AddCrossingIsland : OsmElementQuestType<Boolean> {
+class AddCrossingIsland : OsmElementQuestType<Boolean>, AndroidQuest {
 
     private val crossingFilter by lazy { """
         nodes with
@@ -33,7 +34,7 @@ class AddCrossingIsland : OsmElementQuestType<Boolean> {
 
     override val changesetComment = "Specify whether pedestrian crossings have islands"
     override val wikiLink = "Key:crossing:island"
-    override val icon = R.drawable.ic_quest_pedestrian_crossing_island
+    override val icon = R.drawable.quest_pedestrian_crossing_island
     override val achievements = listOf(PEDESTRIAN, BLIND)
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_pedestrian_crossing_island

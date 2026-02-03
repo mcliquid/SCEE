@@ -6,14 +6,19 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement
 import de.westnordost.streetcomplete.osm.ALL_ROADS
+import de.westnordost.streetcomplete.osm.MOTORWAYS
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_no_ar
 import de.westnordost.streetcomplete.screens.measure.ArSupportChecker
+import org.jetbrains.compose.resources.StringResource
 
 class AddMaxPhysicalHeight(
     private val checkArSupport: ArSupportChecker
-) : OsmElementQuestType<MaxPhysicalHeightAnswer> {
+) : OsmElementQuestType<MaxPhysicalHeightAnswer>, AndroidQuest {
 
     private val nodeFilter by lazy { """
         nodes with (
@@ -36,7 +41,7 @@ class AddMaxPhysicalHeight(
 
     private val wayFilter by lazy { """
         ways with
-        highway ~ ${ALL_ROADS.joinToString("|")}
+        highway ~ ${(ALL_ROADS - MOTORWAYS).joinToString("|")}
         and (
           maxheight = below_default
           or source:maxheight ~ ".*estimat.*"
@@ -46,14 +51,20 @@ class AddMaxPhysicalHeight(
         and !maxheight:physical
         and access !~ private|no
         and vehicle !~ private|no
+        and motorroad != yes
+        and motorway != yes
+        and expressway != yes
     """.toElementFilterExpression() }
+    // explicitly removed motorway-style ways (highway=motorway*, motorroad/motorway=yes,
+    // expressway=yes) from ever being matched as measuring heights on these ways likely is
+    // extremely difficult and/or dangerous and/or illegal
 
     override val changesetComment = "Specify maximum physical heights"
     override val wikiLink = "Key:maxheight"
-    override val icon = R.drawable.ic_quest_max_height_measure
+    override val icon = R.drawable.quest_max_height_measure
     override val achievements = listOf(EditTypeAchievement.CAR)
-    override val defaultDisabledMessage: Int
-        get() = if (!checkArSupport()) R.string.default_disabled_msg_no_ar else 0
+    override val defaultDisabledMessage: StringResource?
+        get() = if (!checkArSupport()) Res.string.default_disabled_msg_no_ar else null
 
     override fun getTitle(tags: Map<String, String>): Int {
         val isBelowBridge = tags["amenity"] != "parking_entrance"

@@ -8,8 +8,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.quest_shelter_type_disabled_msg
 
-class AddShelterType : OsmFilterQuestType<ShelterType>() {
+class AddShelterType : OsmFilterQuestType<ShelterType>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -21,7 +24,7 @@ class AddShelterType : OsmFilterQuestType<ShelterType>() {
     override val icon = R.drawable.ic_quest_shelter_type
     override val isDeleteElementEnabled = true
     override val achievements = listOf(EditTypeAchievement.OUTDOORS)
-    override val defaultDisabledMessage: Int = R.string.quest_shelter_type_disabled_msg
+    override val defaultDisabledMessage = Res.string.quest_shelter_type_disabled_msg
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_shelter_type_title
 
@@ -34,3 +37,4 @@ class AddShelterType : OsmFilterQuestType<ShelterType>() {
         tags["shelter_type"] = answer.osmValue
     }
 }
+

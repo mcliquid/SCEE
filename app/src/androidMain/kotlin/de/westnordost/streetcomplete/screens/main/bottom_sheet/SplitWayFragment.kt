@@ -21,7 +21,7 @@ import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.AllEditTypes
-import de.westnordost.streetcomplete.data.location.RecentLocationStore
+import de.westnordost.streetcomplete.data.location.SurveyChecker
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditType
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditsController
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtLinePosition
@@ -49,14 +49,12 @@ import de.westnordost.streetcomplete.util.math.crossTrackDistanceTo
 import de.westnordost.streetcomplete.util.math.distanceTo
 import de.westnordost.streetcomplete.util.viewBinding
 import de.westnordost.streetcomplete.view.RoundRectOutlineProvider
-import de.westnordost.streetcomplete.view.checkIsSurvey
 import de.westnordost.streetcomplete.view.confirmIsSurvey
 import de.westnordost.streetcomplete.view.insets_animation.respectSystemInsets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.android.inject
 import kotlin.coroutines.resume
@@ -74,7 +72,7 @@ class SplitWayFragment :
 
     private val allEditTypes: AllEditTypes by inject()
     private val soundFx: SoundFx by inject()
-    private val recentLocationStore: RecentLocationStore by inject()
+    private val surveyChecker: SurveyChecker by inject()
     private val prefs: ObservableSettings by inject()
 
     override val elementKey: ElementKey by lazy { way.key }
@@ -157,7 +155,7 @@ class SplitWayFragment :
         restoreBackground()
         binding.glassPane.isGone = false
         if (splits.size <= 2 || confirmManySplits()) {
-            val isSurvey = checkIsSurvey(geometry, recentLocationStore.get())
+            val isSurvey = surveyChecker.checkIsSurvey(geometry)
             if (isSurvey || confirmIsSurvey(requireContext())) {
                 val action = SplitWayAction(way, ArrayList(splits.map { it.first }))
                 withContext(Dispatchers.IO) {

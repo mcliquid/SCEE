@@ -8,8 +8,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
 
-class AddPostOfficeType : OsmFilterQuestType<String>() {
+class AddPostOfficeType : OsmFilterQuestType<String>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -17,7 +20,7 @@ class AddPostOfficeType : OsmFilterQuestType<String>() {
           and !post_office
     """
     override val changesetComment = "Add post office"
-    override val defaultDisabledMessage = R.string.default_disabled_msg_ee
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
     override val wikiLink = "Key:post_office"
     override val icon = R.drawable.ic_quest_post_office
     override val isReplacePlaceEnabled = true

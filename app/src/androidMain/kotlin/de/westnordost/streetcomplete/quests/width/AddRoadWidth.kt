@@ -8,6 +8,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement
 import de.westnordost.streetcomplete.osm.ROADS_ASSUMED_TO_BE_PAVED
 import de.westnordost.streetcomplete.osm.Tags
@@ -15,11 +16,15 @@ import de.westnordost.streetcomplete.osm.maxspeed.MAX_SPEED_TYPE_KEYS
 import de.westnordost.streetcomplete.osm.surface.PAVED_SURFACES
 import de.westnordost.streetcomplete.quests.fullElementSelectionDialog
 import de.westnordost.streetcomplete.quests.questPrefix
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_difficult_and_time_consuming
+import de.westnordost.streetcomplete.resources.default_disabled_msg_no_ar
 import de.westnordost.streetcomplete.screens.measure.ArSupportChecker
+import org.jetbrains.compose.resources.StringResource
 
 class AddRoadWidth(
     private val checkArSupport: ArSupportChecker
-) : OsmElementQuestType<WidthAnswer> {
+) : OsmElementQuestType<WidthAnswer>, AndroidQuest {
 
     private val nodeFilter by lazy { """
        nodes with
@@ -43,11 +48,11 @@ class AddRoadWidth(
 
     override val changesetComment = "Determine road widths"
     override val wikiLink = "Key:width"
-    override val icon = R.drawable.ic_quest_street_width
+    override val icon = R.drawable.quest_street_width
     override val achievements = listOf(EditTypeAchievement.CAR)
-    override val defaultDisabledMessage: Int get() =
-        if (!checkArSupport()) R.string.default_disabled_msg_no_ar
-        else R.string.default_disabled_msg_difficult_and_time_consuming
+    override val defaultDisabledMessage: StringResource? get() =
+        if (!checkArSupport()) Res.string.default_disabled_msg_no_ar
+        else Res.string.default_disabled_msg_difficult_and_time_consuming
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_road_width_title
 

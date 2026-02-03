@@ -11,8 +11,11 @@ import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.NoAnswerFragment
 import de.westnordost.streetcomplete.quests.getLabelOrElementSelectionDialog
 import de.westnordost.streetcomplete.quests.getLabelSources
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_poi_camera
 
-class ShowCamera : OsmFilterQuestType<Boolean>() {
+class ShowCamera : OsmFilterQuestType<Boolean>(), AndroidQuest {
     override val elementFilter = """
         nodes, ways, relations with
           man_made = surveillance
@@ -21,7 +24,7 @@ class ShowCamera : OsmFilterQuestType<Boolean>() {
     override val wikiLink = "Tag:surveillance:type"
     override val icon = R.drawable.ic_quest_poi_camera
     override val dotColor = "mediumvioletred"
-    override val defaultDisabledMessage = R.string.default_disabled_msg_poi_camera
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_poi_camera
     override val dotLabelSources = getLabelSources("", this, prefs)
 
     override fun getTitle(tags: Map<String, String>) =

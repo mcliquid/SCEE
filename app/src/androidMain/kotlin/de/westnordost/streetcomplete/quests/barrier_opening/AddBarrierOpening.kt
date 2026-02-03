@@ -6,17 +6,21 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.WHEELCHAIR
 import de.westnordost.streetcomplete.osm.ALL_PATHS
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.width.AddWidthForm
 import de.westnordost.streetcomplete.quests.width.WidthAnswer
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_no_ar
 import de.westnordost.streetcomplete.screens.measure.ArSupportChecker
+import org.jetbrains.compose.resources.StringResource
 
 class AddBarrierOpening(
     private val checkArSupport: ArSupportChecker
-) : OsmElementQuestType<WidthAnswer> {
+) : OsmElementQuestType<WidthAnswer>, AndroidQuest {
 
     private val nodeFilter by lazy { """
         nodes with
@@ -39,11 +43,11 @@ class AddBarrierOpening(
 
     override val changesetComment = "Specify width of opening"
     override val wikiLink = "Key:barrier"
-    override val icon = R.drawable.ic_quest_wheelchair_width
+    override val icon = R.drawable.quest_wheelchair_width
     override val achievements = listOf(BICYCLIST, WHEELCHAIR)
     override val isDeleteElementEnabled = true
-    override val defaultDisabledMessage: Int
-        get() = if (!checkArSupport()) R.string.default_disabled_msg_no_ar else 0
+    override val defaultDisabledMessage: StringResource?
+        get() = if (!checkArSupport()) Res.string.default_disabled_msg_no_ar else null
 
     override fun getTitle(tags: Map<String, String>) =
         if (tags["barrier"] == "bollard" || tags["barrier"] == "block" || tags["cycle_barrier"] == "diagonal") {

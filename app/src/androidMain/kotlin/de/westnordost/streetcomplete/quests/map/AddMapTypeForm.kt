@@ -1,23 +1,25 @@
 package de.westnordost.streetcomplete.quests.map
 
-import android.os.Bundle
-import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.quests.AImageListQuestForm
-import de.westnordost.streetcomplete.view.image_select.DisplayItem
+import androidx.compose.runtime.Composable
+import de.westnordost.streetcomplete.quests.AItemSelectQuestForm
+import de.westnordost.streetcomplete.ui.common.item_select.ImageWithDescription
+import kotlinx.serialization.serializer
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
-class AddMapTypeForm : AImageListQuestForm<MapType, MapType>() {
+class AddMapTypeForm : AItemSelectQuestForm<MapType, MapType>() {
 
-    override val items: List<DisplayItem<MapType>> get() = MapType.values().toItems()
+    override val items = MapType.entries
 
     override val itemsPerRow = 1
     override val moveFavoritesToFront = false
+    override val serializer = serializer<MapType>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        imageSelector.cellLayoutId = R.layout.cell_labeled_icon_select_via_ferrata_scale
+    @Composable override fun ItemContent(item: MapType) {
+        ImageWithDescription(painterResource(item.icon), stringResource(item.title), stringResource(item.description))
     }
 
-    override fun onClickOk(selectedItems: List<MapType>) {
-        applyAnswer(selectedItems.first())
+    override fun onClickOk(selectedItem: MapType) {
+        applyAnswer(selectedItem)
     }
 }

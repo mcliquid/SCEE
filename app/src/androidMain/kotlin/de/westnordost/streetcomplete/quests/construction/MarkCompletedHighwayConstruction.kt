@@ -3,13 +3,14 @@ package de.westnordost.streetcomplete.quests.construction
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
 import de.westnordost.streetcomplete.osm.ALL_ROADS
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.toCheckDateString
 import de.westnordost.streetcomplete.osm.updateCheckDate
 
-class MarkCompletedHighwayConstruction : OsmFilterQuestType<CompletedConstructionAnswer>() {
+class MarkCompletedHighwayConstruction : OsmFilterQuestType<CompletedConstructionAnswer>(), AndroidQuest {
 
     override val elementFilter = """
         ways with
@@ -19,7 +20,7 @@ class MarkCompletedHighwayConstruction : OsmFilterQuestType<CompletedConstructio
     """
     override val changesetComment = "Determine whether road construction is now completed"
     override val wikiLink = "Tag:highway=construction"
-    override val icon = R.drawable.ic_quest_road_construction
+    override val icon = R.drawable.quest_road_construction
     override val hasMarkersAtEnds = true
     override val achievements = listOf(CAR)
 

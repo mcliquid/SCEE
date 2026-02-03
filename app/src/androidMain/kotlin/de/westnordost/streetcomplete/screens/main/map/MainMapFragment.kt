@@ -14,7 +14,7 @@ import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesSource
 import de.westnordost.streetcomplete.data.edithistory.EditHistorySource
 import de.westnordost.streetcomplete.data.edithistory.EditKey
-import de.westnordost.streetcomplete.data.location.RecentLocationStore
+import de.westnordost.streetcomplete.data.location.SurveyChecker
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
@@ -46,12 +46,12 @@ import de.westnordost.streetcomplete.util.ktx.currentDisplay
 import de.westnordost.streetcomplete.util.ktx.dpToPx
 import de.westnordost.streetcomplete.util.ktx.isLocationAvailable
 import de.westnordost.streetcomplete.util.ktx.toLatLon
+import de.westnordost.streetcomplete.util.ktx.toLocation
 import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
 import de.westnordost.streetcomplete.util.location.FineLocationManager
 import de.westnordost.streetcomplete.util.location.LocationAvailabilityReceiver
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.android.inject
 import org.maplibre.android.geometry.LatLng
@@ -74,7 +74,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
     private val downloadedTilesSource: DownloadedTilesSource by inject()
     private val levelFilter: LevelFilter by inject()
     private val locationAvailabilityReceiver: LocationAvailabilityReceiver by inject()
-    private val recentLocationStore: RecentLocationStore by inject()
+    private val surveyChecker: SurveyChecker by inject()
     private val prefs: Preferences by inject()
 
     private lateinit var compass: Compass
@@ -371,7 +371,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
 
     private fun onLocationChanged(location: Location) {
         displayedLocation = location
-        recentLocationStore.add(location)
+        surveyChecker.addRecentLocation(location.toLocation())
         locationMapComponent?.targetLocation = location
         addTrackLocation(location)
         compass.setLocation(location)

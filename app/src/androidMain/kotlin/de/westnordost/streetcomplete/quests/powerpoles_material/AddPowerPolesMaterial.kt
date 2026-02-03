@@ -6,10 +6,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BUILDING
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddPowerPolesMaterial : OsmFilterQuestType<PowerPolesMaterialAnswer>() {
+class AddPowerPolesMaterial : OsmFilterQuestType<PowerPolesMaterialAnswer>(), AndroidQuest {
 
     override val elementFilter = """
         nodes with
@@ -18,7 +19,7 @@ class AddPowerPolesMaterial : OsmFilterQuestType<PowerPolesMaterialAnswer>() {
     """
     override val changesetComment = "Specify power poles material type"
     override val wikiLink = "Tag:power=pole"
-    override val icon = R.drawable.ic_quest_power
+    override val icon = R.drawable.quest_power
     override val achievements = listOf(BUILDING)
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_powerPolesMaterial_title

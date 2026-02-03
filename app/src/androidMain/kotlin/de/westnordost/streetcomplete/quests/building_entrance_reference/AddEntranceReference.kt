@@ -10,12 +10,13 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.osm.mapdata.Relation
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.quest.NoCountriesExcept
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BLIND
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddEntranceReference : OsmElementQuestType<EntranceAnswer> {
+class AddEntranceReference : OsmElementQuestType<EntranceReferenceAnswer>, AndroidQuest {
 
     private val buildingFilter by lazy { """
         ways, relations with
@@ -43,7 +44,7 @@ class AddEntranceReference : OsmElementQuestType<EntranceAnswer> {
 
     override val changesetComment = "Specify entrance identifications"
     override val wikiLink = "Key:ref"
-    override val icon = R.drawable.ic_quest_door_address
+    override val icon = R.drawable.quest_door_address
     override val achievements = listOf(CITIZEN, BLIND)
     override val enabledInCountries = NoCountriesExcept(
         "PL", // Poland - own knowledge of Mateusz Konieczny https://github.com/streetcomplete/StreetComplete/issues/3064#issuecomment-879447168
@@ -101,19 +102,19 @@ class AddEntranceReference : OsmElementQuestType<EntranceAnswer> {
 
     override fun createForm() = AddEntranceReferenceForm()
 
-    override fun applyAnswerTo(answer: EntranceAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+    override fun applyAnswerTo(answer: EntranceReferenceAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         when (answer) {
             is FlatRange -> {
-                tags["addr:flats"] = answer.flatRange
+                tags["addr:flats"] = answer.start + "-" + answer.end
             }
             is ReferenceCode -> {
-                tags["ref"] = answer.referenceCode
+                tags["ref"] = answer.value
             }
             is ReferenceCodeAndFlatRange -> {
-                tags["addr:flats"] = answer.flatRange
-                tags["ref"] = answer.referenceCode
+                tags["addr:flats"] = answer.flatRange.start + "-" + answer.flatRange.end
+                tags["ref"] = answer.referenceCode.value
             }
-            Unsigned -> {
+            EntranceReferenceAnswer.NotSigned -> {
                 tags["ref:signed"] = "no"
             }
         }

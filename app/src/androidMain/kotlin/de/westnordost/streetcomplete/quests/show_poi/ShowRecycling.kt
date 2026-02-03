@@ -10,8 +10,11 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.getLabelOrElementSelectionDialog
 import de.westnordost.streetcomplete.quests.getLabelSources
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_poi_recycling
 
-class ShowRecycling : OsmFilterQuestType<Boolean>() {
+class ShowRecycling : OsmFilterQuestType<Boolean>(), AndroidQuest {
     override val elementFilter = """
         nodes, ways, relations with
           amenity ~ recycling|waste_basket|waste_disposal|waste_transfer_station|sanitary_dump_station
@@ -20,7 +23,7 @@ class ShowRecycling : OsmFilterQuestType<Boolean>() {
     override val wikiLink = "Key:amenity=recycling"
     override val icon = R.drawable.ic_quest_poi_recycling
     override val dotColor = "green"
-    override val defaultDisabledMessage = R.string.default_disabled_msg_poi_recycling
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_poi_recycling
     override val dotLabelSources = getLabelSources( "", this, prefs)
 
     override fun getTitle(tags: Map<String, String>) =

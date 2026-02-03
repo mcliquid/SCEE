@@ -292,8 +292,9 @@ quest/
     car_bumpy.svg                    modified from Twemoji: U+1F698
     car_wash.svg                     modified from Twemoji: U+1F698
     car_air_compressor.svg
-    car_charger.svg                  parts taken from Twemoji: U+1F698 and U+1F50C
-    car_charger_capacity.svg         parts taken from Twemoji: U+1F50C
+    charger_operator.svg             parts taken from Twemoji: U+1FAF4
+    car_charger_capacity.svg         parts taken from Twemoji: U+1F698 and U+1F50C
+    charger.svg                      parts taken from Twemoji: U+1F50C
     caravan.svg
     caravan_site.svg                 CC0 - SVG Repo
     card.svg
@@ -326,10 +327,12 @@ quest/
     kerb_type.svg
     kosher.svg                       Mateusz Konieczny (CC0, if even qualifies for copyright)
     label.svg
+    label_thing.svg
     lantern.svg
     laundry.svg
     leaf.svg
     level.svg
+    level_thing.svg
     mail.svg
     mail_ref.svg
     max_width.svg
@@ -391,6 +394,7 @@ quest/
     roof_shape.svg
     sauna.svg                        modified by mcliquid based on Geozeisig CC0 1.0 from https://wiki.openstreetmap.org/wiki/File:Sauna-14.svg
     seating.svg
+    shelter_capacity.svg
     shelter_type.svg                 modified from https://wiki.openstreetmap.org/wiki/File:Shelter-14.svg
     shower.svg
     sidewalk.svg
@@ -424,6 +428,7 @@ quest/
     tractor.svg
     traffic_lights.svg
     via_ferrata_scale.svg           https://www.svgrepo.com/svg/137349/climbing (CC0) and based on way_surface.svg
+    washing_hands.svg               modified from Twemoji: U+1FAF1
     way_surface.svg
     way_surface_detail.svg          Tobias Zwick (CC-BY-SA 4.0) (based on street_surface_detail.svg), recoloured background by Flo Edelmann
     way_width.svg
@@ -487,7 +492,6 @@ recycling/
     plastic.svg
     plastic_bottles.svg
     plastic_packaging.svg
-    plastic_bottles_and_cartons.svg
     scrap_metal.svg
     shoes.svg                        modified from EmojiOne 2: U+1F45F
     small_electrical_appliances.svg  EmojiOne 2: U+1F50C
@@ -587,6 +591,9 @@ service_building
 	water_pump.svg    CC0      water.svg and https://www.svgrepo.com/svg/82329/valve (adapted)
 	water_well.svg    CC0      https://www.svgrepo.com/svg/197054/well
 
+shelter_capacity/
+    sleeping_bag.svg
+
 sidewalk/
     no.svg
     yes.svg
@@ -602,7 +609,7 @@ smoothness/
     scooter.svg                      Twemoji: U+1F6F4
     skateboard.svg                   Twemoji: U+1F6F9
     suv.svg                          modified from Twemoji: U+1F699
-    tractor.svg                      Twemoji: U+1F69C
+    tractor.svg
 
 speech bubbles/
     speech_bubble_left.9.svg

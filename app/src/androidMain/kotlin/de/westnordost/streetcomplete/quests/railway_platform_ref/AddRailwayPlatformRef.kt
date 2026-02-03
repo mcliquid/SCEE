@@ -15,8 +15,11 @@ import de.westnordost.streetcomplete.data.quest.NoCountriesExcept
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.util.math.distanceTo
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.quest_disabled_msg_railway_platform_ref
 
-class AddRailwayPlatformRef : OsmElementQuestType<String> {
+class AddRailwayPlatformRef : OsmElementQuestType<String>, AndroidQuest {
 
     // inspired by https://github.com/streetcomplete/StreetComplete/pull/4315 + comments
     private val platformFilter = """
@@ -79,7 +82,7 @@ class AddRailwayPlatformRef : OsmElementQuestType<String> {
     override val icon = R.drawable.ic_quest_railway_platform_ref
     override val achievements = listOf(EditTypeAchievement.CITIZEN)
     override val enabledInCountries = NoCountriesExcept("DE", "FR", "CH", "AT")
-    override val defaultDisabledMessage = R.string.quest_disabled_msg_railway_platform_ref
+    override val defaultDisabledMessage = Res.string.quest_disabled_msg_railway_platform_ref
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_railwayPlatformRef_title
 
@@ -87,7 +90,7 @@ class AddRailwayPlatformRef : OsmElementQuestType<String> {
 
     // don't allow sth like not signed, because railway platforms should always be signed...
     override fun applyAnswerTo(answer: String, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
-        tags[prefs.getString(PREF_KEY, "ref")!!] = answer
+        tags[prefs.getString(PREF_KEY, "ref")] = answer
     }
 
     override val hasQuestSettings = true
@@ -95,8 +98,8 @@ class AddRailwayPlatformRef : OsmElementQuestType<String> {
     override fun getQuestSettingsDialog(context: Context) =
         AlertDialog.Builder(context)
             .setMessage(R.string.quest_railwayPlatformRef_message)
-            .setPositiveButton("local_ref") { _, _ -> prefs.edit { putString(PREF_KEY, "local_ref") }}
-            .setNegativeButton("ref") { _, _ -> prefs.edit { remove(PREF_KEY) }}
+            .setPositiveButton("local_ref") { _, _ -> prefs.putString(PREF_KEY, "local_ref")}
+            .setNegativeButton("ref") { _, _ -> prefs.remove(PREF_KEY)}
             .create()
 }
 

@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.quests.accepts_cards
 
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.StreetCompleteApplication
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
 import de.westnordost.streetcomplete.quests.TestMapDataWithGeometry
@@ -15,7 +16,7 @@ class AddAcceptsCardsTest {
 
     @BeforeTest
     fun setUp() {
-        StreetCompleteApplication.preferences = mockPrefs()
+        Prefs.sharedPreferences = mockPrefs()
         questType = AddAcceptsCards()
     }
 

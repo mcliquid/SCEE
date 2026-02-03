@@ -2,7 +2,6 @@ package de.westnordost.streetcomplete.screens.main.map.components
 
 import android.content.Context
 import androidx.annotation.UiThread
-import de.westnordost.streetcomplete.screens.main.map.components.FocusGeometryMapComponent.Companion
 import de.westnordost.streetcomplete.screens.main.map.maplibre.clear
 import de.westnordost.streetcomplete.screens.main.map.maplibre.isArea
 import de.westnordost.streetcomplete.screens.main.map.maplibre.isPoint

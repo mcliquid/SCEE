@@ -7,13 +7,14 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.findNodesAtCrossingsOf
 import de.westnordost.streetcomplete.osm.isCrossing
 import de.westnordost.streetcomplete.quests.crossing.CrossingAnswer.*
 
-class AddCrossing : OsmElementQuestType<CrossingAnswer> {
+class AddCrossing : OsmElementQuestType<CrossingAnswer>, AndroidQuest {
 
     private val roadsFilter by lazy { """
         ways with
@@ -31,7 +32,7 @@ class AddCrossing : OsmElementQuestType<CrossingAnswer> {
 
     override val changesetComment = "Specify whether there are crossings at intersections of paths and roads"
     override val wikiLink = "Tag:highway=crossing"
-    override val icon = R.drawable.ic_quest_pedestrian
+    override val icon = R.drawable.quest_pedestrian
     override val achievements = listOf(PEDESTRIAN)
 
     override val hint =  R.string.quest_crossing_hint

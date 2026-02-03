@@ -6,10 +6,11 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddStepCountStile : OsmElementQuestType<Int> {
+class AddStepCountStile : OsmElementQuestType<Int>, AndroidQuest {
 
     private val stileNodeFilter by lazy { """
         nodes with
@@ -39,7 +40,7 @@ class AddStepCountStile : OsmElementQuestType<Int> {
 
     override val changesetComment = "Specify stiles step count"
     override val wikiLink = "Key:step_count"
-    override val icon = R.drawable.ic_quest_steps_count_brown
+    override val icon = R.drawable.quest_steps_count_brown
     override val achievements = listOf(OUTDOORS)
     override val isDeleteElementEnabled = true
 

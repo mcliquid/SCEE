@@ -3,18 +3,16 @@ package de.westnordost.streetcomplete.quests.crossing_markings
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.view.image_select.DisplayItem
-import de.westnordost.streetcomplete.view.image_select.Item
 
 enum class CrossingMarkings(
     val osmValue: String,
-    @DrawableRes val imageResId: Int?,
-    @StringRes val titleResId: Int?,
+    @DrawableRes val imageResId: Int,
+    @StringRes val titleResId: Int,
 ) {
     YES(
         osmValue = "yes",
-        imageResId = null,
-        titleResId = null
+        imageResId = 0,
+        titleResId = 0
     ),
     NO(
         osmValue = "no",
@@ -87,7 +85,3 @@ enum class CrossingMarkings(
         titleResId = R.string.quest_crossing_marking_value_pictograms
     )
 }
-
-fun Collection<CrossingMarkings>.toItems() = map { it.asItem() }
-
-fun CrossingMarkings.asItem(): DisplayItem<CrossingMarkings> = Item(this, imageResId, titleResId)

@@ -3,14 +3,16 @@ package de.westnordost.streetcomplete.quests.wheelchair_access
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.WHEELCHAIR
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.updateWithCheckDate
 
-class AddWheelchairAccessToilets : OsmFilterQuestType<WheelchairAccess>() {
+class AddWheelchairAccessToilets : OsmFilterQuestType<WheelchairAccess>(), AndroidQuest {
 
     override val elementFilter = """
-        nodes, ways with amenity = toilets
+        nodes, ways with
+         amenity = toilets
          and access !~ no|private
          and (
            !wheelchair
@@ -20,7 +22,7 @@ class AddWheelchairAccessToilets : OsmFilterQuestType<WheelchairAccess>() {
     """
     override val changesetComment = "Specify wheelchair accessibility of toilets"
     override val wikiLink = "Key:wheelchair"
-    override val icon = R.drawable.ic_quest_toilets_wheelchair
+    override val icon = R.drawable.quest_toilets_wheelchair
     override val isDeleteElementEnabled = true
     override val achievements = listOf(WHEELCHAIR)
 

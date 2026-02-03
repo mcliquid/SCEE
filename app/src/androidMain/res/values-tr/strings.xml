@@ -4,7 +4,7 @@
     <string name="oauth_communication_error">"Yetkilendirme sunucusuna erişilemiyor"</string>
     <string name="oauth_failed_permissions">"Yetkilendirme başarısız: İstenen bütün izinlerin verilmesi gerekiyor"</string>
     <string name="pref_category_communication">"İletişim"</string>
-    <string name="pref_category_display">"Görüntü"</string>
+    <string name="pref_category_display">"Görünüm"</string>
     <string name="pref_title_show_notes_not_phrased_as_questions">"Tüm notları göster"</string>
     <string name="pref_summaryOn_show_notes_not_phrased_as_questions">"Soru olarak ifade edilmeyen notlar da gösteriliyor"</string>
     <string name="pref_summaryOff_show_notes_not_phrased_as_questions">"Soru şeklinde ifade edilmeyen notlar yoksayılıyor"</string>
@@ -20,10 +20,7 @@
     <string name="quest_leave_new_note_yes">"Not bırak"</string>
     <string name="quest_leave_new_note_no">"Gizle"</string>
     <string name="quest_streetName_title">"Bu sokağın adı ne?"</string>
-    <string name="quest_streetName_description">"sokak tabelasında yazdığı gibi, kısaltma olmayacak şekilde:"</string>
     <string name="quest_streetName_answer_noName_confirmation_description">"Bazen sokak tabelası yalnızca sokağın bir ucundadır. Ayrıca, daha büyük bir sokağa ait yan sokaklar için fazladan sokak işaretleri olmayabileceğini unutmayın. Genellikle evlerin bulunduğu sokakların bir adı vardır."</string>
-    <string name="quest_streetName_nameWithAbbreviations_confirmation_description">"Ad, kısaltma olmadan yazılabilirse genişletilmelidir.  Çoğu yaygın kısaltmalar siz yazarken genişletilir."</string>
-    <string name="quest_streetName_nameWithAbbreviations_confirmation_positive">"Kısaltma yok"</string>
     <string name="quest_openingHours_start_time">"açılış saati"</string>
     <string name="quest_openingHours_end_time">"kapanış saati"</string>
     <string name="quest_openingHours_add_months">"Ayları ekle"</string>
@@ -45,7 +42,7 @@
     <string name="download_area_too_big">"Lütfen daha da yakınlaştırın"</string>
     <string name="confirmation_cancel_prev_download_title">"Geçerli indirme durdurulup burası indirilsin mi?"</string>
     <string name="turn_on_location_request">"Konum kapalı. Açmak için Ayarlar'a gidilsin mi?"</string>
-    <string name="no_location_permission_warning">"Çevrenizdeki görevleri taramak ve haritada konumunuzu göstermek için izniniz gerekiyor."</string>
+    <string name="no_location_permission_warning">"Haritadaki konumunuzu göstermek ve bölgenizdeki veriyi indirmek için konum izni gerekli."</string>
     <string name="about_title_authors">"Emeği geçenler"</string>
     <string name="about_title_repository">"Projenin Ana Sayfası"</string>
     <string name="about_title_report_error">"Hata bildir"</string>
@@ -57,7 +54,6 @@
     <string name="version_banned_message">"StreetComplete’in bu sürümü çok eski. Lütfen güncelleyin!"</string>
     <string name="no_gps_no_quests">"Çevrenizdeki verilerin otomatik olarak indirilmesi için lütfen konum iznini açın"</string>
     <string name="later">"Sonra"</string>
-    <string name="quest_streetName_answer_noProperStreet_link">"Sadece iki yolu birbirine bağlıyor"</string>
     <string name="quest_streetName_answer_noProperStreet_leaveNote">"Başka bir şey (not bırak)"</string>
     <string name="about_title_privacy_statement">"Gizlilik beyanı"</string>
     <string name="quest_openingHours_public_holidays">"Resmi tatiller"</string>
@@ -196,7 +192,6 @@ Vurgulu alandaki cadde boyunca hiçbir işaret yoksa varsayılan hız sınırlar
     <string name="quest_sport_roller_skating">"Tekerlekli paten"</string>
     <string name="quest_wheelchairAccess_limited_description_business">"Kısmen, yere erişmek için tek bir adımdan daha fazlası olmadığı ve içerideki odaların çoğunun tekerlekli sandalye erişimine uygun olduğu anlamına gelir."</string>
     <string name="quest_wheelchairAccess_limited_description_public_transport">"Kısmen, erişmek için bilek yükseliğinden daha yüksek bir engel olmadığı anlamına gelir."</string>
-    <string name="quest_streetName_nameWithAbbreviations_confirmation_title_name">"%s isminin kısaltması nedir?"</string>
     <string name="quest_recycling_type_title">"Bu ne tür bir geri dönüşüm tesisi?"</string>
     <string name="recycling_centre">"Merkez"</string>
     <string name="overground_recycling_container">"Konteyner"</string>
@@ -323,10 +318,6 @@ Vurgulu alandaki cadde boyunca hiçbir işaret yoksa varsayılan hız sınırlar
     <string name="quest_cycleway_answer_contraflow_cycleway">"Ayrıca karşı tarafta bisiklet yolu var…"</string>
     <string name="quest_openingHours_emptyAnswer">"Tabelada ne olduğunu açıklaman gerekiyor.  İşareti yoksa, içerideki açılış saatlerini sormalısınız."</string>
     <string name="quest_cycleway_value_none_but_no_oneway">"Yok ama bisikletliler bu yolu çift yönlü kullanabilir"</string>
-    <string name="quest_streetName_answer_noName_question">"Neden ismi yok?"</string>
-    <string name="quest_streetName_answer_noProperStreet_service2">"Bir araba yolu veya park koridoru gibi bir şey"</string>
-    <string name="quest_streetName_answer_noProperStreet_track2">"Bir tarım veya orman yolu"</string>
-    <string name="quest_streetName_answer_noName_noname">"Hiçbiri, sadece ismi yok"</string>
     <string name="quest_wheelchairAccess_description_toilets">"Tuvalet erişilebilir ise, bunun gibi bir tekerlekli sandalye işareti görülebilir.
      Kısmen tekerlekli sandalyenin tuvalete girip kullanabileceği anlamına gelir, ancak parmaklık veya adapte edilmiş el havzası yoktur."</string>
     <string name="map_btn_create_note">"Yeni not oluştur"</string>
@@ -363,7 +354,6 @@ Vurgulu alandaki cadde boyunca hiçbir işaret yoksa varsayılan hız sınırlar
     <string name="quest_fee_answer_hours">"Zamana ve güne bağlı…"</string>
     <string name="quest_fee_add_times">"Zaman ekle"</string>
     <string name="quest_housenumber_multiple_numbers">"Birden fazla ev numarasına sahip"</string>
-    <string name="quest_housenumber_multiple_numbers_description">"Virgülle ayrılmış ev numaralarını veya aralıklarını girebilirsiniz. Örneğin 1,3 veya 2–6."</string>
     <string name="quest_bicycle_parking_type_stand">"Stand (bisiklet çerçevesini destekler)"</string>
     <string name="quest_bicycle_parking_type_wheelbender">"Jant Çamurluk (sadece jantları destekler)"</string>
     <string name="quest_bicycle_parking_type_shed">"Kulübe"</string>
@@ -536,7 +526,6 @@ Vurgulu alandaki cadde boyunca hiçbir işaret yoksa varsayılan hız sınırlar
     <string name="quest_recycling_type_glass_bottles">"Cam şişe ve kavanozlar"</string>
     <string name="quest_recycling_type_glass_bottles_short">"Şişe ve kavanozlar"</string>
     <string name="quest_recycling_type_paper">"Kâğıt"</string>
-    <string name="quest_recycling_type_plastic_generic">"Plastik"</string>
     <string name="quest_recycling_type_plastic">"Herhangi plastik"</string>
     <string name="quest_recycling_type_shoes">"Ayakkabı"</string>
     <string name="quest_recycling_type_electric_appliances">"Elektronik"</string>
@@ -583,8 +572,8 @@ Son olarak, güvenli olmayı unutma. Çevrenin farkında ol ve özel mülke girm
     <string name="achievements_empty">"Henüz başarımınız yok"</string>
     <string name="links_empty">"Henüz bağlantınız yok"</string>
     <string name="quests_empty">"Henüz hiç düzenleme yayınlamadın"</string>
-    <string name="unsynced_quests_description">"artı %d değişiklikleri henüz yayınlamadı."</string>
-    <string name="unsynced_quests_not_logged_in_description">"Henüz yayınlanmamış %d değişikliğiniz var. Yüklemek için giriş yapmanız gerekiyor."</string>
+    <string name="unsynced_quests_description">"artı %1$d değişiklikleri henüz yayınlamadı."</string>
+    <string name="unsynced_quests_not_logged_in_description">"Henüz yayınlanmamış %1$d değişikliğiniz var. Yüklemek için giriş yapmanız gerekiyor."</string>
     <string name="user_quests_title">"Çözülmüş Görevler"</string>
     <string name="user_achievements_title">"Başarımlar"</string>
     <string name="user_links_title">"Bağlantı Koleksyonu"</string>
@@ -657,7 +646,7 @@ Bu veri yalnızca postacılar için değil navigasyon sistemleri için de çok �
     <string name="achievement_veg_solved_X">"Sıfır et diyetiyle yaşayan insanların ilgisini çeken %d tane görev bitirdin!"</string>
     <string name="achievement_car_title">"Yolda"</string>
     <string name="achievement_car_solved_X">"OpenStreetMap'teki “street” i koyarak, cadde altyapısı detaylarını geliştiren %d tane görev bitirdin!"</string>
-    <string name="unread_messages_message">"Gelen kutunuzda %d okunmamış mesajınız var"</string>
+    <string name="unread_messages_message">"Gelen kutunuzda %1$d okunmamış mesajınız var"</string>
     <string name="unread_messages_button">"Gelen Kutusunu Aç"</string>
     <string name="action_about2">"Hakkında"</string>
     <string name="map_btn_menu">"Menü"</string>
@@ -709,11 +698,10 @@ seviyeleri"</string>
     <string name="resurvey_intervals_default">"Varsayılan"</string>
     <string name="resurvey_intervals_more_often">"Daha sık"</string>
     <string name="about_title_translate">"Bu uygulamayı çevirmemize yardımcı olun"</string>
-    <string name="about_description_translate">"%1$s, %2$d%% çevrildi"</string>
+    <string name="about_description_translate">"%1$s, %2$d% çevrildi"</string>
     <string name="quest_oneway2_title">"Bu tek yönlü bir yol mu? Hangi yönde?"</string>
     <string name="quest_oneway2_dir">"Bu yönde tek yön"</string>
     <string name="quest_oneway2_no_oneway">"Tek yön değil"</string>
-    <string name="quest_maxweight_select_sign">"Tabela seç"</string>
     <string name="quest_steps_incline_title">"Hangi taraftaki basamaklarla yukarı çıkılıyor?"</string>
     <string name="quest_steps_incline_up">"Bu tarafla"</string>
     <string name="quest_step_count_title">"Burada kaç basamak var?"</string>
@@ -755,7 +743,6 @@ seviyeleri"</string>
     <string name="quest_charging_station_capacity_title">"Bu şarj istasyonunda aynı anda kaç araba şarj edilebilir?"</string>
     <string name="link_disaster_ninja_description">"Doğal afetleri gösteren bir harita, insanlara yardım etmek isteyenler için faydalı. Ayrıca bölgelerin ne kadar iyi ve güncel olduğunu gösteren bir sürü ilginç veriyi de gösterir."</string>
     <string name="quest_lanes_title">"Bu yolda arabalar için kaç şerit var?"</string>
-    <string name="quest_lanes_answer_lanes">"İşaretli şeritler"</string>
     <string name="quest_lanes_answer_noLanes">"İşaretli şerit yok"</string>
     <string name="quest_lanes_answer_lanes_center_left_turn_lane">"Çift yön sola dönüş şeridi var"</string>
     <string name="quest_address_answer_no_housenumber_message2b">"Bu doğru mu?"</string>
@@ -767,8 +754,6 @@ seviyeleri"</string>
     <string name="quest_kerb_height_lowered">"Yol yüzeyinden biraz daha yüksek"</string>
     <string name="quest_kerb_height_raised">"Yüksek kenar"</string>
     <string name="quest_kerb_height_lowered_ramp">"Kaldırım rampası"</string>
-    <string name="quest_lanes_answer_lanes_description2">"Araba trafiği için işaretli şeritlerin (her iki yönde) toplam sayısını belirtin. Yani bisiklet ve özel park şeritleri sayılmaz.
-Herhangi bir şerit otobüs için ayrılmışsa, lütfen bunun yerine bir not bırakın."</string>
     <string name="quest_lanes_answer_lanes_description_one_side2">"Burada araba trafiği için kullanılabilen işaretli şeritlerin sayısını belirtin. Yani bisiklet ve özel park şeritleri sayılmaz.
 Herhangi bir şerit otobüs için ayrılmışsa, lütfen bunun yerine bir not bırakın."</string>
     <string name="quest_surface_value_rock">"Kaya"</string>
@@ -783,7 +768,6 @@ Herhangi bir şerit otobüs için ayrılmışsa, lütfen bunun yerine bir not b�
     <string name="quest_shop_gone_replaced_answer">"Bir…"</string>
     <string name="quest_shop_gone_replaced_answer_hint">"Buraya bir tür yer yazın"</string>
     <string name="quest_shop_vacant_type_title">"Bu dükkân boştu. Şimdi burada ne var?"</string>
-    <string name="quest_lanes_answer_lanes_odd2">"Şerit sayısı iki taraf için farklı"</string>
     <string name="default_disabled_msg_go_inside_regional_warning">"Bu görev türü varsayılan olarak devre dışı bırakılmıştır çünkü bazı bölgelerde kullanışlı değildir ve bu türden bir görevi cevaplayabilmek için büyük olasılıkla bir yere girmeniz gerekecektir."</string>
     <string name="quest_dietType_explanation_kosher">"Kaşar ürünler kaşrut sertifika ajanslarının ürünleri uygun işaretlemek için kabul ettiği özel koşullara göre hazırlanmalıdır."</string>
     <string name="quest_cycleway_answer_no_bicycle_infrastructure">"Hiç bisiklet yolu yok"</string>
@@ -798,15 +782,12 @@ Tüm seçenekleri değerlendir! Bazı durumlar net olmayabilir. Çift yönde bis
     <string name="quest_bicycle_parking_fee_title">"Buraya bisiklet park etmek için ödeme yapmanız gerekiyor mu?"</string>
     <string name="quest_buildingType_house_description2">"müstakil olmayan tek aileli ev, örn. tek sıralı ev"</string>
     <string name="quest_drinking_water_potable_signed">"İçmek için uygun (İşaretli)"</string>
-    <string name="quest_drinking_water_potable_unsigned">"İçmek için uygun (İşaretsiz)"</string>
     <string name="quest_drinking_water_not_potable_signed">"İçmek için uygun değil (İşaretli)"</string>
-    <string name="quest_drinking_water_not_potable_unsigned">"İçmek için uygun değil (İşaretsiz)"</string>
     <string name="quest_postboxRoyalCypher_title">"Bu posta kutusundaki kraliyet kodu nedir?"</string>
     <string name="quest_postboxRoyalCypher_type_none">"Kraliyet şifresi görünmüyor"</string>
     <string name="quest_postboxRoyalCypher_type_scottish_crown">"İskoçya Tacı"</string>
     <string name="quest_buildingType_fire_station">"İtfaiye"</string>
     <string name="quest_recycling_type_beverage_cartons">"Sadece içecek kartonları"</string>
-    <string name="quest_recycling_type_plastic_bottles_and_cartons">"Sadece karton ve pet şişeler"</string>
     <string name="team_mode">"Takım Modu"</string>
     <string name="team_mode_exit">"Takım Kipinden Çık"</string>
     <string name="team_mode_description">"Aynı bölgenin haritasını bir grupla beraber oluştururken görevleri grup üyelerine dağıtmak için takım modunu aktive edebilirsiniz. Bu durumda her biriniz farklı görevler görür."</string>
@@ -916,7 +897,6 @@ Tüm seçenekleri değerlendir! Bazı durumlar net olmayabilir. Çift yönde bis
     <string name="quest_traffic_calming_type_island">"Ada"</string>
     <string name="quest_traffic_calming_type_chicane">"Kasıtlı kıvrım/eğri(ler)"</string>
     <string name="quest_traffic_calming_type_rumble_strip">"Rumble şeridi(leri)"</string>
-    <string name="quest_surface_value_concrete_plates">"Beton levhalar"</string>
     <string name="quest_surface_value_concrete_lanes">"Beton yollar"</string>
     <string name="quest_fireHydrant_diameter_title">"Bu yangın musluğunun çapı tabelasında ne olarak belirtilmiş?"</string>
     <string name="quest_diet_answer_no_food">"Yemeği yok"</string>
@@ -935,7 +915,7 @@ Tüm seçenekleri değerlendir! Bazı durumlar net olmayabilir. Çift yönde bis
     <string name="quest_barrier_bicycle_type_double">"Şikan - her iki tarafta bariyer"</string>
     <string name="quest_barrier_bicycle_type_multiple">"Şikan - iki bariyerden fazlası"</string>
     <string name="language_default">"Sistem varsayılanı"</string>
-    <string name="on_floor">"%s. katta"</string>
+    <string name="on_floor">"%1$s. katta"</string>
     <string name="select_street_parking_orientation">"Yola göre duruş açısını seç"</string>
     <string name="select_street_parking_position">"Pozisyon seç"</string>
     <string name="select_street_parking_no">"Herhangi bir tabela veya yol işareti?"</string>
@@ -1162,8 +1142,7 @@ Alternatif olarak, bir not bırakabilirsin (fotoğrafla beraber)."</string>
     <string name="quest_camp_type_tents_only">"Yalnızca çadırlar"</string>
     <string name="quest_camp_type_backcountry">"Dağ kampı (tesis yok)"</string>
     <string name="quest_fireHydrant_diameter_unusualInput_confirmation_description2">"Bu çap değeri mantıksız gibi, genelde %1$d ile %2$d arasında olur."</string>
-    <string name="quest_recycling_type_pet">"Sadece pet şişeler"</string>
-    <string name="street_parking_street_width">"Sokak genişliği: %s"</string>
+    <string name="street_parking_street_width">"Sokak genişliği: %1$s"</string>
     <string name="overlay_street_parking">"Sokağa park"</string>
     <string name="link_ohsomehex_description">"Büyük ölçekli resimlerden tekli objelere kadar OSM tarihini keşfedin"</string>
     <string name="link_opencampingmap_description">"Kamp alanlarının bir haritası"</string>
@@ -1210,7 +1189,7 @@ Alternatif olarak, bir not bırakabilirsin (fotoğrafla beraber)."</string>
     <string name="user_profile_current_week_title">"Son 7 gün"</string>
     <string name="user_profile_dates_mapped">"Yakın zamanda haritalama yaptığın günler"</string>
     <string name="quest_cycleway_value_advisory_lane">"tavsiye bisiklet yolu"</string>
-    <string name="urlconfig_scan_qr_code_again2">"Uygulamayı yükledikten sonra ön ayarı uygulamak için QR kodu tekrar okut yahut &lt;a href=\"%s\"&gt;bu linke&lt;/a&gt; tıkla."</string>
+    <string name="urlconfig_scan_qr_code_again2">"Uygulamayı yükledikten sonra ön ayarı uygulamak için QR kodu tekrar okut yahut &lt;a href=\"%1$s\"&gt;bu linke&lt;/a&gt; tıkla."</string>
     <string name="confirmation_replace_shop_title">"Burası hâlâ aynı yer mi?"</string>
     <string name="confirmation_replace_shop_message">"Bu durumda mesai saatleri, iletişim bilgileri vs. de değişmiştir."</string>
     <string name="confirmation_replace_shop_yes">"Farklı bir yer"</string>
@@ -1219,7 +1198,7 @@ Alternatif olarak, bir not bırakabilirsin (fotoğrafla beraber)."</string>
     <string name="quest_move_node_message">"Noktayı taşıyarak konumunu düzeltebilirsin. Taşımak istiyor musun?"</string>
     <string name="node_moved_not_far_enough">"Lütfen biraz daha uzağa taşı"</string>
     <string name="node_moved_too_far">"Çok uzağa taşındı. Taşımak yerine not bırakın"</string>
-    <string name="node_moved">"%s uzağa taşındı"</string>
+    <string name="node_moved">"%1$s uzağa taşındı"</string>
     <string name="move_node_description">"Noktayı doğru yere koymak için haritayı kaydırın. Yakınlaştırarak olabildiğince tam yerine denk getirmeye çalışın. Lütfen sizin konumunuzun tam kesin olmadığını aklınızda bulundurun."</string>
     <string name="move_node_action_description">"Noktayı farklı yere taşıdın"</string>
     <string name="quest_cycleway_value_shoulder">"yok ama bisikletliler güvenlik şeridini kullanabilir"</string>
@@ -1317,7 +1296,7 @@ Ek olarak, adresler katmanı gibi bazı katmanlar imlecin olduğu yere yeni veri
     <string name="label_log_older_than">"Bitiş tarihi"</string>
     <string name="label_log_message_contains">"Mesaj içermektedir"</string>
     <string name="title_logs_filters">"Mesajları filtrele"</string>
-    <string name="pref_title_quests_restore_hidden_summary">"%d gizlenen görev"</string>
+    <string name="pref_title_quests_restore_hidden_summary">"%1$d gizlenen görev"</string>
     <string name="link_every_door_description">"Android ve İOS için kapsamlı POI (ilgi çekici yer) düzenleyici"</string>
     <string name="link_mapcomplete_description">"Her biri tek bir tür veri düzenlemeye yarıyan OSM haritaları"</string>
     <string name="link_forum_description">"Yardıma mı ihtiyacın var? Gelişmelerden haberdar mı olmak istiyorsun?"</string>
@@ -1387,7 +1366,7 @@ Bir seviye, pencereleri çatıda olduğunda bir çatı seviyesi olarak sayılır
     <string name="quest_camp_power_supply_hint">"Bunlar, kamp alanlarında doğrudan prizler, misafirlerin erişebileceği bir hizmet binasındaki prizler, telefonlar, dizüstü bilgisayarlar vb. için özel bir şarj istasyonu olabilir."</string>
     <string name="quest_barrier_opening_width_bollard">"Burada geçilebilecek en geniş aralık ne kadardır?"</string>
     <string name="user_profile_all_time_title">"Genel"</string>
-    <string name="user_statistics_country_rank2">"%s sıralamasında"</string>
+    <string name="user_statistics_country_rank2">"%1$s sıralamasında"</string>
     <string name="quest_leafType_tree_is_just_a_stump">"Alt tarafı ağaç kökü"</string>
     <string name="quest_board_name_title">"Bu bilgi tabelasının başlığında ne yazıyor?"</string>
     <string name="quest_crossing_hint">"Yolun kesiştiği gayrı resmi bir patika:"</string>
@@ -1427,4 +1406,25 @@ Bir seviye, pencereleri çatıda olduğunda bir çatı seviyesi olarak sayılır
     <string name="pedestrian_zone_allowed_sign">"Bisiklet sürmeye izin veren bir tabela var"</string>
     <string name="pedestrian_zone_no_sign">"Bisiklet sürme ile ilgili bir tabela yok"</string>
     <string name="team_mode_description_overlay_hint">"Eğer katmanları kullanacaksanız, her biriniz farklı bir katman seçmelisiniz. Böylece görevler bölünmüş olur."</string>
+    <string name="quest_dietType_glutenfree_name_title">"Burada glutensiz ürünler satılıyor mu?"</string>
+    <string name="quest_dietType_explanation_glutenfree">"Glutensiz ürünler üretmek uzmanlık gerektirir çünkü baharatlar soslar gibi malzemelerde de gluten bulunabilir. Glutensiz ürün özellikle glutensiz olduğu belirtilmelidir."</string>
+    <string name="quest_construction_minor_title">"Buradaki ufak yol çalışması bitti mi?"</string>
+    <string name="map_attribution">"Harita atıfları"</string>
+    <string name="link_panoramax_description">"Kitleden sokak fotoğraflarını paylaşan kâr amacı gütmeyen ücretsiz ve açık kaynaklı bir uygulama."</string>
+    <string name="link_opengeofiction_description">"Gerçek dünyanın haritasıyla uğraşmaktan sıkıldınız mı? El birliğiyle hayali haritalar oluşturun!"</string>
+    <string name="link_openclimbing_description">"Tırmanış noktalarını gösteren bir harita"</string>
+    <string name="pref_title_zoom_buttons">"Harita büyütüp küçültme tuşlarını göster"</string>
+    <string name="overlay_mtb_scale">"Dağ bisikleti zorluğu"</string>
+    <string name="overlay_mtb_scale_0_description">"Sıkı, tutuşlu, sıkıştırılmış ya da doğal yüzey; Engel yok; Hafif yokuş; Geniş virajlar."</string>
+    <string name="overlay_mtb_scale_1_description">"Küçük kökler, taşlar, aşınma veya su yollarıyla kısmen gevşek topraklı yol; ≤40% eğim; Yuvarlanabilir cisimler; Temel sürüş tecrübesi gerekli."</string>
+    <string name="overlay_mtb_scale_2_description">"Daha büyük kökler ve taşlar, keskin yokuşlar/küçük merdivenler, %70'e kadar eğim; basit u-kıvrımlar; gelişmiş fren ve denge tekniği gerekli."</string>
+    <string name="overlay_mtb_scale_3_description">"Büyük kökler, kayalar, taşlar, keskin düşüşler ve virajlar; dar u-kıvrımları, &gt;70% eğim; kaygan ve gevşek zemin. Çok gelişmiş denge ve fren kontrolü gerekli."</string>
+    <string name="overlay_mtb_scale_6_description">"Tehlikeli ve geçilemez arazi, bisiklet sürmek için uygun değil."</string>
+    <string name="pref_title_overlays">"Katman seçimi"</string>
+    <string name="pref_overlays_reset">"Katman izinlerini sıfırla?"</string>
+    <string name="overlay">"Katman"</string>
+    <string name="enable_overlay_confirmation_title">"Bu katmanı aç?"</string>
+    <string name="compass">"Pusula"</string>
+    <string name="quest_tracktype_grade2">"Genel olarak düzgün"</string>
+    <string name="quest_tracktype_grade3">"Karışım"</string>
 </resources>

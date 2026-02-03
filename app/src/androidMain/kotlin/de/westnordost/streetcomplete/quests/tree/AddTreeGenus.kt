@@ -26,8 +26,11 @@ import de.westnordost.streetcomplete.quests.custom.readFromUriToExternalFile
 import de.westnordost.streetcomplete.quests.custom.writeFromExternalFileToUri
 import de.westnordost.streetcomplete.util.ktx.getActivity
 import java.io.File
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.quest_tree_disabled_msg
 
-class AddTreeGenus : OsmFilterQuestType<TreeAnswer>() {
+class AddTreeGenus : OsmFilterQuestType<TreeAnswer>(), AndroidQuest {
 
     override val elementFilter = """
         nodes with
@@ -36,9 +39,9 @@ class AddTreeGenus : OsmFilterQuestType<TreeAnswer>() {
           and !~"genus:.*" and !~"species:.*" and !~"taxon:.*"
     """
     override val changesetComment = "Add tree genus/species"
-    override val defaultDisabledMessage = R.string.quest_tree_disabled_msg
+    override val defaultDisabledMessage = Res.string.quest_tree_disabled_msg
     override val wikiLink = "Key:genus"
-    override val icon = R.drawable.ic_quest_tree
+    override val icon = R.drawable.quest_tree
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_tree_genus_title
 

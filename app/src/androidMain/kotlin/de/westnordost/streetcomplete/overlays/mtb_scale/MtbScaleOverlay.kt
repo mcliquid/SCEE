@@ -5,24 +5,25 @@ import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpressio
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
+import de.westnordost.streetcomplete.data.overlays.AndroidOverlay
+import de.westnordost.streetcomplete.data.overlays.Overlay
+import de.westnordost.streetcomplete.data.overlays.OverlayColor
+import de.westnordost.streetcomplete.data.overlays.OverlayStyle
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.*
 import de.westnordost.streetcomplete.osm.mtb_scale.MtbScale
 import de.westnordost.streetcomplete.osm.mtb_scale.parseMtbScale
 import de.westnordost.streetcomplete.osm.surface.UNPAVED_SURFACES
-import de.westnordost.streetcomplete.overlays.Color
-import de.westnordost.streetcomplete.overlays.Overlay
-import de.westnordost.streetcomplete.overlays.PolylineStyle
-import de.westnordost.streetcomplete.overlays.StrokeStyle
-import de.westnordost.streetcomplete.overlays.Style
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_overlay_domain_expert
 
-class MtbScaleOverlay : Overlay {
+class MtbScaleOverlay : Overlay, AndroidOverlay {
 
     override val title = R.string.overlay_mtb_scale
-    override val icon = R.drawable.ic_quest_mtb
+    override val icon = R.drawable.quest_mtb
     override val changesetComment = "Specify MTB difficulty"
     override val wikiLink: String = "Key:mtb:scale"
     override val achievements = listOf(BICYCLIST, OUTDOORS)
-    override val defaultDisabledMessage = R.string.default_disabled_overlay_domain_expert
+    override val defaultDisabledMessage = Res.string.default_disabled_overlay_domain_expert
 
     override fun getStyledElements(mapData: MapDataWithGeometry) =
         mapData.filter("""
@@ -42,13 +43,13 @@ class MtbScaleOverlay : Overlay {
 
     override fun createForm(element: Element?) = MtbScaleOverlayForm()
 
-    private fun getStyle(element: Element): Style {
+    private fun getStyle(element: Element): OverlayStyle {
         val mtbScale = parseMtbScale(element.tags)
         val color = mtbScale.color
-            ?: if (isMtbTaggingExpected(element)) Color.DATA_REQUESTED else null
-        return PolylineStyle(
-            stroke = color?.let { StrokeStyle(it) },
-            label = mtbScale?.value.toString()
+            ?: if (isMtbTaggingExpected(element)) OverlayColor.Red else null
+        return OverlayStyle.Polyline(
+            stroke = color?.let { OverlayStyle.Stroke(it) },
+            label = mtbScale?.value?.toString()
         )
     }
 }
@@ -64,12 +65,12 @@ private fun isMtbTaggingExpected(element: Element) =
     mtbTaggingExpectedFilter.matches(element)
 
 private val MtbScale?.color get() = when (this?.value) {
-    0 -> Color.BLUE
-    1 -> Color.CYAN
-    2 -> Color.LIME
-    3 -> Color.GOLD
-    4 -> Color.ORANGE
-    5 -> Color.PURPLE
-    6 -> Color.BLACK
+    MtbScale.Value.ZERO -> OverlayColor.Blue
+    MtbScale.Value.ONE -> OverlayColor.Cyan
+    MtbScale.Value.TWO -> OverlayColor.Lime
+    MtbScale.Value.THREE -> OverlayColor.Gold
+    MtbScale.Value.FOUR -> OverlayColor.Orange
+    MtbScale.Value.FIVE -> OverlayColor.Purple
+    MtbScale.Value.SIX -> OverlayColor.Black
     else -> null
 }

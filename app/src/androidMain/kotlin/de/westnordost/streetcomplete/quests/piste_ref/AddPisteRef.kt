@@ -13,8 +13,11 @@ import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.fullElementSelectionDialog
 import de.westnordost.streetcomplete.quests.getPrefixedFullElementSelectionPref
 import de.westnordost.streetcomplete.util.isWinter
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
 
-class AddPisteRef : OsmElementQuestType<PisteRefAnswer> {
+class AddPisteRef : OsmElementQuestType<PisteRefAnswer>, AndroidQuest {
 
     private val elementFilter = """
         ways, relations with
@@ -27,7 +30,7 @@ class AddPisteRef : OsmElementQuestType<PisteRefAnswer> {
     override val changesetComment = "Survey piste ref"
     override val wikiLink = "Key:piste:ref"
     override val icon = R.drawable.ic_quest_piste_ref
-    override val defaultDisabledMessage = R.string.default_disabled_msg_ee
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
 
     override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> {
         return if (isWinter(mapData.nodes.firstOrNull()?.position)) mapData.filter(filter).asIterable()

@@ -8,8 +8,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
 
-class AddValves : OsmFilterQuestType<List<Valves>>() {
+class AddValves : OsmFilterQuestType<Set<Valves>>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -24,7 +27,7 @@ class AddValves : OsmFilterQuestType<List<Valves>>() {
     override val icon = R.drawable.ic_quest_valve
     override val isDeleteElementEnabled = true
     override val achievements = listOf(BICYCLIST)
-    override val defaultDisabledMessage = R.string.default_disabled_msg_ee
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_valves_title
 
@@ -33,7 +36,7 @@ class AddValves : OsmFilterQuestType<List<Valves>>() {
     override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry) =
         getMapData().filter("nodes, ways with amenity = compressed_air or service:bicycle:pump = yes or compressed_air = yes")
 
-    override fun applyAnswerTo(answer: List<Valves>, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+    override fun applyAnswerTo(answer: Set<Valves>, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         tags["valves"] = answer.joinToString(";") { it.osmValue }
     }
 }

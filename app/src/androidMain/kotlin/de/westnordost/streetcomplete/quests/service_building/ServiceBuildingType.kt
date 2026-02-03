@@ -2,8 +2,7 @@ package de.westnordost.streetcomplete.quests.service_building
 
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.quests.service_building.ServiceBuildingType.*
-import de.westnordost.streetcomplete.view.image_select.GroupableDisplayItem
-import de.westnordost.streetcomplete.view.image_select.Item
+import de.westnordost.streetcomplete.ui.common.item_select.Group
 
 enum class ServiceBuildingType(val tags: List<Pair<String, String>>) {
     POWER(listOf("utility" to "power")),
@@ -42,7 +41,10 @@ enum class ServiceBuildingType(val tags: List<Pair<String, String>>) {
     DISUSED(listOf("disused" to "yes")),
 }
 
-enum class ServiceBuildingTypeCategory(val type: ServiceBuildingType?, val subTypes: List<ServiceBuildingType>) {
+enum class ServiceBuildingTypeCategory(
+    override val item: ServiceBuildingType?,
+    override val children: List<ServiceBuildingType>
+) : Group<ServiceBuildingType> {
     POWER(ServiceBuildingType.POWER, listOf(MINOR_SUBSTATION, SUBSTATION, INDUSTRIAL_SUBSTATION, TRACTION_SUBSTATION, SWITCHGEAR, PLANT)),
     WATER(ServiceBuildingType.WATER, listOf(WATER_WELL, COVERED_RESERVOIR, WATER_PUMPING_STATION)),
     GAS(ServiceBuildingType.GAS, listOf(GAS_PUMPING_STATION, GAS_PRESSURE_REGULATION)),
@@ -51,18 +53,7 @@ enum class ServiceBuildingTypeCategory(val type: ServiceBuildingType?, val subTy
     OTHER_SERVICE(null, listOf(OIL_PUMPING_STATION, SEWERAGE, HEATING, VENTILATION_SHAFT, MONITORING_STATION)),
 }
 
-fun Collection<ServiceBuildingType>.toItems() = map { it.asItem() }
-fun Array<ServiceBuildingTypeCategory>.toItems() = map { it.asItem() }
-
-fun ServiceBuildingType.asItem(): GroupableDisplayItem<ServiceBuildingType> {
-    return Item(this, iconResId, titleResId, descriptionResId)
-}
-
-fun ServiceBuildingTypeCategory.asItem(): GroupableDisplayItem<ServiceBuildingType> {
-    return Item(type, iconResId, titleResId, null, subTypes.toItems())
-}
-
-private val ServiceBuildingType.titleResId: Int get() = when (this) {
+val ServiceBuildingType.titleResId: Int get() = when (this) {
     POWER -> R.string.quest_utility_power
     MINOR_SUBSTATION -> R.string.quest_service_building_type_minor_substation
     SUBSTATION -> R.string.quest_service_building_type_substation
@@ -92,7 +83,7 @@ private val ServiceBuildingType.titleResId: Int get() = when (this) {
     DISUSED -> R.string.quest_disused
 }
 
-private val ServiceBuildingType.descriptionResId: Int? get() = when (this) {
+val ServiceBuildingType.descriptionResId: Int? get() = when (this) {
     MINOR_SUBSTATION -> R.string.quest_service_building_type_minor_substation_description
     SUBSTATION -> R.string.quest_service_building_type_substation_description
     INDUSTRIAL_SUBSTATION -> R.string.quest_service_building_type_industrial_substation_description
@@ -117,7 +108,7 @@ private val ServiceBuildingType.descriptionResId: Int? get() = when (this) {
     else -> null
 }
 
-private val ServiceBuildingType.iconResId: Int get() = when (this) {
+val ServiceBuildingType.iconResId: Int get() = when (this) {
     POWER -> R.drawable.ic_quest_service_building_power
     WATER ->    R.drawable.ic_quest_service_building_water
     TELECOM ->    R.drawable.ic_quest_service_building_telecom
@@ -147,7 +138,7 @@ private val ServiceBuildingType.iconResId: Int get() = when (this) {
     DISUSED -> R.drawable.ic_quest_service_building
 }
 
-private val ServiceBuildingTypeCategory.titleResId: Int get() = when (this) {
+val ServiceBuildingTypeCategory.titleResId: Int get() = when (this) {
     ServiceBuildingTypeCategory.POWER -> R.string.quest_utility_power
     ServiceBuildingTypeCategory.WATER -> R.string.quest_utility_water
     ServiceBuildingTypeCategory.GAS -> R.string.quest_utility_gas
@@ -156,7 +147,7 @@ private val ServiceBuildingTypeCategory.titleResId: Int get() = when (this) {
     ServiceBuildingTypeCategory.OTHER_SERVICE -> R.string.quest_service_building_other
 }
 
-private val ServiceBuildingTypeCategory.iconResId: Int get() = when (this) {
+val ServiceBuildingTypeCategory.iconResId: Int get() = when (this) {
     ServiceBuildingTypeCategory.POWER -> R.drawable.ic_quest_service_building_power
     ServiceBuildingTypeCategory.WATER -> R.drawable.ic_quest_service_building_water
     ServiceBuildingTypeCategory.GAS -> R.drawable.ic_quest_building_service_gas
@@ -164,3 +155,4 @@ private val ServiceBuildingTypeCategory.iconResId: Int get() = when (this) {
     ServiceBuildingTypeCategory.RAILWAY -> R.drawable.ic_quest_service_building_railway
     ServiceBuildingTypeCategory.OTHER_SERVICE -> R.drawable.ic_quest_service_building_other
 }
+

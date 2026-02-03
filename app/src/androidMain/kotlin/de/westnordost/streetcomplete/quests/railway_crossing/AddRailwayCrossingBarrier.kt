@@ -6,13 +6,14 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.updateWithCheckDate
 
-class AddRailwayCrossingBarrier : OsmElementQuestType<RailwayCrossingBarrier> {
+class AddRailwayCrossingBarrier : OsmElementQuestType<RailwayCrossingBarrier>, AndroidQuest {
 
     private val crossingFilter by lazy { """
         nodes with
@@ -33,7 +34,7 @@ class AddRailwayCrossingBarrier : OsmElementQuestType<RailwayCrossingBarrier> {
 
     override val changesetComment = "Specify railway crossing barriers type"
     override val wikiLink = "Key:crossing:barrier"
-    override val icon = R.drawable.ic_quest_railway
+    override val icon = R.drawable.quest_railway
     override val achievements = listOf(CAR, PEDESTRIAN, BICYCLIST)
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_railway_crossing_barrier_title2

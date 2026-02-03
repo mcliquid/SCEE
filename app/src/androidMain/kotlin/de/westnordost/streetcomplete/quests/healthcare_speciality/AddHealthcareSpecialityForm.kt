@@ -79,7 +79,7 @@ class MedicalSpecialityTypeForm : AbstractOsmQuestForm<String>() {
     })
 
     private val lastPickedAnswers by lazy {
-        prefs.getLastPicked(javaClass.simpleName).takeFavorites(12, 50, 1)
+        prefs.getLastPicked<String>(javaClass.simpleName).takeFavorites(12, 50, 1)
     }
 
     override fun onAttach(ctx: Context) {

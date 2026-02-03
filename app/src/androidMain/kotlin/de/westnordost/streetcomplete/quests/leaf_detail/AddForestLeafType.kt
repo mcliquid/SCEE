@@ -8,12 +8,13 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementPolygonsGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.booleanQuestSettingsDialog
 import de.westnordost.streetcomplete.util.math.measuredMultiPolygonArea
 
-class AddForestLeafType : OsmElementQuestType<ForestLeafType> {
+class AddForestLeafType : OsmElementQuestType<ForestLeafType>, AndroidQuest {
     private val areaFilter by lazy { """
         ways, relations with (landuse = forest or natural = wood) and !leaf_type
     """.toElementFilterExpression() }
@@ -28,7 +29,7 @@ class AddForestLeafType : OsmElementQuestType<ForestLeafType> {
 
     override val changesetComment = "Specify leaf types"
     override val wikiLink = "Key:leaf_type"
-    override val icon = R.drawable.ic_quest_leaf
+    override val icon = R.drawable.quest_leaf
     override val achievements = listOf(OUTDOORS)
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_leafType_title

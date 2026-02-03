@@ -5,6 +5,7 @@ import android.content.Context
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
 import de.westnordost.streetcomplete.osm.Tags
@@ -17,7 +18,7 @@ import de.westnordost.streetcomplete.quests.booleanQuestSettingsDialog
 import de.westnordost.streetcomplete.quests.fullElementSelectionDialog
 import de.westnordost.streetcomplete.quests.questPrefix
 
-class AddRoadSurface : OsmFilterQuestType<Surface>() {
+class AddRoadSurface : OsmFilterQuestType<Surface>(), AndroidQuest {
 
     override val elementFilter = """
         ways with (
@@ -43,7 +44,7 @@ class AddRoadSurface : OsmFilterQuestType<Surface>() {
 
     override val changesetComment = "Specify road surfaces"
     override val wikiLink = "Key:surface"
-    override val icon = R.drawable.ic_quest_street_surface
+    override val icon = R.drawable.quest_street_surface
     override val achievements = listOf(CAR, BICYCLIST)
 
     override fun getTitle(tags: Map<String, String>) =

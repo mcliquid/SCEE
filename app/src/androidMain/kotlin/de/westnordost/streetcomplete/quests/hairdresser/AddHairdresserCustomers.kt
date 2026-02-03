@@ -5,11 +5,12 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.isPlaceOrDisusedPlace
 
-class AddHairdresserCustomers : OsmFilterQuestType<HairdresserCustomers>() {
+class AddHairdresserCustomers : OsmFilterQuestType<HairdresserCustomers>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -22,7 +23,7 @@ class AddHairdresserCustomers : OsmFilterQuestType<HairdresserCustomers>() {
     """
     override val changesetComment = "Survey hairdresser's customers"
     override val wikiLink = "Tag:shop=hairdresser"
-    override val icon = R.drawable.ic_quest_hairdresser
+    override val icon = R.drawable.quest_hairdresser
     override val isReplacePlaceEnabled = true
     override val achievements = listOf(CITIZEN)
 

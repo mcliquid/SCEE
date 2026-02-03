@@ -23,8 +23,11 @@ import de.westnordost.streetcomplete.util.math.initialBearingTo
 import de.westnordost.streetcomplete.util.math.isCompletelyInside
 import de.westnordost.streetcomplete.util.math.normalizeDegrees
 import kotlin.math.abs
-
-class AddDestination : OsmElementQuestType<Pair<DestinationLanes?, DestinationLanes?>> {
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
+/*
+class AddDestination : OsmElementQuestType<Pair<DestinationLanes?, DestinationLanes?>>, AndroidQuest {
 
     // need to filter elements with not-counting lanes
     // later lanes could be counted from available data if possible
@@ -50,7 +53,7 @@ class AddDestination : OsmElementQuestType<Pair<DestinationLanes?, DestinationLa
     override val changesetComment = "Add destination"
     override val wikiLink = "Key:destination"
     override val icon = R.drawable.ic_quest_destination // not nice, but ok for now
-    override val defaultDisabledMessage = R.string.default_disabled_msg_ee
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_destination_title
 
@@ -257,3 +260,4 @@ private fun Way.allowsToAnyNeighboringNodeFrom(nodeId: Long): Boolean {
         else -> true
     }
 }
+*/

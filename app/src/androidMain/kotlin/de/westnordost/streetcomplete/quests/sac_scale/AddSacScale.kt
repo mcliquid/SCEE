@@ -15,10 +15,13 @@ import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.getPrefixedFullElementSelectionPref
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_sacScale
 
 private const val PREF_SAC_SCALE_WITHOUT_RELATION = "quest_sac_scale_without_relation"
 
-class AddSacScale : OsmElementQuestType<SacScale> {
+class AddSacScale : OsmElementQuestType<SacScale>, AndroidQuest {
 
     private val elementFilter = """
         ways with
@@ -37,7 +40,7 @@ class AddSacScale : OsmElementQuestType<SacScale> {
     override val changesetComment = "Specify SAC Scale"
     override val wikiLink = "Key:sac_scale"
     override val icon = R.drawable.ic_quest_sac_scale
-    override val defaultDisabledMessage = R.string.default_disabled_msg_sacScale
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_sacScale
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_sacScale_title
 
@@ -80,13 +83,13 @@ class AddSacScale : OsmElementQuestType<SacScale> {
         AlertDialog.Builder(context)
             .setMessage(R.string.pref_quest_sac_scale_without_relation)
             .setPositiveButton(R.string.quest_generic_hasFeature_yes) { _, _ ->
-                prefs.edit().putBoolean(PREF_SAC_SCALE_WITHOUT_RELATION, true).apply()
+                prefs.putBoolean(PREF_SAC_SCALE_WITHOUT_RELATION, true)
             }
             .setNegativeButton(R.string.quest_generic_hasFeature_no) { _, _ ->
-                prefs.edit().putBoolean(PREF_SAC_SCALE_WITHOUT_RELATION, false).apply()
+                prefs.putBoolean(PREF_SAC_SCALE_WITHOUT_RELATION, false)
             }
             .setNeutralButton(R.string.quest_settings_reset) { _, _ ->
-                prefs.edit { remove(PREF_SAC_SCALE_WITHOUT_RELATION) }
+                prefs.remove(PREF_SAC_SCALE_WITHOUT_RELATION)
             }
             .create()
 
@@ -108,3 +111,4 @@ class AddSacScale : OsmElementQuestType<SacScale> {
         return mutableList
     }
 }
+

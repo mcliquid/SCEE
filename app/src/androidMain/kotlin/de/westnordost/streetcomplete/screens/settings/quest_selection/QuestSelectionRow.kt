@@ -29,19 +29,27 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.quests.questPrefix
 import de.westnordost.streetcomplete.quests.surface.AddRoadSurface
 import org.koin.compose.koinInject
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.ic_drag_vertical_24
+import de.westnordost.streetcomplete.resources.ic_settings_48
+import de.westnordost.streetcomplete.resources.questList_disabled_by_default
+import de.westnordost.streetcomplete.resources.questList_disabled_in_country
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 
 /** Single item in the quest selection list. Shows icon + title, whether it is enabled and whether
  *  it is disabled by default / disabled in the country one is in */
@@ -61,7 +69,7 @@ fun QuestSelectionRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if (item.isInteractionEnabled(questTypeRegistry)) {
-            Icon(painterResource(R.drawable.ic_drag_vertical), "Reorder")
+            Icon(painterResource(Res.drawable.ic_drag_vertical_24), "Reorder")
         } else {
             Spacer(Modifier.size(24.dp))
         }
@@ -80,25 +88,22 @@ fun QuestSelectionRow(
                 style = MaterialTheme.typography.body1,
             )
             if (!item.enabledInCurrentCountry) {
-                DisabledHint(stringResource(R.string.questList_disabled_in_country, displayCountry))
+                DisabledHint(stringResource(Res.string.questList_disabled_in_country, displayCountry))
             }
-            if (item.questType.defaultDisabledMessage != 0) {
-                DisabledHint(stringResource(R.string.questList_disabled_by_default))
+            if (item.questType.defaultDisabledMessage != null) {
+                DisabledHint(stringResource(Res.string.questList_disabled_by_default))
             }
         }
         if (item.questType.hasQuestSettings) {
             var showQuestSettings by remember { mutableStateOf(false) }
-            Image(
-                painter = painterResource(R.drawable.ic_settings_48dp),
+            Icon(
+                painter = painterResource(Res.drawable.ic_settings_48),
                 contentDescription = null,
                 modifier = Modifier
                     .padding(start = 16.dp)
                     .size(48.dp)
                     .clickable { showQuestSettings = true }
-                    .background( // looks ugly and does not appear right after dismissing dialog, but whatever... I don't care any more.
-                        color = nowItHasToBeSomewhereElse(item),
-                        shape = CircleShape
-                    )
+                    .background(Brush.radialGradient(listOf(insideColor(item), Color.Transparent)), CircleShape)
                     .alpha(alpha),
             )
             if (showQuestSettings)
@@ -120,7 +125,7 @@ fun QuestSelectionRow(
 }
 
 @Composable
-private fun nowItHasToBeSomewhereElse(item: QuestSelection): Color {
+private fun insideColor(item: QuestSelection): Color {
     val start = questPrefix(item.prefs) + "qs_" + item.questType.name + "_"
     return if (item.prefs.prefs.keys.any { it.startsWith(start) })
         colorResource(id = R.color.accent)

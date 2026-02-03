@@ -6,6 +6,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
 import de.westnordost.streetcomplete.osm.Tags
@@ -13,7 +14,7 @@ import de.westnordost.streetcomplete.quests.bench_backrest.BenchBackrestAnswer.N
 import de.westnordost.streetcomplete.quests.bench_backrest.BenchBackrestAnswer.PICNIC_TABLE
 import de.westnordost.streetcomplete.quests.bench_backrest.BenchBackrestAnswer.YES
 
-class AddBenchBackrest : OsmFilterQuestType<BenchBackrestAnswer>() {
+class AddBenchBackrest : OsmFilterQuestType<BenchBackrestAnswer>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -26,7 +27,7 @@ class AddBenchBackrest : OsmFilterQuestType<BenchBackrestAnswer>() {
     """
     override val changesetComment = "Survey whether benches have backrests"
     override val wikiLink = "Tag:amenity=bench"
-    override val icon = R.drawable.ic_quest_bench_poi
+    override val icon = R.drawable.quest_bench_poi
     override val isDeleteElementEnabled = true
     override val achievements = listOf(PEDESTRIAN, OUTDOORS)
 

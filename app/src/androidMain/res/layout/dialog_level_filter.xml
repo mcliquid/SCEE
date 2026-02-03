@@ -54,16 +54,16 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.2"
             android:layout_marginHorizontal="4dp"
-            android:text="+"
-            style="@style/Dialog.OutlinedButton.WithNightModeSupport" />
+            android:text="+" />
+<!-- style="@style/Dialog.OutlinedButton.WithNightModeSupport" removed -->
 
         <Button
             android:id="@+id/minus"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.2"
-            android:text="-"
-            style="@style/Dialog.OutlinedButton.WithNightModeSupport" />
+            android:text="-" />
+<!-- style="@style/Dialog.OutlinedButton.WithNightModeSupport" removed -->
 
     </LinearLayout>
 

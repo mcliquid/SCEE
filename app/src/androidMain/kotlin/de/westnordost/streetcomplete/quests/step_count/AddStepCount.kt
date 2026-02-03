@@ -4,6 +4,7 @@ import android.content.Context
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
@@ -14,18 +15,24 @@ import de.westnordost.streetcomplete.quests.numberSelectionDialog
 import de.westnordost.streetcomplete.quests.questPrefix
 import de.westnordost.streetcomplete.util.math.measuredLength
 
-class AddStepCount : OsmElementQuestType<Int> {
+class AddStepCount : OsmElementQuestType<Int>, AndroidQuest {
 
     val elementFilter by lazy { """
-        ways with highway = steps
-         and (!indoor or indoor = no)
-         and access !~ private|no
-         and (!conveying or conveying = no)
-         and !step_count
+        nodes, ways with
+        (
+          (
+            highway = steps
+            and (!indoor or indoor = no)
+            and (!conveying or conveying = no)
+          )
+          or man_made = tower and access ~ yes|customers and tower:type ~ observation|watchtower
+        )
+        and access !~ private|no
+        and !step_count
     """.toElementFilterExpression() }
     override val changesetComment = "Specify step counts"
     override val wikiLink = "Key:step_count"
-    override val icon = R.drawable.ic_quest_steps_count
+    override val icon = R.drawable.quest_steps_count
     // because the user needs to start counting at the start of the steps
     override val hasMarkersAtEnds = true
     override val achievements = listOf(PEDESTRIAN)

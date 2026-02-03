@@ -2,30 +2,45 @@ package de.westnordost.streetcomplete.quests.address
 
 import android.os.Bundle
 import android.view.View
-import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.isGone
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.databinding.DialogQuestAddressNoHousenumberBinding
-import de.westnordost.streetcomplete.databinding.ViewAddressNumberOrNameInputBinding
-import de.westnordost.streetcomplete.osm.address.AddressNumberAndNameInputViewController
-import de.westnordost.streetcomplete.osm.address.HouseAndBlockNumber
-import de.westnordost.streetcomplete.osm.address.HouseNumberAndBlock
+import de.westnordost.streetcomplete.databinding.ComposeViewBinding
+import de.westnordost.streetcomplete.osm.address.BlockAndHouseNumber
+import de.westnordost.streetcomplete.osm.address.HouseNumber
 import de.westnordost.streetcomplete.osm.address.looksInvalid
 import de.westnordost.streetcomplete.osm.address.streetHouseNumber
 import de.westnordost.streetcomplete.osm.building.BuildingType
-import de.westnordost.streetcomplete.osm.building.asItem
 import de.westnordost.streetcomplete.osm.building.createBuildingType
+import de.westnordost.streetcomplete.osm.building.description
+import de.westnordost.streetcomplete.osm.building.icon
+import de.westnordost.streetcomplete.osm.building.title
 import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
 import de.westnordost.streetcomplete.quests.AnswerItem
 import de.westnordost.streetcomplete.quests.IAnswerItem
-import de.westnordost.streetcomplete.view.image_select.DisplayItem
-import de.westnordost.streetcomplete.view.image_select.ItemViewHolder
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.quest_address_answer_no_housenumber_message1
+import de.westnordost.streetcomplete.resources.quest_address_answer_no_housenumber_message2b
+import de.westnordost.streetcomplete.ui.common.item_select.ImageWithDescription
+import de.westnordost.streetcomplete.ui.util.content
+import de.westnordost.streetcomplete.ui.util.rememberSerializable
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 class AddHousenumberForm : AbstractOsmQuestForm<HouseNumberAnswer>() {
 
-    override val contentLayoutResId = R.layout.view_address_number_or_name_input
-    private val binding by contentViewBinding(ViewAddressNumberOrNameInputBinding::bind)
+    override val contentLayoutResId = R.layout.compose_view
+    private val binding by contentViewBinding(ComposeViewBinding::bind)
 
     override val otherAnswers get() =
         listOfNotNull(
@@ -35,78 +50,50 @@ class AddHousenumberForm : AbstractOsmQuestForm<HouseNumberAnswer>() {
             AnswerItem(R.string.quest_housenumber_multiple_numbers) { showMultipleNumbersHint() }
         )
 
-    private var isShowingHouseName: Boolean = false
-    private var isShowingBlock: Boolean = false
-    private lateinit var numberOrNameInputCtrl: AddressNumberAndNameInputViewController
+    private lateinit var addressNumberAndName: MutableState<AddressNumberAndName>
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        isShowingBlock = savedInstanceState?.getBoolean(SHOW_BLOCK) ?: (lastBlock != null)
 
-        val layoutResId = getCountrySpecificAddressNumberLayoutResId(countryInfo.countryCode)
-            ?: if (isShowingBlock) R.layout.view_house_number_and_block else R.layout.view_house_number
+        binding.composeViewBase.content { Surface {
+            addressNumberAndName = rememberSerializable {
+                val number = if (lastWasBlock) BlockAndHouseNumber("", "") else HouseNumber("")
+                mutableStateOf(AddressNumberAndName(number, null))
+            }
 
-        showNumberOrNameInput(layoutResId)
-
-        // initially do not show any house number / house name UI
-        isShowingHouseName = savedInstanceState?.getBoolean(SHOW_HOUSE_NAME) == true
-        if (!isShowingHouseName) {
-            binding.toggleAddressNumberButton.isGone = true
-            binding.toggleHouseNameButton.isGone = true
-        }
-
-        checkIsFormComplete()
-    }
-
-    private fun showNumberOrNameInput(layoutResId: Int) {
-        binding.countrySpecificContainer.removeAllViews()
-        val numberView = layoutInflater.inflate(
-            layoutResId,
-            binding.countrySpecificContainer
-        )
-        val blockInput = numberView.findViewById<EditText?>(R.id.blockInput)
-
-        numberOrNameInputCtrl = AddressNumberAndNameInputViewController(
-            toggleHouseNameButton = binding.toggleHouseNameButton,
-            houseNameInput = binding.houseNameInput,
-            toggleAddressNumberButton = binding.toggleAddressNumberButton,
-            addressNumberContainer = binding.addressNumberContainer,
-            activity = requireActivity(),
-            houseNumberInput = numberView.findViewById<EditText?>(R.id.houseNumberInput)?.apply { hint = lastHouseNumber },
-            blockNumberInput = numberView.findViewById<EditText?>(R.id.blockNumberInput)?.apply { hint = lastBlockNumber },
-            blockInput = blockInput?.apply { hint = lastBlock },
-            conscriptionNumberInput = numberView.findViewById(R.id.conscriptionNumberInput),
-            streetNumberInput = numberView.findViewById(R.id.streetNumberInput),
-            toggleKeyboardButton = binding.toggleKeyboardButton,
-            addButton = numberView.findViewById(R.id.addButton),
-            subtractButton = numberView.findViewById(R.id.subtractButton),
-        )
-        numberOrNameInputCtrl.onInputChanged = { checkIsFormComplete() }
-        isShowingBlock = blockInput != null
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putBoolean(SHOW_HOUSE_NAME, isShowingHouseName)
-        outState.putBoolean(SHOW_BLOCK, isShowingBlock)
+            AddressNumberAndNameForm(
+                value = addressNumberAndName.value,
+                onValueChange = {
+                    addressNumberAndName.value = it
+                    checkIsFormComplete()
+                },
+                countryCode = countryInfo.countryCode,
+                modifier = Modifier.fillMaxWidth(),
+                houseNumberSuggestion = lastHouseNumber,
+                blockSuggestion = lastBlock,
+            )
+        } }
     }
 
     /* ------------------------------------- Other answers -------------------------------------- */
 
-    private fun createBlockAnswerItem(): IAnswerItem? =
-        if (getCountrySpecificAddressNumberLayoutResId(countryInfo.countryCode) == null) {
-            if (isShowingBlock) {
-                AnswerItem(R.string.quest_address_answer_no_block) { showNumberOrNameInput(R.layout.view_house_number) }
-            } else {
-                AnswerItem(R.string.quest_address_answer_block) { showNumberOrNameInput(R.layout.view_house_number_and_block) }
-            }
-        } else {
-            null
+    private fun createBlockAnswerItem(): IAnswerItem? {
+        if (countryInfo.countryCode in listOf("JP", "CZ", "SK")) return null
+        return when (addressNumberAndName.value.number) {
+            is BlockAndHouseNumber ->
+                AnswerItem(R.string.quest_address_answer_no_block) {
+                    addressNumberAndName.value = addressNumberAndName.value.copy(number = HouseNumber(""))
+                }
+            else ->
+                AnswerItem(R.string.quest_address_answer_block) {
+                    addressNumberAndName.value = addressNumberAndName.value.copy(number = BlockAndHouseNumber("", ""))
+                }
         }
+    }
 
     private fun showMultipleNumbersHint() {
         activity?.let { AlertDialog.Builder(it)
-            .setMessage(R.string.quest_housenumber_multiple_numbers_description)
+            .setMessage(R.string.quest_housenumber_multiple_numbers_description2)
             .setPositiveButton(android.R.string.ok, null)
             .show()
         }
@@ -115,7 +102,7 @@ class AddHousenumberForm : AbstractOsmQuestForm<HouseNumberAnswer>() {
     private fun onNoHouseNumber() {
         val buildingType = createBuildingType(element.tags)
         if (buildingType != null) {
-            showNoHouseNumberDialog(buildingType.asItem())
+            showNoHouseNumberDialog(buildingType)
         } else {
             // fallback in case the type of building is known by Housenumber quest but not by
             // building type quest
@@ -123,38 +110,48 @@ class AddHousenumberForm : AbstractOsmQuestForm<HouseNumberAnswer>() {
         }
     }
 
-    private fun showNoHouseNumberDialog(buildingType: DisplayItem<BuildingType>) {
-        val dialogBinding = DialogQuestAddressNoHousenumberBinding.inflate(layoutInflater)
-        ItemViewHolder(dialogBinding.root).bind(buildingType)
+    private fun showNoHouseNumberDialog(buildingType: BuildingType) {
+        val dialogBinding = ComposeViewBinding.inflate(layoutInflater)
+        dialogBinding.composeViewBase.content { Surface(Modifier.padding(24.dp)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(stringResource(Res.string.quest_address_answer_no_housenumber_message1))
+                ImageWithDescription(
+                    painter = painterResource(buildingType.icon),
+                    title = stringResource(buildingType.title),
+                    description = buildingType.description?.let { stringResource(it) },
+                    imageSize = DpSize(48.dp, 48.dp),
+                )
+                Text(stringResource(Res.string.quest_address_answer_no_housenumber_message2b))
+            }
+        } }
 
         AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
-            .setPositiveButton(R.string.quest_generic_hasFeature_yes) { _, _ -> applyAnswer(AddressNumberOrName(null, null)) }
-            .setNegativeButton(R.string.quest_generic_hasFeature_no) { _, _ -> applyAnswer(WrongBuildingType) }
+            .setPositiveButton(R.string.quest_generic_hasFeature_yes) { _, _ -> applyAnswer(AddressNumberAndName(null, null)) }
+            .setNegativeButton(R.string.quest_generic_hasFeature_no) { _, _ -> applyAnswer(HouseNumberAnswer.WrongBuildingType) }
             .show()
     }
 
     /* ----------------------------------- Show house name -------------------------------------- */
 
     private fun showHouseName() {
-        isShowingHouseName = true
-        binding.toggleAddressNumberButton.isGone = false
-        binding.toggleHouseNameButton.isGone = false
-        numberOrNameInputCtrl.setHouseNameViewExpanded(true)
-        binding.houseNameInput.requestFocus()
+        addressNumberAndName.value = AddressNumberAndName(
+            name = "",
+            number = addressNumberAndName.value.number?.takeIf { !it.isEmpty() }
+        )
     }
 
     /* ----------------------------------- Commit answer ---------------------------------------- */
 
     override fun onClickOk() {
-        val number = numberOrNameInputCtrl.addressNumber
+        val number = addressNumberAndName.value.number?.takeIf { !it.isEmpty() }
         val isUnusual = number?.looksInvalid(countryInfo.additionalValidHousenumberRegex) == true
         confirmHouseNumber(isUnusual) {
-            applyAnswer(AddressNumberOrName(number, numberOrNameInputCtrl.houseName))
-            if (number is HouseAndBlockNumber) {
-                number.blockNumber.let { lastBlockNumber = it }
-            }
-            lastBlock = (number as? HouseNumberAndBlock)?.block
+            applyAnswer(addressNumberAndName.value)
+            lastBlock = (number as? BlockAndHouseNumber)?.block
+            lastWasBlock = number is BlockAndHouseNumber
             number?.streetHouseNumber?.let { lastHouseNumber = it }
         }
     }
@@ -171,23 +168,15 @@ class AddHousenumberForm : AbstractOsmQuestForm<HouseNumberAnswer>() {
             onConfirmed()
         }
     }
-    override fun isFormComplete(): Boolean = numberOrNameInputCtrl.isComplete
+    override fun isFormComplete(): Boolean =
+        addressNumberAndName.value.isComplete()
 
-    override fun isRejectingClose(): Boolean = !numberOrNameInputCtrl.isEmpty
+    override fun isRejectingClose(): Boolean =
+        !addressNumberAndName.value.isEmpty()
 
     companion object {
-        private var lastBlockNumber: String? = null
         private var lastBlock: String? = null
         private var lastHouseNumber: String? = null
-
-        private const val SHOW_HOUSE_NAME = "show_house_name"
-        private const val SHOW_BLOCK = "show_block_number"
+        private var lastWasBlock: Boolean = false
     }
-}
-
-private fun getCountrySpecificAddressNumberLayoutResId(countryCode: String): Int? = when (countryCode) {
-    "JP" -> R.layout.view_house_number_japan
-    "CZ" -> R.layout.view_house_number_czechia
-    "SK" -> R.layout.view_house_number_slovakia
-    else -> null
 }

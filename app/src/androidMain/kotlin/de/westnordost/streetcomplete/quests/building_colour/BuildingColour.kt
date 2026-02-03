@@ -1,6 +1,14 @@
 package de.westnordost.streetcomplete.quests.building_colour
 
-import de.westnordost.streetcomplete.view.image_select.OsmColour
+import android.content.Context
+import android.content.res.Configuration
+import android.graphics.Color
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.drawable.Drawable
+import androidx.core.graphics.blue
+import androidx.core.graphics.green
+import androidx.core.graphics.red
 
 enum class BuildingColour(override val osmValue: String, override val androidValue: String?) :
     OsmColour {
@@ -35,4 +43,36 @@ enum class BuildingColour(override val osmValue: String, override val androidVal
     LIME("lime", "#00ff00"),
     AQUA("aqua", "#00ffff"),
     FUCHSIA("fuchsia", "#ff00ff"),
+}
+
+interface OsmColour {
+    val androidValue: String?
+    val osmValue: String
+}
+
+val OsmColour.title get() = this.osmValue
+
+fun OsmColour.getDrawable(context: Context, iconResId: Int): Drawable {
+    val color = Color.parseColor(this.androidValue ?: this.osmValue)
+    val contrastColor = getBestContrast(context)
+    val drawable = context.getDrawable(iconResId)!!.mutate()
+    val matrix = ColorMatrix(
+        floatArrayOf(
+            color.red / 255f, 0f, contrastColor.red / 255f, 0f, 0f,
+            color.green / 255f, 0f, contrastColor.green / 255f, 0f, 0f,
+            color.blue / 255f, 0f, contrastColor.blue / 255f, 0f, 0f,
+            1f, 1f, 1f, 1f, 0f
+        )
+    )
+    drawable.colorFilter = ColorMatrixColorFilter(matrix)
+    return drawable
+}
+
+private fun isDarkMode(context: Context): Boolean {
+    val darkModeFlag = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+    return darkModeFlag == Configuration.UI_MODE_NIGHT_YES
+}
+
+private fun getBestContrast(context: Context): Int {
+    return if (isDarkMode(context)) Color.LTGRAY else Color.DKGRAY
 }

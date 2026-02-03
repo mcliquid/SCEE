@@ -3,13 +3,14 @@ package de.westnordost.streetcomplete.quests.segregated
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.surface.PAVED_SURFACES
 import de.westnordost.streetcomplete.quests.segregated.CyclewaySegregation.*
 
-class AddCyclewaySegregation : OsmFilterQuestType<CyclewaySegregation>() {
+class AddCyclewaySegregation : OsmFilterQuestType<CyclewaySegregation>(), AndroidQuest {
 
     override val elementFilter = """
         ways with
@@ -33,7 +34,7 @@ class AddCyclewaySegregation : OsmFilterQuestType<CyclewaySegregation>() {
     """
     override val changesetComment = "Specify whether combined foot- and cycleways are segregated"
     override val wikiLink = "Key:segregated"
-    override val icon = R.drawable.ic_quest_path_segregation
+    override val icon = R.drawable.quest_path_segregation
     override val achievements = listOf(BICYCLIST, OUTDOORS)
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_segregated_title

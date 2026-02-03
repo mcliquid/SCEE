@@ -216,6 +216,7 @@ private val IS_THING_EXPRESSION by lazy {
             "surveillance",
             "survey_point", // this can be very very small -> verifiability issue
             // "telephone_box" - it just describes the structure, but not its use
+            "tower",
             "utility_pole", // usually a vertex, but not necessarily
             "video_wall", // basically an advertising=*
             "water_tap",

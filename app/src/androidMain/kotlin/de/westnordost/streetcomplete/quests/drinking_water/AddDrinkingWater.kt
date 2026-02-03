@@ -19,14 +19,11 @@ class AddDrinkingWater : OsmFilterQuestType<DrinkingWater>(), AndroidQuest {
           or natural = spring
           or amenity = fountain
         )
-        and access !~ private|no and indoor != yes
+        and access !~ private|no
         and !drinking_water
         and !drinking_water:legal
         and drinking_water:signed != no
         and drinking_water:legal:signed != no
-        and amenity != drinking_water
-        and access !~ private|no
-        and !drinking_water and !drinking_water:legal and amenity != drinking_water
         and (!intermittent or intermittent = no)
         and (!disused or disused = no)
         and (!ruins or ruins = no)

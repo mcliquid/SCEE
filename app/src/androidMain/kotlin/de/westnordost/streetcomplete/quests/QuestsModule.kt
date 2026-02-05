@@ -144,7 +144,6 @@ import de.westnordost.streetcomplete.quests.moped.AddMopedAccess
 import de.westnordost.streetcomplete.quests.motorcycle_parking_capacity.AddMotorcycleParkingCapacity
 import de.westnordost.streetcomplete.quests.motorcycle_parking_cover.AddMotorcycleParkingCover
 import de.westnordost.streetcomplete.quests.note_discussion.OsmNoteQuestType
-import de.westnordost.streetcomplete.quests.mtb_scale.AddMtbScale
 import de.westnordost.streetcomplete.quests.oneway.AddOneway
 import de.westnordost.streetcomplete.quests.opening_hours.AddOpeningHours
 import de.westnordost.streetcomplete.quests.opening_hours_signed.CheckOpeningHoursSigned
@@ -672,7 +671,6 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 28 to AddFootwayWidth(arSupportChecker),
     EE_QUEST_OFFSET + 41 to AddGuidepostSports(),
     EE_QUEST_OFFSET + 31 to AddViaFerrataScale(),
-    EE_QUEST_OFFSET + 58 to AddMtbScale(),
     EE_QUEST_OFFSET + 37 to AddMapType(),
     EE_QUEST_OFFSET + 38 to AddMapSize(),
     EE_QUEST_OFFSET + 34 to AddBarrierHeight(arSupportChecker),
@@ -688,7 +686,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 54 to AddLampType(),
     EE_QUEST_OFFSET + 55 to AddPostOfficeType(),
     EE_QUEST_OFFSET + 57 to AddLampMount(),
-    EE_QUEST_OFFSET + 59 to AddFerryAccessBicycle(),
+    EE_QUEST_OFFSET + 58 to AddFerryAccessBicycle(),
     EE_QUEST_OFFSET + 10 to OsmoseQuest(osmoseDao),
     EE_QUEST_OFFSET + 11 to CustomQuest(customQuestList),
     // POI quests

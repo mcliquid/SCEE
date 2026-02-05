@@ -1,6 +1,6 @@
 package de.westnordost.streetcomplete.quests.show_poi
 
-import android.content.Context
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -10,13 +10,13 @@ import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.applyReplacePlaceTo
 import de.westnordost.streetcomplete.osm.isPlace
 import de.westnordost.streetcomplete.osm.updateCheckDate
-import de.westnordost.streetcomplete.quests.getLabelOrElementSelectionDialog
 import de.westnordost.streetcomplete.quests.getLabelSources
 import de.westnordost.streetcomplete.quests.shop_type.IsShopVacant
 import de.westnordost.streetcomplete.quests.shop_type.ShopType
 import de.westnordost.streetcomplete.quests.shop_type.ShopTypeAnswer
 import de.westnordost.streetcomplete.quests.shop_type.ShopTypeForm
 import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.quests.LabelOrElementSelectionDialog
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.default_disabled_msg_poi_vacant
 
@@ -50,5 +50,8 @@ class ShowVacant : OsmFilterQuestType<ShopTypeAnswer>(), AndroidQuest {
         }
     }
 
-    override fun getQuestSettingsDialog(context: Context) = getLabelOrElementSelectionDialog(context, this, prefs)
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        LabelOrElementSelectionDialog(this, prefs, onDismissRequest)
+    }
 }

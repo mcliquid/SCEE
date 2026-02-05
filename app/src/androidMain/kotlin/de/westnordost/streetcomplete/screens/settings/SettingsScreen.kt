@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.widget.doAfterTextChanged
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.ApplicationConstants.REFRESH_DATA_AFTER
-import de.westnordost.streetcomplete.BuildConfig
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.preferences.Autosync
@@ -361,7 +360,7 @@ fun SettingsScreen(
                     name = stringResource(R.string.pref_screen_data_management),
                     onClick = onClickDataSettings,
                 )
-                if (BuildConfig.DEBUG) {
+                if (ApplicationConstants.DEBUG) {
                     Preference(
                         name = "Debug log reader",
                         onClick = { showOldLogReader(c) }
@@ -378,7 +377,7 @@ fun SettingsScreen(
                     }
                 }
             }
-            if (BuildConfig.DEBUG) {
+            if (ApplicationConstants.DEBUG) {
                 PreferenceCategory("Debug") {
                     Preference(
                         name = "Show Quest Forms",

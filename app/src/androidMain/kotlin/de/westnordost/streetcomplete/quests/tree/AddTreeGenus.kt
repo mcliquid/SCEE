@@ -1,20 +1,23 @@
 package de.westnordost.streetcomplete.quests.tree
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -29,6 +32,7 @@ import java.io.File
 import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.quest_tree_disabled_msg
+import de.westnordost.streetcomplete.ui.common.dialogs.InfoDialog
 
 class AddTreeGenus : OsmFilterQuestType<TreeAnswer>(), AndroidQuest {
 
@@ -65,7 +69,9 @@ class AddTreeGenus : OsmFilterQuestType<TreeAnswer>(), AndroidQuest {
     }
 
     @Composable
-    override fun QuestSettings(context: Context, onDismissRequest: () -> Unit) {
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        val context = LocalContext.current
+        var showElementSelection by remember { mutableStateOf(false) }
         val file = File(context.getExternalFilesDir(null), FILENAME_TREES)
         val activity = LocalContext.current.getActivity()!!
         val importIntent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
@@ -91,25 +97,26 @@ class AddTreeGenus : OsmFilterQuestType<TreeAnswer>(), AndroidQuest {
             writeFromExternalFileToUri(file.name, uri, activity)
             onDismissRequest()
         }
-        AlertDialog(
+        InfoDialog(
             onDismissRequest = onDismissRequest,
-            buttons = {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TextButton({ importFileLauncher.launch(importIntent) }) {
+            title = { Text(stringResource(R.string.pref_trees_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.tree_custom_quest_import_export_message))
+                    Button({ importFileLauncher.launch(importIntent) }, Modifier.fillMaxWidth()) {
                         Text(stringResource(R.string.tree_custom_quest_import))
                     }
                     if (file.exists())
-                        TextButton({ exportFileLauncher.launch(exportIntent) }) {
+                        Button({ exportFileLauncher.launch(exportIntent) }, Modifier.fillMaxWidth()) {
                             Text(stringResource(R.string.tree_custom_quest_export))
                         }
-                    TextButton(onDismissRequest) { Text(stringResource(android.R.string.cancel)) }
+                    Button({ showElementSelection = true }, Modifier.fillMaxWidth()) {
+                        Text(stringResource(R.string.element_selection_button))
+                    }
                 }
-                TextButton({ super.getQuestSettingsDialog(context)?.show(); onDismissRequest() }) {
-                    Text(stringResource(R.string.element_selection_button))
-                }
-            },
-            title = { Text(stringResource(R.string.pref_trees_title)) },
-            text = { Text(stringResource(R.string.tree_custom_quest_import_export_message)) }
+            }
         )
+        if (showElementSelection)
+            super.QuestSettings(onDismissRequest)
     }
 }

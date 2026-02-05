@@ -4,10 +4,10 @@ import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
 import de.westnordost.streetcomplete.quests.AnswerItem
 
-class AddCrossingMarkingsYesNoForm : AbstractOsmQuestForm<CrossingMarkings>() {
+class AddCrossingMarkingsYesNoForm : AbstractOsmQuestForm<Set<CrossingMarkings>>() {
 
     override val buttonPanelAnswers = listOf(
-        AnswerItem(R.string.quest_generic_hasFeature_no) { applyAnswer(CrossingMarkings.NO) },
-        AnswerItem(R.string.quest_generic_hasFeature_yes) { applyAnswer(CrossingMarkings.YES) }
+        AnswerItem(R.string.quest_generic_hasFeature_no) { applyAnswer(setOf(CrossingMarkings.NO)) },
+        AnswerItem(R.string.quest_generic_hasFeature_yes) { applyAnswer(setOf(CrossingMarkings.YES)) }
     )
 }

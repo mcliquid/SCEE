@@ -72,7 +72,7 @@
     <string name="pref_gpx_track_enable">Display GPX track</string>
     <string name="pref_gpx_track_download">Download area covered by GPX track</string>
     <string name="pref_custom_geometry_title">Display map features from GeoJson file</string>
-    <string name="pref_custom_geometry_info">If you want to display text, it must be in the \"name\" property</string>
+    <string name="pref_custom_geometry_info">If you want to display text, it must be in the "name" property</string>
     <string name="file_provide">Select file</string>
     <string name="file_loading_error">Error loading file</string>
 
@@ -188,7 +188,7 @@
 
     <!-- quest settings -->
     <string name="quest_settings_reset">Reset</string>
-    <string name="quest_settings_element_selection">Set elements eligible for this quest. &lt;a href=\"https://github.com/Helium314/SCEE/blob/modified/CONTRIBUTING_A_NEW_QUEST.md#element-selection\"&gt;Click here&lt;/a&gt; to open info on the element selection syntax in a browser.</string>
+    <string name="quest_settings_element_selection">Set elements eligible for this quest. &lt;a href="https://github.com/Helium314/SCEE/blob/modified/CONTRIBUTING_A_NEW_QUEST.md#element-selection"&gt;Click here&lt;/a&gt; to open info on the element selection syntax in a browser.</string>
     <string name="quest_settings_eligible_highways">Set highways eligible for this quest, comma separated</string>
     <string name="quest_settings_what_to_edit">What to set?</string>
     <string name="quest_settings_sidewalk_cycleway_distance_message">Set minimum distance from separate paths, if lower the quest will not be shown</string>
@@ -215,7 +215,7 @@
     <string name="element_selection_button">Element selection</string>
     <string name="quest_settings_building_levels_mandatory_roof">Require entering roof levels in most countries (default)</string>
     <string name="quest_settings_building_levels_optional_roof">Allow omitting roof levels everywhere</string>
-    <string name="quest_settings_dot_labels_message">Set which tags should be used for the label, in given order. An empty string will never show any labels, \"label\" will show the default StreetComplete name label using name, brand, ref, local_ref and operator.</string>
+    <string name="quest_settings_dot_labels_message">Set which tags should be used for the label, in given order. An empty string will never show any labels, "label" will show the default StreetComplete name label using name, brand, ref, local_ref and operator.</string>
     <string name="quest_settings_highlight_changes_button">Highlight changes</string>
     <string name="quest_settings_leaf_type_single_tree_message">Also ask leaf type for single trees?</string>
     <string name="quest_settings_leaf_type_single_tree_yes">Yes</string>
@@ -255,7 +255,7 @@
 
     <!-- custom quest (also uses osmose string above) -->
     <string name="quest_custom_quest_title">Custom quest:</string>
-    <string name="quest_custom_quest_message">Use for checking specific pre-defined elements or locations. You can also specify tags and add a node with them. To use it, load a file in the main settings menu, containing either \`type,id,message\` (e.g. NODE,1234,check position) or \`latitude,longitude,message\`. For adding nodes, put the tags in the message after \'addNode\', e.g. addNode amenity=restaurant,wheelchair=no,diet:vegetarian=yes</string>
+    <string name="quest_custom_quest_message">Use for checking specific pre-defined elements or locations. You can also specify tags and add a node with them. To use it, load a file in the main settings menu, containing either \`type,id,message\` (e.g. NODE,1234,check position) or \`latitude,longitude,message\`. For adding nodes, put the tags in the message after 'addNode', e.g. addNode amenity=restaurant,wheelchair=no,diet:vegetarian=yes</string>
     <string name="quest_custom_quest_remove">Remove from list</string>
     <string name="quest_custom_quest_add_node">Add node</string>
     <string name="quest_custom_quest_add_node_text">You can add a node with: %s</string>
@@ -296,27 +296,27 @@
 
     <!-- poi quests -->
     <string name="quest_poi_seating_title">POI: Seating</string>
-    <string name="default_disabled_msg_poi_bench">This \"quest\" shows POIs like benches or picnic tables as brown dots. Click the dot to show details and other answers.</string>
+    <string name="default_disabled_msg_poi_bench">This "quest" shows POIs like benches or picnic tables as brown dots. Click the dot to show details and other answers.</string>
     <string name="quest_poi_cycling_title">POI: Cycling</string>
-    <string name="default_disabled_msg_poi_bike">This \"quest\" shows bicycle-related POIs as purple dots. Click the dot to show details and other answers.</string>
+    <string name="default_disabled_msg_poi_bike">This "quest" shows bicycle-related POIs as purple dots. Click the dot to show details and other answers.</string>
     <string name="quest_poi_business_title">POI: Business</string>
-    <string name="default_disabled_msg_poi_business">This \"quest\" shows shop, restaurants, doctors and similar POIs as orange dots. Click the dot to show details and other answers.</string>
+    <string name="default_disabled_msg_poi_business">This "quest" shows shop, restaurants, doctors and similar POIs as orange dots. Click the dot to show details and other answers.</string>
     <string name="quest_poi_camera_title">POI: Camera</string>
-    <string name="default_disabled_msg_poi_camera">This \"quest\" shows surveillance features as pink dots. Click the dot to show details and other answers.</string>
+    <string name="default_disabled_msg_poi_camera">This "quest" shows surveillance features as pink dots. Click the dot to show details and other answers.</string>
     <string name="quest_poi_vending_title">POI: Vending</string>
     <string name="quest_poi_machine_title">POI: Machine</string>
     <string name="quest_poi_has_atm_title">POI: Has ATM</string>
-    <string name="default_disabled_msg_poi_machine">This \"quest\" shows POIs like ATMs, phones or vending machines as blue dots. Click the dot to show details and other answers.</string>
+    <string name="default_disabled_msg_poi_machine">This "quest" shows POIs like ATMs, phones or vending machines as blue dots. Click the dot to show details and other answers.</string>
     <string name="quest_poi_misc_title">POI: Miscellaneous</string>
-    <string name="default_disabled_msg_poi_other">This \"quest\" shows miscellaneous POIs like hydrants, viewpoints or toilets as yellow dots. Click the dot to show details and other answers.</string>
+    <string name="default_disabled_msg_poi_other">This "quest" shows miscellaneous POIs like hydrants, viewpoints or toilets as yellow dots. Click the dot to show details and other answers.</string>
     <string name="quest_poi_recycling_title">POI: Recycling</string>
-    <string name="default_disabled_msg_poi_recycling">This \"quest\" shows recycling/garbage related POIs as green dots. Click the dot to show details and other answers.</string>
+    <string name="default_disabled_msg_poi_recycling">This "quest" shows recycling/garbage related POIs as green dots. Click the dot to show details and other answers.</string>
     <string name="quest_poi_traffic_title">POI: Traffic</string>
-    <string name="default_disabled_msg_poi_traffic">This \"quest\" shows traffic-related POIs as light blue dots. Click the dot to show details and other answers.</string>
+    <string name="default_disabled_msg_poi_traffic">This "quest" shows traffic-related POIs as light blue dots. Click the dot to show details and other answers.</string>
     <string name="quest_poi_vacant_title">POI: Vacant Place</string>
-    <string name="default_disabled_msg_poi_vacant">This \"quest\" shows vacant shops as grey dots. Click the dot to show details and other answers.</string>
+    <string name="default_disabled_msg_poi_vacant">This "quest" shows vacant shops as grey dots. Click the dot to show details and other answers.</string>
     <string name="quest_fixme_title">FixMe:</string>
-    <string name="default_disabled_msg_poi_fixme">This \"quest\" shows FixMes as red dots (with default exceptions of \'yes\' and \'continue\'). Click the dot to show details and other answers.</string>
+    <string name="default_disabled_msg_poi_fixme">This "quest" shows FixMes as red dots (with default exceptions of 'yes' and 'continue'). Click the dot to show details and other answers.</string>
     <string name="quest_fixme_remove">Remove this fixme</string>
     <string name="quest_traffic_stuff_raised">It’s a raised crossing</string>
     <string name="quest_recycling_excrement_bag_dispenser">It has an excrement bag dispenser</string>
@@ -549,7 +549,7 @@
     <string name="quest_railwayPlatformRef_title">What track number is here?</string>
     <string name="quest_railwayPlatformRef_abc">ABC</string>
     <string name="quest_railwayPlatformRef_message">Which tag to use for tracks accessible from this platform? According to OSM wiki, local_ref may be preferable, but actual usage is mostly ref.</string>
-    <string name="quest_disabled_msg_railway_platform_ref">Note that which tag to use best is not entirely clear in the wiki and thus left to the user. Choose between \'ref\' (default) and \'local_ref\' in the quest settings.\n
+    <string name="quest_disabled_msg_railway_platform_ref">Note that which tag to use best is not entirely clear in the wiki and thus left to the user. Choose between 'ref' (default) and 'local_ref' in the quest settings.\n
     If there are two tracks along a platform, use semicolon separated values, e.g. 2;3
     </string>
     <string name="quest_destination_title">Which destinations are signed for this road?</string>
@@ -587,7 +587,7 @@
     <string name="quest_disused">It’s disused</string>
     <string name="quest_building_demolished">It’s demolished (traces visible)</string>
     <string name="quest_construction">It’s under construction until…</string>
-    <string name="quest_construction_value">Set \"construction=…\", or leave empty if unknown</string>
+    <string name="quest_construction_value">Set "construction=…", or leave empty if unknown</string>
     <string name="quest_generic_answer_show_edit_tags">Show/edit tags</string>
     <string name="quest_building_entrance_parking">Parking entrance</string>
     <string name="quest_maxspeed_conditional">Depends on…</string>
@@ -607,7 +607,7 @@
     <string name="quest_maxheight_answer_noSign_question_no">"Tall trucks don’t fit"</string>
     <string name="quest_maxheight_answer_noSign_question_unclear">"Unclear"</string>
     <!-- quest crossing marking -->
-    <string name="pref_quest_pedestrian_crossing_markings_extended">Enable extension of \"Does this crossing have markings on the ground?\", allows you to define the style of crossing markings</string>
+    <string name="pref_quest_pedestrian_crossing_markings_extended">Enable extension of "Does this crossing have markings on the ground?", allows you to define the style of crossing markings</string>
     <string name="quest_crossing_marking_value_no">No</string>
     <string name="quest_crossing_marking_value_zebra">Zebra</string>
     <string name="quest_crossing_marking_value_lines">Lines</string>
@@ -641,7 +641,7 @@
     <string name="quest_parking_capacity_hint">This also includes special spaces like for disabled people, families, for charging etc. Hide the quest if the parking spaces are not marked and thus not countable</string>
     <string name="quest_parking_capacity_disabled_title">How many parking spaces for disabled people are here?</string>
     <string name="quest_parking_capacity_disabled_answer_yes">There are, but unclear count</string>
-    <string name="quest_parking_capacity_disabled_default_disabled_msg">Quests added in SCEE are always disabled by default, as they may not always be answerable, and may require knowledge of the topic and tagging.\nThis quest will not be asked if capacity:disabled=yes is set. If you want to specify them as well, change the element selection from \"and !capacity:disabled\" to \"and (!capacity:disabled or capacity:disabled=yes)\"</string>
+    <string name="quest_parking_capacity_disabled_default_disabled_msg">Quests added in SCEE are always disabled by default, as they may not always be answerable, and may require knowledge of the topic and tagging.\nThis quest will not be asked if capacity:disabled=yes is set. If you want to specify them as well, change the element selection from "and !capacity:disabled" to "and (!capacity:disabled or capacity:disabled=yes)"</string>
 
     <!-- parking orientation quest -->
     <string name="quest_parking_orientation_title">In what orientation do cars park here?</string>
@@ -702,12 +702,12 @@
     <!-- custom overlay -->
     <string name="custom_overlay_title">Custom overlay</string>
     <string name="custom_overlay_filter_message">Click the link below to open information about the element selection syntax in a browser. Note that when selecting elements by age, the resurvey interval setting may influence the result.
-        \nThe checkboxes replace the \"nodes, ways with\" part.</string>
+        \nThe checkboxes replace the "nodes, ways with" part.</string>
     <string name="custom_overlay_color_message">Select key(s) to get color from. Accepts regex and uses matching tags to get a color. The color is derived from key and value of the all matching keys. In case a matching key contains :left/right/both, it will be used to color the respective sides of a way, but not the center line. If there is no match, the color is always red, indicating missing data. Knowledge on regular expressions is very helpful for this feature.
-        \nIf the expression is not a regex, prefix \'!\' to start with the value focused when editing tags.
+        \nIf the expression is not a regex, prefix '!' to start with the value focused when editing tags.
         \n\nExample:
-        \n\"surface\" shows surface=asphalt in the same color, and surface=concrete in a different color
-        \n\".*surface\" is similar, but also shows sidewalk:(left/right/both):surface=asphalt in one color, and cycleway:(left/right/both):surface=asphalt in another color</string>
+        \n"surface" shows surface=asphalt in the same color, and surface=concrete in a different color
+        \n".*surface" is similar, but also shows sidewalk:(left/right/both):surface=asphalt in one color, and cycleway:(left/right/both):surface=asphalt in another color</string>
     <string name="custom_overlay_color_hint">Leave empty to show all in same color</string>
     <string name="custom_overlay_highlight_missing">Highlight missing data</string>
     <string name="custom_overlay_dash_filter_hint">Dashed element filter</string>
@@ -767,7 +767,7 @@ Out of the box SCEE is configured to behave very similar to StreetComplete.</str
     <string name="closed_note_action_title">You closed it</string>
     <string name="manage_access">Manage access…</string>
     <string name="add_access">Add access…</string>
-    <string name="access_manager_message">Choose access tags. Remember to tag only signed access, and avoid generic \"access\" tag if possible</string>
+    <string name="access_manager_message">Choose access tags. Remember to tag only signed access, and avoid generic "access" tag if possible</string>
     <string name="access_manager_button_add">Add</string>
     <string name="access_manager_button_add_conditional">Add conditional</string>
     <string name="access_length_limit">Length</string>

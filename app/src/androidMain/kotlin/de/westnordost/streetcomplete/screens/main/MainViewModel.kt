@@ -93,6 +93,7 @@ abstract class MainViewModel : ViewModel() {
     abstract val userHasMovedCamera: MutableStateFlow<Boolean>
 
     abstract val showQuickSettings: StateFlow<Boolean>
+    abstract val showOverlaySelector: StateFlow<Boolean>
     abstract val reverseQuestOrder: MutableStateFlow<Boolean>
     abstract val showMainMenuDialog: MutableState<Boolean>
 }

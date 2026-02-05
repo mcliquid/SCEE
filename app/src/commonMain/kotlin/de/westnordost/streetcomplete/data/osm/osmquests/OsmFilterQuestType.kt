@@ -1,13 +1,13 @@
 package de.westnordost.streetcomplete.data.osm.osmquests
 
 import android.content.Context
-import androidx.appcompat.app.AlertDialog
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
-import de.westnordost.streetcomplete.quests.fullElementSelectionDialog
+import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
 import de.westnordost.streetcomplete.quests.getPrefixedFullElementSelectionPref
 import de.westnordost.streetcomplete.quests.getLabelSources
 
@@ -29,8 +29,15 @@ abstract class OsmFilterQuestType<T> : OsmElementQuestType<T> {
 
     override val hasQuestSettings: Boolean = true
 
-    override fun getQuestSettingsDialog(context: Context): AlertDialog? =
-        fullElementSelectionDialog(context, prefs, this.getPrefixedFullElementSelectionPref(prefs), R.string.quest_settings_element_selection, elementFilter)
+    @Composable override fun QuestSettings(onDismissRequest: () -> Unit) {
+        FullElementSelectionDialog(
+            prefs,
+            this.getPrefixedFullElementSelectionPref(prefs),
+            R.string.quest_settings_element_selection,
+            elementFilter,
+            onDismissRequest
+        )
+    }
 
     override val dotLabelSources by lazy { getLabelSources(super.dotLabelSources.joinToString(", "), this, prefs) }
 }

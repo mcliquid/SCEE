@@ -1,6 +1,5 @@
 package de.westnordost.streetcomplete.quests.destination
 
-import android.content.Context
 import androidx.appcompat.app.AlertDialog
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
@@ -16,7 +15,6 @@ import de.westnordost.streetcomplete.osm.groupByNodeIds
 import de.westnordost.streetcomplete.osm.oneway.isForwardOneway
 import de.westnordost.streetcomplete.osm.oneway.isReversedOneway
 import de.westnordost.streetcomplete.quests.questPrefix
-import de.westnordost.streetcomplete.quests.singleTypeElementSelectionDialog
 import de.westnordost.streetcomplete.util.ktx.allExceptFirstAndLast
 import de.westnordost.streetcomplete.util.math.finalBearingTo
 import de.westnordost.streetcomplete.util.math.initialBearingTo
@@ -176,12 +174,14 @@ class AddDestination : OsmElementQuestType<Pair<DestinationLanes?, DestinationLa
 
     override val hasQuestSettings = true
 
-    override fun getQuestSettingsDialog(context: Context): AlertDialog {
-        return singleTypeElementSelectionDialog(context,
+    override fun QuestSettingDialog(context: Context, onDismissRequest: () -> Unit) {
+        SingleTypeElementSelectionDialog(
             prefs,
             questPrefix(prefs) + PREF_DESTINATION_ROADS,
             ROADS_FOR_DESTINATION.joinToString("|"),
-            R.string.quest_settings_eligible_highways)
+            R.string.quest_settings_eligible_highways,
+            onDismissRequest
+        )
     }
 }
 

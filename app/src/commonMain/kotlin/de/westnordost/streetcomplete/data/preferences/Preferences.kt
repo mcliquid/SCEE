@@ -58,6 +58,9 @@ class Preferences(val prefs: ObservableSettings) {
     var showQuickSettings: Boolean by prefs.boolean(Prefs.QUICK_SETTINGS, false)
     fun onShowQuickSettingsChanged(callback: (Boolean) -> Unit): SettingsListener =
         prefs.addBooleanListener(Prefs.QUICK_SETTINGS, false, callback)
+    var showOverlaySelector: Boolean by prefs.boolean(Prefs.OVERLAY_QUICK_SELECTOR, false)
+    fun onShowOverlaySelectorChanged(callback: (Boolean) -> Unit): SettingsListener =
+        prefs.addBooleanListener(Prefs.OVERLAY_QUICK_SELECTOR, false, callback)
 
     fun onLanguageChanged(callback: (String?) -> Unit): SettingsListener =
         prefs.addStringOrNullListener(LANGUAGE_SELECT, callback)

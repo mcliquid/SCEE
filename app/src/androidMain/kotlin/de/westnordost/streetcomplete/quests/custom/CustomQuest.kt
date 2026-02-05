@@ -1,7 +1,6 @@
 package de.westnordost.streetcomplete.quests.custom
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -75,7 +74,8 @@ class CustomQuest(private val customQuestList: CustomQuestList) : ExternalSource
     override val hasQuestSettings: Boolean = true
 
     @Composable
-    override fun QuestSettings(context: Context, onDismissRequest: () -> Unit) {
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        val context = LocalContext.current
         val file = File(context.getExternalFilesDir(null), FILENAME_CUSTOM_QUEST)
         val activity = LocalContext.current.getActivity()!!
         val customQuestList: CustomQuestList = koinInject()
@@ -121,9 +121,6 @@ class CustomQuest(private val customQuestList: CustomQuestList) : ExternalSource
             text = { Text(stringResource(R.string.tree_custom_quest_import_export_message)) }
         )
     }
-
-    // todo: don't force override any more
-    override fun getQuestSettingsDialog(context: Context): AlertDialog? = null
 
     override fun createForm() = CustomQuestForm()
 }

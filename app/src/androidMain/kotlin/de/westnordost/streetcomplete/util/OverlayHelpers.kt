@@ -277,7 +277,7 @@ fun getFakeCustomOverlays(prefs: Preferences, res: Resources, onlyIfExpertMode: 
             override val wikiLink = index
             override fun equals(other: Any?): Boolean {
                 return if (other !is Overlay) false
-                    else wikiLink == other.wikiLink // we only care about index!
+                    else wikiLink == other.wikiLink && icon == other.icon // index identifies overlay, but we also want a changed icon to trigger some reload
             }
         }
     }

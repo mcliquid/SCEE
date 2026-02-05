@@ -4,7 +4,7 @@ import android.content.Context
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isGone
-import de.westnordost.streetcomplete.BuildConfig
+import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.databinding.QuestSourceDialogLayoutBinding
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -36,5 +36,5 @@ suspend fun confirmIsSurvey(context: Context): Boolean {
 }
 
 // "static" values, i.e. persisted per application start
-private var dontShowAgain = BuildConfig.DEBUG
+private var dontShowAgain = ApplicationConstants.DEBUG
 private var timesShown = 0

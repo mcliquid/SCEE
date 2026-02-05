@@ -9,6 +9,7 @@ import de.westnordost.streetcomplete.BuildConfig
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.logs.LogsController
 import de.westnordost.streetcomplete.data.logs.format
+import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.util.ktx.minusInSystemTimeZone
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
 import de.westnordost.streetcomplete.util.ktx.systemTimeNow
@@ -43,6 +44,11 @@ class CrashReportExceptionHandler(
 
     override fun uncaughtException(thread: Thread, error: Throwable) {
         val report = createErrorReport(error, thread)
+        runCatching {
+            // clear last location and disable overlay, should help against many crashes occurring on startup
+            Prefs.preferences.mapPosition = LatLon(0.0, 0.0)
+            Prefs.preferences.selectedOverlayName = null
+        }
 
         saveCrashReport(report)
         defaultUncaughtExceptionHandler?.uncaughtException(thread, error)

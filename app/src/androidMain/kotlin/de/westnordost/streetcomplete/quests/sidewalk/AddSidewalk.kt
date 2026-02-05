@@ -1,7 +1,6 @@
 package de.westnordost.streetcomplete.quests.sidewalk
 
-import androidx.appcompat.app.AlertDialog
-import android.content.Context
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
@@ -20,8 +19,8 @@ import de.westnordost.streetcomplete.osm.sidewalk.Sidewalk.INVALID
 import de.westnordost.streetcomplete.osm.sidewalk.applyTo
 import de.westnordost.streetcomplete.osm.sidewalk.parseSidewalkSides
 import de.westnordost.streetcomplete.osm.surface.UNPAVED_SURFACES
+import de.westnordost.streetcomplete.quests.SingleTypeElementSelectionDialog
 import de.westnordost.streetcomplete.quests.questPrefix
-import de.westnordost.streetcomplete.quests.singleTypeElementSelectionDialog
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.default_disabled_msg_overlay
 
@@ -108,12 +107,16 @@ class AddSidewalk : OsmElementQuestType<Sides<Sidewalk>>, AndroidQuest {
     override val hasQuestSettings = true
 
     // min distance selection or element selection
-    override fun getQuestSettingsDialog(context: Context): AlertDialog =
-        singleTypeElementSelectionDialog(context,
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        SingleTypeElementSelectionDialog(
             prefs,
             questPrefix(prefs) + PREF_SIDEWALK_HIGHWAY_SELECTION,
             ROADS_WITH_SIDEWALK.joinToString("|"),
-            R.string.quest_settings_eligible_highways)
+            R.string.quest_settings_eligible_highways,
+            onDismissRequest
+        )
+    }
 }
 
 private fun Element.hasInvalidOrIncompleteSidewalkTags(): Boolean {

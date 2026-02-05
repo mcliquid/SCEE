@@ -1,13 +1,13 @@
 package de.westnordost.streetcomplete.quests.show_poi
 
-import android.content.Context
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.questPrefix
-import de.westnordost.streetcomplete.quests.singleTypeElementSelectionDialog
 import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.quests.SingleTypeElementSelectionDialog
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.default_disabled_msg_poi_fixme
 
@@ -39,8 +39,10 @@ class ShowFixme : OsmFilterQuestType<Boolean>(), AndroidQuest {
     override val hasQuestSettings = true
 
     // actual ignoring of stuff happens when downloading
-    override fun getQuestSettingsDialog(context: Context) =
-        singleTypeElementSelectionDialog(context, prefs, questPrefix(prefs) + PREF_FIXME_IGNORE, FIXME_IGNORE_DEFAULT, R.string.quest_settings_fixme_title)
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        SingleTypeElementSelectionDialog(prefs, questPrefix(prefs) + PREF_FIXME_IGNORE, FIXME_IGNORE_DEFAULT, R.string.quest_settings_fixme_title, onDismissRequest)
+    }
 }
 
 private const val PREF_FIXME_IGNORE = "qs_ShowFixme_ignore_values"

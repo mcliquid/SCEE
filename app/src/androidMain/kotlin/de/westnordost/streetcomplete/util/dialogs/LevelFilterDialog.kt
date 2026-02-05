@@ -29,9 +29,7 @@ fun showLevelFilterDialog(
     camera: CameraPosition?,
     levelFilter: LevelFilter,
     prefs: Preferences,
-    visibleEditTypeController: VisibleEditTypeController,
     visibleQuestsSource: VisibleQuestsSource,
-    selectedOverlaySource: SelectedOverlaySource,
     mapDataSource: MapDataWithEditsSource
 ) {
     val builder = AlertDialog.Builder(context)
@@ -83,20 +81,9 @@ fun showLevelFilterDialog(
         if (binding.addrFloorBox.isChecked) levelTagList.add("addr:floor")
         prefs.putString(Prefs.ALLOWED_LEVEL_TAGS, levelTagList.joinToString(","))
         prefs.putString(Prefs.ALLOWED_LEVEL, binding.level.text.toString())
-        levelFilter.isEnabled = binding.enableSwitch.isChecked
-        levelFilter.reload()
-
-        val overlayController = selectedOverlaySource as? SelectedOverlayController
-        val tempOverlay = overlayController?.selectedOverlay
-        if (tempOverlay != null) {
-            // reload overlay (if enabled), also triggers quest reload unless HIDE_OVERLAY_QUESTS disabled
-            overlayController.selectedOverlay = null
-            overlayController.selectedOverlay = tempOverlay
-            if (!prefs.getBoolean(Prefs.HIDE_OVERLAY_QUESTS, true))
-                visibleEditTypeController.setVisibilities(emptyMap()) // trigger reload
-        } else {
-            visibleEditTypeController.setVisibilities(emptyMap()) // trigger reload
-        }
+        if (levelFilter.isEnabled != binding.enableSwitch.isChecked)
+            levelFilter.isEnabled = binding.enableSwitch.isChecked
+        else levelFilter.reload()
     }
     builder.show()
 }

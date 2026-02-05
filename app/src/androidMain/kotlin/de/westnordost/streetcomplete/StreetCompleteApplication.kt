@@ -107,7 +107,8 @@ class StreetCompleteApplication : Application() {
 
         // got a crash report where prefs were not initialized, not sure how this can happen for a
         // single person and not for everyone, but this should help (means that we keep using android-specific prefs interface)
-        Prefs.sharedPreferences = getSharedPreferences(packageName + "_preferences", Context.MODE_PRIVATE)
+        Prefs.sharedPreferences = getSharedPreferences(packageName + "_preferences", MODE_PRIVATE)
+        ApplicationConstants.DEBUG = packageName.endsWith(".debug")
 
         deleteDatabase(ApplicationConstants.OLD_DATABASE_NAME)
 

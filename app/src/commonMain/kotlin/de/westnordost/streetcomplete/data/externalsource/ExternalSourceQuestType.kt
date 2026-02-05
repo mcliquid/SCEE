@@ -1,7 +1,5 @@
 package de.westnordost.streetcomplete.data.externalsource
 
-import android.content.Context
-import androidx.appcompat.app.AlertDialog
 import de.westnordost.streetcomplete.data.osm.edits.ElementEdit
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditType
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
@@ -103,8 +101,6 @@ interface ExternalSourceQuestType : QuestType, ElementEditType {
 
     /** quest settings should always exist, at least to control [downloadEnabled] */
     override val hasQuestSettings get() = true
-
-    override fun getQuestSettingsDialog(context: Context): AlertDialog?
 
     /** disabled by default, so either this must be enabled manually or overridden */
     var downloadEnabled: Boolean

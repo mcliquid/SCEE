@@ -98,7 +98,9 @@ open class TagEditor : Fragment(), IsCloseableBottomSheet {
     protected val binding: EditTagsBinding get() = _binding!!
     private var updateQuestsJob: Job? = null
     private var minBottomInset = Int.MAX_VALUE
-    private val cFilter by lazy { PorterDuffColorFilter(ContextCompat.getColor(requireContext(), R.color.text), PorterDuff.Mode.DST_IN) }
+    private val cFilter by lazy {
+        PorterDuffColorFilter(ContextCompat.getColor(requireContext(), R.color.text), PorterDuff.Mode.SRC_ATOP)
+    }
 
     private val osmQuestController: OsmQuestController by inject()
     protected val prefs: ObservableSettings by inject()

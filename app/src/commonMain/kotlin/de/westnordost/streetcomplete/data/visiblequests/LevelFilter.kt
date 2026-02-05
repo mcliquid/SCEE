@@ -6,6 +6,8 @@ import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuest
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuest
+import de.westnordost.streetcomplete.data.overlays.SelectedOverlayController
+import de.westnordost.streetcomplete.data.overlays.SelectedOverlaySource
 import de.westnordost.streetcomplete.data.quest.Quest
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -13,18 +15,37 @@ import org.koin.core.component.inject
 /** Controller for filtering all quests that are hidden because they are on the wrong level */
 class LevelFilter internal constructor(private val prefs: ObservableSettings) : KoinComponent {
     var isEnabled = false
+        set(value) {
+            if (field == value) return
+            field = value
+            reload()
+        }
     var allowedLevel: String? = null
         private set
     lateinit var allowedLevelTags: Set<String>
         private set
 
     private val mapDataSource: MapDataWithEditsSource by inject()
+    private val selectedOverlaySource: SelectedOverlaySource by inject()
+    private val visibleEditTypeController: VisibleEditTypeController by inject()
 
     init { reload() }
 
     fun reload() {
         allowedLevel = prefs.getString(Prefs.ALLOWED_LEVEL, "").let { if (it.isBlank()) null else it.trim() }
         allowedLevelTags = prefs.getString(Prefs.ALLOWED_LEVEL_TAGS, "level,repeat_on,level:ref").split(",").toHashSet()
+
+        val overlayController = selectedOverlaySource as? SelectedOverlayController
+        val tempOverlay = overlayController?.selectedOverlay
+        if (tempOverlay != null) {
+            // reload overlay (if enabled), also triggers quest reload unless HIDE_OVERLAY_QUESTS disabled
+            overlayController.selectedOverlay = null
+            overlayController.selectedOverlay = tempOverlay
+            if (!prefs.getBoolean(Prefs.HIDE_OVERLAY_QUESTS, true))
+                visibleEditTypeController.setVisibilities(emptyMap()) // trigger reload
+        } else {
+            visibleEditTypeController.setVisibilities(emptyMap()) // trigger reload
+        }
     }
 
     fun isVisible(quest: Quest): Boolean =
@@ -59,6 +80,11 @@ class LevelFilter internal constructor(private val prefs: ObservableSettings) : 
             }
             if (levels.contains(allowedLevel)) return true
             if (value == allowedLevel) return true // maybe user entered 0;1
+        }
+        when (tags["location"]) {
+            "underground" -> return allowedLevel == "<0" || allowedLevel == "< 0"
+            "overhead", "roof", "rooftop", "bridge", "pole" -> return allowedLevel == ">0" || allowedLevel == "> 0"
+            "overground", "surface" -> allowedLevel == "0"
         }
         return false
     }

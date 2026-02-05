@@ -6,7 +6,6 @@ import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.ApplicationConstants
-import de.westnordost.streetcomplete.BuildConfig
 import de.westnordost.streetcomplete.data.AuthorizationException
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
@@ -89,7 +88,7 @@ class Uploader(
             }
 
             // let's fail early in case of no authorization
-            if (!userLoginSource.isLoggedIn && !BuildConfig.DEBUG) {
+            if (!userLoginSource.isLoggedIn && !ApplicationConstants.DEBUG) {
                 throw AuthorizationException("User is not authorized")
             }
 

@@ -1,9 +1,17 @@
 package de.westnordost.streetcomplete.quests.opening_hours
 
-import android.content.Context
 import de.westnordost.osm_opening_hours.parser.toOpeningHoursOrNull
-import de.westnordost.osmfeatures.Feature
-import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.Button
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.filters.RelativeDate
 import de.westnordost.streetcomplete.data.elementfilter.filters.TagOlderThan
@@ -16,12 +24,15 @@ import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.isPlaceOrDisusedPlace
-import de.westnordost.streetcomplete.osm.opening_hours.parser.isSupportedOpeningHours
+import de.westnordost.streetcomplete.osm.opening_hours.isLikelyIncorrect
+import de.westnordost.streetcomplete.osm.opening_hours.isSupported
+import de.westnordost.streetcomplete.osm.opening_hours.toOpeningHours
 import de.westnordost.streetcomplete.osm.updateCheckDateForKey
 import de.westnordost.streetcomplete.osm.updateWithCheckDate
-import de.westnordost.streetcomplete.quests.booleanQuestSettingsDialog
-import de.westnordost.streetcomplete.quests.fullElementSelectionDialog
+import de.westnordost.streetcomplete.quests.BooleanQuestSettingsDialog
+import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
 import de.westnordost.streetcomplete.quests.getPrefixedFullElementSelectionPref
+import de.westnordost.streetcomplete.ui.common.dialogs.InfoDialog
 
 class AddOpeningHours() : OsmElementQuestType<OpeningHoursAnswer>, AndroidQuest {
 
@@ -162,7 +173,7 @@ mapOf(
     // what would result in bad opening hours
     // this filter reduces risk of this happening and also makes this quest less confusing to answer
 
-    private val filter by lazy { prefs.getString(getPrefixedFullElementSelectionPref(prefs), filterString)!!.toElementFilterExpression() }
+    private val filter by lazy { prefs.getString(getPrefixedFullElementSelectionPref(prefs), filterString).toElementFilterExpression() }
 
     override val changesetComment = "Survey opening hours"
     override val wikiLink = "Key:opening_hours"
@@ -175,7 +186,7 @@ mapOf(
     override fun getTitle(tags: Map<String, String>): Int {
         // treat invalid opening hours like it is not set at all
         val oh = tags["opening_hours"]?.toOpeningHoursOrNull(lenient = true)
-        val hasSupportedOpeningHours = oh != null && oh.isSupportedOpeningHours()
+        val hasSupportedOpeningHours = oh != null && oh.isSupported()
         return if (hasSupportedOpeningHours) {
             R.string.quest_openingHours_resurvey_title
         } else {
@@ -197,9 +208,8 @@ mapOf(
         // be strict
         val oh = ohStr.toOpeningHoursOrNull(lenient = false) ?: return true
         if (prefs.getBoolean(RESURVEY_ALL_OPENING_HOURS, false)) return true
-        // only display supported rules, however, those that are supported but have colliding
-        // weekdays should be shown (->resurveyed), as they are likely mistakes
-        return oh.rules.all { rule -> rule.isSupportedOpeningHours() } && !oh.containsTimePoints()
+        // only display supported rules, or ambiguous rules that should be corrected
+        return oh.isSupported(allowTimePoints = false) || oh.isLikelyIncorrect()
     }
 
     override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry) =
@@ -214,7 +224,7 @@ mapOf(
             // don't delete current opening hours: these may be the correct hours, they are just not visible anywhere on the door
         } else {
             val openingHoursString = when (answer) {
-                is RegularOpeningHours  -> answer.hours.toString()
+                is RegularOpeningHours  -> answer.hours.toOpeningHours().toString()
                 is AlwaysOpen           -> "24/7"
                 is DescribeOpeningHours -> "\"" + answer.text.replace("\"", "") + "\""
                 NoOpeningHoursSign      -> throw IllegalStateException()
@@ -229,22 +239,40 @@ mapOf(
 
     override val hasQuestSettings: Boolean = true
 
-    override fun getQuestSettingsDialog(context: Context) =
-        AlertDialog.Builder(context)
-            .setTitle(R.string.quest_settings_what_to_edit)
-            .setPositiveButton(R.string.quest_settings_resurvey_all_opening_hours_title) { _, _ ->
-                booleanQuestSettingsDialog(context, prefs, RESURVEY_ALL_OPENING_HOURS,
-                    R.string.quest_settings_resurvey_all_opening_hours_message,
-                    R.string.quest_settings_resurvey_all_opening_hours_yes,
-                    R.string.quest_settings_resurvey_all_opening_hours_no
-                ).show()
+    @Composable override fun QuestSettings(onDismissRequest: () -> Unit) {
+        var showResurveySelection by remember { mutableStateOf(false) }
+        var showElementSelection by remember { mutableStateOf(false) }
+        InfoDialog(
+            onDismissRequest = onDismissRequest,
+            title = { Text(stringResource(R.string.quest_settings_what_to_edit)) },
+            text = {
+                Column {
+                    Button({ showResurveySelection = true }, Modifier.fillMaxWidth()) {
+                        Text(stringResource(R.string.quest_settings_resurvey_all_opening_hours_title))
+                    }
+                    Button({ showElementSelection = true }, Modifier.fillMaxWidth()) {
+                        Text(stringResource(R.string.element_selection_button))
+                    }
+                }
             }
-            .setNegativeButton(R.string.element_selection_button) { _, _ ->
-                fullElementSelectionDialog(context, prefs, getPrefixedFullElementSelectionPref(prefs),
-                    R.string.quest_settings_element_selection, filterString
-                ).show()
-            }
-            .create()
+        )
+        if (showResurveySelection)
+            BooleanQuestSettingsDialog(
+                prefs,
+                RESURVEY_ALL_OPENING_HOURS,
+                false,
+                R.string.quest_settings_resurvey_all_opening_hours_message,
+                R.string.quest_settings_resurvey_all_opening_hours_yes,
+                R.string.quest_settings_resurvey_all_opening_hours_no
+            ) { showResurveySelection = false }
+        if (showElementSelection)
+            FullElementSelectionDialog(
+                prefs,
+                getPrefixedFullElementSelectionPref(prefs),
+                R.string.quest_settings_element_selection,
+                filterString
+            ) { showElementSelection = false }
+    }
 }
 
 private const val RESURVEY_ALL_OPENING_HOURS = "qs_AddOpeningHours_resurvey_all"

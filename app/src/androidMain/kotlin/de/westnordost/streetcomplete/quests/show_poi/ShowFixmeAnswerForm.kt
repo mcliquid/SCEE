@@ -16,7 +16,7 @@ class ShowFixmeAnswerForm : AbstractOsmQuestForm<Boolean>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         (element.tags["fixme"] ?: element.tags["FIXME"])
-            ?.let { setTitle(resources.getString((questType as OsmElementQuestType<*>).getTitle(element.tags)) + " ($it)") }
+            ?.let { setTitle(resources.getString((questType as OsmElementQuestType<*>).getTitle(element.tags)) + " $it") }
     }
 
 }

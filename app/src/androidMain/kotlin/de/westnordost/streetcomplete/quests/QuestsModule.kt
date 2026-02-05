@@ -145,6 +145,7 @@ import de.westnordost.streetcomplete.quests.motorcycle_parking_capacity.AddMotor
 import de.westnordost.streetcomplete.quests.motorcycle_parking_cover.AddMotorcycleParkingCover
 import de.westnordost.streetcomplete.quests.note_discussion.OsmNoteQuestType
 import de.westnordost.streetcomplete.quests.oneway.AddOneway
+import de.westnordost.streetcomplete.quests.oneway.AddOnewayAerialway
 import de.westnordost.streetcomplete.quests.opening_hours.AddOpeningHours
 import de.westnordost.streetcomplete.quests.opening_hours_signed.CheckOpeningHoursSigned
 import de.westnordost.streetcomplete.quests.orchard_produce.AddOrchardProduce
@@ -439,6 +440,8 @@ fun getQuestTypeList(
     49 to CheckExistence(getFeature),
     155 to AddGritBinSeasonal(),
 
+    187 to AddArtworkType(),
+
     50 to AddBoardType(),
     171 to AddBoardName(),
 
@@ -537,6 +540,7 @@ fun getQuestTypeList(
 
     // aerial way: usually visible from looking at the aerial way, but not always...
     184 to AddAerialwayBicycleAccess(),
+    187 to AddOnewayAerialway(),
 
     103 to AddProhibitedForPedestrians(), // need to understand the pedestrian situation
 
@@ -657,7 +661,6 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 8 to AddOutdoorSeatingType(),
     EE_QUEST_OFFSET + 51 to AddValves(),
 //    EE_QUEST_OFFSET + 25 to AddDestination(),
-    EE_QUEST_OFFSET + 22 to AddArtworkType(),
     EE_QUEST_OFFSET + 23 to AddRailwayPlatformRef(),
     EE_QUEST_OFFSET + 33 to AddTrailVisibility(),
     EE_QUEST_OFFSET + 48 to AddSacScale(),

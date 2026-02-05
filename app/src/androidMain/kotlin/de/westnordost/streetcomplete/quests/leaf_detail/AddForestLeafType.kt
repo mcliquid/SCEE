@@ -1,6 +1,6 @@
 package de.westnordost.streetcomplete.quests.leaf_detail
 
-import android.content.Context
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
@@ -11,7 +11,7 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.osm.Tags
-import de.westnordost.streetcomplete.quests.booleanQuestSettingsDialog
+import de.westnordost.streetcomplete.quests.BooleanQuestSettingsDialog
 import de.westnordost.streetcomplete.util.math.measuredMultiPolygonArea
 
 class AddForestLeafType : OsmElementQuestType<ForestLeafType>, AndroidQuest {
@@ -63,11 +63,18 @@ class AddForestLeafType : OsmElementQuestType<ForestLeafType>, AndroidQuest {
 
     override val hasQuestSettings = true
 
-    override fun getQuestSettingsDialog(context: Context) =
-        booleanQuestSettingsDialog(context, prefs, SINGLE_TREES_PREF,
-            R.string.quest_settings_leaf_type_single_tree_message, R.string.quest_settings_leaf_type_single_tree_yes,
-            R.string.quest_settings_leaf_type_single_tree_no
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        BooleanQuestSettingsDialog(
+            prefs,
+            SINGLE_TREES_PREF,
+            false,
+            R.string.quest_settings_leaf_type_single_tree_message,
+            R.string.quest_settings_leaf_type_single_tree_yes,
+            R.string.quest_settings_leaf_type_single_tree_no,
+            onDismissRequest
         )
+    }
 }
 
 private const val SINGLE_TREES_PREF = "qs_AddForestLeafType_single_trees"

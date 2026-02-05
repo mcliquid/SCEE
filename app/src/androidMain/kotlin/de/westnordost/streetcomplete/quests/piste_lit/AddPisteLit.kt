@@ -1,22 +1,22 @@
 package de.westnordost.streetcomplete.quests.piste_lit
 
-import android.content.Context
-import androidx.appcompat.app.AlertDialog
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
+import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.updateWithCheckDate
 import de.westnordost.streetcomplete.quests.YesNoQuestForm
-import de.westnordost.streetcomplete.quests.fullElementSelectionDialog
 import de.westnordost.streetcomplete.quests.getPrefixedFullElementSelectionPref
 import de.westnordost.streetcomplete.util.isWinter
 import de.westnordost.streetcomplete.util.ktx.toYesNo
 import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
 
@@ -27,7 +27,6 @@ class AddPisteLit : OsmElementQuestType<Boolean>, AndroidQuest {
           piste:type ~ downhill|nordic|sled|ski_jump|ice_skate
         and (
           !piste:lit
-          or piste:lit = no and lit older today -8 years
           or piste:lit older today -16 years
         )
     """
@@ -39,7 +38,11 @@ class AddPisteLit : OsmElementQuestType<Boolean>, AndroidQuest {
     override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
 
     override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> {
-        return if (isWinter(mapData.nodes.firstOrNull()?.position)) mapData.filter(filter).asIterable()
+        return if (isWinter(mapData.nodes.firstOrNull()?.position))
+            mapData.filter(filter)
+                // ways only if highway, see https://github.com/Helium314/SCEE/pull/495#issuecomment-3449318516
+                .filter { it !is Way || it.tags.contains("highway") }
+                .asIterable()
         else emptyList()
     }
 
@@ -55,6 +58,8 @@ class AddPisteLit : OsmElementQuestType<Boolean>, AndroidQuest {
 
     override val hasQuestSettings: Boolean = true
 
-    override fun getQuestSettingsDialog(context: Context): AlertDialog =
-        fullElementSelectionDialog(context, prefs, this.getPrefixedFullElementSelectionPref(prefs), R.string.quest_settings_element_selection, elementFilter)
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        FullElementSelectionDialog(prefs, this.getPrefixedFullElementSelectionPref(prefs), R.string.quest_settings_element_selection, elementFilter, onDismissRequest)
+    }
 }

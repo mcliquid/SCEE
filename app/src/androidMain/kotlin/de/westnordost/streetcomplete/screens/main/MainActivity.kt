@@ -216,9 +216,7 @@ class MainActivity :
     VisibleQuestsSource.Listener,
     MapDataWithEditsSource.Listener,
     // rest
-    ShowsGeometryMarkers,
-    // we need the android preferences listener, because the new one can't to what is needed
-    SharedPreferences.OnSharedPreferenceChangeListener {
+    ShowsGeometryMarkers {
 
     private val questAutoSyncer: QuestAutoSyncer by inject()
     private val locationAvailabilityReceiver: LocationAvailabilityReceiver by inject()
@@ -380,14 +378,6 @@ class MainActivity :
         observe(viewModel.reverseQuestOrder) {
             mapFragment?.setQuestOrder(it)
         }
-        observe(viewModel.selectedOverlay) {
-            reloadOverlaySelector()
-        }
-        binding.overlayScrollView.doOnNextLayout {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return@doOnNextLayout
-            val insets = it.rootWindowInsets.getInsets(WindowInsets.Type.systemBars())
-            it.updatePadding(top = it.paddingTop + insets.top)
-        }
     }
 
     override fun onResume() {
@@ -414,8 +404,6 @@ class MainActivity :
         mapDataWithEditsSource.addListener(this)
         locationAvailabilityReceiver.addListener(::updateLocationAvailability)
         updateLocationAvailability(isLocationAvailable)
-        Prefs.sharedPreferences.registerOnSharedPreferenceChangeListener(this)
-        reloadOverlaySelector()
         stopQuestMonitor()
     }
 
@@ -457,85 +445,12 @@ class MainActivity :
         locationAvailabilityReceiver.removeListener(::updateLocationAvailability)
 
         locationManager.removeUpdates()
-        Prefs.sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
-        clearOverlaySelector()
         startQuestMonitor()
     }
 
     //endregion
 
-    private fun clearOverlaySelector() = binding.overlayLayout.removeAllViews()
-
-    private fun reloadOverlaySelector() {
-        if (!prefs.getBoolean(Prefs.OVERLAY_QUICK_SELECTOR, false)) {
-            binding.overlayScrollView.isGone = true
-            return
-        }
-        runOnUiThread { clearOverlaySelector() }
-        if (bottomSheetFragment == null) // always fill, but only show if no quest, overlay, etc... is showing
-            binding.overlayScrollView.isVisible = true
-
-        val overlays = overlayRegistry.filter {
-            val eeAllowed = if (prefs.getBoolean(Prefs.EXPERT_MODE, false)) true
-                else overlayRegistry.getOrdinalOf(it)!! < ApplicationConstants.EE_QUEST_OFFSET
-            eeAllowed && it !is CustomOverlay
-        } + getFakeCustomOverlays(prefs, this.resources)
-        val params = ViewGroup.LayoutParams(resources.dpToPx(52).toInt(), resources.dpToPx(52).toInt())
-        overlays.forEach { overlay ->
-            val view = ImageView(this)
-            val index = overlay.wikiLink?.toIntOrNull()
-            val isActive = selectedOverlaySource.selectedOverlay == overlay
-                || (selectedOverlaySource.selectedOverlay is CustomOverlay && index == prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, 0))
-            if (isActive) {
-                val ring = ContextCompat.getDrawable(this, R.drawable.pin_selection_ring)!!
-                val icon = ContextCompat.getDrawable(this, overlay.icon)!!
-                view.setImageDrawable(LayerDrawable(arrayOf(icon, ring)))
-            } else {
-                view.setImageResource(overlay.icon)
-                view.colorFilter = PorterDuffColorFilter(Color.LTGRAY, PorterDuff.Mode.MULTIPLY)
-            }
-            view.scaleX = 0.95f
-            view.scaleY = 0.95f
-            if (overlay.title == 0 && index != null)
-                view.setOnLongClickListener {
-                    showOverlayCustomizer(index, this, prefs, questTypeRegistry,
-                        { isCurrentCustomOverlay ->
-                            lifecycleScope.launch(Dispatchers.IO) {
-                                if (isCurrentCustomOverlay && selectedOverlaySource.selectedOverlay is CustomOverlay) {
-                                    selectedOverlaySource.selectedOverlay = null
-                                    delay(100) // need a rather long delay for this to work...
-                                    selectedOverlaySource.selectedOverlay = overlayRegistry.getByName(CustomOverlay::class.simpleName!!)
-                                }
-                            }
-                        },
-                        { wasCurrentOverlay ->
-                            if (wasCurrentOverlay && selectedOverlaySource.selectedOverlay is CustomOverlay)
-                                selectedOverlaySource.selectedOverlay = null
-                        },
-                    )
-                    true
-                }
-            view.setOnClickListener {
-                val oldOverlay = selectedOverlaySource.selectedOverlay
-
-                // if active overlay was tapped, disable it
-                if (oldOverlay == overlay || (oldOverlay is CustomOverlay && index == prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, 0)))
-                    selectedOverlaySource.selectedOverlay = null
-                else
-                    selectedOverlaySource.selectedOverlay = overlay
-                reloadOverlaySelector()
-            }
-            view.layoutParams = params
-            runOnUiThread { binding.overlayLayout.addView(view) }
-        }
-    }
-
     /* ------------------------------- Preferences listeners ------------------------------------ */
-
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences, key: String?) {
-        if (key != null && key.startsWith("custom_overlay") && key != Prefs.CUSTOM_OVERLAY_SELECTED_INDEX)
-            reloadOverlaySelector()
-    }
 
     private fun updateScreenOn() {
         if (prefs.keepScreenOn) {
@@ -1187,8 +1102,7 @@ class MainActivity :
             binding.otherQuestsLayout.removeAllViews()
             binding.otherQuestsScrollView.visibility = View.GONE
         }
-        if (prefs.getBoolean(Prefs.OVERLAY_QUICK_SELECTOR, false))
-            binding.overlayScrollView.isVisible = true
+        //todo: inform viewModel so we can show overlay selector
         clearHighlighting()
         unfreezeMap()
         mapFragment?.endFocus()
@@ -1199,7 +1113,7 @@ class MainActivity :
      *  played and the highlighting of the previous bottom sheet is cleared. */
     private fun showInBottomSheet(f: Fragment, clearPreviousHighlighting: Boolean = true) {
         currentFocus?.hideKeyboard()
-        binding.overlayScrollView.isGone = true
+        //todo: inform viewModel so we can hide overlay selector
         freezeMap()
         if (bottomSheetFragment != null) {
             if (clearPreviousHighlighting) clearHighlighting()

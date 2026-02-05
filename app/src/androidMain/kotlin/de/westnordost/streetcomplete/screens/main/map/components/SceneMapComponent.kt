@@ -5,7 +5,6 @@ import android.content.res.Configuration
 import android.provider.Settings
 import androidx.annotation.UiThread
 import de.westnordost.streetcomplete.ApplicationConstants
-import de.westnordost.streetcomplete.BuildConfig
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.preferences.Theme
@@ -39,7 +38,7 @@ class SceneMapComponent(
         val isNightMode = currentNightMode == Configuration.UI_MODE_NIGHT_YES
         val token = context.resources.assets.open("map_theme/streetcomplete.json").bufferedReader()
             .use { it.readText() }.substringAfter("?access-token=").substringBefore("\"]")
-        if (BuildConfig.DEBUG) {
+        if (ApplicationConstants.DEBUG) {
             // make sure created file for light theme is same as map_theme/streetcomplete.json
             // this is to avoid overlooking style updates
             val lightTheme = context.resources.assets.open("map_theme/streetcomplete.json").bufferedReader().use { it.readText() }.lines()

@@ -1,11 +1,14 @@
 package de.westnordost.streetcomplete.view.dialogs
 
 import android.content.Context
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.view.isEmpty
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
@@ -85,6 +88,9 @@ class SearchFeaturesDialog(
                     onSelectedFeatureFn(feature)
                     dismiss()
                 }
+                // color is always black, fix it (same problem for default icons, but that's an upstream issue)
+                if (context.resources.getResourceEntryName(resId).contains("temaki"))
+                    colorFilter = PorterDuffColorFilter(ContextCompat.getColor(context, R.color.text), PorterDuff.Mode.SRC_ATOP)
             })
         }
         if (!binding.shortcuts.isEmpty())

@@ -6,11 +6,9 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.osm.Tags
-import de.westnordost.streetcomplete.data.quest.AndroidQuest
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
 
 class AddArtworkType : OsmFilterQuestType<ArtworkType>(), AndroidQuest {
 
@@ -18,9 +16,8 @@ class AddArtworkType : OsmFilterQuestType<ArtworkType>(), AndroidQuest {
 
     override val changesetComment = "Survey artwork type"
     override val wikiLink = "Key:artwork_type"
-    override val icon = R.drawable.quest_memorial
+    override val icon = R.drawable.quest_artwork
     override val achievements = listOf(CITIZEN)
-    override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_artwork_title
 

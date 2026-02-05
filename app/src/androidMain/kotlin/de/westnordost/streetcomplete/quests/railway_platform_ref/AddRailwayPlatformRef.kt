@@ -1,8 +1,12 @@
 package de.westnordost.streetcomplete.quests.railway_platform_ref
 
-import android.content.Context
-import androidx.appcompat.app.AlertDialog
-import androidx.core.content.edit
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.Button
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
@@ -18,6 +22,7 @@ import de.westnordost.streetcomplete.util.math.distanceTo
 import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.quest_disabled_msg_railway_platform_ref
+import de.westnordost.streetcomplete.ui.common.dialogs.InfoDialog
 
 class AddRailwayPlatformRef : OsmElementQuestType<String>, AndroidQuest {
 
@@ -95,12 +100,22 @@ class AddRailwayPlatformRef : OsmElementQuestType<String>, AndroidQuest {
 
     override val hasQuestSettings = true
 
-    override fun getQuestSettingsDialog(context: Context) =
-        AlertDialog.Builder(context)
-            .setMessage(R.string.quest_railwayPlatformRef_message)
-            .setPositiveButton("local_ref") { _, _ -> prefs.putString(PREF_KEY, "local_ref")}
-            .setNegativeButton("ref") { _, _ -> prefs.remove(PREF_KEY)}
-            .create()
+    @Composable override fun QuestSettings(onDismissRequest: () -> Unit) {
+        InfoDialog(
+            onDismissRequest = onDismissRequest,
+            title = { Text(stringResource(R.string.quest_railwayPlatformRef_message)) },
+            text = {
+                Column {
+                    Button({ prefs.putString(PREF_KEY, "local_ref"); onDismissRequest() }, Modifier.fillMaxWidth()) {
+                        Text("local_ref")
+                    }
+                    Button({ prefs.remove(PREF_KEY); onDismissRequest() }, Modifier.fillMaxWidth()) {
+                        Text("ref")
+                    }
+                }
+            }
+        )
+    }
 }
 
 private const val PREF_KEY = "qs_AddRailwayPlatformRef_key"

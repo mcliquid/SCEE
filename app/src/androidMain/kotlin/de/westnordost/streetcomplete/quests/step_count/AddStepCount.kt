@@ -1,6 +1,6 @@
 package de.westnordost.streetcomplete.quests.step_count
 
-import android.content.Context
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
@@ -11,7 +11,7 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
-import de.westnordost.streetcomplete.quests.numberSelectionDialog
+import de.westnordost.streetcomplete.quests.NumberSelectionDialog
 import de.westnordost.streetcomplete.quests.questPrefix
 import de.westnordost.streetcomplete.util.math.measuredLength
 
@@ -61,10 +61,10 @@ class AddStepCount : OsmElementQuestType<Int>, AndroidQuest {
 
     override val hasQuestSettings = true
 
-    override fun getQuestSettingsDialog(context: Context) = numberSelectionDialog(
-        context, prefs, questPrefix(prefs) + PREF_MAX_STEPS_LENGTH, 999, R.string.quest_settings_max_steps_length
-    )
-
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        NumberSelectionDialog(prefs, questPrefix(prefs) + PREF_MAX_STEPS_LENGTH, 999, R.string.quest_settings_max_steps_length, onDismissRequest)
+    }
 }
 
 private const val PREF_MAX_STEPS_LENGTH = "qs_AddStepCount_max_length"

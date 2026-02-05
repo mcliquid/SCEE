@@ -48,6 +48,7 @@ import de.westnordost.streetcomplete.osm.ALL_PATHS
 import de.westnordost.streetcomplete.osm.ALL_ROADS
 import de.westnordost.streetcomplete.quests.custom.CustomQuestList
 import de.westnordost.streetcomplete.quests.shop_type.ShopGoneDialog
+import de.westnordost.streetcomplete.quests.show_poi.ShowFixme
 import de.westnordost.streetcomplete.util.AccessManagerDialog
 import de.westnordost.streetcomplete.util.getNameAndLocationSpanned
 import de.westnordost.streetcomplete.util.accessKeys
@@ -309,7 +310,9 @@ abstract class AbstractOsmQuestForm<T> : AbstractQuestForm(), IsShowingQuestDeta
 
     protected fun composeNote() {
 
-        val questTitle = englishResources.getString(osmElementQuestType.getTitle(element.tags))
+        var questTitle = englishResources.getString(osmElementQuestType.getTitle(element.tags))
+        if (osmElementQuestType is ShowFixme)
+            questTitle += " ${element.tags["fixme"] ?: element.tags["FIXME"]}"
         val hintLabel = getNameAndLocationSpanned(element, englishResources, featureDictionary)
         val leaveNoteContext = if (hintLabel.isNullOrBlank()) {
             "Unable to answer \"$questTitle\""

@@ -130,4 +130,6 @@ object ApplicationConstants {
     (test data needs to be created there).
      */
     const val USE_TEST_API = false
+
+    var DEBUG = false // not really a constant, but does not depend on debug build vs not any more, so we fake it
 }

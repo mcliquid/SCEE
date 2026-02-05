@@ -107,7 +107,7 @@ fun QuestSelectionRow(
                     .alpha(alpha),
             )
             if (showQuestSettings)
-                item.questType.QuestSettings(c) { showQuestSettings = false }
+                item.questType.QuestSettings() { showQuestSettings = false }
         }
         Box(
             modifier = Modifier

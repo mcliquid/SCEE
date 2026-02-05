@@ -1,8 +1,8 @@
 package de.westnordost.streetcomplete.data.osm.edits.upload
 
 import com.russhwolf.settings.ObservableSettings
+import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.data.ConflictException
-import de.westnordost.streetcomplete.BuildConfig
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.download.Downloader
 import de.westnordost.streetcomplete.data.osm.edits.ElementEdit
@@ -29,7 +29,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -75,7 +74,7 @@ class ElementEditsUploader(
              * otherwise an inconsistency in the data would occur. E.g. no "star" for an uploaded
              * change, a change could be uploaded twice etc */
             withContext(scope.coroutineContext) { uploadEdit(edit, getIdProvider) }
-            if (BuildConfig.DEBUG && !UserLoginController.loggedIn)
+            if (ApplicationConstants.DEBUG && !UserLoginController.loggedIn)
                 break // slow uploading is much better to read in logs
         }
     } }

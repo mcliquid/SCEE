@@ -74,11 +74,6 @@ enum class CrossingMarkings(
         imageResId = R.drawable.crossing_markings_ladder_paired,
         titleResId = R.string.quest_crossing_marking_value_ladder_paired
     ),
-    ZEBRA_DOTS(
-        osmValue = "zebra;dots",
-        imageResId = R.drawable.crossing_markings_zebra_dots,
-        titleResId = R.string.quest_crossing_marking_value_zebra_dots
-    ),
     PICTOGRAMS(
         osmValue = "pictograms",
         imageResId = R.drawable.crossing_markings_pictograms,

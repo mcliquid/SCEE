@@ -1,8 +1,5 @@
 package de.westnordost.streetcomplete.screens.main
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.view.KeyEvent
 import android.widget.Toast
@@ -50,8 +47,10 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
+import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.messages.Message
+import de.westnordost.streetcomplete.data.user.UserLoginController
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.location_dot_small
 import de.westnordost.streetcomplete.resources.map_attribution_osm
@@ -77,6 +76,7 @@ import de.westnordost.streetcomplete.screens.main.errors.LastCrashEffect
 import de.westnordost.streetcomplete.screens.main.errors.LastDownloadErrorEffect
 import de.westnordost.streetcomplete.screens.main.errors.LastUploadErrorEffect
 import de.westnordost.streetcomplete.screens.main.messages.MessageDialog
+import de.westnordost.streetcomplete.screens.main.overlays.OverlayQuickSelector
 import de.westnordost.streetcomplete.screens.main.overlays.OverlaySelectionDropdownMenu
 import de.westnordost.streetcomplete.screens.main.teammode.TeamModeWizard
 import de.westnordost.streetcomplete.screens.main.urlconfig.ApplyUrlConfigEffect
@@ -163,6 +163,7 @@ fun MainScreen(
 
     val showQuickSettings by viewModel.showQuickSettings.collectAsState()
     var showQuickSettingsMenu by remember { mutableStateOf(false) }
+    val showOverlaySelector by viewModel.showOverlaySelector.collectAsState()
 
     var showOverlaysDropdown by remember { mutableStateOf(false) }
     var showOverlaysTutorial by remember { mutableStateOf(false) }
@@ -198,7 +199,8 @@ fun MainScreen(
         if (viewModel.isConnected) {
             viewModel.upload()
         } else {
-            context.toast(R.string.offline)
+            if (ApplicationConstants.DEBUG && !UserLoginController.loggedIn) viewModel.upload()
+            else context.toast(R.string.offline)
         }
     }
 
@@ -266,38 +268,50 @@ fun MainScreen(
             }
 
             // top-end controls
-            Row(
+            Column(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                AnimatedVisibility(hasMessages) {
-                    MessagesButton(
-                        onClick = ::onClickMessages,
-                        messagesCount = messagesCount
-                    )
-                }
-                if (overlays.isNotEmpty()) {
-                    Box {
-                        OverlaySelectionButton(
-                            onClick = ::onClickOverlays,
-                            overlay = selectedOverlay
-                        )
-                        OverlaySelectionDropdownMenu(
-                            expanded = showOverlaysDropdown,
-                            onDismissRequest = { showOverlaysDropdown = false },
-                            overlays = overlays,
-                            onSelect = { viewModel.selectOverlay(it) }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    AnimatedVisibility(hasMessages) {
+                        MessagesButton(
+                            onClick = ::onClickMessages,
+                            messagesCount = messagesCount
                         )
                     }
-                }
+                    if (overlays.isNotEmpty()) {
+                        Box {
+                            OverlaySelectionButton(
+                                onClick = ::onClickOverlays,
+                                overlay = selectedOverlay
+                            )
+                            OverlaySelectionDropdownMenu(
+                                expanded = showOverlaysDropdown,
+                                onDismissRequest = { showOverlaysDropdown = false },
+                                overlays = overlays,
+                                onSelect = { viewModel.selectOverlay(it) }
+                            )
+                        }
+                    }
 
-                MainMenuButton(
-                    onClick = { showMainMenuDialog = true },
-                    unsyncedEditsCount = if (!isAutoSync) unsyncedEditsCount else 0,
-                    indexInTeam = if (isTeamMode) indexInTeam else null
-                )
+                    MainMenuButton(
+                        onClick = { showMainMenuDialog = true },
+                        unsyncedEditsCount = if (!isAutoSync) unsyncedEditsCount else 0,
+                        indexInTeam = if (isTeamMode) indexInTeam else null
+                    )
+                }
+                if (showOverlaySelector)
+                    // todo: avoid overlap with bottom controls
+                    OverlayQuickSelector(
+                        overlays = overlays,
+                        selectedOverlay = selectedOverlay,
+                        modifier = Modifier.align(Alignment.End),
+                        onOverlaySelected = { viewModel.selectOverlay(it) }
+                    )
             }
 
             // bottom controls
@@ -492,9 +506,6 @@ fun MainScreen(
         LastUploadErrorEffect(lastError = error, onReportError = ::sendErrorReport)
     }
     lastCrashReport?.let { report ->
-        val clip = ClipData.newPlainText("SCEE error message", report)
-        (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(clip)
-        context.toast("crash report copied to clipboard")
         LastCrashEffect(lastReport = report, onReport = { context.sendErrorReportEmail(it) })
     }
 

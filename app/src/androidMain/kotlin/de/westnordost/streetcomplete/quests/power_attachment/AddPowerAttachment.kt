@@ -6,19 +6,21 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BUILDING
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddPowerAttachment : OsmFilterQuestType<PowerAttachment>() {
+class AddPowerAttachment : OsmFilterQuestType<PowerAttachment>(), AndroidQuest {
 
     override val elementFilter = """
         nodes with
           power ~ tower|pole|insulator
           and !line_attachment
+          and disused != yes and ruined != yes and abandoned != yes
     """
     override val changesetComment = "Specify line_attachment power support"
     override val wikiLink = "Key:line_attachment"
-    override val icon = R.drawable.ic_quest_power
+    override val icon = R.drawable.quest_power
     override val achievements = listOf(BUILDING)
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_powerAttachment_title

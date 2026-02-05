@@ -5,6 +5,8 @@ import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
+import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.osm.Tags
@@ -14,7 +16,7 @@ import de.westnordost.streetcomplete.util.ktx.toYesNo
 
 class AddAmenityCover(
     private val getFeature: (Element) -> Feature?
-) : OsmFilterQuestType<Boolean>() {
+) : OsmFilterQuestType<Boolean>(), AndroidQuest {
 
     override val elementFilter = """
         nodes with
@@ -26,7 +28,7 @@ class AddAmenityCover(
     """
     override val changesetComment = "Specify whether various amenities are covered"
     override val wikiLink = "Key:covered"
-    override val icon = R.drawable.ic_quest_picnic_table_cover
+    override val icon = R.drawable.quest_picnic_table_cover
     override val isDeleteElementEnabled = true
     override val achievements = listOf(OUTDOORS)
 

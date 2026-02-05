@@ -1,3 +1,5 @@
+[![Liberapay](https://img.shields.io/liberapay/patrons/Helium314.svg?color=gold&logo=liberapay)](https://liberapay.com/Helium314)
+
 SCEE is a modified version of StreetComplete, aimed at experienced OSM users unhappy about the lack of advanced editing capabilities in normal StreetComplete.
 By default, most of the additional capabilities are disabled. Go through the settings (either in the app or [below](#differences-to-streetcomplete)) for details.
 
@@ -37,19 +39,17 @@ SCEE asks for two more permissions than StreetComplete: `ACCESS_BACKGROUND_LOCAT
 * Non-optional differences to StreetComplete
   * No star count on main screen
   * When using auto-upload, an indicator now shows when there are changes waiting to be uploaded
-  * Dark theme uses dark buttons
-  * Prevent short scroll to user location at app start when map was at a different position
   * Downloading data will interrupt upload queue (will resume afterwards)
   * Manual downloads can be queued instead of always cancelling the previous one
   * Additional answers for some quests
     * Additional building types
     * Additional path surfaces
     * Specify that a crossing is raised
-    * Answer non-marked lanes with a count
     * Answer "no seating, but not takeaway only"
     * Add wheelchair description when answering wheelchair quest
   * Move the "no cycleway" answer to more accessible position
   * Highlight obstacles along the way for smoothness quests
+  * Open main menu when pressing menu key
   * Open settings when pressing menu key in main menu dialog
   * Allow switching to aerial view while adding or moving a node
 * New quests that are not eligible for StreetComplete, usually because some answers cannot be tagged, or because not everyone has the required knowledge to answer the quest. These quests can only be enabled when expert mode is on.
@@ -71,7 +71,7 @@ SCEE asks for two more permissions than StreetComplete: `ACCESS_BACKGROUND_LOCAT
   * Whether a barrier is locked
   * Height of barriers
   * Whether pharmacy is dispensing prescription drugs
-  * Destination of some road types after intersections
+  * ~Destination of some road types after intersections~ currently not working
   * Which beers are sold in restaurants
   * Elevation, ref, sports and name of guideposts
   * Width of footways
@@ -84,8 +84,9 @@ SCEE asks for two more permissions than StreetComplete: `ACCESS_BACKGROUND_LOCAT
   * Show POI quests with the sole purpose of indicating existence of elements of chosen type (may show labels)
   * Option to show only quests added in SCEE in quest selection menu
   * Some "other answers" result in a modified changeset comment (because in SCEE they may contain more unexpected changes)
+  * Crossing markings quest now allows specifying the markings instead of yes / no (adjust in quest settings)
 * Customizable overlays: Choose which elements are highlighted, and which tag is used to determine the color
-* Turn restriction overlay
+* ~Turn restriction overlay~ currently not working
 * Settings
   * Additional darker dark theme
   * Background map can be changed to aerial / satellite imagery
@@ -124,7 +125,7 @@ SCEE asks for two more permissions than StreetComplete: `ACCESS_BACKGROUND_LOCAT
     * Capitalize words when entering names
     * Zoom using volume buttons
   * Display settings
-    * Disable 3D buildings (currently not available, as 3D buildings are disabled in general with since the MapLibre switch)
+    * ~Disable 3D buildings~ currently not available, as 3D buildings are disabled in general with since the MapLibre switch
     * Show arrows indicating direction of highlighted way
     * Highlight geometries for nearby quests
     * Disable quest solved animation
@@ -171,8 +172,7 @@ This section is aimed for people trying to decide whether a bad edit done in SCE
 In general, SCEE changesets will contain changes very similar to StreetComplete changesets, with following differences:
 * `created_by` is set to `StreetComplete_ee <version>`
 * _AddBuildingType_ has additional answers `barn`, `sty`, `stable`, `cowshed`, `digester`, `presbytery`, `riding_hall`, `sports_hall`, `tent`, `elevator`, and `transformer_tower`
-* _AddCrossingType_ may change `crossing_ref`, `crossing:markings`, and `traffic_calming`
-* _AddPathSurface_ and _AddRoadSurface_ have additional surfaces `metal_grid` and `stepping_stones`
+* _AddPathSurface_ and _AddRoadSurface_ have additional surfaces `metal_grid`, `stepping_stones` and `chipseal`
 * _AddMaxSpeed_ may tag `maxspeed:conditional`
 * [Discardable tags](https://wiki.openstreetmap.org/wiki/Discardable_tags) are removed automatically 
 * Any node may be moved, even if it is part of a way or relation

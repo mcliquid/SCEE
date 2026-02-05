@@ -5,13 +5,16 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.isPlaceOrDisusedPlace
 import de.westnordost.streetcomplete.quests.YesNoQuestForm
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_go_inside_regional_warning
 import de.westnordost.streetcomplete.util.ktx.toYesNo
 
-class AddAirConditioning : OsmFilterQuestType<Boolean>() {
+class AddAirConditioning : OsmFilterQuestType<Boolean>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -25,10 +28,10 @@ class AddAirConditioning : OsmFilterQuestType<Boolean>() {
     """
     override val changesetComment = "Survey availability of air conditioning"
     override val wikiLink = "Key:air_conditioning"
-    override val icon = R.drawable.ic_quest_snow_poi
+    override val icon = R.drawable.quest_snow_poi
     override val isReplacePlaceEnabled = true
     override val achievements = listOf(CITIZEN)
-    override val defaultDisabledMessage = R.string.default_disabled_msg_go_inside_regional_warning
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_go_inside_regional_warning
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_airConditioning_title
 

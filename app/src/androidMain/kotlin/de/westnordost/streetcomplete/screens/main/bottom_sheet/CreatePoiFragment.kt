@@ -10,7 +10,7 @@ import de.westnordost.osmfeatures.Feature
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesSource
-import de.westnordost.streetcomplete.data.osm.edits.ElementEditType
+import de.westnordost.streetcomplete.data.osm.edits.addNodeEdit
 import de.westnordost.streetcomplete.data.osm.edits.create.CreateNodeAction
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
@@ -21,10 +21,8 @@ import de.westnordost.streetcomplete.osm.isPlace
 import de.westnordost.streetcomplete.quests.TagEditor
 import de.westnordost.streetcomplete.util.ktx.getLocationInWindow
 import de.westnordost.streetcomplete.util.dialogs.showOutsideDownloadedAreaDialog
-import de.westnordost.streetcomplete.view.checkIsSurvey
 import de.westnordost.streetcomplete.view.confirmIsSurvey
 import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.android.inject
 
@@ -84,7 +82,7 @@ class CreatePoiFragment : TagEditor() {
     }
 
     private suspend fun reallyApplyEdit(position: LatLon) {
-        val isSurvey = checkIsSurvey(ElementPointGeometry(position), recentLocationStore.get())
+        val isSurvey = surveyChecker.checkIsSurvey(ElementPointGeometry(position))
         if (!isSurvey && !confirmIsSurvey(requireContext()))
             return
         elementEditsController.add(addNodeEdit, ElementPointGeometry(position), "survey", CreateNodeAction(position, element.tags), isSurvey, questKey)
@@ -112,14 +110,6 @@ class CreatePoiFragment : TagEditor() {
             it.requireArguments().putAll(createArguments(Node(0L, pos), ElementPointGeometry(pos), null, null, questKey))
         }
     }
-}
-
-val addNodeEdit = object : ElementEditType {
-    override val icon: Int = R.drawable.ic_add_poi
-    override val title: Int = R.string.create_poi
-    override val wikiLink: String? = null
-    override val changesetComment: String = "Add node"
-    override val name: String = "AddNode"
 }
 
 // convert simple key = value pairs into tags, and understand simple filter expressions

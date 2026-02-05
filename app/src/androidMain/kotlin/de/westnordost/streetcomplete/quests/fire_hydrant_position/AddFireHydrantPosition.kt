@@ -6,10 +6,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.LIFESAVER
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddFireHydrantPosition : OsmFilterQuestType<FireHydrantPosition>() {
+class AddFireHydrantPosition : OsmFilterQuestType<FireHydrantPosition>(), AndroidQuest {
 
     override val elementFilter = """
         nodes with
@@ -19,7 +20,7 @@ class AddFireHydrantPosition : OsmFilterQuestType<FireHydrantPosition>() {
     """
     override val changesetComment = "Specify fire hydrant positions"
     override val wikiLink = "Tag:emergency=fire_hydrant"
-    override val icon = R.drawable.ic_quest_fire_hydrant_grass
+    override val icon = R.drawable.quest_fire_hydrant_grass
     override val isDeleteElementEnabled = true
     override val achievements = listOf(LIFESAVER)
 

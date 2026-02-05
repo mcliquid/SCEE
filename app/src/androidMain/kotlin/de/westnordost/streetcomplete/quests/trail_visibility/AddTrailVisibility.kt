@@ -7,8 +7,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_trail_visibility
 
-class AddTrailVisibility : OsmFilterQuestType<TrailVisibility>() {
+class AddTrailVisibility : OsmFilterQuestType<TrailVisibility>(), AndroidQuest {
 
     override val elementFilter = """
         ways with
@@ -22,7 +25,7 @@ class AddTrailVisibility : OsmFilterQuestType<TrailVisibility>() {
     override val changesetComment = "Specify Trail Visibility"
     override val wikiLink = "Key:trail_visibility"
     override val icon = R.drawable.ic_quest_trail_visibility
-    override val defaultDisabledMessage = R.string.default_disabled_msg_trail_visibility
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_trail_visibility
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_trail_visibility_title
 
@@ -35,3 +38,4 @@ class AddTrailVisibility : OsmFilterQuestType<TrailVisibility>() {
         tags["trail_visibility"] = answer.osmValue
     }
 }
+

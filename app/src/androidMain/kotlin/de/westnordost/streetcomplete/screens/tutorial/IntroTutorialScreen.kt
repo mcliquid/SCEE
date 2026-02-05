@@ -15,28 +15,37 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Devices
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.logo_osm_magnifier
+import de.westnordost.streetcomplete.resources.logo_osm_map
+import de.westnordost.streetcomplete.resources.logo_osm_map_lighting
+import de.westnordost.streetcomplete.resources.no_location_permission_warning
+import de.westnordost.streetcomplete.resources.tutorial_happy_mapping
+import de.westnordost.streetcomplete.resources.tutorial_intro
+import de.westnordost.streetcomplete.resources.tutorial_solving_quests
+import de.westnordost.streetcomplete.resources.tutorial_stay_safe
+import de.westnordost.streetcomplete.resources.tutorial_welcome_to_osm
+import de.westnordost.streetcomplete.resources.tutorial_welcome_to_osm_subtitle
+import de.westnordost.streetcomplete.resources.tutorial_info_fork_message
 import de.westnordost.streetcomplete.screens.main.controls.LocationState
 import de.westnordost.streetcomplete.screens.main.controls.LocationStateButton
 import de.westnordost.streetcomplete.ui.common.Pin
 import de.westnordost.streetcomplete.ui.theme.headlineLarge
 import de.westnordost.streetcomplete.ui.theme.titleLarge
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 
 /** Shows a short tutorial for first-time users */
 @Composable
@@ -124,12 +133,12 @@ private fun BoxScope.IntroTutorialIllustration(
                 }
         ) {
             Image(
-                painter = painterResource(R.drawable.logo_osm_map),
+                painter = painterResource(Res.drawable.logo_osm_map),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize()
             )
             Image(
-                painter = painterResource(R.drawable.logo_osm_map_lighting),
+                painter = painterResource(Res.drawable.logo_osm_map_lighting),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
@@ -139,7 +148,7 @@ private fun BoxScope.IntroTutorialIllustration(
 
         val pinDropHeight = 200.dp
         Pin(
-            iconPainter = painterResource(R.drawable.ic_quest_traffic_lights),
+            iconPainter = painterResource(R.drawable.quest_traffic_lights),
             modifier = Modifier
                 .absolutePadding(left = 0.dp, top = 25.dp)
                 .graphicsLayer {
@@ -148,7 +157,7 @@ private fun BoxScope.IntroTutorialIllustration(
                 }
         )
         Pin(
-            iconPainter = painterResource(R.drawable.ic_quest_street),
+            iconPainter = painterResource(R.drawable.quest_street),
             modifier = Modifier
                 .absolutePadding(left = 45.dp, top = 110.dp)
                 .graphicsLayer {
@@ -157,7 +166,7 @@ private fun BoxScope.IntroTutorialIllustration(
                 }
         )
         Pin(
-            iconPainter = painterResource(R.drawable.ic_quest_recycling),
+            iconPainter = painterResource(R.drawable.quest_recycling),
             modifier = Modifier
                 .absolutePadding(left = 160.dp, top = 70.dp)
                 .graphicsLayer {
@@ -175,7 +184,7 @@ private fun BoxScope.IntroTutorialIllustration(
         )
 
         Image(
-            painter = painterResource(R.drawable.logo_osm_magnifier),
+            painter = painterResource(Res.drawable.logo_osm_magnifier),
             contentDescription = null,
             modifier = Modifier
                 .size(225.dp)
@@ -200,12 +209,12 @@ private fun BoxScope.IntroTutorialIllustration(
 @Composable
 private fun IntroTutorialStep0Text() {
     Text(
-        text = stringResource(R.string.tutorial_welcome_to_osm),
+        text = stringResource(Res.string.tutorial_welcome_to_osm),
         style = MaterialTheme.typography.headlineLarge,
         textAlign = TextAlign.Center
     )
     Text(
-        text = stringResource(R.string.tutorial_welcome_to_osm_subtitle),
+        text = stringResource(Res.string.tutorial_welcome_to_osm_subtitle),
         style = MaterialTheme.typography.titleLarge,
         textAlign = TextAlign.Center,
         modifier = Modifier.padding(top = 24.dp)
@@ -215,12 +224,12 @@ private fun IntroTutorialStep0Text() {
 @Composable
 private fun IntroTutorialStep1Text() {
     Text(
-        text = stringResource(R.string.tutorial_intro),
+        text = stringResource(Res.string.tutorial_intro),
         style = MaterialTheme.typography.body1,
         textAlign = TextAlign.Center
     )
     Text(
-        text = stringResource(R.string.no_location_permission_warning),
+        text = stringResource(Res.string.no_location_permission_warning),
         style = MaterialTheme.typography.body1,
         textAlign = TextAlign.Center,
         modifier = Modifier.padding(top = 24.dp)
@@ -230,7 +239,7 @@ private fun IntroTutorialStep1Text() {
 @Composable
 private fun IntroTutorialStep2Text() {
     Text(
-        text = stringResource(R.string.tutorial_solving_quests),
+        text = stringResource(Res.string.tutorial_solving_quests),
         style = MaterialTheme.typography.body1,
         textAlign = TextAlign.Center,
     )
@@ -239,12 +248,12 @@ private fun IntroTutorialStep2Text() {
 @Composable
 private fun IntroTutorialStep3Text() {
     Text(
-        text = stringResource(R.string.tutorial_stay_safe),
+        text = stringResource(Res.string.tutorial_stay_safe),
         style = MaterialTheme.typography.body1,
         textAlign = TextAlign.Center,
     )
     Text(
-        text = stringResource(R.string.tutorial_happy_mapping),
+        text = stringResource(Res.string.tutorial_happy_mapping),
         style = MaterialTheme.typography.headlineLarge,
         textAlign = TextAlign.Center,
         modifier = Modifier.padding(top = 24.dp)
@@ -254,13 +263,13 @@ private fun IntroTutorialStep3Text() {
 @Composable
 private fun IntroTutorialStep4Text() {
     Text(
-        text = stringResource(R.string.tutorial_info_fork_message),
+        text = stringResource(Res.string.tutorial_info_fork_message),
         style = MaterialTheme.typography.body1,
         textAlign = TextAlign.Center,
     )
 }
-@Preview(device = Devices.NEXUS_5) // darn small device
-@PreviewScreenSizes
+
+@Preview
 @Composable
 private fun PreviewIntroTutorialScreen() {
     IntroTutorialScreen({}, {}, {})

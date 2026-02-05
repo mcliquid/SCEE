@@ -1,19 +1,19 @@
 package de.westnordost.streetcomplete.quests.crossing_markings
 
-import android.content.Context
-import androidx.appcompat.app.AlertDialog
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.isCrossing
-import de.westnordost.streetcomplete.osm.updateCheckDateForKey
+import de.westnordost.streetcomplete.quests.BooleanQuestSettingsDialog
 
-class AddCrossingMarkings : OsmElementQuestType<CrossingMarkings> {
+class AddCrossingMarkings : OsmElementQuestType<Set<CrossingMarkings>>, AndroidQuest {
 
     private val crossingFilter by lazy { """
         nodes with
@@ -38,7 +38,7 @@ class AddCrossingMarkings : OsmElementQuestType<CrossingMarkings> {
 
     override val changesetComment = "Specify type or existence of pedestrian crossing markings"
     override val wikiLink = "Key:crossing:markings"
-    override val icon = R.drawable.ic_quest_pedestrian_crossing
+    override val icon = R.drawable.quest_pedestrian_crossing
     override val achievements = listOf(PEDESTRIAN)
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_pedestrian_crossing_markings
@@ -65,22 +65,23 @@ class AddCrossingMarkings : OsmElementQuestType<CrossingMarkings> {
             AddCrossingMarkingsYesNoForm()
         }
 
-    override fun applyAnswerTo(answer: CrossingMarkings, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
-        tags["crossing:markings"] = answer.osmValue
+    override fun applyAnswerTo(answer: Set<CrossingMarkings>, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+        tags["crossing:markings"] = answer.map { it.osmValue }.sorted().joinToString(";")
     }
 
     override val hasQuestSettings: Boolean = true
 
-    override fun getQuestSettingsDialog(context: Context): AlertDialog =
-        AlertDialog.Builder(context)
-            .setMessage(R.string.pref_quest_pedestrian_crossing_markings_extended)
-            .setPositiveButton(R.string.quest_generic_hasFeature_yes) { _, _ ->
-                prefs.edit().putBoolean(PREF_CROSSING_MARKING_EXTENDED, true).apply()
-            }
-            .setNegativeButton(R.string.quest_generic_hasFeature_no) { _, _ ->
-                prefs.edit().putBoolean(PREF_CROSSING_MARKING_EXTENDED, false).apply()
-            }
-            .create()
+    @Composable override fun QuestSettings(onDismissRequest: () -> Unit) {
+        BooleanQuestSettingsDialog(
+            prefs,
+            PREF_CROSSING_MARKING_EXTENDED,
+            false,
+            R.string.pref_quest_pedestrian_crossing_markings_extended,
+            R.string.quest_generic_hasFeature_yes,
+            R.string.quest_generic_hasFeature_no,
+            onDismissRequest
+        )
+    }
 
     private val crossingMarkingExpression = if (prefs.getBoolean(PREF_CROSSING_MARKING_EXTENDED, false)) {
         "( !crossing:markings or crossing:markings=yes )"

@@ -1,6 +1,8 @@
 package de.westnordost.streetcomplete.overlays.custom
 
 import android.content.SharedPreferences
+import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.toColorInt
 import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
@@ -10,20 +12,17 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
-import de.westnordost.streetcomplete.overlays.Overlay
-import de.westnordost.streetcomplete.overlays.PointStyle
-import de.westnordost.streetcomplete.overlays.PolygonStyle
-import de.westnordost.streetcomplete.overlays.PolylineStyle
-import de.westnordost.streetcomplete.overlays.Style
+import de.westnordost.streetcomplete.data.overlays.AndroidOverlay
+import de.westnordost.streetcomplete.data.overlays.Overlay
+import de.westnordost.streetcomplete.data.overlays.OverlayColor
+import de.westnordost.streetcomplete.data.overlays.OverlayStyle
 import de.westnordost.streetcomplete.data.elementfilter.ParseException
 import de.westnordost.streetcomplete.data.preferences.Preferences
-import de.westnordost.streetcomplete.overlays.Color
-import de.westnordost.streetcomplete.overlays.StrokeStyle
 import de.westnordost.streetcomplete.util.getNameLabel
 import de.westnordost.streetcomplete.util.ktx.isArea
 import kotlin.math.abs
 
-class CustomOverlay(val prefs: ObservableSettings) : Overlay {
+class CustomOverlay(val prefs: ObservableSettings) : Overlay, AndroidOverlay {
 
     override val title = R.string.custom_overlay_title
     override val icon = R.drawable.ic_custom_overlay
@@ -31,7 +30,7 @@ class CustomOverlay(val prefs: ObservableSettings) : Overlay {
     override val wikiLink: String = "Tags"
     override val isCreateNodeEnabled get() = prefs.getString(Prefs.CUSTOM_OVERLAY_IDX_FILTER, "").startsWith("nodes")
 
-    override fun getStyledElements(mapData: MapDataWithGeometry): Sequence<Pair<Element, Style>> {
+    override fun getStyledElements(mapData: MapDataWithGeometry): Sequence<Pair<Element, OverlayStyle>> {
         val filter = try {
             prefs.getString(getCurrentCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_FILTER, prefs), "").toElementFilterExpression()
         } catch (e: ParseException) { return emptySequence() }
@@ -46,9 +45,9 @@ class CustomOverlay(val prefs: ObservableSettings) : Overlay {
             string?.let { "ways with $it".toElementFilterExpression() }
         } catch (_: Exception) { null }
         val missingColor = if (prefs.getBoolean(getCurrentCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_HIGHLIGHT_MISSING_DATA, prefs), true))
-                Color.DATA_REQUESTED
+                OverlayColor.Red
             else
-                Color.INVISIBLE
+                OverlayColor.Invisible
         return mapData
             .filter(filter)
             .map { it to getStyle(it, colorKeySelector, dashFilter, missingColor) }
@@ -57,9 +56,9 @@ class CustomOverlay(val prefs: ObservableSettings) : Overlay {
     override fun createForm(element: Element?) = CustomOverlayForm()
 }
 
-private fun getStyle(element: Element, colorKeySelector: Regex?, dashFilter: ElementFilterExpression?, defaultMissingColor: String): Style {
+private fun getStyle(element: Element, colorKeySelector: Regex?, dashFilter: ElementFilterExpression?, defaultMissingColor: Color): OverlayStyle {
     val color by lazy {
-        if (colorKeySelector == null) Color.LIME
+        if (colorKeySelector == null) OverlayColor.Lime
         else {
             val colorString = element.tags.mapNotNull {
                 // derive color from all matching tags
@@ -67,13 +66,13 @@ private fun getStyle(element: Element, colorKeySelector: Regex?, dashFilter: Ele
                 else null
             }.sorted().joinToString() // sort because tags hashMap doesn't have a defined order
             if (colorString.isEmpty()) defaultMissingColor
-            else createColorFromString(colorString)
+            else Color(createColorFromString(colorString).toColorInt())
         }
     }
 
-    var leftColor = ""
-    var rightColor = ""
-    var centerColor: String? = null
+    var leftColor: Color? = null
+    var rightColor: Color? = null
+    var centerColor: Color? = null
     // get left/right style if there is some match
     if (colorKeySelector != null && element !is Node && !element.isArea()) { // avoid doing needless work here
         val leftColorTags = mutableListOf<String>()
@@ -101,26 +100,26 @@ private fun getStyle(element: Element, colorKeySelector: Regex?, dashFilter: Ele
         }
         // make sure to use all matching color tags
         if (leftColorTags.isNotEmpty())
-            leftColor = createColorFromString(leftColorTags.sorted().joinToString())
+            leftColor = Color(createColorFromString(leftColorTags.sorted().joinToString()).toColorInt())
         if (rightColorTags.isNotEmpty())
-            rightColor = createColorFromString(rightColorTags.sorted().joinToString())
+            rightColor = Color(createColorFromString(rightColorTags.sorted().joinToString()).toColorInt())
         if (centerColorTags.isNotEmpty())
-            centerColor = createColorFromString(centerColorTags.sorted().joinToString())
+            centerColor = Color(createColorFromString(centerColorTags.sorted().joinToString()).toColorInt())
     }
 
 
     return when {
-//        element is Node -> PointStyle(R.drawable.ic_custom_overlay_node, getNameLabel(element.tags), color)
+//        element is Node -> OverlayStyle.Point(R.drawable.ic_custom_overlay_node, getNameLabel(element.tags), color)
         // MapLibre can only use colors with sdf icons, not with normal images
-        element is Node -> PointStyle(R.drawable.preset_maki_circle, getNameLabel(element.tags), color)
-        element.isArea() -> PolygonStyle(color, label = getNameLabel(element.tags))
+        element is Node -> OverlayStyle.Point(R.drawable.preset_maki_circle, getNameLabel(element.tags), color)
+        element.isArea() -> OverlayStyle.Polygon(color, label = getNameLabel(element.tags))
         // no labels for lines, because this often leads to duplicate labels e.g. for roads
-        leftColor.isNotEmpty() || rightColor.isNotEmpty() -> PolylineStyle(
-            stroke = centerColor?.let { StrokeStyle(it, dashFilter?.matches(element) == true) },
-            strokeLeft = leftColor.takeIf { it.isNotEmpty() }?.let { StrokeStyle(it) },
-            strokeRight = rightColor.takeIf { it.isNotEmpty() }?.let { StrokeStyle(it) }
+        leftColor != null || rightColor != null -> OverlayStyle.Polyline(
+            stroke = centerColor?.let { OverlayStyle.Stroke(it, dashFilter?.matches(element) == true) },
+            strokeLeft = leftColor.takeIf { it != null }?.let { OverlayStyle.Stroke(it) },
+            strokeRight = rightColor.takeIf { it != null }?.let { OverlayStyle.Stroke(it) }
         )
-        else -> PolylineStyle(StrokeStyle(color, dashFilter?.matches(element) == true))
+        else -> OverlayStyle.Polyline(OverlayStyle.Stroke(color, dashFilter?.matches(element) == true))
     }
 }
 

@@ -18,7 +18,7 @@ import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
-import de.westnordost.streetcomplete.data.location.RecentLocationStore
+import de.westnordost.streetcomplete.data.location.SurveyChecker
 import de.westnordost.streetcomplete.data.osm.edits.AddElementEditsController
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditAction
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditType
@@ -48,6 +48,7 @@ import de.westnordost.streetcomplete.osm.ALL_PATHS
 import de.westnordost.streetcomplete.osm.ALL_ROADS
 import de.westnordost.streetcomplete.quests.custom.CustomQuestList
 import de.westnordost.streetcomplete.quests.shop_type.ShopGoneDialog
+import de.westnordost.streetcomplete.quests.show_poi.ShowFixme
 import de.westnordost.streetcomplete.util.AccessManagerDialog
 import de.westnordost.streetcomplete.util.getNameAndLocationSpanned
 import de.westnordost.streetcomplete.util.accessKeys
@@ -62,7 +63,6 @@ import de.westnordost.streetcomplete.util.ktx.toLocalDate
 import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
 import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.view.add
-import de.westnordost.streetcomplete.view.checkIsSurvey
 import de.westnordost.streetcomplete.view.confirmIsSurvey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -71,7 +71,6 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import kotlinx.datetime.toJavaLocalDate
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.android.inject
 import org.koin.core.qualifier.named
@@ -87,9 +86,9 @@ abstract class AbstractOsmQuestForm<T> : AbstractQuestForm(), IsShowingQuestDeta
     private val hiddenQuestsController: QuestsHiddenController by inject()
     private val featureDictionaryLazy: Lazy<FeatureDictionary> by inject(named("FeatureDictionaryLazy"))
     private val mapDataWithEditsSource: MapDataWithEditsSource by inject()
-    private val recentLocationStore: RecentLocationStore by inject()
     private val customQuestList: CustomQuestList by inject()
     private val osmQuestController: OsmQuestController by inject()
+    private val surveyChecker: SurveyChecker by inject()
 
     protected val featureDictionary: FeatureDictionary get() = featureDictionaryLazy.value
 
@@ -311,7 +310,9 @@ abstract class AbstractOsmQuestForm<T> : AbstractQuestForm(), IsShowingQuestDeta
 
     protected fun composeNote() {
 
-        val questTitle = englishResources.getString(osmElementQuestType.getTitle(element.tags))
+        var questTitle = englishResources.getString(osmElementQuestType.getTitle(element.tags))
+        if (osmElementQuestType is ShowFixme)
+            questTitle += " ${element.tags["fixme"] ?: element.tags["FIXME"]}"
         val hintLabel = getNameAndLocationSpanned(element, englishResources, featureDictionary)
         val leaveNoteContext = if (hintLabel.isNullOrBlank()) {
             "Unable to answer \"$questTitle\""
@@ -476,7 +477,7 @@ abstract class AbstractOsmQuestForm<T> : AbstractQuestForm(), IsShowingQuestDeta
         val source = if (extra) "survey,extra" else "survey"
 
         setLocked(true)
-        val isSurvey = checkIsSurvey(geometry, recentLocationStore.get())
+        val isSurvey = surveyChecker.checkIsSurvey(geometry)
         if (!isSurvey && !confirmIsSurvey(requireContext())) {
             setLocked(false)
             return

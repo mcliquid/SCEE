@@ -1,49 +1,6 @@
 package de.westnordost.streetcomplete.overlays.restriction
 
-import android.content.res.Configuration
-import android.os.Bundle
-import android.view.View
-import android.widget.ImageView
-import androidx.core.content.ContextCompat
-import androidx.core.view.children
-import androidx.core.view.doOnLayout
-import androidx.core.view.isGone
-import androidx.core.view.isVisible
-import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
-import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
-import de.westnordost.streetcomplete.data.osm.edits.create.createNodeAction
-import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
-import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
-import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
-import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
-import de.westnordost.streetcomplete.data.osm.mapdata.Node
-import de.westnordost.streetcomplete.data.osm.mapdata.Way
-import de.westnordost.streetcomplete.data.osm.mapdata.filter
-import de.westnordost.streetcomplete.databinding.FragmentOverlayRestrictionNodeBinding
-import de.westnordost.streetcomplete.osm.ALL_ROADS
-import de.westnordost.streetcomplete.osm.oneway.isNotOnewayForCyclists
-import de.westnordost.streetcomplete.osm.oneway.isOneway
-import de.westnordost.streetcomplete.overlays.AbstractOverlayForm
-import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsMapOrientationAware
-import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsMapPositionAware
-import de.westnordost.streetcomplete.util.ktx.dpToPx
-import de.westnordost.streetcomplete.util.ktx.firstAndLast
-import de.westnordost.streetcomplete.util.math.PositionOnWay
-import de.westnordost.streetcomplete.util.math.PositionOnWaySegment
-import de.westnordost.streetcomplete.util.math.VertexOfWay
-import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
-import de.westnordost.streetcomplete.util.math.getPositionOnWays
-import de.westnordost.streetcomplete.util.math.initialBearingTo
-import de.westnordost.streetcomplete.view.ResImage
-import de.westnordost.streetcomplete.view.ResText
-import de.westnordost.streetcomplete.view.RotatedCircleDrawable
-import de.westnordost.streetcomplete.view.image_select.ImageListPickerDialog
-import de.westnordost.streetcomplete.view.image_select.Item2
-import de.westnordost.streetcomplete.view.setImage
-import de.westnordost.streetcomplete.view.setText
-import org.koin.android.ext.android.inject
-
+/*
 // some stuff taken from LaneNarrowingTrafficCalmingForm
 class RestrictionOverlayNodeForm : AbstractOverlayForm(), IsMapPositionAware, IsMapOrientationAware {
 
@@ -367,3 +324,4 @@ private fun getTypeAndDirection(tags: Map<String, String>): Pair<Type?, Directio
 
 private enum class Type { GIVE_WAY, STOP, ALL_WAY_STOP }
 private enum class Direction(val osmValue: String) { FORWARD("forward"), BACKWARD("backward") }
+*/

@@ -1,7 +1,6 @@
 package de.westnordost.streetcomplete.quests.sidewalk
 
-import androidx.appcompat.app.AlertDialog
-import android.content.Context
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
@@ -9,24 +8,28 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
+import de.westnordost.streetcomplete.osm.Sides
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.osm.any
 import de.westnordost.streetcomplete.osm.maxspeed.MAX_SPEED_TYPE_KEYS
-import de.westnordost.streetcomplete.osm.sidewalk.LeftAndRightSidewalk
+import de.westnordost.streetcomplete.osm.sidewalk.Sidewalk
 import de.westnordost.streetcomplete.osm.sidewalk.Sidewalk.INVALID
-import de.westnordost.streetcomplete.osm.sidewalk.any
 import de.westnordost.streetcomplete.osm.sidewalk.applyTo
 import de.westnordost.streetcomplete.osm.sidewalk.parseSidewalkSides
 import de.westnordost.streetcomplete.osm.surface.UNPAVED_SURFACES
+import de.westnordost.streetcomplete.quests.SingleTypeElementSelectionDialog
 import de.westnordost.streetcomplete.quests.questPrefix
-import de.westnordost.streetcomplete.quests.singleTypeElementSelectionDialog
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_overlay
 
-class AddSidewalk : OsmElementQuestType<LeftAndRightSidewalk> {
+class AddSidewalk : OsmElementQuestType<Sides<Sidewalk>>, AndroidQuest {
     override val changesetComment = "Specify whether roads have sidewalks"
     override val wikiLink = "Key:sidewalk"
-    override val icon = R.drawable.ic_quest_sidewalk
+    override val icon = R.drawable.quest_sidewalk
     override val achievements = listOf(PEDESTRIAN)
-    override val defaultDisabledMessage = R.string.default_disabled_msg_overlay
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_overlay
 
     override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry) =
         getMapData().filter("""
@@ -51,7 +54,7 @@ class AddSidewalk : OsmElementQuestType<LeftAndRightSidewalk> {
 
     override fun createForm() = AddSidewalkForm()
 
-    override fun applyAnswerTo(answer: LeftAndRightSidewalk, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+    override fun applyAnswerTo(answer: Sides<Sidewalk>, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         answer.applyTo(tags)
     }
 
@@ -104,12 +107,16 @@ class AddSidewalk : OsmElementQuestType<LeftAndRightSidewalk> {
     override val hasQuestSettings = true
 
     // min distance selection or element selection
-    override fun getQuestSettingsDialog(context: Context): AlertDialog =
-        singleTypeElementSelectionDialog(context,
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        SingleTypeElementSelectionDialog(
             prefs,
             questPrefix(prefs) + PREF_SIDEWALK_HIGHWAY_SELECTION,
             ROADS_WITH_SIDEWALK.joinToString("|"),
-            R.string.quest_settings_eligible_highways)
+            R.string.quest_settings_eligible_highways,
+            onDismissRequest
+        )
+    }
 }
 
 private fun Element.hasInvalidOrIncompleteSidewalkTags(): Boolean {

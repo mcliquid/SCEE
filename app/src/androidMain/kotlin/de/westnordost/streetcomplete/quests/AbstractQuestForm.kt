@@ -6,7 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.annotation.AnyThread
+import androidx.compose.runtime.MutableFloatState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.core.os.bundleOf
 import androidx.core.view.isGone
 import androidx.core.view.size
@@ -18,6 +19,7 @@ import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.meta.CountryInfos
 import de.westnordost.streetcomplete.data.meta.getByLocation
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
+import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.data.quest.QuestType
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
@@ -29,11 +31,11 @@ import de.westnordost.streetcomplete.util.FragmentViewBindingPropertyDelegate
 import de.westnordost.streetcomplete.util.ktx.popIn
 import de.westnordost.streetcomplete.util.ktx.popOut
 import de.westnordost.streetcomplete.util.ktx.toast
+import de.westnordost.streetcomplete.util.math.getOrientationAtCenterLineInDegrees
 import de.westnordost.streetcomplete.view.CharSequenceText
 import de.westnordost.streetcomplete.view.ResText
 import de.westnordost.streetcomplete.view.Text
 import de.westnordost.streetcomplete.view.setText
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.android.inject
 import org.koin.core.qualifier.named
@@ -93,6 +95,10 @@ abstract class AbstractQuestForm :
     private var initialMapRotation = 0.0
     private var initialMapTilt = 0.0
 
+    protected val geometryRotation: MutableFloatState = mutableFloatStateOf(0f)
+    protected val mapRotation: MutableFloatState = mutableFloatStateOf(0f)
+    protected val mapTilt: MutableFloatState = mutableFloatStateOf(0f)
+
     private var infoIsExpanded: Boolean = false
 
     // overridable by child classes
@@ -108,8 +114,15 @@ abstract class AbstractQuestForm :
         geometry = Json.decodeFromString(args.getString(ARG_GEOMETRY)!!)
         initialMapRotation = args.getDouble(ARG_MAP_ROTATION)
         initialMapTilt = args.getDouble(ARG_MAP_TILT)
-        _countryInfo = null // reset lazy field
+
+        geometryRotation.floatValue =
+            (geometry as? ElementPolylinesGeometry)?.getOrientationAtCenterLineInDegrees() ?: 0f
+
+        // reset lazy field
+        _countryInfo = null
+
     }
+
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _binding = FragmentQuestAnswerBinding.inflate(inflater, container, false)
@@ -225,7 +238,7 @@ abstract class AbstractQuestForm :
         binding.glassPane.isGone = !locked
     }
 
-    private fun updateContentPadding() {
+    protected fun updateContentPadding() {
         if (!contentPadding) {
             binding.content.setPadding(0, 0, 0, 0)
         } else {
@@ -256,8 +269,9 @@ abstract class AbstractQuestForm :
 
     protected open fun isFormComplete(): Boolean = false
 
-    @AnyThread override fun onMapOrientation(rotation: Double, tilt: Double) {
-        // default empty implementation
+    override fun onMapOrientation(rotation: Double, tilt: Double) {
+        mapRotation.floatValue = rotation.toFloat()
+        mapTilt.floatValue = tilt.toFloat()
     }
 
     protected open fun onClickOk() {}

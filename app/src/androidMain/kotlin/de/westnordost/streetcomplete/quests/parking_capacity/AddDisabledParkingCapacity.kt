@@ -8,8 +8,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.WHEELCHAIR
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.quest_parking_capacity_disabled_default_disabled_msg
 
-class AddDisabledParkingCapacity : OsmFilterQuestType<String>() {
+class AddDisabledParkingCapacity : OsmFilterQuestType<String>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -22,7 +25,7 @@ class AddDisabledParkingCapacity : OsmFilterQuestType<String>() {
     override val wikiLink = "Key:capacity:disabled"
     override val icon = R.drawable.ic_quest_parking_capacity_disabled
     override val achievements = listOf(WHEELCHAIR)
-    override val defaultDisabledMessage = R.string.quest_parking_capacity_disabled_default_disabled_msg
+    override val defaultDisabledMessage = Res.string.quest_parking_capacity_disabled_default_disabled_msg
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_parking_capacity_disabled_title
 

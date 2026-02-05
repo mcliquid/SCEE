@@ -6,12 +6,13 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.updateWithCheckDate
 import de.westnordost.streetcomplete.quests.bike_parking_capacity.AddBikeParkingCapacityForm
 
-class AddBikeRentalCapacity : OsmFilterQuestType<Int>() {
+class AddBikeRentalCapacity : OsmFilterQuestType<Int>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -23,7 +24,7 @@ class AddBikeRentalCapacity : OsmFilterQuestType<Int>() {
 
     override val changesetComment = "Specify bicycle rental capacities"
     override val wikiLink = "Tag:amenity=bicycle_rental"
-    override val icon = R.drawable.ic_quest_bicycle_rental_capacity
+    override val icon = R.drawable.quest_bicycle_rental_capacity
     override val isDeleteElementEnabled = true
     override val achievements = listOf(BICYCLIST)
 

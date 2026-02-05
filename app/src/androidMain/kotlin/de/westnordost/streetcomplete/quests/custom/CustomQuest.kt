@@ -1,7 +1,6 @@
 package de.westnordost.streetcomplete.quests.custom
 
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -22,17 +21,20 @@ import de.westnordost.streetcomplete.data.osm.edits.ElementEdit
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuest
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.quest_custom_quest_message
 import de.westnordost.streetcomplete.util.ktx.getActivity
 import kotlinx.io.IOException
 import org.koin.compose.koinInject
 import java.io.File
 
-class CustomQuest(private val customQuestList: CustomQuestList) : ExternalSourceQuestType {
+class CustomQuest(private val customQuestList: CustomQuestList) : ExternalSourceQuestType, AndroidQuest {
 
     override val changesetComment = "Edit user-defined list of elements"
     override val wikiLink = "Tags"
     override val icon = R.drawable.ic_quest_custom
-    override val defaultDisabledMessage = R.string.quest_custom_quest_message
+    override val defaultDisabledMessage = Res.string.quest_custom_quest_message
 
     override fun getTitle(tags: Map<String, String>): Int = R.string.quest_custom_quest_title
 
@@ -72,7 +74,8 @@ class CustomQuest(private val customQuestList: CustomQuestList) : ExternalSource
     override val hasQuestSettings: Boolean = true
 
     @Composable
-    override fun QuestSettings(context: Context, onDismissRequest: () -> Unit) {
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        val context = LocalContext.current
         val file = File(context.getExternalFilesDir(null), FILENAME_CUSTOM_QUEST)
         val activity = LocalContext.current.getActivity()!!
         val customQuestList: CustomQuestList = koinInject()
@@ -118,9 +121,6 @@ class CustomQuest(private val customQuestList: CustomQuestList) : ExternalSource
             text = { Text(stringResource(R.string.tree_custom_quest_import_export_message)) }
         )
     }
-
-    // todo: don't force override any more
-    override fun getQuestSettingsDialog(context: Context): AlertDialog? = null
 
     override fun createForm() = CustomQuestForm()
 }

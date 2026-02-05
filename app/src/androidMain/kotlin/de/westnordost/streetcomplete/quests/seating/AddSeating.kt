@@ -5,12 +5,15 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.isPlaceOrDisusedPlace
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_seasonal
 import de.westnordost.streetcomplete.util.ktx.toYesNo
 
-class AddSeating : OsmFilterQuestType<Seating>() {
+class AddSeating : OsmFilterQuestType<Seating>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -23,10 +26,10 @@ class AddSeating : OsmFilterQuestType<Seating>() {
     """
     override val changesetComment = "Survey whether places have seating"
     override val wikiLink = "Key:outdoor_seating"
-    override val icon = R.drawable.ic_quest_seating
+    override val icon = R.drawable.quest_seating
     override val isReplacePlaceEnabled = true
     override val achievements = listOf(CITIZEN)
-    override val defaultDisabledMessage = R.string.default_disabled_msg_seasonal
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_seasonal
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_seating_name_title
 

@@ -1,24 +1,26 @@
 package de.westnordost.streetcomplete.quests.building_colour
 
-import android.os.Bundle
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.quests.AImageListQuestForm
-import de.westnordost.streetcomplete.view.image_select.DisplayItem
+import de.westnordost.streetcomplete.quests.AItemSelectQuestForm
+import de.westnordost.streetcomplete.ui.common.item_select.ImageWithLabel
+import de.westnordost.streetcomplete.util.image.toPainter
+import kotlinx.serialization.serializer
 
-class AddBuildingColourForm : AImageListQuestForm<BuildingColour, BuildingColour>() {
+class AddBuildingColourForm : AItemSelectQuestForm<BuildingColour, BuildingColour>() {
 
-    override val items: List<DisplayItem<BuildingColour>>
-        get() {
-            val context = requireContext()
-            return BuildingColour.values().map { it.asItem(context) }
-        }
+    override val items = BuildingColour.entries
+    override val serializer = serializer<BuildingColour>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        imageSelector.cellLayoutId = R.layout.cell_icon_select_with_label_below
+    @Composable override fun ItemContent(item: BuildingColour) {
+        ImageWithLabel(
+            item.getDrawable(LocalContext.current, R.drawable.ic_building_colour).toPainter(),
+            item.title
+        )
     }
 
-    override fun onClickOk(selectedItems: List<BuildingColour>) {
-        applyAnswer(selectedItems.single())
+    override fun onClickOk(selectedItem: BuildingColour) {
+        applyAnswer(selectedItem)
     }
 }

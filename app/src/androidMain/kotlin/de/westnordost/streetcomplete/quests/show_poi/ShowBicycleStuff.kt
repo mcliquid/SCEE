@@ -1,6 +1,6 @@
 package de.westnordost.streetcomplete.quests.show_poi
 
-import android.content.Context
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -9,9 +9,12 @@ import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.NoAnswerFragment
-import de.westnordost.streetcomplete.quests.getLabelOrElementSelectionDialog
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.quests.LabelOrElementSelectionDialog
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_poi_bike
 
-class ShowBicycleStuff : OsmFilterQuestType<Boolean>() {
+class ShowBicycleStuff : OsmFilterQuestType<Boolean>(), AndroidQuest {
     override val elementFilter = """
         nodes, ways, relations with
           amenity ~ bicycle_parking|bicycle_rental|bicycle_repair_station|compressed_air
@@ -20,7 +23,7 @@ class ShowBicycleStuff : OsmFilterQuestType<Boolean>() {
     override val wikiLink = "Tag:amenity=bicycle_parking"
     override val icon = R.drawable.ic_quest_poi_bicycle
     override val dotColor = "mediumorchid"
-    override val defaultDisabledMessage = R.string.default_disabled_msg_poi_bike
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_poi_bike
 
     override fun getTitle(tags: Map<String, String>) =
         R.string.quest_poi_cycling_title
@@ -32,5 +35,8 @@ class ShowBicycleStuff : OsmFilterQuestType<Boolean>() {
 
     override fun applyAnswerTo(answer: Boolean, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {}
 
-    override fun getQuestSettingsDialog(context: Context) = getLabelOrElementSelectionDialog(context, this, prefs)
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        LabelOrElementSelectionDialog(this, prefs, onDismissRequest)
+    }
 }

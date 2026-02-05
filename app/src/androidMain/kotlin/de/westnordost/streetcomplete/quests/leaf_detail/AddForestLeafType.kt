@@ -1,6 +1,6 @@
 package de.westnordost.streetcomplete.quests.leaf_detail
 
-import android.content.Context
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
@@ -8,12 +8,13 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementPolygonsGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.osm.Tags
-import de.westnordost.streetcomplete.quests.booleanQuestSettingsDialog
+import de.westnordost.streetcomplete.quests.BooleanQuestSettingsDialog
 import de.westnordost.streetcomplete.util.math.measuredMultiPolygonArea
 
-class AddForestLeafType : OsmElementQuestType<ForestLeafType> {
+class AddForestLeafType : OsmElementQuestType<ForestLeafType>, AndroidQuest {
     private val areaFilter by lazy { """
         ways, relations with (landuse = forest or natural = wood) and !leaf_type
     """.toElementFilterExpression() }
@@ -28,7 +29,7 @@ class AddForestLeafType : OsmElementQuestType<ForestLeafType> {
 
     override val changesetComment = "Specify leaf types"
     override val wikiLink = "Key:leaf_type"
-    override val icon = R.drawable.ic_quest_leaf
+    override val icon = R.drawable.quest_leaf
     override val achievements = listOf(OUTDOORS)
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_leafType_title
@@ -62,11 +63,18 @@ class AddForestLeafType : OsmElementQuestType<ForestLeafType> {
 
     override val hasQuestSettings = true
 
-    override fun getQuestSettingsDialog(context: Context) =
-        booleanQuestSettingsDialog(context, prefs, SINGLE_TREES_PREF,
-            R.string.quest_settings_leaf_type_single_tree_message, R.string.quest_settings_leaf_type_single_tree_yes,
-            R.string.quest_settings_leaf_type_single_tree_no
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        BooleanQuestSettingsDialog(
+            prefs,
+            SINGLE_TREES_PREF,
+            false,
+            R.string.quest_settings_leaf_type_single_tree_message,
+            R.string.quest_settings_leaf_type_single_tree_yes,
+            R.string.quest_settings_leaf_type_single_tree_no,
+            onDismissRequest
         )
+    }
 }
 
 private const val SINGLE_TREES_PREF = "qs_AddForestLeafType_single_trees"

@@ -1,6 +1,5 @@
 package de.westnordost.streetcomplete.quests.destination
 
-import android.content.Context
 import androidx.appcompat.app.AlertDialog
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
@@ -16,15 +15,17 @@ import de.westnordost.streetcomplete.osm.groupByNodeIds
 import de.westnordost.streetcomplete.osm.oneway.isForwardOneway
 import de.westnordost.streetcomplete.osm.oneway.isReversedOneway
 import de.westnordost.streetcomplete.quests.questPrefix
-import de.westnordost.streetcomplete.quests.singleTypeElementSelectionDialog
 import de.westnordost.streetcomplete.util.ktx.allExceptFirstAndLast
 import de.westnordost.streetcomplete.util.math.finalBearingTo
 import de.westnordost.streetcomplete.util.math.initialBearingTo
 import de.westnordost.streetcomplete.util.math.isCompletelyInside
 import de.westnordost.streetcomplete.util.math.normalizeDegrees
 import kotlin.math.abs
-
-class AddDestination : OsmElementQuestType<Pair<DestinationLanes?, DestinationLanes?>> {
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
+/*
+class AddDestination : OsmElementQuestType<Pair<DestinationLanes?, DestinationLanes?>>, AndroidQuest {
 
     // need to filter elements with not-counting lanes
     // later lanes could be counted from available data if possible
@@ -50,7 +51,7 @@ class AddDestination : OsmElementQuestType<Pair<DestinationLanes?, DestinationLa
     override val changesetComment = "Add destination"
     override val wikiLink = "Key:destination"
     override val icon = R.drawable.ic_quest_destination // not nice, but ok for now
-    override val defaultDisabledMessage = R.string.default_disabled_msg_ee
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_destination_title
 
@@ -173,12 +174,14 @@ class AddDestination : OsmElementQuestType<Pair<DestinationLanes?, DestinationLa
 
     override val hasQuestSettings = true
 
-    override fun getQuestSettingsDialog(context: Context): AlertDialog {
-        return singleTypeElementSelectionDialog(context,
+    override fun QuestSettingDialog(context: Context, onDismissRequest: () -> Unit) {
+        SingleTypeElementSelectionDialog(
             prefs,
             questPrefix(prefs) + PREF_DESTINATION_ROADS,
             ROADS_FOR_DESTINATION.joinToString("|"),
-            R.string.quest_settings_eligible_highways)
+            R.string.quest_settings_eligible_highways,
+            onDismissRequest
+        )
     }
 }
 
@@ -257,3 +260,4 @@ private fun Way.allowsToAnyNeighboringNodeFrom(nodeId: Long): Boolean {
         else -> true
     }
 }
+*/

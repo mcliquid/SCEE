@@ -6,10 +6,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddBikeParkingType : OsmFilterQuestType<BikeParkingType>() {
+class AddBikeParkingType : OsmFilterQuestType<BikeParkingType>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -19,7 +20,7 @@ class AddBikeParkingType : OsmFilterQuestType<BikeParkingType>() {
     """
     override val changesetComment = "Specify bicycle parking types"
     override val wikiLink = "Key:bicycle_parking"
-    override val icon = R.drawable.ic_quest_bicycle_parking
+    override val icon = R.drawable.quest_bicycle_parking
     override val isDeleteElementEnabled = true
     override val achievements = listOf(BICYCLIST)
 

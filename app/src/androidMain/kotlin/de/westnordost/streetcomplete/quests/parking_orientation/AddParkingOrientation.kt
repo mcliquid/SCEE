@@ -6,8 +6,11 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.street_parking.ParkingOrientation
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
 
-class AddParkingOrientation : OsmFilterQuestType<ParkingOrientation>() {
+class AddParkingOrientation : OsmFilterQuestType<ParkingOrientation>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways, relations with
@@ -24,7 +27,7 @@ class AddParkingOrientation : OsmFilterQuestType<ParkingOrientation>() {
 
     override fun createForm() = AddParkingOrientationForm()
 
-    override val defaultDisabledMessage = R.string.default_disabled_msg_ee
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
 
     override fun applyAnswerTo(answer: ParkingOrientation, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         tags["orientation"] = answer.osmValue

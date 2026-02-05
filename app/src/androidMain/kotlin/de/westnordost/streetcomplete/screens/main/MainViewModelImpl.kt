@@ -1,13 +1,14 @@
 package de.westnordost.streetcomplete.screens.main
 
+import android.content.SharedPreferences
 import android.content.res.Resources
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.viewModelScope
-import de.westnordost.streetcomplete.BuildConfig
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.UnsyncedChangesCountSource
+import de.westnordost.streetcomplete.data.connection.InternetConnectionState
 import de.westnordost.streetcomplete.data.download.DownloadController
 import de.westnordost.streetcomplete.data.download.DownloadProgressSource
 import de.westnordost.streetcomplete.data.messages.Message
@@ -19,10 +20,10 @@ import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEdit
 import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditsSource
+import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.overlays.OverlayRegistry
 import de.westnordost.streetcomplete.data.overlays.SelectedOverlayController
 import de.westnordost.streetcomplete.data.overlays.SelectedOverlaySource
-import de.westnordost.streetcomplete.data.platform.InternetConnectionState
 import de.westnordost.streetcomplete.data.preferences.Autosync
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.presets.EditTypePresetsSource
@@ -36,7 +37,6 @@ import de.westnordost.streetcomplete.data.user.UserLoginSource
 import de.westnordost.streetcomplete.data.user.statistics.StatisticsSource
 import de.westnordost.streetcomplete.data.visiblequests.TeamModeQuestFilter
 import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeSource
-import de.westnordost.streetcomplete.overlays.Overlay
 import de.westnordost.streetcomplete.overlays.custom.CustomOverlay
 import de.westnordost.streetcomplete.screens.main.controls.LocationState
 import de.westnordost.streetcomplete.screens.main.map.maplibre.CameraPosition
@@ -188,7 +188,15 @@ class MainViewModelImpl(
             }
         }
         visibleEditTypeSource.addListener(listener)
-        awaitClose { visibleEditTypeSource.removeListener(listener) }
+        val prefListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key != null && key.startsWith("custom_overlay") && key != Prefs.CUSTOM_OVERLAY_SELECTED_INDEX)
+                trySend(getVisibleOverlays())
+        }
+        Prefs.sharedPreferences.registerOnSharedPreferenceChangeListener(prefListener)
+        awaitClose {
+            visibleEditTypeSource.removeListener(listener)
+            Prefs.sharedPreferences.unregisterOnSharedPreferenceChangeListener(prefListener)
+        }
     }.stateIn(viewModelScope + IO, SharingStarted.Eagerly, getVisibleOverlays())
 
     private fun getVisibleOverlays(): List<Overlay> =
@@ -304,10 +312,10 @@ class MainViewModelImpl(
         awaitClose { userLoginSource.removeListener(listener) }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
-    override val isConnected: Boolean get() = internetConnectionState.isConnected || BuildConfig.DEBUG
+    override val isConnected: Boolean get() = internetConnectionState.isConnected
 
     override fun upload() {
-        if (isLoggedIn.value || BuildConfig.DEBUG) {
+        if (isLoggedIn.value || (ApplicationConstants.DEBUG && !isConnected)) {
             uploadController.upload(isUserInitiated = true)
         } else {
             isRequestingLogin.value = true
@@ -433,6 +441,11 @@ class MainViewModelImpl(
         val listener = prefs.onShowQuickSettingsChanged { trySend(it) }
         awaitClose { listener.deactivate() }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, prefs.showQuickSettings)
+    override val showOverlaySelector = callbackFlow {
+        send(prefs.showOverlaySelector)
+        val listener = prefs.onShowOverlaySelectorChanged { trySend(it) } // todo: later also consider whether we're showing a bottom sheet
+        awaitClose { listener.deactivate() }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, prefs.showOverlaySelector)
     override val reverseQuestOrder = MutableStateFlow(false)
     override val showMainMenuDialog = mutableStateOf(false)
 

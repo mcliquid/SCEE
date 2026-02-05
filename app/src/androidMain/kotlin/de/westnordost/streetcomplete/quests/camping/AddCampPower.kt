@@ -6,12 +6,13 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.YesNoQuestForm
 import de.westnordost.streetcomplete.util.ktx.toYesNo
 
-class AddCampPower : OsmFilterQuestType<Boolean>() {
+class AddCampPower : OsmFilterQuestType<Boolean>(), AndroidQuest {
 
     /* We only resurvey power_supply = yes and power_supply = no, as it might have more detailed
      * values from other editors, and we don't want to damage them */
@@ -24,7 +25,7 @@ class AddCampPower : OsmFilterQuestType<Boolean>() {
     """
     override val changesetComment = "Specify whether there is electricity available"
     override val wikiLink = "Key:power_supply"
-    override val icon = R.drawable.ic_quest_camp_power
+    override val icon = R.drawable.quest_camp_power
     override val achievements = listOf(OUTDOORS)
 
     override val hint = R.string.quest_camp_power_supply_hint

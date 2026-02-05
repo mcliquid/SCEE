@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.DropdownMenu
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,12 +19,18 @@ import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
-import de.westnordost.streetcomplete.overlays.Overlay
+import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.overlays.custom.CustomOverlay
 import de.westnordost.streetcomplete.overlays.custom.getCustomOverlayIndices
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.overlay_none
 import de.westnordost.streetcomplete.ui.common.DropdownMenuItem
 import de.westnordost.streetcomplete.util.showOverlayCustomizer
 import org.koin.compose.koinInject
+import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.painterResource
+import de.westnordost.streetcomplete.resources.ic_settings_48
+import de.westnordost.streetcomplete.resources.ic_add_24
 
 /** Dropdown menu for selecting an overlay */
 @Composable
@@ -45,7 +52,7 @@ fun OverlaySelectionDropdownMenu(
     ) {
         DropdownMenuItem(onClick = { onDismissRequest(); onSelect(null) }) {
             Text(
-                text = stringResource(R.string.overlay_none),
+                text = stringResource(Res.string.overlay_none),
                 modifier = Modifier.padding(start = 48.dp)
             )
         }
@@ -65,8 +72,8 @@ fun OverlaySelectionDropdownMenu(
                         modifier = Modifier.weight(1f)
                     )
                     if (overlay.title == 0) {
-                        Image(
-                            painter = painterResource(R.drawable.ic_settings_48dp),
+                        Icon(
+                            painter = painterResource(Res.drawable.ic_settings_48),
                             contentDescription = null,
                             modifier = Modifier
                                 .size(36.dp)
@@ -94,8 +101,8 @@ fun OverlaySelectionDropdownMenu(
                     horizontalArrangement = Arrangement.spacedBy(16.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Image(
-                        painter = painterResource(R.drawable.ic_add_24dp),
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_add_24),
                         contentDescription = null,
                         modifier = Modifier.size(36.dp)
                     )

@@ -3,17 +3,18 @@ package de.westnordost.streetcomplete.quests.tourism_information
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.RARE
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddInformationToTourism : OsmFilterQuestType<TourismInformation>() {
+class AddInformationToTourism : OsmFilterQuestType<TourismInformation>(), AndroidQuest {
 
     override val elementFilter = "nodes, ways with tourism = information and !information"
     override val changesetComment = "Specify type of tourist informations"
     override val wikiLink = "Tag:tourism=information"
-    override val icon = R.drawable.ic_quest_information
+    override val icon = R.drawable.quest_information
     override val isDeleteElementEnabled = true
     override val achievements = listOf(RARE, CITIZEN, OUTDOORS)
 

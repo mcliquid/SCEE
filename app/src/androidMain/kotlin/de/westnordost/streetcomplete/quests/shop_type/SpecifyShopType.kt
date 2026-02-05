@@ -5,14 +5,16 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.applyReplacePlaceTo
+import de.westnordost.streetcomplete.osm.applyTo
 import de.westnordost.streetcomplete.osm.isPlaceOrDisusedPlace
 import de.westnordost.streetcomplete.osm.removeCheckDates
 import de.westnordost.streetcomplete.osm.removePlaceRelatedTags
 
-class SpecifyShopType : OsmFilterQuestType<ShopTypeAnswer>() {
+class SpecifyShopType : OsmFilterQuestType<ShopTypeAnswer>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with (
@@ -36,7 +38,7 @@ class SpecifyShopType : OsmFilterQuestType<ShopTypeAnswer>() {
     """
     override val changesetComment = "Survey shop types"
     override val wikiLink = "Key:shop"
-    override val icon = R.drawable.ic_quest_shop
+    override val icon = R.drawable.quest_shop
     override val isReplacePlaceEnabled = true
     override val achievements = listOf(CITIZEN)
 
@@ -58,7 +60,11 @@ class SpecifyShopType : OsmFilterQuestType<ShopTypeAnswer>() {
                 tags["disused:shop"] = shopTag ?: "yes"
             }
             is ShopType -> {
-                answer.feature.applyReplacePlaceTo(tags)
+                if (answer.isStillSamePlace) {
+                    answer.feature.applyTo(tags)
+                } else {
+                    answer.feature.applyReplacePlaceTo(tags)
+                }
             }
         }
     }

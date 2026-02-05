@@ -1,11 +1,14 @@
 package de.westnordost.streetcomplete.view.dialogs
 
 import android.content.Context
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.view.isEmpty
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
@@ -85,6 +88,9 @@ class SearchFeaturesDialog(
                     onSelectedFeatureFn(feature)
                     dismiss()
                 }
+                // color is always black, fix it (same problem for default icons, but that's an upstream issue)
+                if (context.resources.getResourceEntryName(resId).contains("temaki"))
+                    colorFilter = PorterDuffColorFilter(ContextCompat.getColor(context, R.color.text), PorterDuff.Mode.SRC_ATOP)
             })
         }
         if (!binding.shortcuts.isEmpty())
@@ -185,32 +191,32 @@ class SearchFeaturesDialog(
 private val iconOnlyFeatures = mapOf(
     "amenity/bench" to R.drawable.preset_temaki_bench,
     "amenity/lounger" to R.drawable.preset_temaki_lounger,
-    "amenity/bicycle_parking" to R.drawable.ic_quest_bicycle_parking,
-    "amenity/motorcycle_parking" to R.drawable.ic_quest_motorcycle_parking,
+    "amenity/bicycle_parking" to R.drawable.quest_bicycle_parking,
+    "amenity/motorcycle_parking" to R.drawable.quest_motorcycle_parking,
     "leisure/picnic_table" to R.drawable.preset_maki_picnic_site,
     "amenity/waste_basket" to R.drawable.preset_maki_waste_basket,
-    "amenity/recycling_container" to R.drawable.ic_quest_recycling_container,
-    "amenity/bicycle_repair_station" to R.drawable.ic_quest_bicycle_repair,
-    "amenity/drinking_water" to R.drawable.ic_quest_drinking_water,
-    "emergency/fire_hydrant" to R.drawable.ic_quest_fire_hydrant,
+    "amenity/recycling_container" to R.drawable.quest_recycling_container,
+    "amenity/bicycle_repair_station" to R.drawable.quest_bicycle_repair,
+    "amenity/drinking_water" to R.drawable.quest_drinking_water,
+    "emergency/fire_hydrant" to R.drawable.quest_fire_hydrant,
     "amenity/vending_machine" to R.drawable.preset_temaki_vending_machine,
     "amenity/vending_machine/cigarettes" to R.drawable.preset_temaki_vending_cigarettes,
     "amenity/vending_machine/excrement_bags" to R.drawable.preset_temaki_vending_pet_waste,
     "amenity/vending_machine/public_transport_tickets" to R.drawable.preset_temaki_vending_tickets,
     "amenity/vending_machine/drinks" to R.drawable.preset_temaki_vending_cold_drink,
-    "amenity/atm" to R.drawable.ic_quest_money,
-    "natural/tree" to R.drawable.ic_quest_tree,
-    "tourism/information/guidepost" to R.drawable.ic_quest_destination,
-    "amenity/post_box" to R.drawable.ic_quest_mail,
-    "amenity/charging_station" to R.drawable.ic_quest_car_charger,
+    "amenity/atm" to R.drawable.quest_money,
+    "natural/tree" to R.drawable.quest_tree,
+    "tourism/information/guidepost" to R.drawable.quest_destination,
+    "amenity/post_box" to R.drawable.quest_mail,
+    "amenity/charging_station" to R.drawable.quest_car_charger,
     "highway/street_lamp" to R.drawable.preset_temaki_street_lamp_arm,
-    "man_made/surveillance/camera" to R.drawable.ic_quest_surveillance_camera,
+    "man_made/surveillance/camera" to R.drawable.quest_surveillance_camera,
     "highway/speed_camera" to R.drawable.preset_temaki_security_camera,
-    "highway/crossing/unmarked" to R.drawable.ic_quest_pedestrian,
-    "highway/crossing/uncontrolled" to R.drawable.ic_quest_pedestrian_crossing,
-    "highway/crossing/traffic_signals" to R.drawable.ic_quest_blind_traffic_lights_sound,
-    "highway/traffic_signals" to R.drawable.ic_quest_traffic_lights,
-    "barrier/kerb" to R.drawable.ic_quest_kerb_tactile_paving,
+    "highway/crossing/unmarked" to R.drawable.quest_pedestrian,
+    "highway/crossing/uncontrolled" to R.drawable.quest_pedestrian_crossing,
+    "highway/crossing/traffic_signals" to R.drawable.quest_blind_traffic_lights_sound,
+    "highway/traffic_signals" to R.drawable.quest_traffic_lights,
+    "barrier/kerb" to R.drawable.quest_kerb_tactile_paving,
     "barrier/kerb/flush" to R.drawable.preset_temaki_kerb_flush,
     "barrier/kerb/rolled" to R.drawable.preset_temaki_kerb_rolled,
     "barrier/kerb/raised" to R.drawable.preset_temaki_kerb_raised,
@@ -218,7 +224,7 @@ private val iconOnlyFeatures = mapOf(
     "barrier/bollard" to R.drawable.preset_temaki_bollard,
     "traffic_calming/table" to R.drawable.preset_temaki_speed_table,
     "traffic_calming/bump" to R.drawable.preset_temaki_speed_bump,
-    "entrance" to R.drawable.ic_quest_door,
+    "entrance" to R.drawable.quest_door,
     "highway/stop" to R.drawable.preset_temaki_stop,
     "highway/give_way" to R.drawable.preset_temaki_yield,
 )

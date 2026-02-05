@@ -27,7 +27,7 @@ class AddServiceBuildingOperatorForm : ANameWithSuggestionsForm<ServiceBuildingO
     }
 
     private val lastPickedAnswers by lazy {
-        prefs.getLastPicked(javaClass.simpleName).takeFavorites(50, 50, 1)
+        prefs.getLastPicked<String>(javaClass.simpleName).takeFavorites(50, 50, 1)
     }
 }
 

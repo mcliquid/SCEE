@@ -1,31 +1,38 @@
 package de.westnordost.streetcomplete.quests.step_count
 
-import android.content.Context
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
-import de.westnordost.streetcomplete.quests.numberSelectionDialog
+import de.westnordost.streetcomplete.quests.NumberSelectionDialog
 import de.westnordost.streetcomplete.quests.questPrefix
 import de.westnordost.streetcomplete.util.math.measuredLength
 
-class AddStepCount : OsmElementQuestType<Int> {
+class AddStepCount : OsmElementQuestType<Int>, AndroidQuest {
 
     val elementFilter by lazy { """
-        ways with highway = steps
-         and (!indoor or indoor = no)
-         and access !~ private|no
-         and (!conveying or conveying = no)
-         and !step_count
+        nodes, ways with
+        (
+          (
+            highway = steps
+            and (!indoor or indoor = no)
+            and (!conveying or conveying = no)
+          )
+          or man_made = tower and access ~ yes|customers and tower:type ~ observation|watchtower
+        )
+        and access !~ private|no
+        and !step_count
     """.toElementFilterExpression() }
     override val changesetComment = "Specify step counts"
     override val wikiLink = "Key:step_count"
-    override val icon = R.drawable.ic_quest_steps_count
+    override val icon = R.drawable.quest_steps_count
     // because the user needs to start counting at the start of the steps
     override val hasMarkersAtEnds = true
     override val achievements = listOf(PEDESTRIAN)
@@ -54,10 +61,10 @@ class AddStepCount : OsmElementQuestType<Int> {
 
     override val hasQuestSettings = true
 
-    override fun getQuestSettingsDialog(context: Context) = numberSelectionDialog(
-        context, prefs, questPrefix(prefs) + PREF_MAX_STEPS_LENGTH, 999, R.string.quest_settings_max_steps_length
-    )
-
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        NumberSelectionDialog(prefs, questPrefix(prefs) + PREF_MAX_STEPS_LENGTH, 999, R.string.quest_settings_max_steps_length, onDismissRequest)
+    }
 }
 
 private const val PREF_MAX_STEPS_LENGTH = "qs_AddStepCount_max_length"

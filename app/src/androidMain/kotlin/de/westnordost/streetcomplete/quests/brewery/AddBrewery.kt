@@ -7,8 +7,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.isPlace
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_go_inside
 
-class AddBrewery : OsmFilterQuestType<BreweryAnswer>() {
+class AddBrewery : OsmFilterQuestType<BreweryAnswer>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -24,7 +27,7 @@ class AddBrewery : OsmFilterQuestType<BreweryAnswer>() {
     override val wikiLink = "Key:brewery"
     override val icon = R.drawable.ic_quest_brewery
     override val isReplacePlaceEnabled = true
-    override val defaultDisabledMessage = R.string.default_disabled_msg_go_inside
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_go_inside
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_brewery_title
 

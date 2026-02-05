@@ -282,6 +282,7 @@
         <TextView
             android:id="@+id/okButton"
             app:drawableBottomCompat="@drawable/ic_check_48dp"
+            app:drawableTint="@color/button_white"
             android:scaleType="centerInside"
             style="@style/RoundAccentButton"
             android:layout_width="@dimen/ok_button_size"

@@ -15,6 +15,8 @@ import android.widget.PopupMenu
 import android.widget.RelativeLayout
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.runtime.MutableFloatState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.core.os.bundleOf
 import androidx.core.view.doOnLayout
 import androidx.core.view.isGone
@@ -27,7 +29,7 @@ import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
-import de.westnordost.streetcomplete.data.location.RecentLocationStore
+import de.westnordost.streetcomplete.data.location.SurveyChecker
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.meta.CountryInfos
 import de.westnordost.streetcomplete.data.meta.getByLocation
@@ -47,6 +49,8 @@ import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
+import de.westnordost.streetcomplete.data.osm.mapdata.key
+import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.overlays.OverlayRegistry
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.quest.QuestKey
@@ -75,12 +79,12 @@ import de.westnordost.streetcomplete.util.ktx.toLocalDate
 import de.westnordost.streetcomplete.util.ktx.toast
 import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
 import de.westnordost.streetcomplete.util.logs.Log
+import de.westnordost.streetcomplete.util.math.getOrientationAtCenterLineInDegrees
 import de.westnordost.streetcomplete.view.CharSequenceText
 import de.westnordost.streetcomplete.view.ResText
 import de.westnordost.streetcomplete.view.RoundRectOutlineProvider
 import de.westnordost.streetcomplete.view.Text
 import de.westnordost.streetcomplete.view.add
-import de.westnordost.streetcomplete.view.checkIsSurvey
 import de.westnordost.streetcomplete.view.confirmIsSurvey
 import de.westnordost.streetcomplete.view.insets_animation.respectSystemInsets
 import kotlinx.coroutines.Dispatchers
@@ -90,7 +94,6 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import kotlinx.datetime.toJavaLocalDate
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.android.inject
 import org.koin.core.qualifier.named
@@ -107,7 +110,7 @@ abstract class AbstractOverlayForm :
     private val countryBoundaries: Lazy<CountryBoundaries> by inject(named("CountryBoundariesLazy"))
     private val overlayRegistry: OverlayRegistry by inject()
     private val mapDataWithEditsSource: MapDataWithEditsSource by inject()
-    private val recentLocationStore: RecentLocationStore by inject()
+    private val surveyChecker: SurveyChecker by inject()
     private val featureDictionaryLazy: Lazy<FeatureDictionary> by inject(named("FeatureDictionaryLazy"))
     protected val featureDictionary: FeatureDictionary get() = featureDictionaryLazy.value
     private val prefs: Preferences by inject()
@@ -124,6 +127,10 @@ abstract class AbstractOverlayForm :
         }
     protected val countryInfo get() = _countryInfo!!
 
+    protected val geometryRotation: MutableFloatState = mutableFloatStateOf(0f)
+    protected val mapRotation: MutableFloatState = mutableFloatStateOf(0f)
+    protected val mapTilt: MutableFloatState = mutableFloatStateOf(0f)
+
     /** either DE or US-NY (or null), depending on what countryBoundaries returns */
     protected val countryOrSubdivisionCode: String? get() {
         val latLon = geometry.center
@@ -138,7 +145,7 @@ abstract class AbstractOverlayForm :
             return localizedContext.resources
         }
 
-    // only used for testing / only used for ShowQuestFormsScreen! Found no better way to do this
+    // used to enable testing via ShowQuestFormsScreen! Found no better way to do this
     var addElementEditsController: AddElementEditsController = elementEditsController
 
     // view / state
@@ -206,9 +213,6 @@ abstract class AbstractOverlayForm :
         initialMapRotation = args.getDouble(ARG_MAP_ROTATION)
         initialMapTilt = args.getDouble(ARG_MAP_TILT)
         _countryInfo = null // reset lazy field
-
-        /* deliberately did not copy the mobile-country-code hack from AbstractQuestForm because
-           this is kind of deprecated and should not be used for new code */
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -219,6 +223,9 @@ abstract class AbstractOverlayForm :
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        geometryRotation.floatValue =
+            (geometry as? ElementPolylinesGeometry)?.getOrientationAtCenterLineInDegrees() ?: 0f
 
         setMarkerVisibility(_geometry == null)
         binding.pin.root.doOnLayout { setMarkerPosition(null) }
@@ -270,7 +277,8 @@ abstract class AbstractOverlayForm :
     }
 
     override fun onMapOrientation(rotation: Double, tilt: Double) {
-        // default empty implementation
+        mapRotation.floatValue = rotation.toFloat()
+        mapTilt.floatValue = tilt.toFloat()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -579,7 +587,7 @@ abstract class AbstractOverlayForm :
         Log.i(TAG, "solve ${overlay.name} for ${element?.key}, extra: $extra")
         val source = if (extra) "survey,extra" else "survey"
         setLocked(true)
-        val isSurvey = checkIsSurvey(geometry, recentLocationStore.get())
+        val isSurvey = surveyChecker.checkIsSurvey(geometry)
         if (!isSurvey && !confirmIsSurvey(requireContext())) {
             setLocked(false)
             return

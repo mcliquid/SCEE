@@ -50,23 +50,4 @@
 
     </ScrollView>
 
-    <ScrollView
-        android:id="@+id/overlayScrollView"
-        android:layout_width="52dp"
-        android:layout_height="330dp"
-        android:layout_marginRight="6dp"
-        android:layout_marginBottom="16dp"
-        android:layout_marginTop="80dp"
-        android:layout_alignParentRight="true">
-
-        <LinearLayout
-            android:id="@+id/overlayLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:elevation="2dp"
-            android:paddingVertical="8dp"
-            android:orientation="vertical" />
-
-    </ScrollView>
-
 </de.westnordost.streetcomplete.view.RelativeLayoutFix >

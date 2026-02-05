@@ -1,43 +1,7 @@
 package de.westnordost.streetcomplete.quests.destination
 
-import android.graphics.Color
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
-import android.os.Bundle
-import android.util.TypedValue
-import android.view.View
-import android.view.ViewGroup.LayoutParams
-import android.widget.AdapterView
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.annotation.AnyThread
-import androidx.core.content.ContextCompat
-import androidx.core.view.doOnLayout
-import androidx.core.view.isGone
-import androidx.core.view.isVisible
-import androidx.core.widget.doAfterTextChanged
-import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
-import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
-import de.westnordost.streetcomplete.data.osm.mapdata.filter
-import de.westnordost.streetcomplete.databinding.QuestDestinationBinding
-import de.westnordost.streetcomplete.databinding.QuestDestinationLaneBinding
-import de.westnordost.streetcomplete.osm.Tags
-import de.westnordost.streetcomplete.osm.oneway.isOneway
-import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
-import de.westnordost.streetcomplete.quests.lanes.LineStyle
-import de.westnordost.streetcomplete.util.SearchAdapter
-import de.westnordost.streetcomplete.util.ktx.dpToPx
-import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
-import de.westnordost.streetcomplete.util.math.enlargedBy
-import de.westnordost.streetcomplete.util.math.getOrientationAtCenterLineInDegrees
-import de.westnordost.streetcomplete.util.takeFavorites
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import org.koin.android.ext.android.inject
-
+// todo: side select is compose now -> need to migrate everything to make it work
+/*
 class AddDestinationForm : AbstractOsmQuestForm<Pair<DestinationLanes?, DestinationLanes?>>() {
 
     private val mapDataSource: MapDataWithEditsSource by inject()
@@ -61,7 +25,7 @@ class AddDestinationForm : AbstractOsmQuestForm<Pair<DestinationLanes?, Destinat
             addToBackStack("bottom_sheet")
         }
     })
-*/
+*//*
     private var currentLane = 0
     private var currentIsBackward = false
     private var forward: DestinationLanes? = null
@@ -83,7 +47,7 @@ class AddDestinationForm : AbstractOsmQuestForm<Pair<DestinationLanes?, Destinat
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.destinationInput.setAdapter(SearchAdapter(requireContext(), { getSuggestions(it) }, { it }))
+        binding.destinationInput.setAdapter(SearchAdapter<String>(requireContext(), { getSuggestions(it) }, { it }))
         binding.destinationInput.onItemClickListener = AdapterView.OnItemClickListener { _, t, _, _ ->
             val destination = (t as? TextView)?.text?.toString() ?: return@OnItemClickListener
             if (!currentDestinations.add(destination)) return@OnItemClickListener // we don't want duplicates
@@ -323,7 +287,7 @@ class AddDestinationForm : AbstractOsmQuestForm<Pair<DestinationLanes?, Destinat
     }
 
     private val lastPickedAnswers by lazy {
-        prefs.getLastPicked(javaClass.simpleName).takeFavorites(20, 50, 1)
+        prefs.getLastPicked<String>(javaClass.simpleName).takeFavorites(20, 50, 1)
     }
 }
 
@@ -366,3 +330,4 @@ class DestinationLanes(val count: Int) {
         tags[tag + forwardBackward] = laneString()!!
     }
 }
+*/*/

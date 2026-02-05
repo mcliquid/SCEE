@@ -7,10 +7,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddClothingBinOperator : OsmElementQuestType<ClothingBinOperatorAnswer> {
+class AddClothingBinOperator : OsmElementQuestType<ClothingBinOperatorAnswer>, AndroidQuest {
 
     /* not the complete filter, see below: we want to filter out additionally all elements that
        contain any recycling:* = yes that is not shoes or clothes but this can not be expressed
@@ -25,7 +26,7 @@ class AddClothingBinOperator : OsmElementQuestType<ClothingBinOperatorAnswer> {
 
     override val changesetComment = "Specify clothing bin operators"
     override val wikiLink = "Tag:amenity=recycling"
-    override val icon = R.drawable.ic_quest_recycling_clothes
+    override val icon = R.drawable.quest_recycling_clothes
     override val isDeleteElementEnabled = true
     override val achievements = listOf(CITIZEN)
 

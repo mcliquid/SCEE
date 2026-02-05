@@ -10,12 +10,13 @@ import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementType
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Relation
+import de.westnordost.streetcomplete.data.osm.mapdata.key
+import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.overlays.SelectedOverlaySource
 import de.westnordost.streetcomplete.data.visiblequests.LevelFilter
 import de.westnordost.streetcomplete.osm.ALL_ROADS
-import de.westnordost.streetcomplete.overlays.Overlay
-import de.westnordost.streetcomplete.overlays.custom.CustomOverlay
-import de.westnordost.streetcomplete.overlays.restriction.RestrictionOverlay
+//import de.westnordost.streetcomplete.overlays.custom.CustomOverlay
+//import de.westnordost.streetcomplete.overlays.restriction.RestrictionOverlay
 import de.westnordost.streetcomplete.screens.main.map.components.StyleableOverlayMapComponent
 import de.westnordost.streetcomplete.screens.main.map.components.StyledElement
 import de.westnordost.streetcomplete.screens.main.map.maplibre.screenAreaToBoundingBox
@@ -126,7 +127,7 @@ class StyleableOverlayManager(
 */
     private var overlay: Overlay? = null
         set(value) {
-            if (field == value && field !is CustomOverlay) return
+            if (field == value /*&& field !is CustomOverlay*/) return
             val wasNull = field == null
             val isNullNow = value == null
             field = value
@@ -152,7 +153,7 @@ class StyleableOverlayManager(
             updateJob = viewLifecycleScope.launch {
                 oldUpdateJob?.join() // don't cancel, as updateStyledElements only updates existing data
                 updateStyledElements(updated, deleted)
-                if (overlay is RestrictionOverlay
+/*                if (overlay is RestrictionOverlay
                         // reload all if relation is updated, because normal update doesn't change ways
                         // and reload if ways are updated, because without knowing the relation it will not be highlighted
                         && (updated.any { it is Relation || it.tags["highway"] in ALL_ROADS } || deleted.any { it.type == ElementType.RELATION })) {
@@ -160,7 +161,7 @@ class StyleableOverlayManager(
                         //cache.clear() todo: remove when removing cache
                         setStyledElements(it.asBoundingBox(TILES_ZOOM))
                     }
-                }
+                }*/
             }
         }
 

@@ -1,20 +1,28 @@
 package de.westnordost.streetcomplete.screens.main.controls
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.DropdownMenu
+import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.visiblequests.LevelFilter
 import de.westnordost.streetcomplete.data.presets.EditTypePresetsController
+import de.westnordost.streetcomplete.data.quest.VisibleQuestsSource
 import de.westnordost.streetcomplete.screens.main.MainViewModel
 import de.westnordost.streetcomplete.ui.common.DropdownMenuItem
-import de.westnordost.streetcomplete.util.dialogs.showProfileSelectionDialog
+import de.westnordost.streetcomplete.util.dialogs.showLevelFilterDialog
+import de.westnordost.streetcomplete.util.showProfileSelectionDialog
 import org.koin.compose.koinInject
 
 @Composable
@@ -24,11 +32,12 @@ fun QuickSettingsDropdown(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier,
 ) {
-
     val editTypePresetsController: EditTypePresetsController = koinInject()
     val levelFilter: LevelFilter = koinInject()
     val prefs: Preferences = koinInject()
     val ctx = LocalContext.current
+    val mapDataSource: MapDataWithEditsSource = koinInject()
+    val visibleQuestsSource: VisibleQuestsSource = koinInject()
 
     DropdownMenu(
         expanded = expanded,
@@ -45,10 +54,13 @@ fun QuickSettingsDropdown(
         DropdownMenuItem(
             onClick = {
                 onDismissRequest()
-                levelFilter.showLevelFilterDialog(ctx, viewModel.mapCamera.value)
+                showLevelFilterDialog(ctx, viewModel.mapCamera.value, levelFilter, prefs, visibleQuestsSource, mapDataSource)
             })
         {
-            Text(text = stringResource(R.string.level_filter))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                Text(text = stringResource(R.string.level_filter))
+                Switch(levelFilter.isEnabled, { levelFilter.isEnabled = it; onDismissRequest() })
+            }
         }
         DropdownMenuItem(onClick = {
                 onDismissRequest()

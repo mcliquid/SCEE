@@ -6,10 +6,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddChargingStationOperator : OsmFilterQuestType<String>() {
+class AddChargingStationOperator : OsmFilterQuestType<String>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -21,7 +22,7 @@ class AddChargingStationOperator : OsmFilterQuestType<String>() {
     """
     override val changesetComment = "Specify charging station operators"
     override val wikiLink = "Tag:amenity=charging_station"
-    override val icon = R.drawable.ic_quest_car_charger
+    override val icon = R.drawable.quest_charger_operator
     override val isDeleteElementEnabled = true
     override val achievements = listOf(CAR)
 

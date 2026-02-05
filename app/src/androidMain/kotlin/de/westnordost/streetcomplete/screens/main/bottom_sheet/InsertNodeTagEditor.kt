@@ -5,15 +5,14 @@ import android.view.View
 import androidx.core.os.bundleOf
 import de.westnordost.osmfeatures.Feature
 import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.data.osm.edits.addNodeEdit
 import de.westnordost.streetcomplete.data.osm.edits.create.createNodeAction
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.osm.isPlace
 import de.westnordost.streetcomplete.quests.TagEditor
 import de.westnordost.streetcomplete.util.math.PositionOnWay
-import de.westnordost.streetcomplete.view.checkIsSurvey
 import de.westnordost.streetcomplete.view.confirmIsSurvey
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 /** Fragment that lets the user split an OSM way */
@@ -37,7 +36,7 @@ class InsertNodeTagEditor : TagEditor() {
     override suspend fun applyEdit() {
         val args = requireArguments()
         val positionOnWay: PositionOnWay = Json.decodeFromString(args.getString(ARG_POSITION_ON_WAY)!!)
-        val isSurvey = checkIsSurvey(ElementPointGeometry(positionOnWay.position), recentLocationStore.get())
+        val isSurvey = surveyChecker.checkIsSurvey(ElementPointGeometry(positionOnWay.position))
         if (!isSurvey && !confirmIsSurvey(requireContext()))
             return
         val action = createNodeAction(positionOnWay, mapDataSource) { changeBuilder ->

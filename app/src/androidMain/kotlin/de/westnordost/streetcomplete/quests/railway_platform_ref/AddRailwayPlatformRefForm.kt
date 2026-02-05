@@ -1,35 +1,41 @@
 package de.westnordost.streetcomplete.quests.railway_platform_ref
 
 import android.os.Bundle
-import android.text.InputType
 import android.view.View
-import androidx.core.widget.doAfterTextChanged
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.TextField
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.databinding.QuestRefBinding
+import de.westnordost.streetcomplete.databinding.ComposeViewBinding
 import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
-import de.westnordost.streetcomplete.quests.AnswerItem
-import de.westnordost.streetcomplete.util.ktx.nonBlankTextOrNull
+import de.westnordost.streetcomplete.ui.theme.extraLargeInput
+import de.westnordost.streetcomplete.ui.util.content
 
 class AddRailwayPlatformRefForm : AbstractOsmQuestForm<String>() {
+    override val contentLayoutResId = R.layout.compose_view
+    private val binding by contentViewBinding(ComposeViewBinding::bind)
 
-    override val contentLayoutResId = R.layout.quest_ref
-    private val binding by contentViewBinding(QuestRefBinding::bind)
-
-    private val ref get() = binding.refInput.nonBlankTextOrNull
+    private val ref: MutableState<String> = mutableStateOf("")
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.refInput.inputType = InputType.TYPE_CLASS_NUMBER
-        binding.refInput.doAfterTextChanged { checkIsFormComplete() }
+        binding.composeViewBase.content { Surface {
+            TextField(
+                value = ref.value,
+                onValueChange = {
+                    ref.value = it
+                    checkIsFormComplete()
+                },
+                textStyle = MaterialTheme.typography.extraLargeInput,
+            )
+        } }
     }
-
-    override val buttonPanelAnswers = listOf(
-        AnswerItem(R.string.quest_railwayPlatformRef_abc) { binding.refInput.inputType = InputType.TYPE_CLASS_TEXT }
-    )
 
     override fun onClickOk() {
-        applyAnswer(ref!!)
+        applyAnswer(ref.value)
     }
 
-    override fun isFormComplete() = ref != null
+    override fun isFormComplete() = ref.value.isNotEmpty()
 }

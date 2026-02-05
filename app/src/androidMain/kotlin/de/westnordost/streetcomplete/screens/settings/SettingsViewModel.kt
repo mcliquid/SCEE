@@ -6,6 +6,7 @@ import com.russhwolf.settings.SettingsListener
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.Cleaner
 import de.westnordost.streetcomplete.data.osm.edits.EditType
+import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.overlays.OverlayRegistry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestController
 import de.westnordost.streetcomplete.data.preferences.Autosync
@@ -20,9 +21,6 @@ import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenController
 import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenSource
 import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeSource
-import de.westnordost.streetcomplete.overlays.Overlay
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.ui.ktx.readYaml
 import de.westnordost.streetcomplete.util.ktx.launch
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +28,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 @Stable
 abstract class SettingsViewModel : ViewModel() {
-    abstract val selectableLanguageCodes: StateFlow<List<String>?>
+
     abstract val selectedEditTypePresetName: StateFlow<String?>
     abstract val hiddenQuestCount: StateFlow<Int>
     abstract val questTypeCount: StateFlow<QuestTypeCount?>
@@ -57,7 +55,6 @@ abstract class SettingsViewModel : ViewModel() {
     abstract fun setTheme(value: Theme)
     abstract fun setKeepScreenOn(value: Boolean)
     abstract fun setShowZoomButtons(value: Boolean)
-    abstract fun setSelectedLanguage(value: String?)
 }
 
 data class QuestTypeCount(val total: Int, val enabled: Int)
@@ -65,7 +62,6 @@ data class QuestTypeCount(val total: Int, val enabled: Int)
 @Stable
 class SettingsViewModelImpl(
     override val prefs: Preferences,
-    private val res: Res,
     private val cleaner: Cleaner,
     private val hiddenQuestsController: QuestsHiddenController,
     private val questTypeRegistry: QuestTypeRegistry,
@@ -102,7 +98,6 @@ class SettingsViewModelImpl(
     override val questTypeCount = MutableStateFlow<QuestTypeCount?>(null)
     override val overlayCount = MutableStateFlow<QuestTypeCount?>(null)
     override val selectedEditTypePresetName = MutableStateFlow<String?>(null)
-    override val selectableLanguageCodes = MutableStateFlow<List<String>?>(null)
 
     override val resurveyIntervals = MutableStateFlow(prefs.resurveyIntervals)
     override val autosync = MutableStateFlow(prefs.autosync)
@@ -133,7 +128,6 @@ class SettingsViewModelImpl(
 
         updateQuestTypeCount()
         updateOverlayCount()
-        updateSelectableLanguageCodes()
         updateHiddenQuests()
         updateSelectedEditTypePreset()
     }
@@ -157,7 +151,6 @@ class SettingsViewModelImpl(
     override fun setTheme(value: Theme) { prefs.theme = value }
     override fun setKeepScreenOn(value: Boolean) { prefs.keepScreenOn = value }
     override fun setShowZoomButtons(value: Boolean) { prefs.showZoomButtons = value }
-    override fun setSelectedLanguage(value: String?) { prefs.language = value }
 
     override fun setExpertMode(value: Boolean) { prefs.expertMode = value }
 
@@ -170,12 +163,6 @@ class SettingsViewModelImpl(
     private fun updateSelectedEditTypePreset() {
         launch(IO) {
             selectedEditTypePresetName.value = editTypePresetsSource.selectedEditTypePresetName
-        }
-    }
-
-    private fun updateSelectableLanguageCodes() {
-        launch {
-            selectableLanguageCodes.value = res.readYaml<List<String>>("files/languages.yml")
         }
     }
 

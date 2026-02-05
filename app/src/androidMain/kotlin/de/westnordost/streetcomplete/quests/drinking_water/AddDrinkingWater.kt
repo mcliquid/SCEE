@@ -6,19 +6,25 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddDrinkingWater : OsmFilterQuestType<DrinkingWater>() {
+class AddDrinkingWater : OsmFilterQuestType<DrinkingWater>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with (
           man_made = water_tap
           or man_made = water_well
           or natural = spring
+          or amenity = fountain and fountain = stone_block
         )
         and access !~ private|no and indoor != yes
-        and !drinking_water and !drinking_water:legal and amenity != drinking_water
+        and !drinking_water
+        and !drinking_water:legal
+        and drinking_water:signed != no
+        and drinking_water:legal:signed != no
+        and amenity != drinking_water
         and (!intermittent or intermittent = no)
         and (!seasonal or seasonal = no)
         and (!disused or disused = no)
@@ -26,7 +32,7 @@ class AddDrinkingWater : OsmFilterQuestType<DrinkingWater>() {
     """
     override val changesetComment = "Specify whether water is drinkable"
     override val wikiLink = "Key:drinking_water"
-    override val icon = R.drawable.ic_quest_drinking_water
+    override val icon = R.drawable.quest_drinking_water
     override val isDeleteElementEnabled = true
     override val achievements = listOf(OUTDOORS)
 
@@ -47,7 +53,18 @@ class AddDrinkingWater : OsmFilterQuestType<DrinkingWater>() {
     override fun createForm() = AddDrinkingWaterForm()
 
     override fun applyAnswerTo(answer: DrinkingWater, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
-        tags["drinking_water"] = answer.osmValue
-        answer.osmLegalValue?.let { tags["drinking_water:legal"] = it }
+        when (answer) {
+            DrinkingWater.POTABLE_SIGNED -> {
+                tags["drinking_water"] = "yes"
+                tags["drinking_water:legal"] = "yes"
+            }
+            DrinkingWater.NOT_POTABLE_SIGNED -> {
+                tags["drinking_water"] = "no"
+                tags["drinking_water:legal"] = "no"
+            }
+            DrinkingWater.UNSIGNED -> {
+                tags["drinking_water:signed"] = "no"
+            }
+        }
     }
 }

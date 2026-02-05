@@ -1,6 +1,6 @@
 package de.westnordost.streetcomplete.quests.show_poi
 
-import android.content.Context
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -9,9 +9,12 @@ import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.NoAnswerFragment
-import de.westnordost.streetcomplete.quests.getLabelOrElementSelectionDialog
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.quests.LabelOrElementSelectionDialog
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_poi_other
 
-class ShowOther : OsmFilterQuestType<Boolean>() {
+class ShowOther : OsmFilterQuestType<Boolean>(), AndroidQuest {
     override val elementFilter = """
         nodes, ways, relations with
         (
@@ -56,7 +59,7 @@ class ShowOther : OsmFilterQuestType<Boolean>() {
     override val wikiLink = "nope"
     override val icon = R.drawable.ic_quest_poi_other
     override val dotColor = "gold"
-    override val defaultDisabledMessage = R.string.default_disabled_msg_poi_other
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_poi_other
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_poi_misc_title
 
@@ -67,5 +70,8 @@ class ShowOther : OsmFilterQuestType<Boolean>() {
 
     override fun applyAnswerTo(answer: Boolean, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {}
 
-    override fun getQuestSettingsDialog(context: Context) = getLabelOrElementSelectionDialog(context, this, prefs)
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        LabelOrElementSelectionDialog(this, prefs, onDismissRequest)
+    }
 }

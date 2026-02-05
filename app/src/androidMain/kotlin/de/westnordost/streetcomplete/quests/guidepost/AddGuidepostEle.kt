@@ -8,8 +8,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.quest_guidepost_disabled_msg
 
-class AddGuidepostEle : OsmFilterQuestType<String>() {
+class AddGuidepostEle : OsmFilterQuestType<String>(), AndroidQuest {
 
     override val elementFilter = """
         nodes with
@@ -29,7 +32,7 @@ class AddGuidepostEle : OsmFilterQuestType<String>() {
         getMapData().filter("nodes with information = guidepost")
 
     override val highlightedElementsRadius: Double get() = 200.0
-    override val defaultDisabledMessage: Int = R.string.quest_guidepost_disabled_msg
+    override val defaultDisabledMessage = Res.string.quest_guidepost_disabled_msg
 
     override fun createForm() = AddGuidepostEleForm()
 

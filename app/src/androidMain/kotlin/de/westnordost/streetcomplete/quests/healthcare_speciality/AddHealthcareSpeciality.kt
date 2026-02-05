@@ -4,8 +4,11 @@ import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.quest_healthcare_speciality_disabled_message
 
-class AddHealthcareSpeciality : OsmFilterQuestType<String>() {
+class AddHealthcareSpeciality : OsmFilterQuestType<String>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -15,7 +18,7 @@ class AddHealthcareSpeciality : OsmFilterQuestType<String>() {
     override val changesetComment = "Add healthcare specialities"
     override val wikiLink = "Key:healthcare:speciality"
     override val icon = R.drawable.ic_quest_healthcare_speciality
-    override val defaultDisabledMessage = R.string.quest_healthcare_speciality_disabled_message
+    override val defaultDisabledMessage = Res.string.quest_healthcare_speciality_disabled_message
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_healthcare_speciality_title
 

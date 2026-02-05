@@ -3,9 +3,6 @@ package de.westnordost.streetcomplete.quests.sac_scale
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.quests.sac_scale.SacScale.*
-import de.westnordost.streetcomplete.view.image_select.GroupableDisplayItem
-import de.westnordost.streetcomplete.view.image_select.Item
 
 enum class SacScale(
     val osmValue: String,
@@ -55,10 +52,4 @@ enum class SacScale(
         titleResId = R.string.quest_sacScale_six,
         descriptionResId = R.string.quest_sacScale_six_description
     )
-}
-
-fun Collection<SacScale>.toItems() = map { it.asItem() }
-
-fun SacScale.asItem(): GroupableDisplayItem<SacScale> {
-    return Item(this, imageResId, titleResId, descriptionResId)
 }

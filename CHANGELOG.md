@@ -1,15 +1,137 @@
 # Changelog
 
+## v62.2
+
+### Fixes
+
+- Recycling type: Images were tiny (#6683)
+- Places overlay: OK button didn't show when selecting "no name" (#6657)
+- Address overlay: OK button didn't show when tapping on a road (#6669), by @paulklie
+
+### Quest improvements
+
+- Postbox ref: Enable for Japan (#6680)
+- Internet access: Allow selecting multiple values (#6676), by @paulklie
+- Bus stop ref: Enable for Singapore (#6656), by @arrival-spring
+- Max weight: Weight limit signs in France need special handling (#6686)
+- Self-service at fuel stations: Ask in a few more countries (#6690)
+- Specify shop type: Only clear previous information about shop if we can't say whether it is still the same shop (#6675)
+- Ask for some more things on some quests (#6670), by @paulklie
+- Other small refinements (#6672, #6677, #6657, #6611…), thanks @mnalis, @matkoniecz
+
+## v62.1
+
+### Fixes
+
+- Fix crash in stile type and bike rental quest (#6629)
+- Bike paths overlay: OK button didn't always show (#6644)
+- Address overlay: Don't tag empty housename if user leaves input field empty (#6640)
+- Sidewalk overlay: Allow user to only specify one side (#6636)
+- Sidewalk surface: Only ask for sides that actually have a sidewalk (#6625)
+- Star counter display was incorrect in languages that are written from right to left (#6627)
+- Road names: OK button didn't show after selecting a name from the map (#6631), by @paulklie
+- Fix communication with OSM API (#6628), by @Firefishy
+- Surface overlay: Fix last-picked-button was not shown
+
+### Quest improvements
+
+- Ask for some more things on some quests (#6645, #6641, #6623, #6642, #6621, #6643, #6620), by @paulklie
+
+## v62.0
+
+### New quests
+
+- _"Can you wash your hands here?"_, asked for toilets (#6394), by @paulklie
+- _"How many people can sleep here?"_ asked for wilderness huts etc. (#6442), by @paulklie
+- _"On which level number is this thing located?"_ asked for things in malls (#6433), by @paulklie
+- _"Do you have to pay to park here?"_ asked for motorbike parkings (#6532), by @ElPoraz
+- _"Is firewood provided here?"_ (#6538) asked for firepits etc., by @NicodeH
+- _"Where is this first aid kit located?"_ (#6539), by @NicodeH
+- _"Does this aerial lift transport bicycles?"_ (#6544), by @RaphaLLamothe
+- _"Are the lanes here marked?"_ (#6490)
+- _"Can bicycles be charged here, too?"_ (#6595)
+- _"How many bicycles can be charged here at the same time?"_ (#6595), thanks @HugoTHOLLON
+- _"Who may access this tower? It may be free or paid."_ (#6581), thanks @ElPoraz
+
+### General
+
+- Address and name quests and overlay look different now, with a few improvements (#6403, #5479)
+- Max weight form quest looks different now, with a few improvements (#6490)
+- Recycling quest form looks a bit different now (#6613)
+- Any quest or overlay that shows an image picker or an illustration of a street looks different now, with many improvements (#6490, #6239, #6560) such as showing several apply last-picked buttons like in the building levels quest (#5605)
+- Replace app suggestion Organic Maps with CoMaps (#6451)
+- Language selection is now in a separate screen, with search function (#6490)
+- Map buttons are now better visible in dark mode (#6587), by @paulklie
+- Fix StreetComplete has been removing newlines from tag values it touches (#6466)
+
+### Quest improvements
+
+- Refine which quests to ask for the different places and things (#6481, #6475, #6428, #6474, #6463, #6402, #6498, #6499, #6523, #6522, #6521, #6520, #6529, #6519, #6492, #6534, #6549, #6576, #6601…), by @paulklie
+- Housenumbers: Ask for some buildings that were previously excluded (#6533)
+- Place name: Ask for some historic things, such as monuments (#6042)
+- Postbox collection times: Disable in Denmark (#6455), by @matkoniecz
+- Bus stop name: Disable in Sweden (#6515), by @paulklie
+- Mopeds on bike paths: Enable in Sweden (#6516), by @paulklie
+- Information board topics: Add "rules" (#6580), by @NicodeH
+- Postbox royal cypher: Show "None" as normal answer option (#6490)
+- Max weight: Allow selecting multiple signs (#6589), by @paulklie
+- Other small refinements (#6445, #6511…)
+
+### Overlay improvements
+
+- Things: Added exercise equipment, moorings, buoys, disc golf, graves and pillory as things (#6546), by @paulklie
+- Places: don't show "it's vacant" option for already vacant places (#6462), by @paulklie
+- Places: Can now search for brands by terms (#6604)
+- Addresses: Allow omitting the street name (#6528)
+
+## v61.3
+
+### Quest improvements
+
+- Ask some quests (fee, opening hours, name, indoor, step count…) for more places and things (#5316, #5318, #5319, #6402, #6429, #6430, #6432 …), thanks @matkoniecz, @paulklie
+- Potable water: Don't force user to answer whether a water source without any sign is potable or not (#6421)
+- Other small refinements (#6410, #6418, #6408, #6422 …), thanks @mnalis, @burrscurr
+
+### Fixes
+
+- Don't show achievements the user hasn't unlocked yet (#6435)
+- Show "no unlocked links/achievements yet" text correctly
+- Max height: Fix text was white on white in dark mode (#6409)
+- Opening hours: Fix times were not displayed correctly around the hour clocks are put forward/backward (DST) (#6188)
+- Surface smoothness: Fix crash when encountering concrete plates (#6424)
+- Bike parking capacity: Don't show previous value on re-survey (#6443)
+- Places overlay: Don't auto-replace a feature if the new one is a subtype of the previous one or the other way round, but ask user (#6406)
+
+## v61.2
+
+### Quest improvements
+
+- Ask many quests (Fee, lit, name, internet access, opening hours, wheelchair access, …) for many more shops and amenities (#6345, #6349, #6353, #6357, #6358, #6359, #6365, #6368, #6374, #6382, #6383, #6386, #6396, #6397), by @paulklie, a few more by @matkoniecz
+- Max physical height: Clarify wording, don't ask for highways (#6367, #6362, #6363), by @kmpoppe
+- Motorcycle parking capacity: Don't ask if there are no markings at all (#6299), by @matkoniecz
+- Bike paths: Ask users to resurvey periodically also on living streets (#6369)
+- Fire hydrant diameter: Also ask in Ukraine (#6395)
+- Entrance type: Don't ask for entrances that (potentially) don't lead outside on street-level (#6392)
+- Traffic signals vibration: Don't ask in Czech Republic (#6224), by @matkoniecz
+
+### Fixes
+
+- Charging station car capacity: Don't ask for charging stations designated for bicycles etc. (#6388), by @paulklie
+- Fix a number of issues that may potentially cause bugs (#6307, #6311, #6315, #6317, #6321, #6332, #6322), by @RubenKelevra
+- Ferry routes: Only ask for actual ferry lines, not just connections (#6387, #6375), by @paulklie
+
 ## v61.1
 
 ### Fixes
-- Fix map attribution was shown in front of Next-button in tutorial 😬 (#6255)
+
+- Fix map attribution was shown in front of "Next" button in tutorial 😬 (#6255)
 - Fix opening the app at certain location would open it always at that location (#6264)
 - Wheelchair accessible toilets: Fix "no" answer shouldn't imply that there are toilets at all (#6257)
-- Places overlay: Fix some brand features were not selectable (#6272)
+- Places overlay: Fix some brand features were not selectable (#6267)
 - Building levels: Fix keyboard popped up automatically (#6284)
 
-### Improvements 
+### Improvements
+
 - Halal: Also ask for vegan-only places (#6280), by @mnalis
 - Road width: Disable by default (#6256)
 - Track type: Use better pictures (#6242), by @Caerbannog

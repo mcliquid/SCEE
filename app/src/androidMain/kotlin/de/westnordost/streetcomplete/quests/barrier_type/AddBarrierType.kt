@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.quests.barrier_type
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BLIND
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
@@ -11,7 +12,7 @@ import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.WHEELCHAIR
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddBarrierType : OsmFilterQuestType<BarrierType>() {
+class AddBarrierType : OsmFilterQuestType<BarrierType>(), AndroidQuest {
 
     override val elementFilter = """
         nodes with barrier = yes
@@ -32,7 +33,7 @@ class AddBarrierType : OsmFilterQuestType<BarrierType>() {
     """
     override val changesetComment = "Specify type of barriers"
     override val wikiLink = "Key:barrier"
-    override val icon = R.drawable.ic_quest_barrier
+    override val icon = R.drawable.quest_barrier
     override val isDeleteElementEnabled = true
     override val achievements = listOf(CAR, PEDESTRIAN, BLIND, WHEELCHAIR, BICYCLIST, OUTDOORS)
 

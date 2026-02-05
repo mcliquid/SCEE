@@ -44,7 +44,7 @@
             android:layout_centerVertical="true"
             android:layout_toEndOf="@+id/capacityMultiplierLabel"
             android:id="@+id/capacityBikeImage"
-            android:background="@drawable/ic_quest_wheelchair" />
+            android:background="@drawable/quest_wheelchair" />
 
     </RelativeLayout>
 </LinearLayout>

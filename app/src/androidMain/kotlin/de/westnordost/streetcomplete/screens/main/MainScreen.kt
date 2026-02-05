@@ -1,8 +1,5 @@
 package de.westnordost.streetcomplete.screens.main
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.view.KeyEvent
 import android.widget.Toast
@@ -26,7 +23,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
@@ -45,17 +41,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.messages.Message
+import de.westnordost.streetcomplete.data.user.UserLoginController
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.location_dot_small
+import de.westnordost.streetcomplete.resources.map_attribution_osm
 import de.westnordost.streetcomplete.screens.about.AboutActivity
 import de.westnordost.streetcomplete.screens.main.controls.AttributionButton
 import de.westnordost.streetcomplete.screens.main.controls.AttributionLink
@@ -78,6 +76,7 @@ import de.westnordost.streetcomplete.screens.main.errors.LastCrashEffect
 import de.westnordost.streetcomplete.screens.main.errors.LastDownloadErrorEffect
 import de.westnordost.streetcomplete.screens.main.errors.LastUploadErrorEffect
 import de.westnordost.streetcomplete.screens.main.messages.MessageDialog
+import de.westnordost.streetcomplete.screens.main.overlays.OverlayQuickSelector
 import de.westnordost.streetcomplete.screens.main.overlays.OverlaySelectionDropdownMenu
 import de.westnordost.streetcomplete.screens.main.teammode.TeamModeWizard
 import de.westnordost.streetcomplete.screens.main.urlconfig.ApplyUrlConfigEffect
@@ -95,8 +94,9 @@ import de.westnordost.streetcomplete.ui.ktx.pxToDp
 import de.westnordost.streetcomplete.util.ktx.sendErrorReportEmail
 import de.westnordost.streetcomplete.util.ktx.toast
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import kotlin.math.PI
-import kotlin.math.abs
 
 /** Map controls shown on top of the map. */
 @Composable
@@ -163,6 +163,7 @@ fun MainScreen(
 
     val showQuickSettings by viewModel.showQuickSettings.collectAsState()
     var showQuickSettingsMenu by remember { mutableStateOf(false) }
+    val showOverlaySelector by viewModel.showOverlaySelector.collectAsState()
 
     var showOverlaysDropdown by remember { mutableStateOf(false) }
     var showOverlaysTutorial by remember { mutableStateOf(false) }
@@ -176,7 +177,7 @@ fun MainScreen(
     val mapTilt = mapCamera?.tilt ?: 0.0
 
     val mapAttribution = listOf(
-        AttributionLink(stringResource(R.string.map_attribution_osm), "https://osm.org/copyright"),
+        AttributionLink(stringResource(Res.string.map_attribution_osm), "https://osm.org/copyright"),
         AttributionLink("© JawgMaps", "https://jawg.io")
     )
 
@@ -198,7 +199,8 @@ fun MainScreen(
         if (viewModel.isConnected) {
             viewModel.upload()
         } else {
-            context.toast(R.string.offline)
+            if (ApplicationConstants.DEBUG && !UserLoginController.loggedIn) viewModel.upload()
+            else context.toast(R.string.offline)
         }
     }
 
@@ -243,7 +245,7 @@ fun MainScreen(
                 onClick = onClickLocationPointer,
                 rotate = rotation.toFloat(),
                 modifier = Modifier.absoluteOffset(offset.x.pxToDp(), offset.y.pxToDp()),
-            ) { Image(painterResource(R.drawable.location_dot_small), null) }
+            ) { Image(painterResource(Res.drawable.location_dot_small), null) }
         }
 
         Box(Modifier
@@ -266,38 +268,50 @@ fun MainScreen(
             }
 
             // top-end controls
-            Row(
+            Column(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                AnimatedVisibility(hasMessages) {
-                    MessagesButton(
-                        onClick = ::onClickMessages,
-                        messagesCount = messagesCount
-                    )
-                }
-                if (overlays.isNotEmpty()) {
-                    Box {
-                        OverlaySelectionButton(
-                            onClick = ::onClickOverlays,
-                            overlay = selectedOverlay
-                        )
-                        OverlaySelectionDropdownMenu(
-                            expanded = showOverlaysDropdown,
-                            onDismissRequest = { showOverlaysDropdown = false },
-                            overlays = overlays,
-                            onSelect = { viewModel.selectOverlay(it) }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    AnimatedVisibility(hasMessages) {
+                        MessagesButton(
+                            onClick = ::onClickMessages,
+                            messagesCount = messagesCount
                         )
                     }
-                }
+                    if (overlays.isNotEmpty()) {
+                        Box {
+                            OverlaySelectionButton(
+                                onClick = ::onClickOverlays,
+                                overlay = selectedOverlay
+                            )
+                            OverlaySelectionDropdownMenu(
+                                expanded = showOverlaysDropdown,
+                                onDismissRequest = { showOverlaysDropdown = false },
+                                overlays = overlays,
+                                onSelect = { viewModel.selectOverlay(it) }
+                            )
+                        }
+                    }
 
-                MainMenuButton(
-                    onClick = { showMainMenuDialog = true },
-                    unsyncedEditsCount = if (!isAutoSync) unsyncedEditsCount else 0,
-                    indexInTeam = if (isTeamMode) indexInTeam else null
-                )
+                    MainMenuButton(
+                        onClick = { showMainMenuDialog = true },
+                        unsyncedEditsCount = if (!isAutoSync) unsyncedEditsCount else 0,
+                        indexInTeam = if (isTeamMode) indexInTeam else null
+                    )
+                }
+                if (showOverlaySelector)
+                    // todo: avoid overlap with bottom controls
+                    OverlayQuickSelector(
+                        overlays = overlays,
+                        selectedOverlay = selectedOverlay,
+                        modifier = Modifier.align(Alignment.End),
+                        onOverlaySelected = { viewModel.selectOverlay(it) }
+                    )
             }
 
             // bottom controls
@@ -314,20 +328,11 @@ fun MainScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         horizontalAlignment = Alignment.End,
                     ) {
-                        val isCompassVisible = abs(mapRotation) >= 1.0 || abs(mapTilt) >= 1.0
-                        AnimatedVisibility(
-                            visible = isCompassVisible,
-                            enter = fadeIn(),
-                            exit = fadeOut()
-                        ) {
-                            CompassButton(
-                                onClick = onClickCompass,
-                                modifier = Modifier.graphicsLayer(
-                                    rotationZ = -mapRotation.toFloat(),
-                                    rotationX = mapTilt.toFloat()
-                                )
-                            )
-                        }
+                        CompassButton(
+                            onClick = onClickCompass,
+                            rotation = -mapRotation.toFloat(),
+                            tilt = mapTilt.toFloat(),
+                        )
                         if (showZoomButtons) {
                             ZoomButtons(
                                 onZoomIn = onClickZoomIn,
@@ -501,9 +506,6 @@ fun MainScreen(
         LastUploadErrorEffect(lastError = error, onReportError = ::sendErrorReport)
     }
     lastCrashReport?.let { report ->
-        val clip = ClipData.newPlainText("SCEE error message", report)
-        (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(clip)
-        context.toast("crash report copied to clipboard")
         LastCrashEffect(lastReport = report, onReport = { context.sendErrorReportEmail(it) })
     }
 

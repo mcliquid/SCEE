@@ -7,8 +7,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
 
-class AddGuidepostSports : OsmFilterQuestType<GuidepostSportsAnswer>() {
+class AddGuidepostSports : OsmFilterQuestType<Set<GuidepostSportsAnswer>>(), AndroidQuest {
 
     override val elementFilter =
         """
@@ -24,8 +27,9 @@ class AddGuidepostSports : OsmFilterQuestType<GuidepostSportsAnswer>() {
     override val wikiLink = "Tag:information=guidepost"
     override val icon = R.drawable.ic_quest_guidepost_sport
     override val isDeleteElementEnabled = true
-    override val defaultDisabledMessage = R.string.default_disabled_msg_ee
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
 
+    override val hint = R.string.quest_guidepost_sports_note
     override fun getTitle(tags: Map<String, String>) = R.string.quest_guidepost_sports_title
 
     override fun createForm() = AddGuidepostSportsForm()
@@ -33,13 +37,16 @@ class AddGuidepostSports : OsmFilterQuestType<GuidepostSportsAnswer>() {
     override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry) =
         getMapData().filter("nodes with tourism = information and information ~ guidepost|route_marker")
 
-    override fun applyAnswerTo(answer: GuidepostSportsAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
-        if (answer is IsSimpleGuidepost) {
-            applySimpleGuidepostAnswer(tags)
-        } else if (answer is SelectedGuidepostSports) {
-            answer.selectedSports.forEach { tags[it.key] = "yes" }
+    override fun applyAnswerTo(answer: Set<GuidepostSportsAnswer>, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+        answer.forEach {
+            if (it is IsSimpleGuidepost) {
+                applySimpleGuidepostAnswer(tags)
+            } else if (it is GuidepostSport) {
+                tags[it.key] = "yes"
+            }
         }
     }
+
     private fun applySimpleGuidepostAnswer(tags: Tags) {
         tags["guidepost"] = "simple"
     }

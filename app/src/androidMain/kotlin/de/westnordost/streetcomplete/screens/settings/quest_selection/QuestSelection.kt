@@ -3,10 +3,10 @@ package de.westnordost.streetcomplete.screens.settings.quest_selection
 import androidx.compose.runtime.Immutable
 import de.westnordost.streetcomplete.ApplicationConstants.EE_QUEST_OFFSET
 import de.westnordost.streetcomplete.Prefs
-import de.westnordost.streetcomplete.data.osmnotes.notequests.OsmNoteQuestType
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.quest.QuestType
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
+import de.westnordost.streetcomplete.quests.note_discussion.OsmNoteQuestType
 
 @Immutable
 data class QuestSelection(

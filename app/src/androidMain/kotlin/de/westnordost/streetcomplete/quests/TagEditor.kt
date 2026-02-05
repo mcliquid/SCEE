@@ -3,6 +3,8 @@ package de.westnordost.streetcomplete.quests
 import android.annotation.SuppressLint
 import android.app.ActionBar.LayoutParams
 import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.icu.text.DateFormat
 import android.os.Build
 import android.os.Bundle
@@ -39,10 +41,12 @@ import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuest
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestController
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
-import de.westnordost.streetcomplete.data.location.RecentLocationStore
+import de.westnordost.streetcomplete.data.location.SurveyChecker
+import de.westnordost.streetcomplete.data.osm.edits.tagEdit
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.createChanges
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.overlays.OverlayRegistry
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.quest.ExternalSourceQuestKey
 import de.westnordost.streetcomplete.data.quest.OsmQuestKey
 import de.westnordost.streetcomplete.data.quest.QuestKey
@@ -64,7 +68,6 @@ import de.westnordost.streetcomplete.util.ktx.showKeyboard
 import de.westnordost.streetcomplete.util.ktx.updateMargins
 import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
-import de.westnordost.streetcomplete.view.checkIsSurvey
 import de.westnordost.streetcomplete.view.confirmIsSurvey
 import de.westnordost.streetcomplete.view.insets_animation.respectSystemInsets
 import kotlinx.coroutines.Deferred
@@ -75,7 +78,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.android.inject
 import org.koin.core.qualifier.named
@@ -96,6 +98,9 @@ open class TagEditor : Fragment(), IsCloseableBottomSheet {
     protected val binding: EditTagsBinding get() = _binding!!
     private var updateQuestsJob: Job? = null
     private var minBottomInset = Int.MAX_VALUE
+    private val cFilter by lazy {
+        PorterDuffColorFilter(ContextCompat.getColor(requireContext(), R.color.text), PorterDuff.Mode.SRC_ATOP)
+    }
 
     private val osmQuestController: OsmQuestController by inject()
     protected val prefs: ObservableSettings by inject()
@@ -105,7 +110,7 @@ open class TagEditor : Fragment(), IsCloseableBottomSheet {
     private val externalSourceQuestController: ExternalSourceQuestController by inject()
     private val questTypeRegistry: QuestTypeRegistry by inject()
     private val overlayRegistry: OverlayRegistry by inject()
-    protected val recentLocationStore: RecentLocationStore by inject()
+    protected val surveyChecker: SurveyChecker by inject()
 
     protected lateinit var originalElement: Element
     protected lateinit var element: Element // element with adjusted tags and edit date
@@ -120,6 +125,7 @@ open class TagEditor : Fragment(), IsCloseableBottomSheet {
         scaleY = 0.8f
         layoutParams = questIconParameters
         setOnClickListener { requireActivity().currentFocus?.showKeyboard() }
+        colorFilter = cFilter
     } }
 
     // those 2 are lazy because resources require context to be initialized
@@ -199,7 +205,7 @@ open class TagEditor : Fragment(), IsCloseableBottomSheet {
                 AlertDialog.Builder(requireContext())
                     .setTitle(R.string.open_url)
                     .setMessage(url)
-                    .setPositiveButton(android.R.string.ok) { _, _ -> openUri(url) }
+                    .setPositiveButton(android.R.string.ok) { _, _ -> requireContext().openUri(url) }
                     .setNegativeButton(android.R.string.cancel, null)
                     .show()
             }
@@ -229,7 +235,7 @@ open class TagEditor : Fragment(), IsCloseableBottomSheet {
         binding.questsGrid.columnCount = resources.displayMetrics.widthPixels / (questIconWidth + 3 * (resources.displayMetrics.density * 2 + 0.5f).toInt()) // last part is for the margins of icons and view
         // add "new tag" button
         binding.questsGrid.addView(ImageButton(requireContext()).apply {
-            setImageResource(R.drawable.ic_add_24dp)
+            setImageResource(R.drawable.ic_add_24)
             setBackgroundColor(ContextCompat.getColor(context, R.color.background))
             layoutParams = questIconParameters
             setOnClickListener {
@@ -247,6 +253,7 @@ open class TagEditor : Fragment(), IsCloseableBottomSheet {
                 }
                 showOk()
             }
+            colorFilter = cFilter
         })
         binding.editTags.viewTreeObserver.addOnGlobalFocusChangeListener { _, _ ->
             val binding = _binding ?: return@addOnGlobalFocusChangeListener
@@ -282,6 +289,7 @@ open class TagEditor : Fragment(), IsCloseableBottomSheet {
                         viewLifecycleScope.launch(Dispatchers.IO) { updateQuests(0) }
                         showOk()
                     }
+                    colorFilter = cFilter
                 })
         }
 
@@ -327,7 +335,7 @@ open class TagEditor : Fragment(), IsCloseableBottomSheet {
     @UiThread
     @SuppressLint("NotifyDataSetChanged")
     private fun showQuest(quest: OsmQuest) {
-        val f = quest.type.createForm()
+        val f = if (quest.type is AndroidQuest) quest.type.createForm() else return
         if (f.arguments == null) f.arguments = bundleOf()
         val initialMapRotation = arguments?.getDouble(ARG_MAP_ROTATION) ?: 0.0
         val initialMapTilt = arguments?.getDouble(ARG_MAP_TILT) ?: 0.0
@@ -381,7 +389,7 @@ open class TagEditor : Fragment(), IsCloseableBottomSheet {
     }
 
     protected open suspend fun applyEdit() {
-        val isSurvey = checkIsSurvey(geometry, recentLocationStore.get())
+        val isSurvey = surveyChecker.checkIsSurvey(geometry)
         if (!isSurvey && !confirmIsSurvey(requireContext()))
             return
         val builder = element.tags.createChanges(originalElement.tags)
@@ -402,8 +410,10 @@ open class TagEditor : Fragment(), IsCloseableBottomSheet {
 
     private fun tagsChangedAndOk(): Boolean =
         originalElement.tags != HashMap<String, String>().apply {
-            putAll(newTags)
-            entries.removeAll { it.key.isBlank() && it.value.isBlank() }
+            newTags.forEach { (k, v) ->
+                if (k.isBlank() || v.isBlank()) return@forEach
+                put(k.trim(), v.trim())
+            }
         }
             && newTags.none {
                 (it.key.isBlank() && it.value.isNotBlank()) || (it.value.isBlank() && it.key.isNotBlank())
@@ -411,7 +421,7 @@ open class TagEditor : Fragment(), IsCloseableBottomSheet {
             && newTags.keys.all { it.length < 255 }
             && newTags.values.all { it.length < 255 }
             && (newTags.isNotEmpty() || mapDataSource.getWaysForNode(originalElement.id).isNotEmpty()) // allow deleting all tags if node is part of a way
-            && newTags.keys.none { problematicKeyCharacters.containsMatchIn(it) }
+            && newTags.keys.none { problematicKeyCharacters.containsMatchIn(it.trim()) } // trim happens on ok, so no need to fail a check. see #822 / #824
 
     private fun showOk() = requireActivity().runOnUiThread { if (tagsChangedAndOk()) binding.okButton.popIn() else binding.okButton.popOut() }
 
@@ -482,15 +492,6 @@ open class TagEditor : Fragment(), IsCloseableBottomSheet {
         var changes: StringMapChanges? = null
         var showingTagEditor = false
     }
-}
-
-
-val tagEdit = object : ElementEditType {
-    override val changesetComment = "Edit element"
-    override val icon = R.drawable.ic_edit_tags
-    override val title = R.string.quest_generic_answer_show_edit_tags
-    override val wikiLink: String? = null
-    override val name = "TagEdit"
 }
 
 private val emptyEntry = "" to ""

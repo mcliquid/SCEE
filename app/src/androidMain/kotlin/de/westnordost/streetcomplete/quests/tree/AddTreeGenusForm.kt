@@ -1,6 +1,5 @@
 package de.westnordost.streetcomplete.quests.tree
 
-import android.content.Context
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.doOnLayout
@@ -110,7 +109,7 @@ class AddTreeGenusForm : AbstractOsmQuestForm<TreeAnswer>() {
     }
 
     private val lastPickedAnswers by lazy {
-        prefs.getLastPicked(javaClass.simpleName).takeFavorites(20, 50, 1)
+        prefs.getLastPicked<String>(javaClass.simpleName).takeFavorites(20, 50, 1)
     }
 
     private fun loadTrees(): Set<Tree> {

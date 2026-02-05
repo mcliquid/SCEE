@@ -1,19 +1,15 @@
 package de.westnordost.streetcomplete.quests.lamp_mount
 
-import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.quests.AListQuestForm
-import de.westnordost.streetcomplete.ui.common.TextItem
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import de.westnordost.streetcomplete.quests.ARadioGroupQuestForm
 
-class AddLampMountForm : AListQuestForm<LampMountAnswer>() {
-    override val items: List<TextItem<LampMountAnswer>> = listOf(
-        TextItem(LampMount("straight_mast"), R.string.quest_lampMount_straightMast),
-        TextItem(LampMount("bent_mast"), R.string.quest_lampMount_bentMast),
-        TextItem(LampMount("suspended"), R.string.quest_lampMount_suspended),
-        TextItem(LampMount("angled_mast"), R.string.quest_lampMount_angledMast),
-        TextItem(LampMount("high_mast"), R.string.quest_lampMount_highMast),
-        TextItem(LampMount("bollard"), R.string.quest_lampMount_bollard),
-        TextItem(LampMount("wall"), R.string.quest_lampMount_wall),
-        TextItem(Support("ceiling"), R.string.quest_lampMount_ceiling),
-        TextItem(Support("street_furniture:transit_shelter"), R.string.quest_lampMount_transitShelter),
-    )
+class AddLampMountForm : ARadioGroupQuestForm<LampMountAnswer, LampMountAnswer>() {
+    override val items: List<LampMountAnswer> = LampMount.entries + Support.entries
+
+    @Composable override fun BoxScope.ItemContent(item: LampMountAnswer) {
+        Text(stringResource(item.title))
+    }
 }

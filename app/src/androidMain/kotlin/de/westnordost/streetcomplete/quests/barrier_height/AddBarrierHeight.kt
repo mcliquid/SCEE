@@ -6,10 +6,14 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.screens.measure.ArSupportChecker
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
+import de.westnordost.streetcomplete.resources.default_disabled_msg_no_ar
 
 class AddBarrierHeight(
     private val checkArSupport: ArSupportChecker
-) : OsmFilterQuestType<BarrierHeightAnswer>() {
+) : OsmFilterQuestType<BarrierHeightAnswer>(), AndroidQuest {
 
     override val elementFilter = """
         ways with
@@ -21,8 +25,8 @@ class AddBarrierHeight(
     override val wikiLink = "Key:height"
     override val icon = R.drawable.ic_quest_barrier_height
     override val achievements = listOf(EditTypeAchievement.PEDESTRIAN)
-    override val defaultDisabledMessage: Int
-        get() = if (!checkArSupport()) R.string.default_disabled_msg_no_ar else R.string.default_disabled_msg_ee
+    override val defaultDisabledMessage
+        get() = if (!checkArSupport()) Res.string.default_disabled_msg_no_ar else Res.string.default_disabled_msg_ee
 
     override fun getTitle(tags: Map<String, String>): Int {
         return R.string.quest_barrier_height_title

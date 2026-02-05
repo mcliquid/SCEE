@@ -1,33 +1,31 @@
 package de.westnordost.streetcomplete.quests.via_ferrata_scale
 
 import android.os.Bundle
-import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.quests.AImageListQuestForm
-import de.westnordost.streetcomplete.view.image_select.DisplayItem
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import de.westnordost.streetcomplete.quests.AItemSelectQuestForm
+import de.westnordost.streetcomplete.ui.common.item_select.ImageWithDescription
+import kotlinx.serialization.serializer
 
-class AddViaFerrataScaleForm : AImageListQuestForm<ViaFerrataScale, ViaFerrataScale>() {
+class AddViaFerrataScaleForm : AItemSelectQuestForm<ViaFerrataScale, ViaFerrataScale>() {
 
-    override val items: List<DisplayItem<ViaFerrataScale>> get() = listOf(
-        ViaFerrataScale.ZERO,
-        ViaFerrataScale.ONE,
-        ViaFerrataScale.TWO,
-        ViaFerrataScale.THREE,
-        ViaFerrataScale.FOUR,
-        ViaFerrataScale.FIVE,
-        ViaFerrataScale.SIX
-    ).toItems()
-
+    override val items = ViaFerrataScale.entries
     // optional: add quest_viaFerrataScale_hint text, but quest is already very long
 
     override val itemsPerRow = 1
     override val moveFavoritesToFront = false
+    override val serializer = serializer<ViaFerrataScale>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        imageSelector.cellLayoutId = R.layout.cell_labeled_icon_select_via_ferrata_scale
+    @Composable override fun ItemContent(item: ViaFerrataScale) {
+        ImageWithDescription(painterResource(item.imageResId), stringResource(item.titleResId), stringResource(item.descriptionResId))
     }
 
-    override fun onClickOk(selectedItems: List<ViaFerrataScale>) {
-        applyAnswer(selectedItems.first())
+    override fun onClickOk(selectedItem: ViaFerrataScale) {
+        applyAnswer(selectedItem)
+    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+//        imageSelector.cellLayoutId = R.layout.cell_labeled_icon_select_via_ferrata_scale
     }
 }

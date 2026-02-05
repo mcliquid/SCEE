@@ -13,6 +13,7 @@ import de.westnordost.streetcomplete.testutils.mock
 import de.westnordost.streetcomplete.testutils.mockPrefs3
 import de.westnordost.streetcomplete.testutils.note
 import de.westnordost.streetcomplete.testutils.on
+import de.westnordost.streetcomplete.testutils.osmNoteQuest
 import de.westnordost.streetcomplete.testutils.p
 import de.westnordost.streetcomplete.util.ktx.containsExactlyInAnyOrder
 import org.mockito.Mockito.verify
@@ -138,7 +139,7 @@ class OsmNoteQuestControllerTest {
         ))
         on(prefs.showAllNotes).thenReturn(false)
 
-        assertEquals(OsmNoteQuest(1, p(1.0, 1.0)), ctrl.get(1))
+        assertEquals(osmNoteQuest(1, p(1.0, 1.0)), ctrl.get(1))
     }
 
     @Test fun `get quest phrased as question in other scripts returns non-null`() {
@@ -168,7 +169,7 @@ class OsmNoteQuestControllerTest {
         ))
         on(prefs.showAllNotes).thenReturn(false)
 
-        assertEquals(OsmNoteQuest(1, p(1.0, 1.0)), ctrl.get(1))
+        assertEquals(osmNoteQuest(1, p(1.0, 1.0)), ctrl.get(1))
     }
 
     @Test fun `get quest not phrased as question returns non-null by preference`() {
@@ -179,7 +180,7 @@ class OsmNoteQuestControllerTest {
         ))
         on(prefs.showAllNotes).thenReturn(true)
 
-        assertEquals(OsmNoteQuest(1, p(1.0, 1.0)), ctrl.get(1))
+        assertEquals(osmNoteQuest(1, p(1.0, 1.0)), ctrl.get(1))
     }
 
     // not doing all the tests for getAll again because it uses the same functions
@@ -191,7 +192,7 @@ class OsmNoteQuestControllerTest {
         on(noteSource.getAll(bbox)).thenReturn(notes)
         on(prefs.showAllNotes).thenReturn(true)
 
-        val expectedQuests = notes.map { OsmNoteQuest(it.id, it.position) }
+        val expectedQuests = notes.map { osmNoteQuest(it.id, it.position) }
 
         assertEquals(
             expectedQuests,
@@ -220,7 +221,7 @@ class OsmNoteQuestControllerTest {
 
         verify(listener).onUpdated(
             added = argThat {
-                it.containsExactlyInAnyOrder(listOf(OsmNoteQuest(1, p()), OsmNoteQuest(2, p())))
+                it.containsExactlyInAnyOrder(listOf(osmNoteQuest(1, p()), osmNoteQuest(2, p())))
             },
             deleted = argThat { it.containsExactlyInAnyOrder(listOf(3)) }
         )

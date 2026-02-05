@@ -4,12 +4,13 @@ import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.quest.AllCountriesExcept
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.YesNoQuestForm
 import de.westnordost.streetcomplete.util.ktx.toYesNo
 
-class AddToiletsFee : OsmFilterQuestType<Boolean>() {
+class AddToiletsFee : OsmFilterQuestType<Boolean>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways with
@@ -20,7 +21,7 @@ class AddToiletsFee : OsmFilterQuestType<Boolean>() {
     """
     override val changesetComment = "Specify toilet fees"
     override val wikiLink = "Key:fee"
-    override val icon = R.drawable.ic_quest_toilet_fee
+    override val icon = R.drawable.quest_toilet_fee
     override val enabledInCountries = AllCountriesExcept("US", "CA")
     override val isDeleteElementEnabled = true
     override val achievements = listOf(CITIZEN)

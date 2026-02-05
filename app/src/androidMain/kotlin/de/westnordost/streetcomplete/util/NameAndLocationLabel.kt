@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.util
 
 import android.content.res.Resources
 import android.text.Spanned
+import androidx.compose.ui.text.intl.Locale
 import androidx.core.text.parseAsHtml
 import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.R
@@ -9,7 +10,6 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.osm.ALL_ROADS
 import de.westnordost.streetcomplete.util.html.replaceHtmlEntities
 import de.westnordost.streetcomplete.util.ktx.getFeature
-import java.util.Locale
 
 fun getNameAndLocationSpanned(
     element: Element,
@@ -34,7 +34,7 @@ fun getNameAndLocationHtml(
     val name = getNameLabel(element.tags)
         ?.withNonBreakingSpaces()
         ?.inBold()
-    val taxon = getTreeTaxon(element.tags, Locale.getDefault().language)
+    val taxon = getTreeTaxon(element.tags, Locale.current.language)
 
     val featureEx = if (taxon != null && feature != null) {
         resources.getString(R.string.label_feature_taxon, feature, taxon)
@@ -171,6 +171,7 @@ private fun getHouseNumberHtml(tags: Map<String, String>, resources: Resources):
     val conscriptionNumber = tags["addr:conscriptionnumber"]
     val streetNumber = tags["addr:streetnumber"]
     val houseNumber = tags["addr:housenumber"]
+    val subHouseNumber = tags["addr:unit"] ?: tags["addr:flats"]
 
     if (houseName != null) {
         return resources.getString(R.string.at_housename, houseName.inItalics())
@@ -180,22 +181,25 @@ private fun getHouseNumberHtml(tags: Map<String, String>, resources: Resources):
         return resources.getString(R.string.at_housenumber, number)
     }
     if (houseNumber != null) {
-        return resources.getString(R.string.at_housenumber, houseNumber)
+        val houseNumberEx = if (subHouseNumber != null) "$houseNumber $subHouseNumber" else houseNumber
+        return resources.getString(R.string.at_housenumber, houseNumberEx)
     }
     return null
 }
 
 /** Returns just the house number as it would be signed if set, e.g. "123" */
-fun getShortHouseNumber(map: Map<String, String>): String? {
-    val houseName = map["addr:housename"]
-    val conscriptionNumber = map["addr:conscriptionnumber"]
-    val streetNumber = map["addr:streetnumber"]
-    val houseNumber = map["addr:housenumber"]
+fun getShortHouseNumber(tags: Map<String, String>): String? {
+    val houseName = tags["addr:housename"]
+    val conscriptionNumber = tags["addr:conscriptionnumber"]
+    val streetNumber = tags["addr:streetnumber"]
+    val houseNumber = tags["addr:housenumber"]
+    val subHouseNumber = tags["addr:unit"] ?: tags["addr:flats"]
 
     return when {
         houseName != null -> houseName
         conscriptionNumber != null && streetNumber != null -> "$conscriptionNumber / $streetNumber"
         conscriptionNumber != null -> conscriptionNumber
+        houseNumber != null && subHouseNumber != null -> "$houseNumber $subHouseNumber"
         houseNumber != null -> houseNumber
         else -> null
     }
@@ -204,4 +208,4 @@ fun getShortHouseNumber(map: Map<String, String>): String? {
 private fun String.inBold(): String = "<b>${replaceHtmlEntities()}</b>"
 private fun String.inItalics(): String = "<i>${replaceHtmlEntities()}</i>"
 
-private fun String.withNonBreakingSpaces(): String = replace(' ', ' ')
+private fun String.withNonBreakingSpaces(): String = replace(' ', '\u00A0')

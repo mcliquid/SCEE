@@ -1,6 +1,8 @@
 package de.westnordost.streetcomplete.quests.roof_colour
 
-import de.westnordost.streetcomplete.view.image_select.OsmColour
+import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.quests.building_colour.OsmColour
+import de.westnordost.streetcomplete.quests.roof_shape.RoofShape
 
 enum class RoofColour(override val osmValue: String, override val androidValue: String?) :
     OsmColour {
@@ -30,3 +32,24 @@ enum class RoofColour(override val osmValue: String, override val androidValue: 
     AQUA("aqua", "#00ffff"),
     FUCHSIA("fuchsia", "#ff00ff"),
 }
+
+val RoofShape.colorIconResId: Int?
+    get() = when (this) {
+        RoofShape.GABLED ->            R.drawable.ic_roof_colour_gabled
+        RoofShape.HIPPED ->            R.drawable.ic_roof_colour_hipped
+        RoofShape.FLAT ->              R.drawable.ic_roof_colour_flat
+        RoofShape.PYRAMIDAL ->         R.drawable.ic_roof_colour_pyramidal
+        RoofShape.HALF_HIPPED ->       R.drawable.ic_roof_colour_half_hipped
+        RoofShape.SKILLION ->          R.drawable.ic_roof_colour_skillion
+        RoofShape.GAMBREL ->           R.drawable.ic_roof_colour_gambrel
+        RoofShape.ROUND ->             R.drawable.ic_roof_colour_round
+        RoofShape.DOUBLE_SALTBOX ->    R.drawable.ic_roof_colour_double_saltbox
+        RoofShape.SALTBOX ->           R.drawable.ic_roof_colour_saltbox
+        RoofShape.MANSARD ->           R.drawable.ic_roof_colour_mansard
+        RoofShape.DOME ->              R.drawable.ic_roof_colour_dome
+        RoofShape.QUADRUPLE_SALTBOX -> R.drawable.ic_roof_colour_quadruple_saltbox
+        RoofShape.ROUND_GABLED ->      R.drawable.ic_roof_colour_round_gabled
+        RoofShape.ONION ->             R.drawable.ic_roof_colour_onion
+        RoofShape.CONE ->              R.drawable.ic_roof_colour_cone
+        else ->                        null
+    }

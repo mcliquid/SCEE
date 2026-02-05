@@ -6,6 +6,7 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.quest.NoCountriesExcept
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.RARE
@@ -15,7 +16,7 @@ import de.westnordost.streetcomplete.quests.YesNoQuestForm
 import de.westnordost.streetcomplete.util.ktx.toYesNo
 import de.westnordost.streetcomplete.util.math.distanceToArcs
 
-class AddSummitRegister : OsmElementQuestType<Boolean> {
+class AddSummitRegister : OsmElementQuestType<Boolean>, AndroidQuest {
 
     private val filter by lazy { """
         nodes with
@@ -26,7 +27,7 @@ class AddSummitRegister : OsmElementQuestType<Boolean> {
 
     override val changesetComment = "Specify whether summit registers are present"
     override val wikiLink = "Key:summit:register"
-    override val icon = R.drawable.ic_quest_peak
+    override val icon = R.drawable.quest_peak
     override val achievements = listOf(RARE, OUTDOORS)
     override val enabledInCountries = NoCountriesExcept(
         // regions gathered in

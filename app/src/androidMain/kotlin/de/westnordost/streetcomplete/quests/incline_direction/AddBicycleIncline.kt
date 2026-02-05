@@ -7,11 +7,12 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.util.math.measuredLength
 
-class AddBicycleIncline : OsmElementQuestType<BicycleInclineAnswer> {
+class AddBicycleIncline : OsmElementQuestType<BicycleInclineAnswer>, AndroidQuest {
 
     private val tagFilter by lazy { """
         ways with mtb:scale:uphill
@@ -24,7 +25,7 @@ class AddBicycleIncline : OsmElementQuestType<BicycleInclineAnswer> {
 
     override val changesetComment = "Specify which way leads up (where mtb:scale:uphill is present)"
     override val wikiLink = "Key:incline"
-    override val icon = R.drawable.ic_quest_bicycle_incline
+    override val icon = R.drawable.quest_bicycle_incline
     override val achievements = listOf(BICYCLIST)
     override val hasMarkersAtEnds = false
 

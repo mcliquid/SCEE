@@ -44,7 +44,6 @@ import androidx.core.widget.doAfterTextChanged
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.StreetCompleteApplication
 import de.westnordost.streetcomplete.data.Cleaner
 import de.westnordost.streetcomplete.data.ConflictAlgorithm
 import de.westnordost.streetcomplete.data.Database
@@ -158,7 +157,7 @@ fun DataManagementScreen(
             )
             Preference(
                 name = stringResource(R.string.pref_tile_source_title),
-                onClick = { showRasterUrlDialog(ctx, StreetCompleteApplication.preferences) },
+                onClick = { showRasterUrlDialog(ctx, Prefs.sharedPreferences) },
             )
             Preference(
                 name = stringResource(R.string.pref_delete_old_data_after),
@@ -432,7 +431,7 @@ private fun exportPresets(ids: Collection<Long>, uri: Uri, activity: Activity, d
                 c.getLong(VisibleEditTypeTable.Columns.VISIBILITY).toString()
         }
         val perPresetQuestSetting = "\\d+_qs_.+".toRegex()
-        val questSettings = StreetCompleteApplication.preferences.all.filterKeys { it.matches(perPresetQuestSetting) && it.substringBefore('_').toLongOrNull() in ids }
+        val questSettings = Prefs.sharedPreferences.all.filterKeys { it.matches(perPresetQuestSetting) && it.substringBefore('_').toLongOrNull() in ids }
 
         os.bufferedWriter().use {
             it.appendLine(version.toString())
@@ -497,7 +496,7 @@ private fun exportOverlays(uri: Uri, activity: Activity, scPrefs: Preferences) {
 }
 
 private fun exportCustomOverlays(indices: Collection<String>, uri: Uri, activity: Activity) {
-    val prefs = StreetCompleteApplication.preferences
+    val prefs = Prefs.sharedPreferences
     val filterRegex = "custom_overlay_(?:${indices.joinToString("|")})_.*".toRegex()
     val settings = prefs.all.filterKeys { filterRegex.matches(it) }.toMutableMap()
     settings[Prefs.CUSTOM_OVERLAY_INDICES] = indices.joinToString(",")
@@ -511,7 +510,7 @@ private fun exportCustomOverlays(indices: Collection<String>, uri: Uri, activity
 
 private fun exportSettings(uri: Uri, activity: Activity) {
     val perPresetQuestSetting = "\\d+_qs_.+".toRegex()
-    val settings = StreetCompleteApplication.preferences.all.filterKeys {
+    val settings = Prefs.sharedPreferences.all.filterKeys {
         !it.contains("TangramPinsSpriteSheet") // this is huge and gets generated if missing anyway
             && !it.contains("TangramIconsSpriteSheet") // this is huge and gets generated if missing anyway
             && it != Preferences.OAUTH2_ACCESS_TOKEN // login
@@ -534,7 +533,7 @@ private fun importOverlays(uri: Uri, activity: Activity) {
 private fun importCustomOverlays(uri: Uri, replaceExisting: Boolean, activity: Activity): Boolean {
     val lines = activity.contentResolver?.openInputStream(uri)?.use { it.reader().readLines() } ?: return false
     if (lines.first() != "overlays") return false
-    val prefs = StreetCompleteApplication.preferences
+    val prefs = Prefs.sharedPreferences
     return if (replaceExisting) {
         // first remove old overlays
         // this is necessary because otherwise overlay may remain, but hidden due to not in indices pref
@@ -593,7 +592,7 @@ private fun importCustomOverlays(uri: Uri, replaceExisting: Boolean, activity: A
 
 private fun readToSettings(list: List<String>): Boolean {
     val i = list.iterator()
-    val e = StreetCompleteApplication.preferences.edit()
+    val e = Prefs.sharedPreferences.edit()
     try {
         while (i.hasNext()) {
             val next = i.next()
@@ -790,7 +789,7 @@ private fun importPresets(lines: List<String>, replaceExistingPresets: Boolean, 
 
     // database stuff successful, update preferences
     if (replaceExistingPresets) {
-        val prefs = StreetCompleteApplication.preferences
+        val prefs = Prefs.sharedPreferences
         prefs.edit {
             // remove all per-preset quest settings for proper replace
             prefs.all.keys.filter { qsRegex.containsMatchIn(it) }.forEach { remove(it) }

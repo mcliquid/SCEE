@@ -6,24 +6,24 @@ import androidx.core.widget.doAfterTextChanged
 import de.westnordost.osmfeatures.Feature
 import de.westnordost.osmfeatures.GeometryType
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.databinding.QuestLocalizednameBinding
 import de.westnordost.streetcomplete.osm.localized_name.LocalizedName
 import de.westnordost.streetcomplete.quests.AAddLocalizedNameForm
 import de.westnordost.streetcomplete.quests.AnswerItem
+import de.westnordost.streetcomplete.view.localized_name.confirmNoName
+import de.westnordost.streetcomplete.view.localized_name.showKeyboardInfo
 import de.westnordost.streetcomplete.util.SearchAdapter
 import de.westnordost.streetcomplete.util.getLanguagesForFeatureDictionary
 import de.westnordost.streetcomplete.util.ktx.showKeyboard
 
 class AddPlaceNameForm : AAddLocalizedNameForm<PlaceNameAnswer>() {
 
-    override val contentLayoutResId = R.layout.quest_localizedname
-    private val binding by contentViewBinding(QuestLocalizednameBinding::bind)
-
-    override val addLanguageButton get() = binding.addLanguageButton
-    override val namesList get() = binding.namesList
-
-    override val otherAnswers get() = listOfNotNull(
-        AnswerItem(R.string.quest_placeName_no_name_answer) { confirmNoName() },
+    override val otherAnswers = listOfNotNull(
+        AnswerItem(R.string.quest_placeName_no_name_answer) {
+            confirmNoName(requireContext()) { applyAnswer(PlaceNameAnswer.NoNameSign) }
+        },
+        AnswerItem(R.string.quest_streetName_answer_cantType) {
+            showKeyboardInfo(requireContext())
+        },
         createBrandAnswer()
     )
 
@@ -64,9 +64,9 @@ class AddPlaceNameForm : AAddLocalizedNameForm<PlaceNameAnswer>() {
                     val f = feature
                     val text = textField.text.toString()
                     if (text == f?.name)
-                        applyAnswer(FeatureName(f))
+                        applyAnswer(PlaceNameAnswer.FeatureName(f))
                     else
-                        applyAnswer(BrandName(text))
+                        applyAnswer(PlaceNameAnswer.BrandName(text))
                 }
                 .create()
             dialog.setOnShowListener {
@@ -80,14 +80,5 @@ class AddPlaceNameForm : AAddLocalizedNameForm<PlaceNameAnswer>() {
 
     override fun onClickOk(names: List<LocalizedName>) {
         applyAnswer(PlaceName(names))
-    }
-
-    private fun confirmNoName() {
-        val ctx = context ?: return
-        AlertDialog.Builder(ctx)
-            .setTitle(R.string.quest_generic_confirmation_title)
-            .setPositiveButton(R.string.quest_generic_confirmation_yes) { _, _ -> applyAnswer(NoPlaceNameSign) }
-            .setNegativeButton(R.string.quest_generic_confirmation_no, null)
-            .show()
     }
 }

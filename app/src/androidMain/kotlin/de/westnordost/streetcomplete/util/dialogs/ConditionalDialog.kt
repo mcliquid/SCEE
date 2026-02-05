@@ -15,6 +15,7 @@ import android.widget.LinearLayout.LayoutParams
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatSpinner
 import androidx.appcompat.widget.SwitchCompat
+import androidx.compose.ui.text.intl.Locale
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import de.westnordost.streetcomplete.R
@@ -146,7 +147,7 @@ fun showAddConditionalDialog(context: Context, keys: List<String>, values: List<
         setOnCheckedChangeListener { _, checked ->
             if (checked && "time" !in conditions) {
                 // todo: use user preferred locale?
-                val dW = WeekdaysPickerDialog.show(context, null, /*countryInfo.userPreferredLocale*/ context.resources.configuration.locale) { weekdays ->
+                val dW = WeekdaysPickerDialog.show(context, null, /*countryInfo.userPreferredLocale*/ Locale.current) { weekdays ->
                     val dT = TimeRangePickerDialog(
                         context,
                         context.getString(de.westnordost.streetcomplete.R.string.time_limited_from),
@@ -269,7 +270,7 @@ fun showOtherConditionalDialog(context: Context, keys: List<String>, values: Lis
         setText(de.westnordost.streetcomplete.R.string.access_time_limit)
         setOnCheckedChangeListener { _, checked ->
             if (checked && "time" !in conditions) {
-                val dW = WeekdaysPickerDialog.show(context, null, /*countryInfo.userPreferredLocale*/ context.resources.configuration.locale) { weekdays ->
+                val dW = WeekdaysPickerDialog.show(context, null, /*countryInfo.userPreferredLocale*/ Locale.current) { weekdays ->
                     val dT = TimeRangePickerDialog(
                         context,
                         context.getString(de.westnordost.streetcomplete.R.string.time_limited_from),

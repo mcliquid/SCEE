@@ -1,10 +1,10 @@
 package de.westnordost.streetcomplete.quests.surface
 
-import androidx.appcompat.app.AlertDialog
-import android.content.Context
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
 import de.westnordost.streetcomplete.osm.Tags
@@ -13,11 +13,10 @@ import de.westnordost.streetcomplete.osm.surface.INVALID_SURFACES_FOR_TRACKTYPES
 import de.westnordost.streetcomplete.osm.surface.Surface
 import de.westnordost.streetcomplete.osm.surface.UNPAVED_SURFACES
 import de.westnordost.streetcomplete.osm.surface.applyTo
-import de.westnordost.streetcomplete.quests.booleanQuestSettingsDialog
-import de.westnordost.streetcomplete.quests.fullElementSelectionDialog
+import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
 import de.westnordost.streetcomplete.quests.questPrefix
 
-class AddRoadSurface : OsmFilterQuestType<Surface>() {
+class AddRoadSurface : OsmFilterQuestType<Surface>(), AndroidQuest {
 
     override val elementFilter = """
         ways with (
@@ -43,7 +42,7 @@ class AddRoadSurface : OsmFilterQuestType<Surface>() {
 
     override val changesetComment = "Specify road surfaces"
     override val wikiLink = "Key:surface"
-    override val icon = R.drawable.ic_quest_street_surface
+    override val icon = R.drawable.quest_street_surface
     override val achievements = listOf(CAR, BICYCLIST)
 
     override fun getTitle(tags: Map<String, String>) =
@@ -61,8 +60,10 @@ class AddRoadSurface : OsmFilterQuestType<Surface>() {
 
     override val hasQuestSettings = true
 
-    override fun getQuestSettingsDialog(context: Context): AlertDialog =
-        fullElementSelectionDialog(context, prefs, "${questPrefix(prefs)}qs_${name}_element_selection", R.string.quest_settings_element_selection, highwaySelection)
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        FullElementSelectionDialog(prefs, "${questPrefix(prefs)}qs_${name}_element_selection", R.string.quest_settings_element_selection, highwaySelection, onDismissRequest)
+    }
 }
 
 private val highwaySelection = """

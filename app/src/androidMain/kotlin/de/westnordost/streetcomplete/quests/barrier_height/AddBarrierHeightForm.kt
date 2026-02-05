@@ -1,27 +1,29 @@
 package de.westnordost.streetcomplete.quests.barrier_height
 
-import android.content.ActivityNotFoundException
 import android.os.Bundle
 import android.view.View
-import androidx.core.view.isGone
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.Surface
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.databinding.QuestLengthBinding
+import de.westnordost.streetcomplete.databinding.ComposeViewBinding
 import de.westnordost.streetcomplete.osm.Length
-import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
+import de.westnordost.streetcomplete.quests.AbstractArMeasureQuestForm
+import de.westnordost.streetcomplete.quests.LengthForm
 import de.westnordost.streetcomplete.screens.measure.ArSupportChecker
-import de.westnordost.streetcomplete.screens.measure.MeasureContract
-import de.westnordost.streetcomplete.util.ktx.openUri
-import de.westnordost.streetcomplete.view.controller.LengthInputViewController
+import de.westnordost.streetcomplete.ui.util.content
+import de.westnordost.streetcomplete.ui.util.rememberSerializable
 import org.koin.android.ext.android.inject
 
-class AddBarrierHeightForm : AbstractOsmQuestForm<BarrierHeightAnswer>() {
+class AddBarrierHeightForm : AbstractArMeasureQuestForm<BarrierHeightAnswer>() {
 
-    override val contentLayoutResId = R.layout.quest_length
-    private val binding by contentViewBinding(QuestLengthBinding::bind)
-    private val launcher = registerForActivityResult(MeasureContract(), ::onMeasured)
+    override val contentLayoutResId = R.layout.compose_view
+    private val binding by contentViewBinding(ComposeViewBinding::bind)
     private val checkArSupport: ArSupportChecker by inject()
     private var isARMeasurement: Boolean = false
-    private lateinit var lengthInput: LengthInputViewController
+    private lateinit var length: MutableState<Length?>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,41 +32,35 @@ class AddBarrierHeightForm : AbstractOsmQuestForm<BarrierHeightAnswer>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding.composeViewBase.content { Surface {
+            length = rememberSerializable { mutableStateOf(null) }
+            val arIsSupported = checkArSupport()
 
-        lengthInput = binding.lengthInput.let {
-            LengthInputViewController(it.unitSelect, it.metersContainer, it.metersInput, it.feetInchesContainer, it.feetInput, it.inchesInput)
-        }
-        lengthInput.unitSelectItemResId = R.layout.spinner_item_centered_large
-        lengthInput.isCompactMode = true
-        lengthInput.maxFeetDigits = 2
-        lengthInput.maxMeterDigits = Pair(2, 2)
-        lengthInput.selectableUnits = countryInfo.lengthUnits
-        lengthInput.onInputChanged = {
-            isARMeasurement = false
-            checkIsFormComplete()
-        }
-        binding.measureButton.isGone = !checkArSupport()
-        binding.measureButton.setOnClickListener { takeMeasurement() }
+            LengthForm(
+                length = length.value,
+                onChange = {
+                    isARMeasurement = false
+                    length.value = it
+                    checkIsFormComplete()
+                },
+                selectableUnits = countryInfo.lengthUnits,
+                showMeasureButton = arIsSupported,
+                onClickMeasure = { takeMeasurement(it, measureVertical = true) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        } }
     }
 
-    private fun takeMeasurement() {
-        val lengthUnit = lengthInput.unit ?: return
-        try {
-            launcher.launch(MeasureContract.Params(lengthUnit, true))
-        } catch (e: ActivityNotFoundException) {
-            context?.openUri("market://details?id=de.westnordost.streetmeasure")
-        }
-    }
-
-    private fun onMeasured(length: Length?) {
-        lengthInput.length = length
+    override fun onMeasured(length: Length) {
         isARMeasurement = true
+        this.length.value = length
+        checkIsFormComplete()
     }
 
-    override fun isFormComplete(): Boolean = lengthInput.length != null
+    override fun isFormComplete(): Boolean = length.value != null
 
     override fun onClickOk() {
-        applyAnswer(BarrierHeightAnswer(lengthInput.length!!, isARMeasurement))
+        applyAnswer(BarrierHeightAnswer(length.value!!, isARMeasurement))
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

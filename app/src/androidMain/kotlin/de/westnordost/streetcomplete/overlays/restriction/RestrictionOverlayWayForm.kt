@@ -1,80 +1,9 @@
 package de.westnordost.streetcomplete.overlays.restriction
 
-import android.graphics.drawable.Drawable
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.widget.AdapterView
-import android.widget.AdapterView.OnItemSelectedListener
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Spinner
-import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toDrawable
-import androidx.core.view.isGone
-import androidx.core.view.isInvisible
-import androidx.core.view.isVisible
-import androidx.core.widget.doAfterTextChanged
-import androidx.lifecycle.lifecycleScope
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.data.meta.CountryInfo
-import de.westnordost.streetcomplete.data.meta.WeightMeasurementUnit
-import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
-import de.westnordost.streetcomplete.data.osm.edits.create.CreateRelationAction
-import de.westnordost.streetcomplete.data.osm.edits.delete.DeleteRelationAction
-import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
-import de.westnordost.streetcomplete.data.osm.edits.update_tags.createChanges
-import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
-import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometryCreator
-import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
-import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
-import de.westnordost.streetcomplete.data.osm.mapdata.Element
-import de.westnordost.streetcomplete.data.osm.mapdata.ElementType
-import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
-import de.westnordost.streetcomplete.data.osm.mapdata.Node
-import de.westnordost.streetcomplete.data.osm.mapdata.Relation
-import de.westnordost.streetcomplete.data.osm.mapdata.RelationMember
-import de.westnordost.streetcomplete.data.osm.mapdata.Way
-import de.westnordost.streetcomplete.data.osm.mapdata.key
-import de.westnordost.streetcomplete.databinding.FragmentOverlayRestrictionWayBinding
-import de.westnordost.streetcomplete.osm.ALL_ROADS
-import de.westnordost.streetcomplete.overlays.AbstractOverlayForm
-import de.westnordost.streetcomplete.overlays.AnswerItem
-import de.westnordost.streetcomplete.quests.max_weight.ImperialPounds
-import de.westnordost.streetcomplete.quests.max_weight.MaxWeightSign
-import de.westnordost.streetcomplete.quests.max_weight.MetricTons
-import de.westnordost.streetcomplete.quests.max_weight.ShortTons
-import de.westnordost.streetcomplete.quests.max_weight.asItem
-import de.westnordost.streetcomplete.quests.max_weight.getLayoutResourceId
-import de.westnordost.streetcomplete.quests.max_weight.osmKey
-import de.westnordost.streetcomplete.screens.main.MainActivity
-import de.westnordost.streetcomplete.screens.main.map.MainMapFragment
-import de.westnordost.streetcomplete.screens.main.map.Marker
-import de.westnordost.streetcomplete.util.ktx.containsAny
-import de.westnordost.streetcomplete.util.ktx.createBitmap
-import de.westnordost.streetcomplete.util.ktx.dpToPx
-import de.westnordost.streetcomplete.util.ktx.firstAndLast
-import de.westnordost.streetcomplete.util.ktx.showKeyboard
-import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
-import de.westnordost.streetcomplete.util.math.distanceToArcs
-import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
-import de.westnordost.streetcomplete.util.math.finalBearingTo
-import de.westnordost.streetcomplete.util.dialogs.showAddConditionalDialog
-import de.westnordost.streetcomplete.util.dialogs.showOtherConditionalDialog
-import de.westnordost.streetcomplete.util.getNameAndLocationSpanned
-import de.westnordost.streetcomplete.view.ArrayImageAdapter
-import de.westnordost.streetcomplete.view.DrawableImage
-import de.westnordost.streetcomplete.view.ResImage
-import de.westnordost.streetcomplete.view.image_select.ImageListPickerDialog
-import de.westnordost.streetcomplete.view.image_select.Item2
-import de.westnordost.streetcomplete.view.inputfilter.acceptDecimalDigits
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import org.koin.android.ext.android.inject
 
+// todo: is weight form now compose?
+/*
 // todo
 //  save instance state
 //   save selection mode, selected restriction, current restriction
@@ -695,7 +624,7 @@ private val turnRestrictionTypeList = turnRestrictionTypes.toList()
 private val exceptions = listOf(
     "bicycle", "psv", "bus", "emergency", "agricultural", "hgv", "moped", "destination", "motorcar"
 )
-
+*/
 // restriction:* list from wiki
 private val onlyTurnRestriction = listOf(
     "hgv", "caravan", "motorcar", "bus", "agricultural", "motorcycle", "bicycle", "hazmat"
@@ -721,7 +650,7 @@ fun Map<String, String>.getShortRestrictionValue(): String? {
     entries.firstOrNull { it.key.startsWith("restriction:") }?.let { return it.value.substringBefore("@").trim() } // restriction:hgv and similar, may be conditional
     return null
 }
-
+/*
 // todo: switch form changing tags to sth else, this is getting way too complicated to handle
 private sealed interface Restriction {
     val type: RestrictionType
@@ -755,3 +684,4 @@ private fun getWeightRestrictions(way: Way): List<WeightRestriction> {
     }
     return restrictions
 }
+*/

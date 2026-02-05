@@ -8,8 +8,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.isPlace
+import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
 
-class AddContactPhone : OsmFilterQuestType<String>() {
+class AddContactPhone : OsmFilterQuestType<String>(), AndroidQuest {
 
     override val elementFilter = """
         nodes, ways, relations with
@@ -23,8 +26,8 @@ class AddContactPhone : OsmFilterQuestType<String>() {
 
     override val changesetComment = "Add phone number"
     override val wikiLink = "Key:phone"
-    override val icon = R.drawable.ic_quest_phone
-    override val defaultDisabledMessage: Int = R.string.default_disabled_msg_ee
+    override val icon = R.drawable.quest_phone
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_contact_phone
 

@@ -25,7 +25,7 @@ class AddCrossing : OsmElementQuestType<CrossingAnswer>, AndroidQuest {
 
     private val footwaysFilter by lazy { """
         ways with
-          (highway ~ footway|steps or highway ~ path|cycleway and foot ~ designated|yes)
+          (highway ~ footway|steps|path|cycleway)
           and area != yes
           and access !~ private|no
     """.toElementFilterExpression() }

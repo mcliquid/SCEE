@@ -119,10 +119,6 @@
     <string name="quest_settings_sidewalk_distance_button">Distància</string>
     <string name="quest_settings_level_title">Mostrar aquesta missió per a:</string>
     <string name="quest_settings_level_default">Botigues i establiments similars en centres comercials (per defecte)</string>
-    <string name="quest_generic_surface_message">Permetre respostes de superfícies genèriques sense requerir nota?</string>
-    <string name="quest_generic_surface_button">Respostes genèriques de superfícies</string>
-    <string name="quest_generic_surface_yes">Permetre\'n sense nota</string>
-    <string name="quest_generic_surface_no">Sols amb nota (per defecte)</string>
     <string name="quest_settings_osmose_level_high">Alt</string>
     <string name="quest_settings_osmose_level_medium">Intermig</string>
     <string name="quest_settings_osmose_level_low">Baix</string>
@@ -195,13 +191,6 @@
     <string name="quest_seating_roof">En un terrat</string>
     <string name="quest_seating_garden">En un jardí</string>
     <string name="quest_seating_beach">A la platja</string>
-    <string name="quest_artwork_stone">Pedra</string>
-    <string name="quest_artwork_painting">Pintura</string>
-    <string name="quest_artwork_architecture">Arquitectura</string>
-    <string name="quest_artwork_mosaic">Mosaic</string>
-    <string name="quest_artwork_relief">Relleu</string>
-    <string name="quest_artwork_fountain">Font</string>
-    <string name="quest_artwork_land_art">Art de terra</string>
     <string name="quest_trail_visibility_excellent">Excel·lent</string>
     <string name="quest_trail_visibility_excellent_description">Camí clar, fàcil i ben definit a tot arreu i/o amb moltes marques orientatives clares i fàcils de guipar. Un s\'hi pot orientar sense problemes i no requereix de mapa.</string>
     <string name="quest_trail_visibility_good">Bo</string>
@@ -443,12 +432,6 @@
     <string name="quest_valves_schrader">AV: Schrader / Vàlvula de cotxe</string>
     <string name="quest_valves_regina">RV: Regina / Vàlvula d\'estil italià</string>
     <string name="quest_artwork_title">Quina classe d\'obra d\'art és aquesta?</string>
-    <string name="quest_artwork_sculpture">Escultura</string>
-    <string name="quest_artwork_statue">Estàtua</string>
-    <string name="quest_artwork_mural">Mural</string>
-    <string name="quest_artwork_graffiti">Grafiti</string>
-    <string name="quest_artwork_installation">Instal·lació</string>
-    <string name="quest_artwork_bust">Bust</string>
     <string name="quest_trail_visibility_title">Quina és la visibilitat del sender d\'aquest camí?</string>
     <string name="quest_sacScale_four">T4 - Senderisme alpí</string>
     <string name="quest_sacScale_four_description">Terreny ja força expòs, incloent-hi pendents costeruts d\'herba, vessants de talús, camps de neu fàcils i/o travesseres per glaceres sense neu.</string>

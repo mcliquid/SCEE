@@ -435,22 +435,6 @@
     <string name="quest_valves_schrader">AV: Schrader / Car valve</string>
     <string name="quest_valves_regina">RV: Regina / Italian</string>
 
-    <!-- artwork type -->
-    <string name="quest_artwork_title">What kind of artwork is this?</string>
-    <string name="quest_artwork_sculpture">Sculpture</string>
-    <string name="quest_artwork_statue">Statue</string>
-    <string name="quest_artwork_mural">Mural</string>
-    <string name="quest_artwork_graffiti">Graffiti</string>
-    <string name="quest_artwork_installation">Installation</string>
-    <string name="quest_artwork_bust">Bust</string>
-    <string name="quest_artwork_stone">Stone</string>
-    <string name="quest_artwork_painting">Painting</string>
-    <string name="quest_artwork_architecture">Architecture</string>
-    <string name="quest_artwork_mosaic">Mosaic</string>
-    <string name="quest_artwork_relief">Relief</string>
-    <string name="quest_artwork_fountain">Fountain</string>
-    <string name="quest_artwork_land_art">Land art</string>
-
     <!-- trail visibility -->
     <string name="quest_trail_visibility_title">"What is the Trail Visibility of this way?"</string>
     <string name="default_disabled_msg_trail_visibility">"This quest type is disabled by default because the rating of the trail visibility is highly subjective and needs expert knowledge in the used grading system."</string>

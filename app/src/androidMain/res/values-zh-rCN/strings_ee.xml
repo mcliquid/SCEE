@@ -23,7 +23,6 @@
     <string name="quest_settings_per_preset_rescan">为了正确应用所有更改的任务设置，有必要重新扫描任务。</string>
     <string name="quest_seating_street">在街道区域</string>
     <string name="quest_custom_quest_message">用于检查特定的预先定义元素或位置。您还可以指定标签，并将其添加到节点中。要使用它，请在主设置菜单中加载一个文件，其中包含类型、ID、消息（例如：NODE,1234,检查位置）或经度、纬度、信息。添加节点时，将消息中的标签放在 \"addNode \"之后，例如 addNode amenity=restaurant, wheelchair=no,diet:vegetarian=yes</string>
-    <string name="quest_artwork_mural">壁画</string>
     <string name="pref_recent_answers_first_min_lines_message">如果任务回答表格的图像行数超过此数，则将最近的答案移至最前</string>
     <string name="pref_network_interval_title">网络位置更新间隔</string>
     <string name="pref_custom_title">加载自定义任务文件</string>
@@ -53,7 +52,6 @@
     <string name="quest_railwayPlatformRef_message">该站台可使用的轨道应使用哪个标签？根据 OSM wiki，local_ref 可能更合适，但实际使用中大多是 ref。</string>
     <string name="pref_trees_title">加载树任务文件</string>
     <string name="pref_save_gpx">获取 GPX 注释以及附加的照片和轨迹</string>
-    <string name="quest_artwork_relief">浮雕</string>
     <string name="pref_save_photos_title">保存用于注释的照片</string>
     <string name="level_filter">楼层过滤器</string>
     <string name="quest_contact_phone">该场所的电话号码是多少？</string>
@@ -74,7 +72,6 @@
     <string name="default_disabled_msg_poi_recycling">该“任务”以绿点显示与回收/垃圾相关的兴趣点。点击圆点可显示详细信息和其他回答。</string>
     <string name="default_disabled_msg_ee">在 SCEE 中添加的任务默认情况下都是禁用的，因为这些任务不总是能回答，而且可能需要相关主题和标签的知识。</string>
     <string name="quest_settings_resurvey_all_opening_hours_yes">所有</string>
-    <string name="quest_artwork_graffiti">涂鸦</string>
     <string name="quest_healthcare_speciality_add_more">添加别的专业</string>
     <string name="pref_delete_old_data_after">删除旧数据后</string>
     <string name="level_filter_message">输入楼层数值，或使用 &gt; 和 &lt; 进行筛选。 使用 * 可匹配包含允许楼层键值的所有元素</string>
@@ -83,7 +80,6 @@
     <string name="theme_dark_contrast">深色（对比度增强）</string>
     <string name="quest_poi_machine_title">兴趣点：机器</string>
     <string name="quest_osmose_use_app_language">使用应用语言下载问题</string>
-    <string name="quest_artwork_installation">装置艺术</string>
     <string name="import_error">导入出错</string>
     <string name="import_export_presets">预设</string>
     <string name="quest_fixme_title">修复我:</string>
@@ -95,7 +91,6 @@
     <string name="import_export_hidden_quests">隐藏任务</string>
     <string name="advanced_resurvey_title">设定重新调查日期和键值</string>
     <string name="quest_tree_disabled_msg">此任务默认禁用，因为它不容易回答。必须从建议中选择物种/种属，建议取自最常用的值。您可以在数据管理设置菜单中提供一个包含 &lt;species&gt; (&lt;name&gt;) 的文件，从您自己的物种列表中提供可搜索名称的建议。</string>
-    <string name="quest_artwork_statue">雕像</string>
     <string name="show_nearby_quests_distance">显示该距离内的任务（限制为 10 米）</string>
     <string name="pref_quest_monitor_summary">应用在后台运行时监测位置，使用返回按钮的后台运行时除外</string>
     <string name="quest_seating_parklet">路边，或曾经停车的地方</string>
@@ -132,10 +127,8 @@
     <string name="pref_quest_monitor_download">在必要时下载数据？这可能会大幅消耗数据和电池，而且 Android 可能会出于省电原因而使其失去作用。</string>
     <string name="pref_dynamic_quest_creation_title">动态创建任务</string>
     <string name="quest_settings_building_levels_optional_roof">允许省略任何地方的屋顶层</string>
-    <string name="quest_artwork_stone">石头/碑</string>
     <string name="advanced_resurvey_message_keys">如果没有检查日期的键值，请务必重新调查这些键值。在回答相关任务时会添加检查日期</string>
     <string name="pref_gpx_track_loading_error">加载 GPX 轨迹文件时出错</string>
-    <string name="quest_artwork_bust">半身像</string>
     <string name="pref_show_quick_settings_title">显示快速设置按钮</string>
     <string name="quest_material_stone">石材</string>
     <string name="pref_files_not_found">未找到文件</string>
@@ -149,19 +142,16 @@
     <string name="pref_gpx_track_title">从文件中显示 GPX 轨迹</string>
     <string name="quest_poi_vacant_title">兴趣点：闲置场所</string>
     <string name="quest_settings_what_to_edit">要设置什么？</string>
-    <string name="quest_artwork_fountain">喷泉</string>
     <string name="pref_show_next_quest_title">立即显示下一个任务</string>
     <string name="quest_settings_building_levels_mandatory_roof">要求在大多数国家计入屋顶楼层（默认值）</string>
     <string name="show_nearby_quests_visible">只显示已启用的任务类型</string>
     <string name="quest_seating_terrace">在露台上（无屋顶，非庭院）</string>
     <string name="quest_poi_misc_title">兴趣点：杂项</string>
     <string name="quest_poi_vending_title">兴趣点：出售</string>
-    <string name="quest_artwork_architecture">建筑结构</string>
     <string name="pref_volume_zoom_title">音量按钮缩放</string>
     <string name="pref_tile_source_hide_labels">隐藏标签</string>
     <string name="quest_healthcare_speciality_disabled_message">该任务需要 healthcare:speciality 标签的相关知识。如果不了解这些知识，任务可能将难以回答。</string>
     <string name="quest_settings_level_more">多层建筑内的医生和更多节点</string>
-    <string name="quest_generic_surface_no">仅带注释（默认）</string>
     <string name="quest_seating_garden">在花园区域</string>
     <string name="pref_get_photos_title">获取全尺寸照片</string>
     <string name="pref_select_first_edit_title">在打开历史记录时选择首次编辑</string>
@@ -184,7 +174,6 @@
     <string name="quest_osmose_hide_type">忽略相同的问题…</string>
     <string name="default_disabled_msg_poi_fixme">此“任务”以红点显示 FixMes （默认情况下“是”和“继续”除外）。点击圆点可显示详细信息和其他回答。</string>
     <string name="show_nearby_quests_all_types">显示所有任务类型</string>
-    <string name="quest_artwork_land_art">地景艺术</string>
     <string name="import_export_presets_select">选择要导出的预设</string>
     <string name="pref_gps_interval_title">GPS 定位更新间隔</string>
     <string name="import_presets_overlays_message">添加导入的内容，还是替换现有内容？您如果选择 “替换”，则会删除所有现有内容。</string>
@@ -215,13 +204,10 @@
     <string name="advanced_resurvey_hint_keys">用英文逗号分隔多个键值</string>
     <string name="default_disabled_msg_poi_business">该“任务”将商店、餐馆、医生和类似的兴趣点显示为橙色圆点。点击圆点可显示详细信息和其他回答。</string>
     <string name="pref_expert_mode_summary">启用高级编辑能力</string>
-    <string name="quest_artwork_painting">绘画</string>
     <string name="pref_export">导出设置</string>
     <string name="quest_material_brick">砖块</string>
     <string name="default_disabled_msg_poi_vacant">这个“任务”以灰点的形式显示空置的店铺。点击圆点可显示详细信息和其他回答。</string>
-    <string name="quest_generic_surface_yes">允许无注释</string>
     <string name="quest_recycling_excrement_bag_dispenser">它有一个粪便袋自助机</string>
-    <string name="quest_generic_surface_message">允许通用的表面答案而不需要注释？</string>
     <string name="pref_save_photos_summary">存储创建注释时拍摄的全尺寸照片，而不清除 EXIF 数据</string>
     <string name="pref_search_more_languages_title">以更多语言提供搜索功能</string>
     <string name="pref_caps_word_name_input">输入名称时所有单词的首字母大写</string>
@@ -250,7 +236,6 @@
     <string name="quest_cuisine_title">该场所有哪些菜系？使用建议的 OSM 标签！</string>
     <string name="pref_hide_button_title">显示隐藏按钮</string>
     <string name="tree_custom_quest_export">获取</string>
-    <string name="quest_artwork_mosaic">马赛克镶嵌艺术</string>
     <string name="import_export_custom_overlays">自定覆盖层</string>
     <string name="quest_roofColour_title">这座建筑屋顶的整体颜色是？</string>
     <string name="advanced_resurvey_hint_date">使用格式：YYYY-MM-DD</string>
@@ -265,7 +250,6 @@
     <string name="pref_disable_navigation_mode_title">禁用导航模式</string>
     <string name="pref_screen_display">显示</string>
     <string name="quest_settings_level_default">商场内的商店及类似场所（默认）</string>
-    <string name="quest_artwork_sculpture">雕塑</string>
     <string name="quest_tree_genus_title">这棵树的属或种是什么？</string>
     <string name="quest_poi_has_atm_title">兴趣点：有自动取款机</string>
     <string name="pref_show_gpx_button_summary">与 OSM 注释相反，添加 GPX 注释将不会隐藏受影响位置的任何任务</string>
@@ -274,7 +258,6 @@
     <string name="pref_read_filter_hint">过滤…</string>
     <string name="import_export_settings">其他应用设置</string>
     <string name="pref_search_more_languages_summary">功能搜索以所有系统和本地语言显示结果</string>
-    <string name="quest_generic_surface_button">通用表面答案</string>
     <string name="quest_piste_ref_title">这条滑雪道的编号是？</string>
     <string name="quest_utility_water">水</string>
     <string name="quest_utility_gas">气</string>

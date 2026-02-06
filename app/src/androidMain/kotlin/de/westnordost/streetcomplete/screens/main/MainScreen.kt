@@ -263,7 +263,7 @@ fun MainScreen(
                         .clickable(null, null) { viewModel.toggleShowingCurrentWeek() },
                     isCurrentWeek = isShowingStarsCurrentWeek,
                     showProgress = isUploadingOrDownloading,
-                    hasUnsyncedChanges = unsyncedEditsCount != 0
+                    hasUnsyncedChanges = unsyncedEditsCount != 0 && isAutoSync
                 )
             }
 

@@ -38,13 +38,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.core.content.edit
 import androidx.core.widget.doAfterTextChanged
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.data.Cleaner
 import de.westnordost.streetcomplete.data.ConflictAlgorithm
 import de.westnordost.streetcomplete.data.Database
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
@@ -66,7 +64,7 @@ import de.westnordost.streetcomplete.quests.custom.CustomQuest
 import de.westnordost.streetcomplete.quests.osmose.OsmoseDao
 import de.westnordost.streetcomplete.ui.common.BackIcon
 import de.westnordost.streetcomplete.ui.common.dialogs.SimpleListPickerDialog
-import de.westnordost.streetcomplete.ui.common.dialogs.TextInputDialog
+import de.westnordost.streetcomplete.ui.common.dialogs.WheelPickerDialog
 import de.westnordost.streetcomplete.ui.common.settings.Preference
 import de.westnordost.streetcomplete.ui.common.settings.SwitchPreference
 import de.westnordost.streetcomplete.util.dialogs.setViewWithDefaultPadding
@@ -74,8 +72,6 @@ import de.westnordost.streetcomplete.util.getFakeCustomOverlays
 import de.westnordost.streetcomplete.util.ktx.getActivity
 import de.westnordost.streetcomplete.util.ktx.toast
 import de.westnordost.streetcomplete.util.logs.Log
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.koin.compose.koinInject
 import java.io.BufferedWriter
@@ -86,7 +82,6 @@ fun DataManagementScreen(
     onClickBack: () -> Unit,
 ) {
     val prefs: Preferences = koinInject()
-    val cleaner: Cleaner = koinInject()
     val db: Database = koinInject()
     val editTypePresetsController: EditTypePresetsController = koinInject()
     val urlConfigController: UrlConfigController = koinInject()
@@ -94,7 +89,6 @@ fun DataManagementScreen(
     val osmoseDao: OsmoseDao = koinInject()
     val externalSourceQuestController: ExternalSourceQuestController = koinInject()
     val ctx = LocalContext.current
-    val scope = rememberCoroutineScope()
     var showDeleteAfterDialog by remember { mutableStateOf(false) }
     var showGpsIntervalDialog by remember { mutableStateOf(false) }
     var showNetIntervalDialog by remember { mutableStateOf(false) }
@@ -189,45 +183,42 @@ fun DataManagementScreen(
                 onClick = { showImportDialog = true },
             )
         }
-        if (showDeleteAfterDialog)
-            TextInputDialog(
+        if (showDeleteAfterDialog) {
+            val selectable = remember { (5..30).toList() }
+            WheelPickerDialog(
                 onDismissRequest = { showDeleteAfterDialog = false },
-                onConfirmed = {
-                    prefs.putInt(Prefs.DATA_RETAIN_TIME, it.toIntOrNull() ?: 14)
-                    scope.launch(Dispatchers.IO) { cleaner.cleanOld() }
-                },
-                text = prefs.getInt(Prefs.DATA_RETAIN_TIME, 14).toString(),
-                title = { Text(stringResource(R.string.pref_delete_old_data_after_message)) },
-                keyboardType = KeyboardType.Number,
-                checkTextValid = {
-                    val value = it.toIntOrNull()
-                    value != null && value >= 3
-                }
+                selectableValues = selectable,
+                onSelected = { prefs.putInt(Prefs.DATA_RETAIN_TIME, it) },
+                itemContent = { Text(it.toString()) },
+                selectedInitialValue = prefs.getInt(Prefs.DATA_RETAIN_TIME, 14),
+                title = { Text(stringResource(R.string.pref_delete_old_data_after)) },
+                text = { Text(stringResource(R.string.pref_delete_old_data_after_message)) }
             )
-        if (showGpsIntervalDialog)
-            TextInputDialog(
+        }
+        if (showGpsIntervalDialog) {
+            val selectable = remember { (0..15).toList() + listOf(20, 25, 30, 45, 60, 90, 120) }
+            WheelPickerDialog(
                 onDismissRequest = { showGpsIntervalDialog = false },
-                onConfirmed = { prefs.putInt(Prefs.GPS_INTERVAL, it.toIntOrNull() ?: 0) },
-                text = prefs.getInt(Prefs.GPS_INTERVAL, 0).toString(),
-                title = { Text(stringResource(R.string.pref_interval_message)) },
-                keyboardType = KeyboardType.Number,
-                checkTextValid = {
-                    val value = it.toIntOrNull()
-                    value != null && value >= 0
-                }
+                selectableValues = selectable,
+                onSelected = { prefs.putInt(Prefs.GPS_INTERVAL, it) },
+                itemContent = { Text(it.toString()) },
+                selectedInitialValue = prefs.getInt(Prefs.GPS_INTERVAL, 0),
+                title = { Text(stringResource(R.string.pref_gps_interval_title)) },
+                text = { Text(stringResource(R.string.pref_interval_message)) }
             )
-        if (showNetIntervalDialog)
-            TextInputDialog(
+        }
+        if (showNetIntervalDialog) {
+            val selectable = remember { (0..15).toList() + listOf(20, 25, 30, 45, 60, 90, 120) }
+            WheelPickerDialog(
                 onDismissRequest = { showNetIntervalDialog = false },
-                onConfirmed = { prefs.putInt(Prefs.NETWORK_INTERVAL, it.toIntOrNull() ?: 5) },
-                text = prefs.getInt(Prefs.NETWORK_INTERVAL, 5).toString(),
-                title = { Text(stringResource(R.string.pref_interval_message)) },
-                keyboardType = KeyboardType.Number,
-                checkTextValid = {
-                    val value = it.toIntOrNull()
-                    value != null && value >= 0
-                }
+                selectableValues = selectable,
+                onSelected = { prefs.putInt(Prefs.NETWORK_INTERVAL, it) },
+                itemContent = { Text(it.toString()) },
+                selectedInitialValue = prefs.getInt(Prefs.NETWORK_INTERVAL, 0),
+                title = { Text(stringResource(R.string.pref_network_interval_title)) },
+                text = { Text(stringResource(R.string.pref_interval_message)) }
             )
+        }
         if (showExportDialog)
             SimpleListPickerDialog(
                 onDismissRequest = { showExportDialog = false },

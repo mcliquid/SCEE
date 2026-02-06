@@ -17,6 +17,8 @@ import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.data.visiblequests.LevelFilter
+import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.osm.applyTo
 import de.westnordost.streetcomplete.osm.isPlace
 import de.westnordost.streetcomplete.quests.TagEditor
 import de.westnordost.streetcomplete.util.ktx.getLocationInWindow
@@ -100,7 +102,8 @@ class CreatePoiFragment : TagEditor() {
         private const val ARG_ID = "feature_id"
 
         fun createFromFeature(feature: Feature?, pos: LatLon) = CreatePoiFragment().also {
-            it.arguments = bundleOf(ARG_PREFILLED_TAGS to feature?.addTags?.let { Json.encodeToString(it) }, ARG_NAME to feature?.name, ARG_ID to feature?.id)
+            val tags = feature?.let { f -> Tags(mapOf()).also { f.applyTo(it) } }?.toMap()
+            it.arguments = bundleOf(ARG_PREFILLED_TAGS to tags?.let { Json.encodeToString(it) }, ARG_NAME to feature?.name, ARG_ID to feature?.id)
             // tag editor arguments are actually unnecessary here, but we still need an original element
             it.requireArguments().putAll(createArguments(Node(0L, pos), ElementPointGeometry(pos), null, null))
         }

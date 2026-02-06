@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.IntentFilter
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
@@ -16,14 +15,12 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.LayerDrawable
 import android.location.Location
-import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.OvershootInterpolator
@@ -45,10 +42,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.core.graphics.Insets
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
-import androidx.core.view.doOnNextLayout
-import androidx.core.view.isGone
-import androidx.core.view.isVisible
-import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
@@ -105,6 +98,8 @@ import de.westnordost.streetcomplete.databinding.ActivityMainBinding
 import de.westnordost.streetcomplete.data.visiblequests.LevelFilter
 import de.westnordost.streetcomplete.databinding.EffectQuestPlopBinding
 import de.westnordost.streetcomplete.osm.POPULAR_PLACE_FEATURE_IDS
+import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.osm.applyTo
 import de.westnordost.streetcomplete.osm.isPlace
 import de.westnordost.streetcomplete.osm.level.levelsIntersect
 import de.westnordost.streetcomplete.osm.level.parseLevelsOrNull
@@ -146,7 +141,6 @@ import de.westnordost.streetcomplete.screens.settings.custom_geometry_changed
 import de.westnordost.streetcomplete.screens.settings.gpx_track_changed
 import de.westnordost.streetcomplete.util.SoundFx
 import de.westnordost.streetcomplete.util.buildGeoUri
-import de.westnordost.streetcomplete.util.getFakeCustomOverlays
 import de.westnordost.streetcomplete.util.getSystemLocales
 import de.westnordost.streetcomplete.util.ktx.dpToPx
 import de.westnordost.streetcomplete.util.ktx.getLocationInWindow
@@ -165,7 +159,6 @@ import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.util.math.area
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import de.westnordost.streetcomplete.util.math.enlargedBy
-import de.westnordost.streetcomplete.util.showOverlayCustomizer
 import de.westnordost.streetcomplete.view.dialogs.SearchFeaturesDialog
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -1037,7 +1030,7 @@ class MainActivity :
             GeometryType.POINT,
             country,
             null, // pre-filled search text
-            { it.addTags.isNotEmpty() }, // require non-empty tags, avoids the crash reported in https://github.com/Helium314/SCEE/issues/757
+            { true }, // filter, but we want everything
             { addPoi(pos, it) },
             defaultFeatureIds.reversed(),
             false,
@@ -1052,11 +1045,12 @@ class MainActivity :
         lifecycleScope.launch {
             val bbox = pos.enclosingBoundingBox(50.0)
             val data = withContext(Dispatchers.IO) { mapDataWithEditsSource.getMapDataWithGeometry(bbox) }
-            val elements = if (Node(0L, pos, feature.addTags).isPlace()) {
+            val tags = Tags(mapOf()).also { feature.applyTo(it) }
+            val elements = if (Node(0L, pos, tags).isPlace()) {
                 data.filter { it.isPlace() }
             } else {
-                val filter = "nodes, ways, relations with ${feature.tags
-                    .map { if (it.value == "*") it.key else it.key + "=" + it.value }
+                val filter = "nodes, ways, relations with ${tags
+                    .map { if (it.value == "yes") it.key else it.key + "=" + it.value }
                     .joinToString(" and ")}".toElementFilterExpression()
                 data.filter { filter.matches(it) }
             }

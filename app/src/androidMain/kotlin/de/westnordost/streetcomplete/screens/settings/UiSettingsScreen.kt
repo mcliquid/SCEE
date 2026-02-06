@@ -36,6 +36,7 @@ import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.ui.common.BackIcon
 import de.westnordost.streetcomplete.ui.common.dialogs.TextInputDialog
+import de.westnordost.streetcomplete.ui.common.dialogs.WheelPickerDialog
 import de.westnordost.streetcomplete.ui.common.settings.Preference
 import de.westnordost.streetcomplete.ui.common.settings.SwitchPreference
 import de.westnordost.streetcomplete.util.dialogs.setViewWithDefaultPadding
@@ -152,19 +153,18 @@ fun UiSettingsScreen(
             )
         }
     }
-    if (showMinLinesDialog)
-        TextInputDialog(
+    if (showMinLinesDialog) {
+        val selectable = remember { (0..10).toList() }
+        WheelPickerDialog(
             onDismissRequest = { showMinLinesDialog = false },
-            onConfirmed = { prefs.putInt(Prefs.FAVS_FIRST_MIN_LINES, it.toIntOrNull() ?: 1) },
-            text = prefs.getInt(Prefs.FAVS_FIRST_MIN_LINES, 1).toString(),
-            //title = { Text(stringResource(R.string.pref_recent_answers_first_min_lines)) },
-            title = { Text(stringResource(R.string.pref_recent_answers_first_min_lines_message)) },
-            keyboardType = KeyboardType.Number,
-            checkTextValid = {
-                val value = it.toIntOrNull()
-                value != null && value >= 0
-            }
+            selectableValues = selectable,
+            onSelected = { prefs.putInt(Prefs.FAVS_FIRST_MIN_LINES, it) },
+            itemContent = { Text(it.toString()) },
+            selectedInitialValue = prefs.getInt(Prefs.FAVS_FIRST_MIN_LINES, 1),
+            title = { Text(stringResource(R.string.pref_recent_answers_first_min_lines)) },
+            text = { Text(stringResource(R.string.pref_recent_answers_first_min_lines_message)) },
         )
+    }
     if (showRotateAngleDialog)
         TextInputDialog(
             onDismissRequest = { showRotateAngleDialog = false },

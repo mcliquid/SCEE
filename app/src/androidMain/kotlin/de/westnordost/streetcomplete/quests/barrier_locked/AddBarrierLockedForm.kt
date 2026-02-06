@@ -1,94 +1,100 @@
 package de.westnordost.streetcomplete.quests.barrier_locked
 
+import android.os.Bundle
+import android.view.View
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
+import de.westnordost.osm_opening_hours.model.Month
+import de.westnordost.osm_opening_hours.model.MonthRange
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.databinding.QuestFeeHoursBinding
-import de.westnordost.streetcomplete.osm.opening_hours.parser.toOpeningHours
+import de.westnordost.streetcomplete.databinding.ComposeViewBinding
+import de.westnordost.streetcomplete.osm.opening_hours.HierarchicOpeningHours
+import de.westnordost.streetcomplete.osm.time_restriction.TimeRestriction
+import de.westnordost.streetcomplete.osm.time_restriction.TimeRestrictionInput
 import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
 import de.westnordost.streetcomplete.quests.AnswerItem
-import de.westnordost.streetcomplete.quests.barrier_locked.AddBarrierLockedForm.Mode.LOCKED_AT_HOURS
-import de.westnordost.streetcomplete.quests.barrier_locked.AddBarrierLockedForm.Mode.LOCKED_YES_NO
-import de.westnordost.streetcomplete.view.controller.TimeRestriction.AT_ANY_TIME
-import de.westnordost.streetcomplete.view.controller.TimeRestriction.EXCEPT_AT_HOURS
-import de.westnordost.streetcomplete.view.controller.TimeRestriction.ONLY_AT_HOURS
-import de.westnordost.streetcomplete.view.controller.TimeRestrictionSelectViewController
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.quest_fee_answer_yes_but
+import de.westnordost.streetcomplete.ui.util.content
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import org.jetbrains.compose.resources.stringResource
 
 class AddBarrierLockedForm : AbstractOsmQuestForm<BarrierLockedAnswer>() {
 
-    private var lockedAtHoursSelect: TimeRestrictionSelectViewController? = null
+    override val contentLayoutResId = R.layout.compose_view
+    private val binding by contentViewBinding(ComposeViewBinding::bind)
 
     override val buttonPanelAnswers get() =
-        if (mode == LOCKED_YES_NO) listOf(
-            AnswerItem(R.string.quest_generic_hasFeature_no) { applyAnswer(NotLocked) },
-            AnswerItem(R.string.quest_generic_hasFeature_yes) { applyAnswer(Locked) }
-        )
-        else emptyList()
+        if (answer.value == null) {
+            listOf(
+                AnswerItem(R.string.quest_generic_hasFeature_no) { applyAnswer(NotLocked) },
+                AnswerItem(R.string.quest_generic_hasFeature_yes) { applyAnswer(Locked) }
+            )
+        } else {
+            emptyList()
+        }
 
-    override val otherAnswers = listOf(
-        AnswerItem(R.string.quest_fee_answer_hours) { mode = LOCKED_AT_HOURS },
+    override val otherAnswers get() = listOfNotNull(
+        AnswerItem(R.string.quest_fee_answer_hours) {
+            answer.value = LockedAtHours(TimeRestriction(
+                HierarchicOpeningHours(),TimeRestriction.Mode.ONLY_AT_HOURS
+            ))
+        },
+        if (answer.value == null) null
+        else AnswerItem(R.string.quest_openingHours_answer_seasonal_opening_hours) {
+            val old = (answer.value as? LockedAtHours)?.timeRestriction
+                ?: TimeRestriction(HierarchicOpeningHours(),TimeRestriction.Mode.ONLY_AT_HOURS)
+            val allMonths = listOf(MonthRange(Month.January, Month.December))
+            val hours = HierarchicOpeningHours(
+                old.hours.monthsList.map { months ->
+                    if (months.selectors.isEmpty()) months.copy(selectors = allMonths) else months
+                }
+            )
+            answer.value = LockedAtHours(TimeRestriction(hours, old.mode))
+        },
     )
 
-    private var mode: Mode = LOCKED_YES_NO
-        set(value) {
-            if (field == value) return
-            field = value
-            updateContentView()
-            updateButtonPanel()
-        }
+    private val answer: MutableState<BarrierLockedAnswer?> = mutableStateOf(null)
 
-    private fun updateContentView() {
-        clearViewControllers()
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        if (mode == LOCKED_AT_HOURS) {
-            val binding = QuestFeeHoursBinding.bind(setContentView(R.layout.quest_fee_hours))
-
-            lockedAtHoursSelect = TimeRestrictionSelectViewController(
-                binding.timeRestrictionSelect.selectAtHours,
-                binding.timeRestrictionSelect.openingHoursList,
-                binding.timeRestrictionSelect.addTimesButton
-            ).also {
-                it.firstDayOfWorkweek = countryInfo.firstDayOfWorkweek
-                it.regularShoppingDays = countryInfo.regularShoppingDays
-                it.locale = countryInfo.userPreferredLocale
-                it.onInputChanged = { checkIsFormComplete() }
-                // user already answered that it depends on the time, so don't show the "at any time" option
-                it.selectableTimeRestrictions = listOf(ONLY_AT_HOURS, EXCEPT_AT_HOURS)
+        snapshotFlow { answer.value }
+            .onEach {
+                updateButtonPanel()
+                checkIsFormComplete()
             }
-        }
-    }
+            .launchIn(lifecycleScope)
 
-    private fun clearViewControllers() {
-        lockedAtHoursSelect = null
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        clearViewControllers()
+        binding.composeViewBase.content { Surface {
+            val answer2 = answer.value
+            if (answer2 is LockedAtHours)
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    Text(stringResource(Res.string.quest_fee_answer_yes_but))
+                    TimeRestrictionInput(
+                        timeRestriction = answer2.timeRestriction,
+                        onChange = { answer.value = LockedAtHours(it) },
+                        countryInfo = countryInfo,
+                        allowSelectNoRestriction = false,
+                    )
+                }
+        } }
     }
 
     override fun onClickOk() {
-        when (mode) {
-            LOCKED_AT_HOURS -> {
-                val hours = lockedAtHoursSelect!!.times.toOpeningHours()
-                val locked = when (lockedAtHoursSelect!!.timeRestriction) {
-                    AT_ANY_TIME -> Locked
-                    ONLY_AT_HOURS -> LockedAtHours(hours)
-                    EXCEPT_AT_HOURS -> LockedExceptAtHours(hours)
-                }
-                applyAnswer(locked)
-            }
-            else -> {}
-        }
+        answer.value?.let { applyAnswer(it) }
+
     }
 
-    override fun isRejectingClose() = when (mode) {
-        LOCKED_AT_HOURS -> lockedAtHoursSelect!!.isComplete
-        else -> false
-    }
+    override fun isRejectingClose(): Boolean = answer.value != null
 
-    override fun isFormComplete() = when (mode) {
-        LOCKED_AT_HOURS -> lockedAtHoursSelect!!.isComplete
-        else -> false
-    }
-
-    private enum class Mode { LOCKED_YES_NO, LOCKED_AT_HOURS }
+    override fun isFormComplete() = (answer.value as? LockedAtHours)?.timeRestriction?.isComplete() == true
 }

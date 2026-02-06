@@ -182,7 +182,7 @@ class InsertNodeFragment :
             GeometryType.VERTEX,
             country,
             null, // pre-filled search text
-            { it.addTags.isNotEmpty() }, // require non-empty tags, see https://github.com/Helium314/SCEE/issues/795
+            { true }, // filter, but we want everything
             { onSelectedFeature(it, pow) },
             defaultFeatureIds.reversed(),
             false,

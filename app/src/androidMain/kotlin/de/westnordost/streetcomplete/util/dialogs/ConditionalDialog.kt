@@ -19,11 +19,6 @@ import androidx.compose.ui.text.intl.Locale
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.osm.opening_hours.model.OpeningWeekdaysRow
-import de.westnordost.streetcomplete.osm.opening_hours.model.TimeRange
-import de.westnordost.streetcomplete.osm.opening_hours.parser.toOpeningHours
-import de.westnordost.streetcomplete.quests.opening_hours.TimeRangePickerDialog
-import de.westnordost.streetcomplete.quests.opening_hours.WeekdaysPickerDialog
 import de.westnordost.streetcomplete.util.ktx.showKeyboard
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -141,7 +136,7 @@ fun showAddConditionalDialog(context: Context, keys: List<String>, values: List<
             addView(switch)
         }
     }
-
+/*
     val timeBox = CheckBox(context).apply {
         setText(de.westnordost.streetcomplete.R.string.access_time_limit)
         setOnCheckedChangeListener { _, checked ->
@@ -169,7 +164,7 @@ fun showAddConditionalDialog(context: Context, keys: List<String>, values: List<
                 createFullValue()
             }
         }
-    }
+    }*/
     val layout = LinearLayout(context).apply {
         orientation = LinearLayout.VERTICAL
         addView(keySpinner)
@@ -179,7 +174,7 @@ fun showAddConditionalDialog(context: Context, keys: List<String>, values: List<
         addView(numericBox("weight", de.westnordost.streetcomplete.R.string.access_weight_limit))
         addView(numericBox("length", de.westnordost.streetcomplete.R.string.access_length_limit))
         addView(numericBox("width", de.westnordost.streetcomplete.R.string.access_width_limit))
-        addView(timeBox)
+//        addView(timeBox)
         addView(valueEditText)
     }
     dialog = AlertDialog.Builder(context)
@@ -193,7 +188,7 @@ fun showAddConditionalDialog(context: Context, keys: List<String>, values: List<
         .create()
     dialog.show()
 }
-
+/*
 // similar, but with some access tags instead of numeric restrictions
 // todo: maybe no key list necessary, and maybe no value list too?
 fun showOtherConditionalDialog(context: Context, keys: List<String>, values: List<String>?, valueInputType: Int?, onClickOk: (String, String) -> Unit) {
@@ -313,3 +308,4 @@ fun showOtherConditionalDialog(context: Context, keys: List<String>, values: Lis
     dialog.show()
     createFullValue()
 }
+*/

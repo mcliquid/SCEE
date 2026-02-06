@@ -7,8 +7,10 @@ import de.westnordost.osmfeatures.Feature
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.addNodeEdit
 import de.westnordost.streetcomplete.data.osm.edits.create.createNodeAction
+import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
+import de.westnordost.streetcomplete.osm.applyTo
 import de.westnordost.streetcomplete.osm.isPlace
 import de.westnordost.streetcomplete.quests.TagEditor
 import de.westnordost.streetcomplete.util.math.PositionOnWay
@@ -62,17 +64,16 @@ class InsertNodeTagEditor : TagEditor() {
         fun create(positionOnWay: PositionOnWay, feature: Feature?, startTags: Map<String, String> = emptyMap()): InsertNodeTagEditor {
             val f = InsertNodeTagEditor()
             val args = createArguments(Node(0L, positionOnWay.position, startTags), ElementPointGeometry(positionOnWay.position), null, null)
-            val tags = HashMap<String, String>()
-            startTags.forEach { tags[it.key] = it.value } // only relevant if a an existing node with non-empty tags is re-used
-            feature?.addTags?.forEach { tags[it.key] = it.value }
+            val tags = Tags(startTags)
+            feature?.applyTo(tags)
             args.putAll(bundleOf(
                 ARG_POSITION_ON_WAY to Json.encodeToString(positionOnWay),
-                ARG_TAGS to tags,
+                ARG_TAGS to tags.toMap(),
             ))
             feature?.let {
                 args.putString(ARG_FEATURE_NAME, it.name)
                 args.putString(ARG_FEATURE_ID, it.id)
-                args.putString(ARG_TAGS, Json.encodeToString(it.addTags))
+                args.putString(ARG_TAGS, Json.encodeToString(Tags(mapOf()).also { feature.applyTo(it) }.toMap()))
             }
             f.arguments = args
             return f

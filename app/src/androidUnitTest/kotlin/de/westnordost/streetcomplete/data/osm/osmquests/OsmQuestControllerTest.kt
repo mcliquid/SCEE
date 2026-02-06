@@ -56,13 +56,13 @@ class OsmQuestControllerTest {
         mapDataSource = mock()
 
         notesSource = mock()
-        questTypeRegistry = QuestTypeRegistry(listOf(
+        questTypeRegistry = QuestTypeRegistry({ listOf(
             0 to ApplicableQuestType,
             1 to NotApplicableQuestType,
             2 to ComplexQuestTypeApplicableToNode42,
             3 to ApplicableQuestTypeNotInAnyCountry,
             4 to ApplicableQuestType2
-        ))
+        ) })
         countryBoundaries = mock()
 
         on(mapDataSource.addListener(any())).then { invocation ->

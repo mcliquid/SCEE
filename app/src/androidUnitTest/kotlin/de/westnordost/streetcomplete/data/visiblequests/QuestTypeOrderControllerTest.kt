@@ -34,12 +34,12 @@ class QuestTypeOrderControllerTest {
     @BeforeTest fun setUp() {
         questTypeOrderDao = mock()
         editTypePresetsSource = mock()
-        questTypeRegistry = QuestTypeRegistry(listOf(
+        questTypeRegistry = QuestTypeRegistry({ listOf(
             0 to questA,
             1 to questB,
             2 to questC,
             3 to questD
-        ))
+        ) })
 
         on(editTypePresetsSource.addListener(any())).then { invocation ->
             editTypePresetsListener = (invocation.arguments[0] as EditTypePresetsSource.Listener)

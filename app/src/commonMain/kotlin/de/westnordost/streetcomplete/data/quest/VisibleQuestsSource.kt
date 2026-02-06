@@ -166,8 +166,6 @@ class VisibleQuestsSource(
         // currently visible
         val hideOverlayQuests = prefs.getBoolean(Prefs.HIDE_OVERLAY_QUESTS, true)
         val visibleQuestTypes = questTypeRegistry.filter { isVisible(it, hideOverlayQuests) }
-        println(hideOverlayQuests)
-        println(visibleQuestTypes)
         if (visibleQuestTypes.isEmpty()) return emptyList()
 
         val quests =
@@ -175,7 +173,6 @@ class VisibleQuestsSource(
             osmNoteQuestSource.getAllInBBox(bbox) +
             externalSourceQuestController.getAllInBBox(bbox, visibleQuestTypes)
 
-        println(quests)
         return quests.filter { isVisible(it.key) && isVisibleInTeamMode(it) }
     }
 

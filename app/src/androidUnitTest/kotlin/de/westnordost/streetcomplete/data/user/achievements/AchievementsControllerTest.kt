@@ -41,7 +41,7 @@ class AchievementsControllerTest {
         userLinksDao = mock()
         statisticsSource = mock()
         allEditTypes = AllEditTypes(listOf(
-            QuestTypeRegistry(listOf(0 to QuestOne, 1 to QuestTwo)),
+            QuestTypeRegistry({ listOf(0 to QuestOne, 1 to QuestTwo) }),
             OverlayRegistry(listOf(0 to OverlayOne)),
         ))
 

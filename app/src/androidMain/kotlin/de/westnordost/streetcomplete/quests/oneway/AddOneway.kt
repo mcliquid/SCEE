@@ -20,36 +20,18 @@ class AddOneway : OsmElementQuestType<OnewayAnswer>, AndroidQuest {
 
     /** find all roads */
     private val allRoadsFilter by lazy { """
-    ways with
-      (
-        highway ~ ${ALL_ROADS.joinToString("|")}
-        or highway = cycleway
-        or (highway = path and bicycle ~ yes|designated)
-        or (highway = footway and bicycle ~ yes|designated)
-      )
-      and area != yes
-""".toElementFilterExpression() }
+        ways with highway ~ ${ALL_ROADS.joinToString("|")} and area != yes
+    """.toElementFilterExpression() }
 
     /** find only those roads eligible for asking for oneway */
     private val elementFilter by lazy { """
-    ways with
-      (
-        (highway ~ living_street|residential|service|tertiary|unclassified|busway
-         and width <= 4 and (!lanes or lanes <= 1))
-        or
-        (highway = cycleway)
-        or
-        (highway = footway and bicycle ~ yes|designated)
-        or
-        (highway = path and bicycle ~ yes|designated)
-      )
-      and !oneway
-      and area != yes
-      and junction != roundabout
-      and (access !~ private|no or (foot and foot !~ private|no))
-""".toElementFilterExpression() }
+        ways with highway ~ living_street|residential|service|tertiary|unclassified|busway
+         and width <= 4 and (!lanes or lanes <= 1)
+         and !oneway and area != yes and junction != roundabout
+         and (access !~ private|no or (foot and foot !~ private|no))
+    """.toElementFilterExpression() }
 
-    override val changesetComment = "Specify whether roads are one-ways"
+    override val changesetComment = "Specify whether narrow roads are one-ways"
     override val wikiLink = "Key:oneway"
     override val icon = R.drawable.quest_oneway
     override val hasMarkersAtEnds = true
@@ -74,19 +56,17 @@ class AddOneway : OsmElementQuestType<OnewayAnswer>, AndroidQuest {
             }
         }
 
-        return onewayCandidates.filter { way ->
-            val firstConnected = (connectionCountByNodeIds[way.nodeIds.first()] ?: 0) > 1
-            val lastConnected  = (connectionCountByNodeIds[way.nodeIds.last()]  ?: 0) > 1
-            if (isBikeFacility(way.tags)) {
-                // Für cycleway und path+bicycle: mindestens ein Ende verbunden
-                firstConnected || lastConnected
-            } else {
-                // Für die restlichen (engen Kfz-Straßen): beide Enden verbunden
-                firstConnected && lastConnected
-            }
+        return onewayCandidates.filter {
+            /*
+                ways that are simply at the border of the download bounding box are treated as if
+                they are dead ends. This is fine though, because it only leads to this quest not
+                showing up for those streets (which is better than the other way round)
+             */
+            // check if the way has connections to other roads at both ends
+            (connectionCountByNodeIds[it.nodeIds.first()] ?: 0) > 1 &&
+                (connectionCountByNodeIds[it.nodeIds.last()] ?: 0) > 1
         }
     }
-
 
     override fun isApplicableTo(element: Element): Boolean? {
         if (!isOnewayRoadCandidate(element)) return false
@@ -95,29 +75,12 @@ class AddOneway : OsmElementQuestType<OnewayAnswer>, AndroidQuest {
         return null
     }
 
-    private fun isYesOrDesignated(v: String?) = v == "yes" || v == "designated"
-
-    private fun isBikeFacility(tags: Map<String, String>): Boolean {
-        return when (tags["highway"]) {
-            "cycleway" -> true
-            "path" -> isYesOrDesignated(tags["bicycle"]) || isYesOrDesignated(tags["footway"])
-            "footway" -> isYesOrDesignated(tags["bicycle"]) // für footway + bicycle=yes|designated
-            else -> false
-        }
-    }
-
     private fun isOnewayRoadCandidate(road: Element): Boolean {
         if (!elementFilter.matches(road)) return false
-
-        if (isBikeFacility(road.tags)) {
-            // kein Breitenlimit bei Rad-Infrastruktur
-            return true
-        }
-
+        // check if the width of the road minus the space consumed by other stuff is quite narrow
         val usableWidth = estimateUsableRoadwayWidth(road.tags) ?: return false
         return usableWidth <= 4f
     }
-
 
     override fun createForm() = AddOnewayForm()
 

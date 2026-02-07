@@ -84,9 +84,13 @@ class AddCrossingMarkings : OsmElementQuestType<Set<CrossingMarkings>>, AndroidQ
     }
 
     private val crossingMarkingExpression = if (prefs.getBoolean(PREF_CROSSING_MARKING_EXTENDED, false)) {
-        "( !crossing:markings or crossing:markings=yes )"
+        """(
+            (!crossing:markings or crossing:markings = yes)
+            and crossing != zebra and crossing_ref != zebra
+           )
+        """.trimIndent()
     } else {
-        "!crossing:markings and (!crossing or crossing = island )"
+        "!crossing:markings and (!crossing or crossing = island)"
     }
 }
 

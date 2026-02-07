@@ -16,4 +16,5 @@ data class Marker(
     val title: String? = null,
     val color: Int? = null,
     val rotation: Double? = null,
+    val direction: Double? = null,
 )

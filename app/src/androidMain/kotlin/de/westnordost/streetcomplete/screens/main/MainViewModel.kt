@@ -96,6 +96,7 @@ abstract class MainViewModel : ViewModel() {
     abstract val showOverlaySelector: StateFlow<Boolean>
     abstract val reverseQuestOrder: MutableStateFlow<Boolean>
     abstract val showMainMenuDialog: MutableState<Boolean>
+    abstract val showingBottomSheet: MutableStateFlow<Boolean>
 }
 
 data class ShownUrlConfig(val urlConfig: UrlConfig, val alreadyExists: Boolean)

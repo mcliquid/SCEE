@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.util.ktx
 
+import androidx.compose.ui.graphics.Color
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -38,6 +39,10 @@ data class RGB(val red: UByte, val green: UByte, val blue: UByte) {
 @OptIn(ExperimentalStdlibApi::class)
 fun Int.toHexColor(withAlpha: Boolean = false) = if (withAlpha)
     "#${toHexString()}" else "#${toHexString().takeLast(6)}"
+
+fun Int.toRgba() = Color(this).toRgba()
+
+fun Color.toRgba() = "rgba(${(red * 255).toInt()},${(green * 255).toInt()},${(blue * 255).toInt()},${alpha})"
 
 /** Creates RGB from string in the form "#rrggbb" */
 @OptIn(ExperimentalStdlibApi::class, ExperimentalUnsignedTypes::class)

@@ -441,9 +441,11 @@ class MainViewModelImpl(
         val listener = prefs.onShowQuickSettingsChanged { trySend(it) }
         awaitClose { listener.deactivate() }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, prefs.showQuickSettings)
+    override val showingBottomSheet = MutableStateFlow(false)
     override val showOverlaySelector = callbackFlow {
-        send(prefs.showOverlaySelector)
-        val listener = prefs.onShowOverlaySelectorChanged { trySend(it) } // todo: later also consider whether we're showing a bottom sheet
+        send(prefs.showOverlaySelector && !showingBottomSheet.value)
+        showingBottomSheet.collect { trySend(prefs.showOverlaySelector && !showingBottomSheet.value) }
+        val listener = prefs.onShowOverlaySelectorChanged { trySend(it && !showingBottomSheet.value) }
         awaitClose { listener.deactivate() }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, prefs.showOverlaySelector)
     override val reverseQuestOrder = MutableStateFlow(false)

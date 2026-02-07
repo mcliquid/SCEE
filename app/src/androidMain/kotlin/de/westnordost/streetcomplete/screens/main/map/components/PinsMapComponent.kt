@@ -149,7 +149,7 @@ class PinsMapComponent(
                 circleTranslateAnchor(Property.CIRCLE_TRANSLATE_ANCHOR_VIEWPORT),
             ),
         CircleLayer("pin-quest-dot-layer", DOT_SOURCE)
-            .withFilter(all(gt(zoom(), CLUSTER_MAX_ZOOM)))
+            .withFilter(all(gt(zoom(), 16f)))
             .withProperties(
                 circleColor(get("dot-color")),
                 circleStrokeColor(if (prefs.theme == Theme.LIGHT) "#666666" else "#333333"),

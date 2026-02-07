@@ -35,6 +35,7 @@ fun HouseNumberInput(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     suggestion: String? = null,
+    label: String? = null,
 ) {
     var houseNumberInputHeightPx by remember { mutableIntStateOf(0) }
 
@@ -43,6 +44,7 @@ fun HouseNumberInput(
             value = value,
             onValueChange = { if (it != value) onValueChange(it) },
             suggestion = suggestion,
+            label = label,
             modifier = Modifier
                 .weight(1f)
                 .onSizeChanged { houseNumberInputHeightPx = it.height }

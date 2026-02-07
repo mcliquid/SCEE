@@ -105,6 +105,7 @@ SCEE asks for two more permissions than StreetComplete: `ACCESS_BACKGROUND_LOCAT
     * Allow moving nodes that are part of a way (including a clear warning about changing geometry)
     * Allow disabling and moving the note quest
     * Allow closing notes
+    * Allow entering `addr:unit` in address overlay and house number quest
   * Some of the settings below can only be enabled in expert mode
   * Quest settings for most quests, mostly for customized element selection, but also for other things like allowing generic paved surface answer without note
     * Such customization should be handled with care. There are some safeguards, but modifying element selection could still lead to inappropriate tagging, quests being asked over and over again, and maybe app crashes.

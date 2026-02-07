@@ -6,11 +6,10 @@ import de.westnordost.streetcomplete.ui.common.item_select.ImageWithLabel
 import kotlinx.serialization.serializer
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import de.westnordost.streetcomplete.data.osm.mapdata.Node
 
 class AddForestLeafTypeForm : AItemSelectQuestForm<ForestLeafType, ForestLeafType>() {
 
-    override val items get() = if (element is Node) listOf(ForestLeafType.NEEDLELEAVED, ForestLeafType.BROADLEAVED) else ForestLeafType.entries
+    override val items = ForestLeafType.entries
     override val itemsPerRow = 3
     override val serializer = serializer<ForestLeafType>()
 

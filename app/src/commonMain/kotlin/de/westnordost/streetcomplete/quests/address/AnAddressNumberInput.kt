@@ -9,6 +9,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.ProvideTextStyle
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +39,7 @@ fun AnAddressNumberInput(
     modifier: Modifier = Modifier,
     suggestion: String? = null,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    label: String? = null,
 ) {
     var valueState by remember { mutableStateOf(TextFieldValue(text = value)) }
     if (value != valueState.text) {
@@ -66,6 +68,7 @@ fun AnAddressNumberInput(
                     valueState = it
                     onValueChange(valueState.text)
                 },
+                label = label?.let { { Text(it) } },
                 placeholder = if (!suggestion.isNullOrEmpty()) { {
 
                     BasicText(

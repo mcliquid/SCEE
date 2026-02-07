@@ -23,7 +23,7 @@ class AddPisteDifficulty : OsmElementQuestType<PisteDifficulty>, AndroidQuest {
           piste:type ~ downhill|nordic
           and !piste:difficulty
     """
-    private val filter by lazy { elementFilter.toElementFilterExpression() }
+    private val filter by lazy { prefs.getString(getPrefixedFullElementSelectionPref(prefs), elementFilter).toElementFilterExpression() }
 
     override val changesetComment = "Add piste difficulty"
     override val wikiLink = "Key:piste:difficulty"
@@ -54,6 +54,6 @@ class AddPisteDifficulty : OsmElementQuestType<PisteDifficulty>, AndroidQuest {
 
     @Composable
     override fun QuestSettings(onDismissRequest: () -> Unit) {
-        FullElementSelectionDialog(prefs, this.getPrefixedFullElementSelectionPref(prefs), R.string.quest_settings_element_selection, elementFilter, onDismissRequest)
+        FullElementSelectionDialog(prefs, getPrefixedFullElementSelectionPref(prefs), R.string.quest_settings_element_selection, elementFilter, onDismissRequest)
     }
 }

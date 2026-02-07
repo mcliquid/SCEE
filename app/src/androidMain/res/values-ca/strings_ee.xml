@@ -87,7 +87,6 @@
     <string name="pref_dynamic_quest_creation_title">Crear missions dinàmicament</string>
     <string name="pref_dynamic_quest_creation_summary">Les missions es creen en carregar l\'àrea actual. És una mica lent, però aplica immediatament canvis en la configuració de missions.</string>
     <string name="pref_quest_monitor_title">Notificar sobre missions properes</string>
-    <string name="quest_settings_leaf_type_single_tree_no">Sols per vies i àrees</string>
     <string name="quest_order_reverse">Regirar ordre de missions</string>
     <string name="quest_order_normal">Tornar a l\'ordre de missions normal</string>
     <string name="level_filter">Filtre de nivell</string>
@@ -149,8 +148,6 @@
     <string name="pref_disable_navigation_mode_summary">Desactiva el mode que inclina i gira el mapa automàticament segons tuna orientació</string>
     <string name="pref_quest_monitor_download">Descarregar dades si és necessari? Això pot consumir dades mòbils i bateria, podria no funcionar depèn de quina configuració d\'estalvi de bateria per a Android tinguis.</string>
     <string name="quest_settings_resurvey_all_opening_hours_message">Repreguntar tots els horaris d\'oberta, inclosos valors que SCEE no entén? És possible que hagis d\'usar l\'editor d\'etiquetes per introduir els valors correctes.</string>
-    <string name="quest_settings_leaf_type_single_tree_message">Preguntar també pel tipus de fulla dels arbres individuals?</string>
-    <string name="quest_settings_leaf_type_single_tree_yes">Si</string>
     <string name="quest_osmose_message">Aquestes missions són descarregades des del servei d\'Osmose i indiquen potencials problemes amb dades d\'OSM. Sols és descarregen i es mostren si, com a mínim, un nivell de severitat és seleccionat en la configuració dol missió.
 \n El missatge d\'Osmose es mostra amb la missió, qualsevol modificació en l\'element marca el problema com a resolt.
 \n També pots marcar el problema com un fals positiu; aquesta acció no es pot desfer.</string>

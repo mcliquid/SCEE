@@ -62,7 +62,6 @@
     <string name="quest_parking_capacity_title">Quante automobili possono parcheggiare qui?</string>
     <string name="pref_interval_summary">%d secondi</string>
     <string name="quest_settings_sidewalk_distance_button">Distanza</string>
-    <string name="quest_settings_leaf_type_single_tree_yes">Sì</string>
     <string name="quest_trail_visibility_excellent">Eccellente</string>
     <string name="quest_artwork_title">Che tipo di opera d\'arte è?</string>
     <string name="quest_mapSize_title">Che area è coperta da questa mappa?</string>

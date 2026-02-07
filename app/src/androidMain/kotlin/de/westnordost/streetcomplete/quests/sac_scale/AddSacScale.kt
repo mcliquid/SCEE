@@ -42,7 +42,7 @@ class AddSacScale : OsmElementQuestType<SacScale>, AndroidQuest {
           and (!lit or lit = no)
           and surface ~ "grass|sand|dirt|soil|fine_gravel|compacted|wood|gravel|pebblestone|rock|ground|earth|mud|woodchips|snow|ice|salt|stone"
     """
-    val filter by lazy { elementFilter.toElementFilterExpression() }
+    private val filter by lazy { prefs.getString(getPrefixedFullElementSelectionPref(prefs), elementFilter).toElementFilterExpression() }
 
     override val changesetComment = "Specify SAC Scale"
     override val wikiLink = "Key:sac_scale"

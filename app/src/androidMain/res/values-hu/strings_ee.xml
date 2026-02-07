@@ -129,9 +129,6 @@
     <string name="element_selection_button">Elemkiválasztás</string>
     <string name="quest_settings_building_levels_mandatory_roof">A legtöbb országban meg kell adni a tetőszinteket (alapértelmezett)</string>
     <string name="quest_settings_highlight_changes_button">Módosítások kiemelése</string>
-    <string name="quest_settings_leaf_type_single_tree_message">Az egyes fák esetében is kérdezze meg a levélzet típusát?</string>
-    <string name="quest_settings_leaf_type_single_tree_yes">Igen</string>
-    <string name="quest_settings_leaf_type_single_tree_no">Csak vonalakhoz és területekhez</string>
     <string name="quest_order_reverse">Kérdések sorrendjének megfordítása</string>
     <string name="quest_order_normal">Visszatérés a normál kérdéssorrendhez</string>
     <string name="level_filter">Szintszűrő</string>

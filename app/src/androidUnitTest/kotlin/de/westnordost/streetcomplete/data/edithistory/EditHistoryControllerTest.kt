@@ -47,9 +47,9 @@ class EditHistoryControllerTest {
         hiddenQuestsController = mock()
         notesSource = mock()
         mapDataSource = mock()
-        questTypeRegistry = QuestTypeRegistry(listOf(
+        questTypeRegistry = QuestTypeRegistry({ listOf(
             0 to QUEST_TYPE,
-        ))
+        ) })
         listener = mock()
         externalSourceController = mock()
 

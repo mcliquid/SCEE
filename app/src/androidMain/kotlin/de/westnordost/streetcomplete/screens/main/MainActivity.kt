@@ -100,6 +100,7 @@ import de.westnordost.streetcomplete.databinding.EffectQuestPlopBinding
 import de.westnordost.streetcomplete.osm.POPULAR_PLACE_FEATURE_IDS
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.applyTo
+import de.westnordost.streetcomplete.osm.getDirection
 import de.westnordost.streetcomplete.osm.isPlace
 import de.westnordost.streetcomplete.osm.level.levelsIntersect
 import de.westnordost.streetcomplete.osm.level.parseLevelsOrNull
@@ -1096,7 +1097,7 @@ class MainActivity :
             binding.otherQuestsLayout.removeAllViews()
             binding.otherQuestsScrollView.visibility = View.GONE
         }
-        //todo: inform viewModel so we can show overlay selector
+        viewModel.showingBottomSheet.value = false
         clearHighlighting()
         unfreezeMap()
         mapFragment?.endFocus()
@@ -1107,7 +1108,7 @@ class MainActivity :
      *  played and the highlighting of the previous bottom sheet is cleared. */
     private fun showInBottomSheet(f: Fragment, clearPreviousHighlighting: Boolean = true) {
         currentFocus?.hideKeyboard()
-        //todo: inform viewModel so we can hide overlay selector
+        viewModel.showingBottomSheet.value = true
         freezeMap()
         if (bottomSheetFragment != null) {
             if (clearPreviousHighlighting) clearHighlighting()
@@ -1326,7 +1327,8 @@ class MainActivity :
             val geometry = mapData?.getGeometry(e.type, e.id) ?: return@mapNotNull null
             val icon = getIcon(featureDictionary.value, e)
             val title = getTitle(e.tags, localLanguages)
-            Marker(geometry, icon, title)
+            val direction = (e as? Node)?.getDirection(mapDataWithEditsSource)
+            Marker(geometry, icon, title, direction = direction)
         }.toList()
     }
 

@@ -234,7 +234,6 @@
     <string name="access_length_limit">Довжина</string>
     <string name="dialog_button_understood">Зрозуміло</string>
     <string name="access_weight_limit">Вага</string>
-    <string name="quest_settings_leaf_type_single_tree_yes">Так</string>
     <string name="access_width_limit">Ширина</string>
     <string name="time_limited_from">З</string>
     <string name="general_warning">Попередження</string>
@@ -355,7 +354,6 @@
     <string name="quest_guidepost_sports_inline_skating">Ролерблейдинг</string>
     <string name="quest_guidepost_sports_climbing">Скелелазіння</string>
     <string name="quest_guidepost_sports_running">Біг</string>
-    <string name="quest_settings_leaf_type_single_tree_no">Тільки для ліній та полігонів</string>
     <string name="close">Закрити</string>
     <string name="quest_guidepostEle_title">Яка тут висота над рівнем моря?</string>
     <string name="quest_guidepostEle_hint">Не використовуйте дані про висоту за GPS, оскільки вони, як правило, занадто неточні і не надаються в правильній системі відліку висоти.</string>
@@ -408,7 +406,6 @@
     <string name="file_provide">Вибрати файл</string>
     <string name="file_loading_error">Помилка завантаження файлу</string>
     <string name="pref_tile_maxzoom">Максимальний підтримуваний масштаб</string>
-    <string name="quest_settings_leaf_type_single_tree_message">Також запитати про тип листя для окремих дерев?</string>
     <string name="quest_recycling_excrement_bag_dispenser">Він має диспенсер для пакетів для екскрементів</string>
     <string name="quest_piste_ref_connection">Це з\'єднання трас</string>
     <string name="quest_service_building_type_industrial_substation_description">Призначений для промислових або важких видів діяльності, що забезпечують постачання</string>

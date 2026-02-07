@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.screens.main.errors
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -28,13 +29,15 @@ fun SendErrorReportDialog(
         onConfirmed = onConfirmed,
         title = { Text(title) },
         text = {
-            Text(stringResource(Res.string.crash_message))
-            Button({
-                val clip = ClipData.newPlainText("SCEE error message", reportText)
-                (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(clip)
-            }) {
-                Text(androidx.compose.ui.res.stringResource(android.R.string.copy)) }
-            },
+            Column {
+                Text(stringResource(Res.string.crash_message))
+                Button({
+                    val clip = ClipData.newPlainText("SCEE error message", reportText)
+                    (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(clip)
+                }) {
+                    Text(androidx.compose.ui.res.stringResource(android.R.string.copy)) }
+            }
+        },
         confirmButtonText = stringResource(Res.string.crash_compose_email),
         // should be more of a modal dialog
         properties = DialogProperties(

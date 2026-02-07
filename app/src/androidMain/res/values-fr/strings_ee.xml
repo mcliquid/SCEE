@@ -383,7 +383,6 @@
     <string name="quest_utility_water">Eau</string>
     <string name="quest_utility_sewerage">Eaux usées</string>
     <string name="quest_utility_gas">Gaz naturel</string>
-    <string name="quest_settings_leaf_type_single_tree_yes">Oui</string>
     <string name="quest_utility_power">Électricité</string>
     <string name="quest_guidepost_sports_mtb">VTT</string>
     <string name="quest_guidepost_sports_hiking">Randonnée</string>
@@ -391,7 +390,6 @@
     <string name="quest_guidepost_sports_nordic_walking">Marche Nordique</string>
     <string name="quest_guidepost_sports_ski">Ski</string>
     <string name="quest_guidepost_sports_running">Course à pied</string>
-    <string name="quest_settings_leaf_type_single_tree_no">Uniquement pour les voies et zones</string>
     <string name="quest_barrier_locked_title">Cette barrière est-elle (habituellement) fermée ?</string>
     <string name="quest_service_building_heating">Chauffage</string>
     <string name="quest_guidepost_sports_title">À quel sport ce panneau s\'adresse-t-il ?</string>
@@ -418,7 +416,6 @@
     <string name="quest_service_building_railway">Chemins de fer</string>
     <string name="quest_service_building_type_substation_description">Postes électrique liées aux réseaux de distribution régionaux</string>
     <string name="quest_service_building_type_minor_substation">Petit poste électrique</string>
-    <string name="quest_settings_leaf_type_single_tree_message">Demander également le type de feuille pour les arbres isolé ?</string>
     <string name="quest_trail_visibility_intermediate_description">Balisage le plus souvent visible. Sens de l\'orientation nécessaire, se munir d\'une carte.</string>
     <string name="quest_piste_lit_title">Cette piste est-elle éclairée ?</string>
     <string name="quest_service_building_gas_pumping_station_description">Installation comprenant des pompes pour pomper du gaz d\'un endroit à l\'autre</string>

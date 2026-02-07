@@ -11,7 +11,6 @@ import androidx.core.graphics.toPointF
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.russhwolf.settings.ObservableSettings
 import de.westnordost.countryboundaries.CountryBoundaries
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
@@ -27,6 +26,7 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
+import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.databinding.FragmentMoveNodeBinding
 import de.westnordost.streetcomplete.overlays.IsShowingElement
 import de.westnordost.streetcomplete.screens.measure.MeasureDisplayUnit
@@ -59,9 +59,11 @@ class MoveNodeFragment :
     private val countryBoundaries: Lazy<CountryBoundaries> by inject(named("CountryBoundariesLazy"))
     private val countryInfos: CountryInfos by inject()
     private val surveyChecker: SurveyChecker by inject()
-    private val prefs: ObservableSettings by inject()
+    private val prefs: Preferences by inject()
 
     override val elementKey: ElementKey by lazy { node.key }
+
+    private val minMoveDistance = if (prefs.expertMode) 0.1 else MIN_MOVE_DISTANCE
 
     private lateinit var node: Node
     private lateinit var editType: ElementEditType
@@ -202,7 +204,7 @@ class MoveNodeFragment :
     private fun checkIsDistanceOkAndUpdateText(position: LatLon): Boolean {
         val moveDistance = position.distanceTo(node.position)
         return when {
-            moveDistance < MIN_MOVE_DISTANCE -> {
+            moveDistance < minMoveDistance -> {
                 binding.titleLabel.setText(R.string.node_moved_not_far_enough)
                 false
             }

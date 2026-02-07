@@ -12,7 +12,7 @@ sealed interface AddressNumber {
 }
 
 @Serializable
-data class HouseNumber(val houseNumber: String) : AddressNumber {
+data class HouseNumber(val houseNumber: String, val unit: String? = null) : AddressNumber {
     override fun isEmpty(): Boolean = houseNumber.isEmpty()
     override fun isComplete(): Boolean = houseNumber.isNotEmpty()
 }
@@ -65,6 +65,8 @@ fun AddressNumber.applyTo(tags: Tags, countryCode: String?) {
         }
         is HouseNumber -> {
             tags["addr:housenumber"] = houseNumber
+            if (unit == null) tags.remove("addr:unit")
+            else tags["addr:unit"] = unit
         }
     }
 }
@@ -82,7 +84,7 @@ fun parseAddressNumber(tags: Map<String, String>): AddressNumber? {
         return when {
             blockNumber != null -> BlockAndHouseNumber(blockNumber, houseNumber)
             block != null -> BlockAndHouseNumber(block, houseNumber)
-            else -> HouseNumber(houseNumber)
+            else -> HouseNumber(houseNumber, tags["addr:unit"])
         }
     }
     return null

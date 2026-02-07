@@ -24,7 +24,7 @@ class AddPisteRef : OsmElementQuestType<PisteRefAnswer>, AndroidQuest {
           and !ref
           and !piste:ref
     """
-    private val filter by lazy { elementFilter.toElementFilterExpression() }
+    private val filter by lazy { prefs.getString(getPrefixedFullElementSelectionPref(prefs), elementFilter).toElementFilterExpression() }
 
     override val changesetComment = "Survey piste ref"
     override val wikiLink = "Key:piste:ref"
@@ -56,6 +56,6 @@ class AddPisteRef : OsmElementQuestType<PisteRefAnswer>, AndroidQuest {
 
     @Composable
     override fun QuestSettings(onDismissRequest: () -> Unit) {
-        FullElementSelectionDialog(prefs, this.getPrefixedFullElementSelectionPref(prefs), R.string.quest_settings_element_selection, elementFilter, onDismissRequest)
+        FullElementSelectionDialog(prefs, getPrefixedFullElementSelectionPref(prefs), R.string.quest_settings_element_selection, elementFilter, onDismissRequest)
     }
 }

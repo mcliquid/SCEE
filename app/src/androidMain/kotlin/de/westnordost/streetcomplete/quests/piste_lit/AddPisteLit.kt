@@ -30,7 +30,7 @@ class AddPisteLit : OsmElementQuestType<Boolean>, AndroidQuest {
           or piste:lit older today -16 years
         )
     """
-    private val filter by lazy { elementFilter.toElementFilterExpression() }
+    private val filter by lazy { prefs.getString(getPrefixedFullElementSelectionPref(prefs), elementFilter).toElementFilterExpression() }
 
     override val changesetComment = "Specify whether pistes are lit"
     override val wikiLink = "Key:piste:lit"
@@ -60,6 +60,6 @@ class AddPisteLit : OsmElementQuestType<Boolean>, AndroidQuest {
 
     @Composable
     override fun QuestSettings(onDismissRequest: () -> Unit) {
-        FullElementSelectionDialog(prefs, this.getPrefixedFullElementSelectionPref(prefs), R.string.quest_settings_element_selection, elementFilter, onDismissRequest)
+        FullElementSelectionDialog(prefs, getPrefixedFullElementSelectionPref(prefs), R.string.quest_settings_element_selection, elementFilter, onDismissRequest)
     }
 }

@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.databinding.ComposeViewBinding
+import de.westnordost.streetcomplete.osm.address.AddressNumber
 import de.westnordost.streetcomplete.osm.address.BlockAndHouseNumber
 import de.westnordost.streetcomplete.osm.address.HouseNumber
 import de.westnordost.streetcomplete.osm.address.looksInvalid
@@ -152,7 +153,7 @@ class AddHousenumberForm : AbstractOsmQuestForm<HouseNumberAnswer>() {
             applyAnswer(addressNumberAndName.value)
             lastBlock = (number as? BlockAndHouseNumber)?.block
             lastWasBlock = number is BlockAndHouseNumber
-            number?.streetHouseNumber?.let { lastHouseNumber = it }
+            number?.let { lastHouseNumber = it }
         }
     }
 
@@ -176,7 +177,7 @@ class AddHousenumberForm : AbstractOsmQuestForm<HouseNumberAnswer>() {
 
     companion object {
         private var lastBlock: String? = null
-        private var lastHouseNumber: String? = null
+        private var lastHouseNumber: AddressNumber? = null
         private var lastWasBlock: Boolean = false
     }
 }

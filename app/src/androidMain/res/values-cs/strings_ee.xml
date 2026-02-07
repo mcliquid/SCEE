@@ -274,9 +274,7 @@
     <string name="element_selection_button">Výběr prvků</string>
     <string name="quest_settings_highlight_changes_button">Zvýraznit změny</string>
     <string name="quest_order_normal">Zpět na normální řazení úkolů</string>
-    <string name="quest_settings_leaf_type_single_tree_no">Pouze u těch zaznačených cestou nebo oblastí</string>
     <string name="quest_order_reverse">Obrátit pořadí úkolů</string>
-    <string name="quest_settings_leaf_type_single_tree_yes">Ano</string>
     <string name="quick_switch_preset">Přepnout předvolbu</string>
     <string name="quest_osmose_false_positive">Nahlásit falešně pozitivní</string>
     <string name="quest_service_building_sewerage_description">Zařízení související se sběrem, přenosem nebo zpracováním odpadní vody</string>
@@ -298,7 +296,6 @@
     <string name="pref_recent_answers_first_min_lines_message">Přesunout nedávné odpovědi dopředu pokud formulář úkolu obsahuje více než tento počet řad obrázků</string>
     <string name="quest_monitor_permission_warning">Pro upozornění na okolní úkoly je vyžadováno oprávnění k poloze na pozadí</string>
     <string name="quest_monitor_search_radius_text">Nastavte vzdálenost ve které hledat úkoly v okolí. Mějte na vědomí že úkoly s lehce větší vzdálenosti mohou být také nalezeny. Lokace s horší přesností než je zadaná hodnota budou ignorovány.</string>
-    <string name="quest_settings_leaf_type_single_tree_message">Ptát se na typ list i u jednotlivých stromů?</string>
     <string name="quest_service_building_railway_ventilation_shaft">Železniční ventilace</string>
     <string name="advanced_resurvey_message_keys">Vždy prozkoumat tyto klíče, pokud není uvedeno datum poslední kontroly. Datum poslední kontroly bude vždy přidáno při zodpovězení souvisejících úkolů</string>
     <string name="quest_settings_osmose_level_title">Vyberte úroveň závažnosti problému, které se budou stahovat a zobrazovat</string>

@@ -261,7 +261,6 @@
     <string name="quest_piste_ref_title">这条滑雪道的编号是？</string>
     <string name="quest_utility_water">水</string>
     <string name="quest_utility_gas">气</string>
-    <string name="quest_settings_leaf_type_single_tree_yes">是</string>
     <string name="quest_utility_power">电</string>
     <string name="quest_private">这是私人的</string>
     <string name="quest_construction">正在施工，直到……</string>
@@ -309,7 +308,6 @@
     <string name="restriction_overlay_remove_conditional_restrictions">移除条件</string>
     <string name="quest_seating_no">没有座位，但不提供外卖</string>
     <string name="import_export_custom_overlays_select">选择要导出的叠加图层</string>
-    <string name="quest_settings_leaf_type_single_tree_no">只用于路径和区域</string>
     <string name="quest_destination_all_lanes_button">所有
 \n车道</string>
     <string name="quest_destination_add_more">添加其它目的地</string>
@@ -340,7 +338,6 @@
     <string name="outside_downloaded_area_warning">该位置位于已下载区域之外。继续吗？</string>
     <string name="quest_name_brand">它有个品牌名称……</string>
     <string name="access_manager_button_add">添加</string>
-    <string name="quest_settings_leaf_type_single_tree_message">同时询问单棵树的树叶类型？</string>
     <string name="quest_guidepost_sports_winter_hiking">冬季徒步</string>
     <string name="dialog_button_understood">了解</string>
     <string name="quest_destination_title">这条路上有哪些方向路标？</string>

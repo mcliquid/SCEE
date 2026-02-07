@@ -112,7 +112,7 @@ class VisibleQuestsSourceTest {
 
     @Test fun getAll() {
         val bboxCacheWillRequest = bbox.asBoundingBoxOfEnclosingTiles(16)
-        val osmQuests = questTypes.filterIsInstance<OsmElementQuestType<*>>().map { OsmQuest(it, ElementType.NODE, 1L, pGeom()) }
+        val osmQuests = questTypes.map { OsmQuest(it, ElementType.NODE, 1L, pGeom()) }
         val noteQuests = listOf(osmNoteQuest(0L, p(0.0, 0.0)), osmNoteQuest(1L, p(1.0, 1.0)))
         on(osmQuestSource.getAllInBBox(bboxCacheWillRequest, questTypes)).thenReturn(osmQuests)
         on(osmNoteQuestSource.getAllInBBox(bboxCacheWillRequest)).thenReturn(noteQuests)
@@ -126,8 +126,8 @@ class VisibleQuestsSourceTest {
 
     @Test fun `getAll does not return those that are hidden by user`() {
         val bboxCacheWillRequest = bbox.asBoundingBoxOfEnclosingTiles(16)
-        val osmQuests = questTypes.filterIsInstance<OsmElementQuestType<*>>().map { OsmQuest(it, ElementType.NODE, 1L, pGeom()) }
-        val noteQuests = listOf(OsmNoteQuest(0L, p(0.0, 0.0)), OsmNoteQuest(1L, p(1.0, 1.0)))
+        val osmQuests = questTypes.map { OsmQuest(it, ElementType.NODE, 1L, pGeom()) }
+        val noteQuests = listOf(osmNoteQuest(0L, p(0.0, 0.0)), osmNoteQuest(1L, p(1.0, 1.0)))
         on(osmQuestSource.getAllInBBox(bboxCacheWillRequest)).thenReturn(osmQuests)
         on(osmNoteQuestSource.getAllInBBox(bboxCacheWillRequest)).thenReturn(noteQuests)
 
@@ -140,7 +140,7 @@ class VisibleQuestsSourceTest {
     @Test fun `getAll does not return those that are invisible in team mode`() {
         val bboxCacheWillRequest = bbox.asBoundingBoxOfEnclosingTiles(16)
         val osmQuest = OsmQuest(questTypes.first() as OsmElementQuestType<*>, ElementType.NODE, 1L, pGeom())
-        val noteQuest = OsmNoteQuest(0L, p(0.0, 0.0))
+        val noteQuest = osmNoteQuest(0L, p(0.0, 0.0))
         on(osmQuestSource.getAllInBBox(bboxCacheWillRequest, questTypes)).thenReturn(listOf(osmQuest))
         on(osmNoteQuestSource.getAllInBBox(bboxCacheWillRequest)).thenReturn(listOf(noteQuest))
         on(questsHiddenSource.get(any())).thenReturn(null)
@@ -154,7 +154,7 @@ class VisibleQuestsSourceTest {
     @Test fun `getAll does not return those that are invisible because of an overlay`() {
         val qta = questTypes.first() // we need the same instance as in the registry
         val bboxCacheWillRequest = bbox.asBoundingBoxOfEnclosingTiles(16)
-        on(osmQuestSource.getAllInBBox(bboxCacheWillRequest, listOf(qta, OsmNoteQuestType)))
+        on(osmQuestSource.getAllInBBox(bboxCacheWillRequest, listOf(qta)))
             .thenReturn(listOf(OsmQuest(TestQuestTypeA(), ElementType.NODE, 1, ElementPointGeometry(bbox.min))))
         on(osmNoteQuestSource.getAllInBBox(bboxCacheWillRequest)).thenReturn(listOf())
         on(questsHiddenSource.get(any())).thenReturn(null)

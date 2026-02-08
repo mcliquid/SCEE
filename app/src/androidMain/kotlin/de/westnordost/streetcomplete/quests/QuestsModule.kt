@@ -147,6 +147,7 @@ import de.westnordost.streetcomplete.quests.motorcycle_parking_cover.AddMotorcyc
 import de.westnordost.streetcomplete.quests.note_discussion.OsmNoteQuestType
 import de.westnordost.streetcomplete.quests.oneway.AddOneway
 import de.westnordost.streetcomplete.quests.oneway.AddOnewayAerialway
+import de.westnordost.streetcomplete.quests.oneway.AddOnewayBicycle
 import de.westnordost.streetcomplete.quests.opening_hours.AddOpeningHours
 import de.westnordost.streetcomplete.quests.opening_hours_signed.CheckOpeningHoursSigned
 import de.westnordost.streetcomplete.quests.orchard_produce.AddOrchardProduce
@@ -692,6 +693,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 54 to AddLampType(),
     EE_QUEST_OFFSET + 55 to AddPostOfficeType(),
     EE_QUEST_OFFSET + 57 to AddLampMount(),
+    EE_QUEST_OFFSET + 58 to AddOnewayBicycle(),
     EE_QUEST_OFFSET + 10 to OsmoseQuest(osmoseDao),
     EE_QUEST_OFFSET + 11 to CustomQuest(customQuestList),
     // POI quests

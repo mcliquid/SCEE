@@ -35,6 +35,7 @@ import de.westnordost.streetcomplete.quests.barrier_type.AddBarrierOnRoad
 import de.westnordost.streetcomplete.quests.barrier_type.AddBarrierType
 import de.westnordost.streetcomplete.quests.barrier_type.AddStileType
 import de.westnordost.streetcomplete.quests.bbq_fuel.AddBbqFuel
+import de.westnordost.streetcomplete.quests.bench_armrest.AddBenchArmrest
 import de.westnordost.streetcomplete.quests.bench_backrest.AddBenchBackrest
 import de.westnordost.streetcomplete.quests.bench_material.AddBenchMaterial
 import de.westnordost.streetcomplete.quests.bicycle_repair_station.AddBicycleRepairStationServices
@@ -102,7 +103,6 @@ import de.westnordost.streetcomplete.quests.diet_type.AddVegetarian
 import de.westnordost.streetcomplete.quests.drinking_water.AddDrinkingWater
 import de.westnordost.streetcomplete.quests.drinking_water_type.AddDrinkingWaterType
 import de.westnordost.streetcomplete.quests.existence.CheckExistence
-import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessBicycle
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessMotorVehicle
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessPedestrian
 import de.westnordost.streetcomplete.quests.fire_hydrant.AddFireHydrantType
@@ -529,7 +529,6 @@ fun getQuestTypeList(
     95 to AddMaxPhysicalHeight(arSupportChecker), // same as above, best if it appears right after (if enabled)
     96 to AddRoadName(),
     97 to AddOneway(),
-    98 to AddOnewayBicycle(),
 
     99 to AddEntrance(),
     100 to AddEntranceReference(),
@@ -651,6 +650,7 @@ fun getQuestTypeList(
     154 to AddWayLit(),
 
     // quests added in SCEE
+    EE_QUEST_OFFSET + 59 to AddBenchArmrest(),
     EE_QUEST_OFFSET + 0 to AddBenchMaterial(),
     EE_QUEST_OFFSET + 27 to AddBuildingColour(),
     EE_QUEST_OFFSET + 49 to AddBuildingMaterial(),
@@ -695,7 +695,8 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 54 to AddLampType(),
     EE_QUEST_OFFSET + 55 to AddPostOfficeType(),
     EE_QUEST_OFFSET + 57 to AddLampMount(),
-    EE_QUEST_OFFSET + 58 to AddFerryAccessBicycle(),
+    EE_QUEST_OFFSET + 58 to AddOnewayBicycle(),
+    EE_QUEST_OFFSET + 59 to AddFerryAccessBicycle(),
     EE_QUEST_OFFSET + 10 to OsmoseQuest(osmoseDao),
     EE_QUEST_OFFSET + 11 to CustomQuest(customQuestList),
     // POI quests

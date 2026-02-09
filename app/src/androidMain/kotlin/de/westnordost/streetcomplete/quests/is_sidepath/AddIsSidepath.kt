@@ -91,6 +91,14 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer>, AndroidQuest {
 
             IsSidepathAnswer.IsSidewalk ->
                 tags["footway"] = "sidewalk"
+
+            IsSidepathAnswer.IsCrossing -> {
+                when (tags["highway"]) {
+                    "cycleway" -> tags["cycleway"] = "crossing"
+                    "footway" -> tags["footway"] = "crossing"
+                    "path" -> tags["path"] = "crossing"
+                }
+            }
         }
     }
 }

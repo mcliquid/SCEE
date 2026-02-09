@@ -20,6 +20,11 @@ class AddIsSidepathForm : AbstractOsmQuestForm<IsSidepathAnswer>() {
             AnswerItem(R.string.quest_is_sidepath_answer_is_sidewalk) {
                 applyAnswer(IsSidepathAnswer.IsSidewalk, true)
             }
-        } else null
+        } else null,
+
+        AnswerItem(R.string.quest_is_sidepath_answer_is_crossing) {
+            applyAnswer(IsSidepathAnswer.IsCrossing, true)
+        }
     )
 }
+

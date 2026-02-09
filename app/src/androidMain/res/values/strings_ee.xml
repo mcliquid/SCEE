@@ -682,6 +682,10 @@
     <!-- bicycle oneway -->
     <string name="quest_onewayBicycle_title">Is this path one-way for bicycles? In which direction?</string>
 
+    <!-- is_sidepath -->
+    <string name="quest_is_sidepath_title">Is this path a sidepath of a road?</string>
+    <string name="quest_is_sidepath_hint">A sidepath runs adjacent and parallel to a road so that you would describe movement as “along &lt;road name&gt;”. If the path goes through a park, forest or otherwise independent corridor, choose “Independent path”.</string>
+
     <!-- new overlays -->
 
     <!-- custom overlay -->

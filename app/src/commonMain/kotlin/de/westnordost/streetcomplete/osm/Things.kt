@@ -146,6 +146,7 @@ private val IS_THING_EXPRESSION by lazy {
             // "bus_stop", handled in filter below to skip some common bad tagging
             "cyclist_waiting_aid",
             "emergency_access_point",
+            "hitchhiking",
             "milestone",
             // "speed_camera", - while not directly a sign, it definitely belongs into the traffic
             //                   signals/controls category
@@ -162,6 +163,7 @@ private val IS_THING_EXPRESSION by lazy {
             "cannon",
             "locomotive",
             "milestone",
+            "millstone",
             "memorial",
             // "monument" - it's rather a structure. Small monuments are tagged as "memorial"
             "railway_car",
@@ -196,6 +198,8 @@ private val IS_THING_EXPRESSION by lazy {
             "beehive",
             "cairn",
             "carpet_hanger",
+            "charge_point",
+            "ceremonial_gate",
             "column",
             "compass_rose",
             "cross",

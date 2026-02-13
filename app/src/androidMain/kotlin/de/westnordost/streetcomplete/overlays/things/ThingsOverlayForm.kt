@@ -114,9 +114,7 @@ class ThingsOverlayForm : AbstractOverlayForm() {
             featureCtrl.feature?.name,
             { it.toElement().isThing() },
             ::onSelectedFeature,
-            POPULAR_THING_FEATURE_IDS,
-            false,
-            geometry.center
+            POPULAR_THING_FEATURE_IDS
         ).show()
     }
 

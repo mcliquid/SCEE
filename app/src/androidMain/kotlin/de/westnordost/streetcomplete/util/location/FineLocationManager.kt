@@ -8,14 +8,12 @@ import android.location.LocationManager.GPS_PROVIDER
 import android.location.LocationManager.NETWORK_PROVIDER
 import android.os.CancellationSignal
 import android.os.Looper
-import android.os.SystemClock
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.location.LocationListenerCompat
 import androidx.core.location.LocationManagerCompat
 import androidx.core.util.Consumer
-import kotlin.time.Duration.Companion.minutes
 
 /** Convenience wrapper around the location manager with easier API, making use of both the GPS
  *  and Network provider */
@@ -56,31 +54,12 @@ class FineLocationManager(context: Context, locationUpdateCallback: (Location) -
 
     @RequiresPermission(ACCESS_FINE_LOCATION)
     fun requestUpdates(minGpsTime: Long, minNetworkTime: Long, minDistance: Float) {
-        // update immediately with last known location if possible
-        getLastLocation()?.let { locationListener.onLocationChanged(it) }
         if (deviceHasGPS) {
             locationManager.requestLocationUpdates(GPS_PROVIDER, minGpsTime, minDistance, locationListener, Looper.getMainLooper())
         }
         if (deviceHasNetworkLocationProvider) {
             locationManager.requestLocationUpdates(NETWORK_PROVIDER, minNetworkTime, minDistance, locationListener, Looper.getMainLooper())
         }
-    }
-
-    @RequiresPermission(ACCESS_FINE_LOCATION)
-    fun getLastLocation() : Location? {
-        if (deviceHasGPS) {
-            locationManager.getLastKnownLocation(GPS_PROVIDER)?.let {
-                if ((SystemClock.elapsedRealtimeNanos() - it.elapsedRealtimeNanos) < 2.minutes.inWholeNanoseconds)
-                    return it
-            }
-        }
-        if (deviceHasNetworkLocationProvider) {
-            locationManager.getLastKnownLocation(NETWORK_PROVIDER)?.let {
-                if ((SystemClock.elapsedRealtimeNanos() - it.elapsedRealtimeNanos) < 2.minutes.inWholeNanoseconds)
-                    return it
-            }
-        }
-        return null
     }
 
     @RequiresPermission(ACCESS_FINE_LOCATION)

@@ -38,7 +38,5 @@ sealed interface OverlayStyle {
         val icon: Int?,
         /** label to show on the point */
         val label: String? = null,
-        /** color to use for the icon, null is default */
-        val color: Color? = null, // todo: is this actually used?
     ) : OverlayStyle
 }

@@ -1,24 +1,16 @@
 package de.westnordost.streetcomplete.data.quest
 
-import com.russhwolf.settings.ObservableSettings
-import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.EditType
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuest
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestSource
 import de.westnordost.streetcomplete.data.osmnotes.notequests.OsmNoteQuest
 import de.westnordost.streetcomplete.data.osmnotes.notequests.OsmNoteQuestSource
-import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuest
-import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
-import de.westnordost.streetcomplete.data.visiblequests.LevelFilter
 import de.westnordost.streetcomplete.data.overlays.SelectedOverlaySource
-import de.westnordost.streetcomplete.data.visiblequests.DayNightQuestFilter
 import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenSource
 import de.westnordost.streetcomplete.data.visiblequests.TeamModeQuestFilter
 import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeSource
 import de.westnordost.streetcomplete.util.Listeners
-import de.westnordost.streetcomplete.util.logs.Log
-import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import de.westnordost.streetcomplete.util.SpatialCache
 import kotlinx.atomicfu.locks.ReentrantLock
 import kotlinx.atomicfu.locks.withLock
@@ -47,11 +39,7 @@ class VisibleQuestsSource(
     private val questsHiddenSource: QuestsHiddenSource,
     private val visibleEditTypeSource: VisibleEditTypeSource,
     private val teamModeQuestFilter: TeamModeQuestFilter,
-    private val selectedOverlaySource: SelectedOverlaySource,
-    private val levelFilter: LevelFilter,
-    private val dayNightQuestFilter: DayNightQuestFilter,
-    private val prefs: ObservableSettings,
-    private val externalSourceQuestController: ExternalSourceQuestController
+    private val selectedOverlaySource: SelectedOverlaySource
 ) {
     interface Listener {
         /** Called when given quests in the given group have been added/removed */
@@ -94,7 +82,6 @@ class VisibleQuestsSource(
             val quest = when (key) {
                 is OsmQuestKey -> osmQuestSource.get(key)
                 is OsmNoteQuestKey -> osmNoteQuestSource.get(key.noteId)
-                is ExternalSourceQuestKey -> externalSourceQuestController.get(key)
             } ?: return
             updateVisibleQuests(added = listOf(quest))
         }
@@ -125,18 +112,8 @@ class VisibleQuestsSource(
 
     private val selectedOverlayListener = object : SelectedOverlaySource.Listener {
         override fun onSelectedOverlayChanged() {
-            // no need to invalidate if overlay can't hide quests
-            if (prefs.getBoolean(Prefs.HIDE_OVERLAY_QUESTS, true))
-                invalidate()
+            invalidate()
         }
-    }
-
-    private val otherQuestListener = object : ExternalSourceQuestController.QuestListener {
-        override fun onUpdated(addedQuests: Collection<ExternalSourceQuest>, deletedQuestKeys: Collection<ExternalSourceQuestKey>) {
-            val hideOverlayQuests = prefs.getBoolean(Prefs.HIDE_OVERLAY_QUESTS, true)
-            updateVisibleQuests(addedQuests.filter { isVisible(it, hideOverlayQuests) }, deletedQuestKeys)
-        }
-        override fun onInvalidate() = invalidate()
     }
 
     private val cache = SpatialCache(
@@ -153,7 +130,6 @@ class VisibleQuestsSource(
         visibleEditTypeSource.addListener(visibleEditTypeSourceListener)
         teamModeQuestFilter.addListener(teamModeQuestFilterListener)
         selectedOverlaySource.addListener(selectedOverlayListener)
-        externalSourceQuestController.addQuestListener(otherQuestListener)
     }
 
     fun getAll(bbox: BoundingBox): List<Quest> =
@@ -164,14 +140,12 @@ class VisibleQuestsSource(
         // we could just get all quests from the quest sources and then filter it with
         // isVisible(quest) but we can optimize here by querying only quests of types that are
         // currently visible
-        val hideOverlayQuests = prefs.getBoolean(Prefs.HIDE_OVERLAY_QUESTS, true)
-        val visibleQuestTypes = questTypeRegistry.filter { isVisible(it, hideOverlayQuests) }
-        if (visibleQuestTypes.isEmpty()) return emptyList()
+        val visibleQuestTypeNames = questTypeRegistry.filter { isVisible(it) }.map { it.name }
+        if (visibleQuestTypeNames.isEmpty()) return listOf()
 
         val quests =
-            osmQuestSource.getAllInBBox(bbox, visibleQuestTypes) +
-            osmNoteQuestSource.getAllInBBox(bbox) +
-            externalSourceQuestController.getAllInBBox(bbox, visibleQuestTypes)
+            osmQuestSource.getAllInBBox(bbox, visibleQuestTypeNames) +
+            osmNoteQuestSource.getAllInBBox(bbox)
 
         return quests.filter { isVisible(it.key) && isVisibleInTeamMode(it) }
     }
@@ -180,43 +154,22 @@ class VisibleQuestsSource(
         val quest = cache.get(questKey) ?: when (questKey) {
             is OsmNoteQuestKey -> osmNoteQuestSource.get(questKey.noteId)
             is OsmQuestKey -> osmQuestSource.get(questKey)
-            is ExternalSourceQuestKey -> externalSourceQuestController.get(questKey)
         } ?: return null
-        return if (isVisible(quest, prefs.getBoolean(Prefs.HIDE_OVERLAY_QUESTS, true))) quest else null
+        return if (isVisible(quest)) quest else null
     }
 
-    private fun isVisible(quest: Quest, hideOverlayQuests: Boolean): Boolean =
-        isVisible(quest.key) && isVisibleInTeamMode(quest) && isVisible(quest.type, hideOverlayQuests)
+    private fun isVisible(quest: Quest): Boolean =
+        isVisible(quest.key) && isVisibleInTeamMode(quest) && isVisible(quest.type)
 
-    private fun isVisible(questType: QuestType, hideOverlayQuests: Boolean): Boolean =
+    private fun isVisible(questType: QuestType): Boolean =
         visibleEditTypeSource.isVisible(questType) &&
-        selectedOverlaySource.selectedOverlay?.let { !hideOverlayQuests || questType.name !in it.hidesQuestTypes } ?: true
+        selectedOverlaySource.selectedOverlay?.let { questType.name !in it.hidesQuestTypes } ?: true
 
     private fun isVisible(questKey: QuestKey): Boolean =
         questsHiddenSource.get(questKey) == null
 
     private fun isVisibleInTeamMode(quest: Quest): Boolean =
-        teamModeQuestFilter.isVisible(quest) && levelFilter.isVisible(quest) && dayNightQuestFilter.isVisible(quest)
-
-    fun getNearbyQuests(quest: Quest, distance: Double): Collection<Quest> {
-        val bbox = quest.position.enclosingBoundingBox(distance)
-        return when (prefs.getInt(Prefs.SHOW_NEARBY_QUESTS, 0)) {
-            1 -> getAll(bbox)
-            2 -> (osmQuestSource.getAllInBBox(bbox) +
-                    externalSourceQuestController.getAllInBBox(bbox) +
-                    osmNoteQuestSource.getAllInBBox(bbox)
-                ).filter { isVisible(it.key) && isVisibleInTeamMode(it) }
-            3 -> (osmQuestSource.getAllInBBox(bbox) +
-                    externalSourceQuestController.getAllInBBox(bbox) +
-                    osmNoteQuestSource.getAllInBBox(bbox)
-                ).filter { isVisibleInTeamMode(it) }
-            else -> emptyList()
-        }
-    }
-
-    fun clearCachedQuestPins() {
-        cache.getItems().forEach { it.pins = null }
-    }
+        teamModeQuestFilter.isVisible(quest)
 
     fun addListener(listener: Listener) {
         listeners.add(listener)
@@ -234,12 +187,8 @@ class VisibleQuestsSource(
         deleted: Collection<QuestKey> = emptyList()
     ) {
         lock.withLock {
-            val hideOverlayQuests = prefs.getBoolean(Prefs.HIDE_OVERLAY_QUESTS, true)
-            val addedVisible = added.filter { isVisible(it, hideOverlayQuests) }
+            val addedVisible = added.filter(::isVisible)
             if (addedVisible.isEmpty() && deleted.isEmpty()) return
-
-            if (addedVisible.size > 10 || deleted.size > 10) Log.i(TAG, "added ${addedVisible.size}, deleted ${deleted.size}")
-            else Log.i(TAG, "added ${addedVisible.map { it.key }}, deleted: $deleted")
 
             cache.update(addedVisible, deleted)
             listeners.forEach { it.onUpdated(addedVisible, deleted) }
@@ -262,5 +211,3 @@ private const val SPATIAL_CACHE_TILE_ZOOM = 16
 private const val SPATIAL_CACHE_TILES = 128
 // in a city this is the approximate number of quests in ~30 tiles on default visibilities
 private const val SPATIAL_CACHE_INITIAL_CAPACITY = 10000
-
-private const val TAG = "VisibleQuestsSource"

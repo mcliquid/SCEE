@@ -1,7 +1,6 @@
 package de.westnordost.streetcomplete.ui.common.dialogs
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -20,7 +19,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.window.DialogProperties
 import de.westnordost.streetcomplete.resources.Res
@@ -41,9 +39,6 @@ fun TextInputDialog(
     backgroundColor: Color = MaterialTheme.colors.surface,
     contentColor: Color = contentColorFor(backgroundColor),
     properties: DialogProperties = DialogProperties(),
-    keyboardType: KeyboardType = KeyboardType.Unspecified,
-    singleLine: Boolean = true,
-    checkTextValid: (text: String) -> Boolean = { it.isNotBlank() }
 ) {
     val focusRequester = remember { FocusRequester() }
 
@@ -57,7 +52,7 @@ fun TextInputDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(
-                enabled =  checkTextValid(value.text),
+                enabled = value.text.isNotBlank(),
                 onClick = { onDismissRequest(); onConfirmed(value.text) }
             ) {
                 Text(stringResource(Res.string.ok))
@@ -74,8 +69,7 @@ fun TextInputDialog(
                 onValueChange = { value = it },
                 modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
                 label = textInputLabel,
-                keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-                singleLine = singleLine
+                singleLine = true
             )
         },
         shape = shape,

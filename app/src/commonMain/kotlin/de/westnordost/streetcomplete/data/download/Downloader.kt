@@ -9,7 +9,6 @@ import de.westnordost.streetcomplete.data.maptiles.MapTilesDownloader
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataDownloader
 import de.westnordost.streetcomplete.data.osmnotes.NotesDownloader
-import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
 import de.westnordost.streetcomplete.data.user.UserLoginController
 import de.westnordost.streetcomplete.util.Listeners
 import de.westnordost.streetcomplete.util.ktx.format
@@ -20,7 +19,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.yield
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.max
 
@@ -31,8 +29,7 @@ class Downloader(
     private val mapTilesDownloader: MapTilesDownloader,
     private val downloadedTilesController: DownloadedTilesController,
     private val userLoginController: UserLoginController,
-    private val mutex: Mutex,
-    private val externalSourceQuestController: ExternalSourceQuestController,
+    private val mutex: Mutex
 ) : DownloadProgressSource {
 
     private val listeners = Listeners<DownloadProgressSource.Listener>()
@@ -43,7 +40,7 @@ class Downloader(
     override var isDownloadInProgress: Boolean = false
         private set
 
-    suspend fun download(bbox: BoundingBox, isUserInitiated: Boolean, ignoreCache: Boolean) {
+    suspend fun download(bbox: BoundingBox, isUserInitiated: Boolean) {
         var hasError = false
         try {
             isDownloadInProgress = true
@@ -60,7 +57,7 @@ class Downloader(
             ).joinToString(",")
             val sqkm = (tilesBbox.area() / 1000 / 1000).format(1)
 
-            if (!ignoreCache && hasDownloadedAlready(tiles)) {
+            if (!isUserInitiated && hasDownloadedAlready(tiles)) {
                 Log.i(TAG, "Not downloading ($sqkm km², bbox: $bboxString), data still fresh")
                 return
             }
@@ -72,12 +69,7 @@ class Downloader(
                 coroutineScope {
                     // all downloaders run concurrently
                     launch { notesDownloader.download(tilesBbox) }
-                    launch {
-                        mapDataDownloader.download(tilesBbox)
-                        yield()
-                        // download externalSource stuff after map data, because quest creation may depend on map data
-                        externalSourceQuestController.download(bbox)
-                    }
+                    launch { mapDataDownloader.download(tilesBbox) }
                     launch { mapTilesDownloader.download(tilesBbox) }
                 }
             }

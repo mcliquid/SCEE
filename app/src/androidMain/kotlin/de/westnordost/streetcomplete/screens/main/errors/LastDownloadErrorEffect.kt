@@ -47,8 +47,7 @@ fun LastDownloadErrorEffect(
         SendErrorReportDialog(
             onDismissRequest = { showDownloadErrorDialog = false },
             onConfirmed = { onReportError(lastError) },
-            title = stringResource(Res.string.download_error),
-            reportText = lastError.toString()
+            title = stringResource(Res.string.download_error)
         )
     }
 }

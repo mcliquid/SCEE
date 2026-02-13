@@ -56,13 +56,13 @@ class OsmQuestControllerTest {
         mapDataSource = mock()
 
         notesSource = mock()
-        questTypeRegistry = QuestTypeRegistry({ listOf(
+        questTypeRegistry = QuestTypeRegistry(listOf(
             0 to ApplicableQuestType,
             1 to NotApplicableQuestType,
             2 to ComplexQuestTypeApplicableToNode42,
             3 to ApplicableQuestTypeNotInAnyCountry,
             4 to ApplicableQuestType2
-        ) })
+        ))
         countryBoundaries = mock()
 
         on(mapDataSource.addListener(any())).then { invocation ->
@@ -77,7 +77,7 @@ class OsmQuestControllerTest {
 
         listener = mock()
 
-        ctrl = OsmQuestController(db, mapDataSource, notesSource, questTypeRegistry, lazyOf(countryBoundaries), mock())
+        ctrl = OsmQuestController(db, mapDataSource, notesSource, questTypeRegistry, lazyOf(countryBoundaries))
         ctrl.addListener(listener)
     }
 
@@ -207,13 +207,12 @@ class OsmQuestControllerTest {
     }
 
     @Test fun `updates quests on map data listener replace for bbox`() {
-        // need tags, because elements without tags get kicked out early except for specific quest types that actually use them
         val elements = listOf(
-            node(1, tags = mapOf("a" to "b")),
+            node(1),
             // missing geometry
-            node(2, tags = mapOf("a" to "b")),
+            node(2),
             // at note position
-            node(4, tags = mapOf("a" to "b")),
+            node(4),
         )
         val geom = pGeom(0.0, 0.0)
         val notePos = p(0.5, 0.5)

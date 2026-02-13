@@ -44,8 +44,6 @@ fun QuestSelectionScreen(
             onClickBack = onClickBack,
             onUnselectAll = { viewModel.unselectAll() },
             onReset = { viewModel.resetAll() },
-            onSceeOnly = { viewModel.onlySceeQuests = !viewModel.onlySceeQuests; viewModel.resetAll() },
-            showingSceeOnly = viewModel.onlySceeQuests,
             search = searchText,
             onSearchChange = viewModel::updateSearchText,
         )

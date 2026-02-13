@@ -16,7 +16,7 @@ class AddTreeLeafTypeForm : AItemSelectQuestForm<TreeLeafType, TreeLeafTypeAnswe
     override val serializer = serializer<TreeLeafType>()
     override val otherAnswers = listOf(
         AnswerItem(R.string.quest_leafType_tree_is_just_a_stump) {
-            applyAnswer(NotTreeButStump, true)
+            applyAnswer(NotTreeButStump)
         },
     )
 

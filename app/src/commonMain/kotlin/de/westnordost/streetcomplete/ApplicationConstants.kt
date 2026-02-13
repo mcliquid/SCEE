@@ -4,9 +4,9 @@ import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitWayAction
 import kotlin.time.Duration.Companion.minutes
 
 object ApplicationConstants {
-    const val NAME = "StreetComplete_ee"
+    const val NAME = "StreetComplete"
     val USER_AGENT = NAME + " " + BuildConfig.VERSION_NAME
-    const val QUESTTYPE_TAG_KEY = "StreetComplete:quest_type" // use original SC here, so statistics are counted
+    const val QUESTTYPE_TAG_KEY = NAME + ":quest_type"
 
     const val OLD_DATABASE_NAME = "streetcomplete.db"
     const val DATABASE_NAME = "streetcomplete_v2.db"
@@ -31,7 +31,7 @@ object ApplicationConstants {
 
     /** the duration after which OSM data, notes, quest meta data etc. will be deleted from the
      *  database if not used anymore and have not been refreshed in the meantime  */
-    const val DELETE_OLD_DATA_AFTER_DAYS = 14
+    const val DELETE_OLD_DATA_AFTER = 14L * 24 * 60 * 60 * 1000 // 14 days in ms
 
     /** the duration after which logs will be deleted from the database */
     const val DELETE_OLD_LOG_AFTER = 14L * 24 * 60 * 60 * 1000 // 14 days in ms
@@ -61,10 +61,6 @@ object ApplicationConstants {
     const val MAX_DISTANCE_TO_ELEMENT_FOR_SURVEY = 80.0 // m
     val MAX_RECENT_LOCATIONS_AGE = 10.minutes
 
-    /** default maximum zoom for satellite imagery */
-    const val RASTER_DEFAULT_MAXZOOM = 21
-    const val RASTER_DEFAULT_URL = "https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?blankTile=false"
-
     /** when new quests that are appearing due to download of an area, show the hint that he can
      *  disable quests in the settings if more than X quests did appear */
     const val QUEST_COUNT_AT_WHICH_TO_SHOW_QUEST_SELECTION_HINT = 600
@@ -85,18 +81,18 @@ object ApplicationConstants {
     const val ATTACH_PHOTO_MAX_SIZE = 1920 // Full HD
 
     // where to send the error reports to
-    const val ERROR_REPORTS_EMAIL = "helium@vivaldi.net"
+    const val ERROR_REPORTS_EMAIL = "streetcomplete_errors@westnordost.de"
 
     /** Which relation types to drop already during download, before persisting. This is a
      *  performance improvement. Working properly with relations means we have to have it as
      *  complete as possible. Some relations are extremely large, which would require to pull
      *  a lot of elements from db into memory.
      */
-    fun ignoreRelation(tags: Map<String, String>, members: Int): Boolean {
+    fun ignoreRelation(tags: Map<String, String>): Boolean {
         val type = tags["type"] ?: return false
         return when (type) {
             // ignore non ferry relations since these are sometimes/often very very large
-            "route" -> tags["route"] != "ferry" && (members > 100 && tags["route"] !in allowRouteTypes)
+            "route" -> tags["route"] != "ferry"
             "route_master", "superroute", "network", "disused:route" -> true
 
             // very large, not useful for SC
@@ -111,15 +107,11 @@ object ApplicationConstants {
         }
     }
 
-    private val allowRouteTypes = hashSetOf("hiking", "mtb", "piste", "ski", "foot", "bicycle", "horse")
-
     val EDIT_ACTIONS_NOT_ALLOWED_TO_USE_LOCAL_CHANGES = setOf(
         /* because this action may edit route relations but route relations are not persisted
            locally for performance reasons */
         SplitWayAction::class
     )
-
-    const val EE_QUEST_OFFSET = 2222 // must be larger than the largest SC ordinal, and should not be changed to allow preset transfer
 
     /*
     During development it might be better to work against the Test-API, rather than the
@@ -130,6 +122,4 @@ object ApplicationConstants {
     (test data needs to be created there).
      */
     const val USE_TEST_API = false
-
-    var DEBUG = false // not really a constant, but does not depend on debug build vs not any more, so we fake it
 }

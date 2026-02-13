@@ -11,9 +11,6 @@ enum class Surface(val osmValue: String?) {
     GRASS_PAVER("grass_paver"),
     METAL("metal"),
     WOOD("wood"),
-    STEPPING_STONES("stepping_stones"),
-    CHIPSEAL("chipseal"),
-    METAL_GRID("metal_grid"),
 
     // unpaved
     COMPACTED("compacted"),
@@ -47,9 +44,9 @@ enum class Surface(val osmValue: String?) {
         val selectableValuesForWays: List<Surface> = listOf(
             // paved surfaces
             ASPHALT, PAVING_STONES, CONCRETE, CONCRETE_LANES,
-            SETT, UNHEWN_COBBLESTONE, GRASS_PAVER, WOOD, METAL, METAL_GRID, CHIPSEAL,
+            SETT, UNHEWN_COBBLESTONE, GRASS_PAVER, WOOD, METAL,
             // unpaved surfaces
-            COMPACTED, FINE_GRAVEL, GRAVEL, PEBBLES, WOODCHIPS, STEPPING_STONES,
+            COMPACTED, FINE_GRAVEL, GRAVEL, PEBBLES, WOODCHIPS,
             // ground surfaces
             DIRT, MUD, GRASS, SAND, ROCK,
             // generic surfaces
@@ -86,9 +83,9 @@ enum class Surface(val osmValue: String?) {
             "bricks" to PAVING_STONES, // subtype of paving stones, documented
             "brick" to PAVING_STONES, // ...same, both tags fight for dominance, not documented
 
-            //"chipseal" to ASPHALT, // subtype/asphalt-alike surface
+            "chipseal" to ASPHALT, // subtype/asphalt-alike surface
 
-            //"metal_grid" to METAL, // more specific than metal
+            "metal_grid" to METAL, // more specific than metal
         )
     }
 }

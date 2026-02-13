@@ -4,9 +4,9 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometryEntry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 
-class MutableMapDataWithGeometry(capacity: Int = 50) : MapDataWithGeometry {
+class MutableMapDataWithGeometry() : MapDataWithGeometry {
 
-    constructor(elements: Iterable<Element>, geometryEntries: Iterable<ElementGeometryEntry>) : this((elements as? Collection)?.size ?: 50) {
+    constructor(elements: Iterable<Element>, geometryEntries: Iterable<ElementGeometryEntry>) : this() {
         putAll(elements, geometryEntries)
     }
 

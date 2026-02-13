@@ -19,13 +19,13 @@ class VersionIsBannedChecker(
             for (bannedVersion in bannedVersions.lines()) {
                 val destructuredVersion = bannedVersion.split("\t")
                 if (destructuredVersion[0] == userAgent) {
-                    return BannedInfo.IsBanned(if (destructuredVersion.size > 1) destructuredVersion[1] else null)
+                    val reason = if (destructuredVersion.size > 1) destructuredVersion[1] else null
+                    return BannedInfo.IsBanned(reason)
                 }
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // if there is an io exception, never mind then...! (The unreachability of the above
             // internet address should not lead to this app being unusable!)
-            return BannedInfo.UnknownIfBanned
         }
         return BannedInfo.IsNotBanned
     }
@@ -37,5 +37,4 @@ class VersionBannedException(val banReason: String?) :
 sealed interface BannedInfo {
     data class IsBanned(val reason: String?) : BannedInfo
     data object IsNotBanned : BannedInfo
-    data object UnknownIfBanned : BannedInfo
 }

@@ -2,29 +2,19 @@ package de.westnordost.streetcomplete.screens.main
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.content.res.Configuration
-import android.graphics.Color
 import android.graphics.PointF
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
-import android.graphics.drawable.LayerDrawable
 import android.location.Location
 import android.os.Bundle
-import android.os.IBinder
-import android.view.KeyEvent
-import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.OvershootInterpolator
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
@@ -36,8 +26,6 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.core.content.ContextCompat
-import androidx.core.graphics.ColorUtils
 import androidx.compose.ui.geometry.Offset
 import androidx.core.graphics.Insets
 import androidx.core.net.toUri
@@ -45,43 +33,28 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.commit
-import de.westnordost.countryboundaries.CountryBoundaries
-import de.westnordost.osmfeatures.Feature
 import androidx.lifecycle.lifecycleScope
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import de.westnordost.osmfeatures.FeatureDictionary
-import de.westnordost.osmfeatures.GeometryType
 import de.westnordost.streetcomplete.ApplicationConstants
-import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.download.tiles.asBoundingBoxOfEnclosingTiles
 import de.westnordost.streetcomplete.data.edithistory.EditKey
-import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditType
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
-import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChanges
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
-import de.westnordost.streetcomplete.data.osm.mapdata.ElementType
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
-import de.westnordost.streetcomplete.data.osm.mapdata.MutableMapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
-import de.westnordost.streetcomplete.data.osm.mapdata.isWayComplete
-import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuest
 import de.westnordost.streetcomplete.data.osmnotes.edits.NotesWithEditsSource
 import de.westnordost.streetcomplete.data.osmnotes.notequests.createOsmNoteQuest
 import de.westnordost.streetcomplete.data.osmtracks.Trackpoint
-import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuest
-import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
-import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestController
-import de.westnordost.streetcomplete.data.overlays.OverlayRegistry
-import de.westnordost.streetcomplete.data.overlays.SelectedOverlayController
 import de.westnordost.streetcomplete.data.overlays.AndroidOverlay
 import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.preferences.Preferences
@@ -91,36 +64,21 @@ import de.westnordost.streetcomplete.data.quest.Quest
 import de.westnordost.streetcomplete.data.quest.QuestAutoSyncer
 import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.data.quest.QuestType
-import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.data.quest.VisibleQuestsSource
 import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenSource
 import de.westnordost.streetcomplete.databinding.ActivityMainBinding
-import de.westnordost.streetcomplete.data.visiblequests.LevelFilter
 import de.westnordost.streetcomplete.databinding.EffectQuestPlopBinding
-import de.westnordost.streetcomplete.osm.POPULAR_PLACE_FEATURE_IDS
-import de.westnordost.streetcomplete.osm.Tags
-import de.westnordost.streetcomplete.osm.applyTo
-import de.westnordost.streetcomplete.osm.getDirection
-import de.westnordost.streetcomplete.osm.isPlace
 import de.westnordost.streetcomplete.osm.level.levelsIntersect
 import de.westnordost.streetcomplete.osm.level.parseLevelsOrNull
 import de.westnordost.streetcomplete.overlays.AbstractOverlayForm
 import de.westnordost.streetcomplete.overlays.IsShowingElement
-import de.westnordost.streetcomplete.overlays.custom.CustomOverlay
 import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
 import de.westnordost.streetcomplete.quests.AbstractQuestForm
 import de.westnordost.streetcomplete.quests.IsShowingQuestDetails
 import de.westnordost.streetcomplete.quests.LeaveNoteInsteadFragment
-import de.westnordost.streetcomplete.quests.TagEditor
-import de.westnordost.streetcomplete.quests.custom.CustomQuestList
-import de.westnordost.streetcomplete.quests.custom.FILENAME_CUSTOM_QUEST
-import de.westnordost.streetcomplete.quests.custom.readFromUriToExternalFile
 import de.westnordost.streetcomplete.quests.note_discussion.NoteDiscussionForm
-import de.westnordost.streetcomplete.quests.tree.FILENAME_TREES
 import de.westnordost.streetcomplete.screens.BaseActivity
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.CreateNoteFragment
-import de.westnordost.streetcomplete.screens.main.bottom_sheet.CreatePoiFragment
-import de.westnordost.streetcomplete.screens.main.bottom_sheet.InsertNodeFragment
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsCloseableBottomSheet
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsMapOrientationAware
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsMapPositionAware
@@ -138,11 +96,8 @@ import de.westnordost.streetcomplete.screens.main.map.getTitle
 import de.westnordost.streetcomplete.screens.main.map.maplibre.CameraPosition
 import de.westnordost.streetcomplete.screens.main.map.maplibre.toPadding
 import de.westnordost.streetcomplete.ui.util.content
-import de.westnordost.streetcomplete.screens.settings.custom_geometry_changed
-import de.westnordost.streetcomplete.screens.settings.gpx_track_changed
 import de.westnordost.streetcomplete.util.SoundFx
 import de.westnordost.streetcomplete.util.buildGeoUri
-import de.westnordost.streetcomplete.util.getSystemLocales
 import de.westnordost.streetcomplete.util.ktx.dpToPx
 import de.westnordost.streetcomplete.util.ktx.getLocationInWindow
 import de.westnordost.streetcomplete.util.ktx.hasLocationPermission
@@ -150,29 +105,21 @@ import de.westnordost.streetcomplete.util.ktx.hideKeyboard
 import de.westnordost.streetcomplete.util.ktx.isLocationAvailable
 import de.westnordost.streetcomplete.util.ktx.observe
 import de.westnordost.streetcomplete.util.ktx.toLatLon
-import de.westnordost.streetcomplete.util.ktx.toList
 import de.westnordost.streetcomplete.util.ktx.toast
 import de.westnordost.streetcomplete.util.ktx.truncateTo6Decimals
 import de.westnordost.streetcomplete.util.location.FineLocationManager
 import de.westnordost.streetcomplete.util.location.LocationAvailabilityReceiver
 import de.westnordost.streetcomplete.util.location.LocationRequestFragment
-import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.util.math.area
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import de.westnordost.streetcomplete.util.math.enlargedBy
-import de.westnordost.streetcomplete.view.dialogs.SearchFeaturesDialog
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.qualifier.named
 import kotlin.math.PI
-import kotlin.math.abs
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -221,13 +168,6 @@ class MainActivity :
     private val questsHiddenSource: QuestsHiddenSource by inject()
     private val featureDictionary: Lazy<FeatureDictionary> by inject(named("FeatureDictionaryLazy"))
     private val soundFx: SoundFx by inject()
-    private val levelFilter: LevelFilter by inject()
-    private val countryBoundaries: Lazy<CountryBoundaries> by inject(named("CountryBoundariesLazy"))
-    private val questTypeRegistry: QuestTypeRegistry by inject()
-    private val overlayRegistry: OverlayRegistry by inject()
-    private val osmQuestController: OsmQuestController by inject()
-    private val selectedOverlaySource: SelectedOverlayController by inject()
-    private val customQuestList: CustomQuestList by inject()
 
     private lateinit var locationManager: FineLocationManager
 
@@ -246,19 +186,11 @@ class MainActivity :
     private val bottomSheetFragment: Fragment? get() =
         supportFragmentManager.findFragmentByTag(BOTTOM_SHEET)
 
-    private var questMonitorJob: Job? = null
-
     /* +++++++++++++++++++++++++++++++++++++++ CALLBACKS ++++++++++++++++++++++++++++++++++++++++ */
 
     private val sheetBackPressedCallback = object : OnBackPressedCallback(false) {
         override fun handleOnBackPressed() {
-            val f = supportFragmentManager.fragments.lastOrNull()
-            if (f is IsCloseableBottomSheet) {
-                if (f != bottomSheetFragment && f is AbstractQuestForm)
-                    f.onClickClose { TagEditor.changes = StringMapChanges(emptySet()) }
-                else if (f == bottomSheetFragment)
-                    f.onClickClose { closeBottomSheet() }
-            }
+            (bottomSheetFragment as IsCloseableBottomSheet).onClickClose { closeBottomSheet() }
         }
     }
 
@@ -272,28 +204,9 @@ class MainActivity :
 
     //region Lifecycle - Android Lifecycle Callbacks
 
-    override fun onPause() {
-        super.onPause()
-        Log.i(TAG, "onPause")
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        Log.i(TAG, "onSaveInstanceState")
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        Log.i(TAG, "onDestroy")
-        questMonitorJob?.cancel()
-        try { applicationContext.unbindService(questMonitorConnection) }
-        catch (_: IllegalArgumentException) {}
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        Log.i(TAG, "onCreate")
 
         if (savedInstanceState == null) {
             handleIntent(intent)
@@ -322,7 +235,6 @@ class MainActivity :
                     editHistoryViewModel = editHistoryViewModel,
                     onClickZoomIn = ::onClickZoomIn,
                     onClickZoomOut = ::onClickZoomOut,
-                    onZoomDrag = ::onZoomDrag,
                     onClickCompass = ::onClickCompassButton,
                     onClickLocation = ::onClickLocationButton,
                     onClickLocationPointer = ::onClickLocationPointer,
@@ -345,7 +257,7 @@ class MainActivity :
                 mapFragment?.highlightPins(edit.icon, listOf(edit.position))
                 mapFragment?.hideOverlay()
             } else if (editHistoryViewModel.isShowingSidebar.value) {
-                mapFragment?.endFocus()
+                mapFragment?.clearFocus()
                 mapFragment?.clearHighlighting()
             }
         }
@@ -369,22 +281,6 @@ class MainActivity :
                 viewModel.isNavigationMode.value = mapFragment?.isNavigationMode ?: false
             }
         }
-        observe(viewModel.reverseQuestOrder) {
-            mapFragment?.setQuestOrder(it)
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        Log.i(TAG, "onResume")
-        if (gpx_track_changed) {
-            mapFragment?.loadGpxTrack()
-            gpx_track_changed = false
-        }
-        if (custom_geometry_changed) {
-            mapFragment?.loadCustomGeometry()
-            custom_geometry_changed = false
-        }
     }
 
     override fun onStart() {
@@ -392,13 +288,11 @@ class MainActivity :
 
         updateScreenOn()
 
-        Log.i(TAG, "onStart (add listeners)")
-        wasFollowingPosition = mapFragment?.isFollowingPosition // use value from mapFragment if already loaded
         visibleQuestsSource.addListener(this)
         mapDataWithEditsSource.addListener(this)
         locationAvailabilityReceiver.addListener(::updateLocationAvailability)
+
         updateLocationAvailability(isLocationAvailable)
-        stopQuestMonitor()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -408,21 +302,8 @@ class MainActivity :
 
     private fun handleIntent(intent: Intent) {
         if (intent.action != Intent.ACTION_VIEW) return
-        val uri = intent.data ?: return
-        if (intent.type == "text/*") {
-            AlertDialog.Builder(this)
-                .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(R.string.pref_custom_title) { _, _ ->
-                    readFromUriToExternalFile(uri, FILENAME_CUSTOM_QUEST, this)
-                    customQuestList.reload()
-                    visibleQuestsSource.clearCache()
-                }
-                .setNeutralButton(R.string.pref_trees_title) { _, _ ->
-                    readFromUriToExternalFile(uri, FILENAME_TREES, this)
-                }
-                .show()
-        }
-        viewModel.setUri(uri.toString())
+        val data = intent.data?.toString() ?: return
+        viewModel.setUri(data)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -432,14 +313,12 @@ class MainActivity :
 
     override fun onStop() {
         super.onStop()
-        Log.i(TAG, "onStop (remove listeners)")
 
         visibleQuestsSource.removeListener(this)
         mapDataWithEditsSource.removeListener(this)
         locationAvailabilityReceiver.removeListener(::updateLocationAvailability)
 
         locationManager.removeUpdates()
-        startQuestMonitor()
     }
 
     //endregion
@@ -520,12 +399,11 @@ class MainActivity :
     }
 
     override fun onClickedMapAt(position: LatLon, clickAreaSizeInMeters: Double) {
-        val f = supportFragmentManager.fragments.lastOrNull()
+        val f = bottomSheetFragment
         if (f is IsCloseableBottomSheet) {
-            if (f != bottomSheetFragment && f is AbstractQuestForm && !f.onClickMapAt(position, clickAreaSizeInMeters))
-                f.onClickClose { TagEditor.changes = StringMapChanges(emptySet()) }
-            else if (f == bottomSheetFragment && !f.onClickMapAt(position, clickAreaSizeInMeters))
+            if (!f.onClickMapAt(position, clickAreaSizeInMeters)) {
                 f.onClickClose { closeBottomSheet() }
+            }
         } else if (editHistoryViewModel.isShowingSidebar.value) {
             editHistoryViewModel.hideSidebar()
         }
@@ -566,15 +444,7 @@ class MainActivity :
     override val metersPerPixel: Double? get() = mapFragment?.getMetersPerPixel()
 
     override fun onEdited(editType: ElementEditType, geometry: ElementGeometry) {
-        Log.i(TAG, "edited: ${editType.name}")
         showQuestSolvedAnimation(editType.icon, geometry.center)
-        if (editType is OsmElementQuestType<*> && prefs.getBoolean(Prefs.SHOW_NEXT_QUEST_IMMEDIATELY, false)) {
-            visibleQuestsSource.getAll(geometry.center.enclosingBoundingBox(1.0))
-                .filterIsInstance<OsmQuest>()
-                .firstOrNull { it.geometry == geometry && it.type.dotColor == null } // this is not great, but we don't have key on the edited element any more
-                ?.let { runBlocking { lifecycleScope.launch { showQuestDetails(it) } } }
-                ?: closeBottomSheet()
-        }
         closeBottomSheet()
     }
 
@@ -600,18 +470,6 @@ class MainActivity :
     override fun getPointOf(pos: LatLon): PointF? =
         mapFragment?.getPointOf(pos)
 
-    override fun onEditTags(element: Element, geometry: ElementGeometry, questKey: QuestKey?, editTypeName: String?) {
-        val f = TagEditor()
-        if (f.arguments == null) f.arguments = bundleOf()
-        val args = TagEditor.createArguments(element, geometry, mapFragment?.cameraPosition?.rotation, mapFragment?.cameraPosition?.tilt, questKey, editTypeName)
-        f.requireArguments().putAll(args)
-        binding.otherQuestsScrollView.visibility = View.GONE
-        supportFragmentManager.commit(true) {
-            replace(R.id.map_bottom_sheet_container, f, BOTTOM_SHEET)
-            addToBackStack(BOTTOM_SHEET)
-        }
-    }
-
     /* ------------------------------- SplitWayFragment.Listener -------------------------------- */
 
     override fun onSplittedWay(editType: ElementEditType, way: Way, geometry: ElementPolylinesGeometry) {
@@ -622,26 +480,6 @@ class MainActivity :
     /* ------------------------------- MoveNodeFragment.Listener -------------------------------- */
 
     override fun onMoveNode(editType: ElementEditType, node: Node) {
-        val ways = mapDataWithEditsSource.getWaysForNode(node.id)
-        val relations = mapDataWithEditsSource.getRelationsForNode(node.id)
-        if (ways.isNotEmpty() || relations.isNotEmpty()) {
-            val multipolygons = relations.filter { it.tags["type"] == "multipolygon" }
-            val message = if (ways.isNotEmpty() || multipolygons.isNotEmpty())
-                getString(R.string.move_node_with_geometry, (ways + multipolygons).map { featureDictionary.value.byTags(it.tags).find().firstOrNull()?.name ?: it.tags }.toString())
-            else
-                getString(R.string.move_node_of_other_relation, relations.map { featureDictionary.value.byTags(it.tags).find().firstOrNull()?.name ?: it.tags }.toString())
-            AlertDialog.Builder(this)
-                .setTitle(R.string.general_warning)
-                .setMessage(message)
-                .setNegativeButton(android.R.string.cancel, null)
-                .setPositiveButton(R.string.dialog_button_understood) { _,_ -> moveNode(editType, node) }
-                .show()
-        } else {
-            moveNode(editType, node)
-        }
-    }
-
-    private fun moveNode(editType: ElementEditType, node: Node) {
         val mapFragment = mapFragment ?: return
         showInBottomSheet(MoveNodeFragment.create(editType, node), clearPreviousHighlighting = false)
         mapFragment.clearSelectedPins()
@@ -693,7 +531,6 @@ class MainActivity :
     /* ------------------------------- CreateNoteFragment.Listener ------------------------------ */
 
     override fun onCreatedNote(position: LatLon) {
-        Log.i(TAG, "created note at $position")
         showQuestSolvedAnimation(R.drawable.quest_create_note, position)
         closeBottomSheet()
     }
@@ -722,7 +559,7 @@ class MainActivity :
         lifecycleScope.launch {
             val f = bottomSheetFragment
             // open quest has been deleted
-            if (f is IsShowingQuestDetails && f.view != null && f.questKey in removed) {
+            if (f is IsShowingQuestDetails && f.questKey in removed) {
                 closeBottomSheet()
             }
         }
@@ -830,9 +667,6 @@ class MainActivity :
                     .setPositiveButton(R.string.confirmation_cancel_prev_download_confirmed) { _, _ ->
                         viewModel.download(downloadBbox)
                     }
-                    .setNeutralButton(R.string.enqueue_download) { _, _ ->
-                        viewModel.download(downloadBbox, true)
-                    }
                     .setNegativeButton(R.string.confirmation_cancel_prev_download_cancel, null)
                     .show()
             } else {
@@ -843,16 +677,12 @@ class MainActivity :
         }
     }
 
-    fun onClickZoomOut() {
+    private fun onClickZoomOut() {
         mapFragment?.updateCameraPosition(300) { zoomBy = -1.0 }
     }
 
-    fun onClickZoomIn() {
+    private fun onClickZoomIn() {
         mapFragment?.updateCameraPosition(300) { zoomBy = +1.0 }
-    }
-
-    private fun onZoomDrag(dp: Float) {
-        mapFragment?.updateCameraPosition(300) { zoomBy = dp / 20.0 }
     }
 
     private fun onClickTracksStop() {
@@ -892,8 +722,7 @@ class MainActivity :
                 setIsFollowingPosition(true)
             }
             else -> {
-                if (!prefs.getBoolean(Prefs.DISABLE_NAVIGATION_MODE, false) || mapFragment.isNavigationMode)
-                    setIsNavigationMode(!mapFragment.isNavigationMode)
+                setIsNavigationMode(!mapFragment.isNavigationMode)
             }
         }
     }
@@ -952,20 +781,11 @@ class MainActivity :
     private fun showMapContextMenu(position: LatLon) {
         val popupMenu = PopupMenu(this, binding.contextMenuView)
         popupMenu.inflate(R.menu.menu_map_context)
-        if (prefs.getBoolean(Prefs.EXPERT_MODE, false)) {
-            popupMenu.menu.add(Menu.NONE, 4, 4, R.string.create_poi)
-            popupMenu.menu.add(Menu.NONE, 5, 5, R.string.insert_node)
-        }
         popupMenu.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.action_create_note -> onClickCreateNote(position)
                 R.id.action_create_track -> onClickCreateTrack()
                 R.id.action_open_location -> onClickOpenLocationInOtherApp(position)
-                4 -> onClickAddPoi(position)
-                5 -> {
-                    mapFragment?.hideOverlay()
-                    showInBottomSheet(InsertNodeFragment.create(position))
-                }
             }
             true
         }
@@ -1008,74 +828,6 @@ class MainActivity :
         }
     }
 
-    private fun onClickAddPoi(pos: LatLon) {
-        if ((mapFragment?.cameraPosition?.zoom ?: 0.0) < ApplicationConstants.NOTE_MIN_ZOOM) {
-            toast(R.string.create_new_note_unprecise)
-            return
-        }
-
-        val f = bottomSheetFragment
-        if (f is IsCloseableBottomSheet) f.onClickClose { selectPoiType(pos) }
-        else selectPoiType(pos)
-    }
-
-    private fun selectPoiType(pos: LatLon) {
-        val country = countryBoundaries.value.getIds(pos.longitude, pos.latitude).firstOrNull()
-        val defaultFeatureIds: List<String> = prefs.getString(Prefs.CREATE_POI_RECENT_FEATURE_IDS, "")
-            .split("§").filter { it.isNotBlank() && it != "shop" }
-            .ifEmpty { POPULAR_PLACE_FEATURE_IDS }
-
-        SearchFeaturesDialog(
-            this,
-            featureDictionary.value,
-            GeometryType.POINT,
-            country,
-            null, // pre-filled search text
-            { true }, // filter, but we want everything
-            { addPoi(pos, it) },
-            defaultFeatureIds.reversed(),
-            false,
-            pos,
-        ).show()
-    }
-
-    private fun addPoi(pos: LatLon, feature: Feature) {
-        showInBottomSheet(CreatePoiFragment.createFromFeature(feature, pos))
-
-        // actually this could run again if tags are changed
-        lifecycleScope.launch {
-            val bbox = pos.enclosingBoundingBox(50.0)
-            val data = withContext(Dispatchers.IO) { mapDataWithEditsSource.getMapDataWithGeometry(bbox) }
-            val tags = Tags(mapOf()).also { feature.applyTo(it) }
-            val elements = if (Node(0L, pos, tags).isPlace()) {
-                data.filter { it.isPlace() }
-            } else {
-                val filter = "nodes, ways, relations with ${tags
-                    .map { if (it.value == "yes") it.key else it.key + "=" + it.value }
-                    .joinToString(" and ")}".toElementFilterExpression()
-                data.filter { filter.matches(it) }
-            }
-
-            putMarkersForCurrentHighlighting(elements.mapNotNull { e ->
-                // include only elements that fit with the currently active level filter
-                if (!levelFilter.levelAllowed(e)) return@mapNotNull null
-
-                val geometry = data.getGeometry(e.type, e.id) ?: return@mapNotNull null
-                val icon = getIcon(featureDictionary.value, e)
-                val title = getTitle(e.tags)
-                Marker(geometry, icon, title)
-            })
-        }
-        offsetPos(pos)
-    }
-
-    fun offsetPos(pos: LatLon) {
-        mapFragment?.updateCameraPosition(300) {
-            position = pos
-            padding = getQuestFormInsets().toPadding()
-        }
-    }
-
     private fun onClickCreateTrack() {
         mapFragment?.startPositionTrackRecording()
         viewModel.isRecordingTracks.value = true
@@ -1089,15 +841,10 @@ class MainActivity :
      *  view (e.g. if it was zoomed in before to focus on an element) */
     @UiThread
     private fun closeBottomSheet() {
-        val showing = (bottomSheetFragment as? IsShowingElement)?.elementKey ?: (bottomSheetFragment as? IsShowingQuestDetails)?.questKey
-        Log.i(TAG, "closeBottomSheet while showing $showing")
         currentFocus?.hideKeyboard()
         if (bottomSheetFragment != null) {
             supportFragmentManager.popBackStack(BOTTOM_SHEET, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-            binding.otherQuestsLayout.removeAllViews()
-            binding.otherQuestsScrollView.visibility = View.GONE
         }
-        viewModel.showingBottomSheet.value = false
         clearHighlighting()
         unfreezeMap()
         mapFragment?.endFocus()
@@ -1108,7 +855,6 @@ class MainActivity :
      *  played and the highlighting of the previous bottom sheet is cleared. */
     private fun showInBottomSheet(f: Fragment, clearPreviousHighlighting: Boolean = true) {
         currentFocus?.hideKeyboard()
-        viewModel.showingBottomSheet.value = true
         freezeMap()
         if (bottomSheetFragment != null) {
             if (clearPreviousHighlighting) clearHighlighting()
@@ -1153,15 +899,10 @@ class MainActivity :
     private fun showOverlayFormForNewElement() {
         val overlay = viewModel.selectedOverlay.value ?: return
         val mapFragment = mapFragment ?: return
-        val camera = mapFragment.cameraPosition
-        if (overlay is CustomOverlay) {
-            val pos = camera?.position ?: return
-            showInBottomSheet(CreatePoiFragment.createWithPrefill(prefs.getString(Prefs.CUSTOM_OVERLAY_IDX_FILTER, "")!!.substringAfter("with "), pos))
-            return
-        }
 
         val f = (overlay as? AndroidOverlay)?.createForm(null) ?: return
         if (f.arguments == null) f.arguments = bundleOf()
+        val camera = mapFragment.cameraPosition
         val rotation = camera?.rotation ?: 0.0
         val tilt = camera?.tilt ?: 0.0
         val args = AbstractOverlayForm.createArguments(overlay, null, null, rotation, tilt)
@@ -1178,7 +919,6 @@ class MainActivity :
 
     @UiThread
     private suspend fun showElementDetails(elementKey: ElementKey) {
-        Log.i(TAG, "showElementDetails for $elementKey")
         if (isElementCurrentlyDisplayed(elementKey)) return
         val overlay = viewModel.selectedOverlay.value ?: return
         val geometry = mapDataWithEditsSource.getGeometry(elementKey.type, elementKey.id) ?: return
@@ -1188,7 +928,7 @@ class MainActivity :
         val center = geometry.center
         val note = withContext(Dispatchers.IO) {
             notesSource
-                .getAll(BoundingBox(center, center).enlargedBy(0.2)).filterNot { it.isClosed }
+                .getAll(BoundingBox(center, center).enlargedBy(0.2))
                 .firstOrNull { it.position.truncateTo6Decimals() == center.truncateTo6Decimals() }
                 ?.takeIf { questsHiddenSource.get(OsmNoteQuestKey(it.id)) == null }
         }
@@ -1229,7 +969,6 @@ class MainActivity :
 
     @UiThread
     private suspend fun showQuestDetails(quest: Quest) {
-        Log.i(TAG, "showQuestDetails for ${quest.key}")
         val mapFragment = mapFragment ?: return
         if (isQuestDetailsCurrentlyDisplayedFor(quest.key)) return
 
@@ -1242,18 +981,11 @@ class MainActivity :
         val args = AbstractQuestForm.createArguments(quest.key, quest.type, quest.geometry, rotation, tilt)
         f.requireArguments().putAll(args)
 
-        val element = if (f is AbstractOsmQuestForm<*> && quest is OsmQuest) withContext(Dispatchers.IO) {
-            val e = mapDataWithEditsSource.get(quest.elementType, quest.elementId)
-            if (e == null) // this sometimes occurred in tests... until reason is found, just remove the quest
-                osmQuestController.delete(quest.key)
-            e
-        } ?: return
-            else null
-        val highlightedElementMarkers = lifecycleScope.async(Dispatchers.IO) { getHighlightedElements(quest, element) }
-        val otherQuestMarkers = lifecycleScope.async(Dispatchers.IO) { showOtherQuests(quest) }
-        if (quest is OsmQuest) {
-            val osmArgs = AbstractOsmQuestForm.createArguments(element!!)
+        if (f is AbstractOsmQuestForm<*> && quest is OsmQuest) {
+            val element = withContext(Dispatchers.IO) { mapDataWithEditsSource.get(quest.elementType, quest.elementId) } ?: return
+            val osmArgs = AbstractOsmQuestForm.createArguments(element)
             f.requireArguments().putAll(osmArgs)
+            showHighlightedElements(quest, element)
         }
 
         showInBottomSheet(f)
@@ -1263,132 +995,42 @@ class MainActivity :
         mapFragment.highlightPins(quest.type.icon, quest.markerLocations)
         mapFragment.hideNonHighlightedPins(quest.key)
         mapFragment.hideOverlay()
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            val markers = mergeMarkersAtSamePosition(highlightedElementMarkers.await(), otherQuestMarkers.await())
-            mapFragment.putMarkersForCurrentHighlighting(markers)
-        }
     }
 
-    // if quest and highlight marker at same position, set color of highlight marker to quest color
-    private fun mergeMarkersAtSamePosition(highlightMarkers: List<Marker>, questMarkers: List<Marker>): List<Marker> {
-        // creating a map of possibly many markers may not be the fastest thing... but still ok i guess
-        val m = hashMapOf<LatLon, Marker>()
-        highlightMarkers.associateByTo(m) { it.geometry.center }
-        questMarkers.forEach { questMarker ->
-            val highlightMarker = m[questMarker.geometry.center]
-            if (highlightMarker == null) {
-                m[questMarker.geometry.center] = questMarker
-                return@forEach
-            }
-            m[questMarker.geometry.center] = highlightMarker.copy(color = questMarker.color)
-        }
-        return m.values.toList()
-    }
-
-    private fun getHighlightedElements(quest: Quest, element: Element? = null): List<Marker> {
-        val bbox = when (quest) {
-            is OsmQuest -> quest.geometry.bounds.enlargedBy(quest.type.highlightedElementsRadius)
-            is ExternalSourceQuest -> quest.geometry.bounds.enlargedBy(quest.type.highlightedElementsRadius)
-            else -> return emptyList()
-        }
+    private fun showHighlightedElements(quest: OsmQuest, element: Element) {
+        val bbox = quest.geometry.bounds.enlargedBy(quest.type.highlightedElementsRadius)
         var mapData: MapDataWithGeometry? = null
 
         fun getMapData(): MapDataWithGeometry {
             val data = mapDataWithEditsSource.getMapDataWithGeometry(bbox)
-            if (data is MutableMapDataWithGeometry && element is Way && !data.isWayComplete(element.id)) {
-                // complete way to show stuff along it
-                mapDataWithEditsSource.getWayComplete(element.id)?.nodes?.forEach {
-                    data.put(it, ElementPointGeometry(it.position))
-                }
-            }
             mapData = data
             return data
         }
 
-        val elements =
-            when (quest) {
-                is OsmQuest -> element?.let { quest.type.getHighlightedElements(it, ::getMapData) } ?: emptySequence()
-                is ExternalSourceQuest -> quest.type.getHighlightedElements(::getMapData)
-                else -> emptySequence()
+        val levels = parseLevelsOrNull(element.tags)
+
+        lifecycleScope.launch(Dispatchers.Default) {
+            val elements = withContext(Dispatchers.IO) {
+                quest.type.getHighlightedElements(element, ::getMapData)
             }
-        if (elements == emptySequence<Element>()) return emptyList()
-        val levels = element?.let { parseLevelsOrNull(it.tags) }
-        val localLanguages = getSystemLocales().toList().map { it.language }
-        return elements.mapNotNull { e ->
-            // don't highlight "this" element
-            if (element == e) return@mapNotNull null
-            // include only elements with the same (=intersecting) level, if any
-            val eLevels = parseLevelsOrNull(e.tags)
-            if (!levels.levelsIntersect(eLevels)) return@mapNotNull null
-            // include only elements with the same layer, if any (except for bridges)
-            if (element?.tags?.get("layer") != e.tags["layer"] && e.tags["bridge"] == null) return@mapNotNull null
 
-            val geometry = mapData?.getGeometry(e.type, e.id) ?: return@mapNotNull null
-            val icon = getIcon(featureDictionary.value, e)
-            val title = getTitle(e.tags, localLanguages)
-            val direction = (e as? Node)?.getDirection(mapDataWithEditsSource)
-            Marker(geometry, icon, title, direction = direction)
-        }.toList()
-    }
+            val markers = elements.mapNotNull { e ->
+                // don't highlight "this" element
+                if (element == e) return@mapNotNull null
+                // include only elements with the same (=intersecting) level, if any
+                val eLevels = parseLevelsOrNull(e.tags)
+                if (!levels.levelsIntersect(eLevels)) return@mapNotNull null
+                // include only elements with the same layer, if any
+                if (element.tags["layer"] != e.tags["layer"]) return@mapNotNull null
 
-    private fun showOtherQuests(quest: Quest): List<Marker> {
-        if (prefs.getInt(Prefs.SHOW_NEARBY_QUESTS, 0) == 0) return emptyList()
+                val geometry = mapData?.getGeometry(e.type, e.id) ?: return@mapNotNull null
+                val icon = getIcon(featureDictionary.value, e)
+                val title = getTitle(e.tags)
+                Marker(geometry, icon, title)
+            }.toList()
 
-        // Quests should be grouped by element key, so non-OsmQuests need some kind of fake key
-        fun Quest.thatKey() = if (this is OsmQuest) ElementKey(elementType, elementId)
-            else ElementKey(ElementType.entries[abs(key.hashCode() % 3)], -abs(7 * key.hashCode()).toLong())
-
-        val markers = mutableListOf<Marker>()
-
-        val quests = visibleQuestsSource.getNearbyQuests(quest, prefs.getFloat(Prefs.SHOW_NEARBY_QUESTS_DISTANCE, 0.0f).toDouble() + 0.01)
-            .filterNot { it == quest || it.type.dotColor != null } // ignore current quest and poi dots
-            .sortedBy { it.thatKey() != quest.thatKey() }
-        if (quests.isEmpty()) return emptyList()
-
-        val questsAndColorByElement = mutableMapOf<ElementKey, Pair<Int, MutableList<Quest>>>()
-        val colors = arrayOf(Color.GREEN, Color.YELLOW, Color.CYAN, Color.MAGENTA, Color.BLUE, ColorUtils.blendARGB(Color.RED, Color.YELLOW, 0.5f))
-        var colorIterator = colors.iterator()
-        quests.forEach {
-            questsAndColorByElement.getOrPut(it.thatKey()) {
-                val color = if (it.thatKey() == quest.thatKey()) Color.WHITE // no color for other quests of the selected element
-                    else colorIterator.next()
-                if (!colorIterator.hasNext()) colorIterator = colors.iterator() // cycle through color list if there are many elements
-                if (color != Color.WHITE)
-                    markers.add(Marker(it.geometry, color = color))
-                Pair(color, mutableListOf())
-            }.second.add(it)
+            withContext(Dispatchers.Main) { putMarkersForCurrentHighlighting(markers) }
         }
-
-        val params = ViewGroup.LayoutParams(resources.dpToPx(54).toInt(), resources.dpToPx(54).toInt())
-        runOnUiThread {
-            questsAndColorByElement.values.forEach {
-                val color = it.first
-                it.second.forEach { q ->
-                    val questView = ImageView(this).apply {
-                        layoutParams = params
-                        scaleX = 0.95f
-                        scaleY = 0.95f
-                        setOnClickListener {
-                            binding.otherQuestsLayout.removeAllViews()
-                            lifecycleScope.launch { showQuestDetails(q) }
-                        }
-
-                        // create layerDrawable from quest icon and ring
-                        val ring = ContextCompat.getDrawable(context, R.drawable.pin_selection_ring)!! // thanks google for not providing documentation WHEN this can be null... is it instead of resourceNotFoundException?
-                        ring.colorFilter = if (color == Color.WHITE) null
-                            else PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN)
-                        val icon = ContextCompat.getDrawable(context, q.type.icon)!!
-                        icon.colorFilter = PorterDuffColorFilter(ColorUtils.blendARGB(color, Color.WHITE, 0.8f), PorterDuff.Mode.MULTIPLY)
-                        setImageDrawable(LayerDrawable(arrayOf(icon, ring)))
-                    }
-                    binding.otherQuestsLayout.addView(questView)
-                }
-            }
-            binding.otherQuestsScrollView.fullScroll(View.FOCUS_UP) // scroll up when the quest changes
-            binding.otherQuestsScrollView.visibility = View.VISIBLE
-        }
-        return markers
     }
 
     private fun isQuestDetailsCurrentlyDisplayedFor(questKey: QuestKey): Boolean {
@@ -1412,7 +1054,6 @@ class MainActivity :
     //region Animation - Animation(s) for when a quest is solved
 
     private fun showQuestSolvedAnimation(iconResId: Int, position: LatLon) {
-        if (!prefs.getBoolean(Prefs.SHOW_SOLVED_ANIMATION, true)) return
         val offset = binding.root.getLocationInWindow()
         val startPos = mapFragment?.getPointOf(position) ?: return
 
@@ -1455,66 +1096,10 @@ class MainActivity :
     }
 
     //endregion
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        if (event.keyCode == KeyEvent.KEYCODE_MENU) {
-            if (event.action == KeyEvent.ACTION_UP) {
-                viewModel.showMainMenuDialog.value = true
-            }
-            return true
-        }
-        if (event.keyCode == KeyEvent.KEYCODE_VOLUME_UP && prefs.getBoolean(Prefs.VOLUME_ZOOM, false)) {
-            if (event.action == KeyEvent.ACTION_UP) {
-                onClickZoomIn()
-            }
-            return true
-        }
-        if (event.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN && prefs.getBoolean(Prefs.VOLUME_ZOOM, false)) {
-            if (event.action == KeyEvent.ACTION_UP) {
-                onClickZoomOut()
-            }
-            return true
-        }
-        return super.dispatchKeyEvent(event)
-    }
-
-    private fun startQuestMonitor() {
-        if (prefs.getBoolean(Prefs.QUEST_MONITOR, false) && !NearbyQuestMonitor.running) {
-            questMonitorJob?.cancel()
-            questMonitorJob = lifecycleScope.launch {
-                delay(1000) // wait, as we don't want do start the monitor if onDestroy follows
-                applicationContext.bindService(Intent(this@MainActivity, NearbyQuestMonitor::class.java), questMonitorConnection, BIND_AUTO_CREATE)
-            }
-        }
-    }
-
-    private fun stopQuestMonitor() {
-        // try to stop quest monitor more often than it seems necessary, because sometime android
-        // is slow to react, e.g. when quickly switching between SC and other app
-        if (prefs.getBoolean(Prefs.QUEST_MONITOR, false) || NearbyQuestMonitor.running) {
-            try { applicationContext.unbindService(questMonitorConnection) }
-            catch (_: IllegalArgumentException) { } // happens on first start, and maybe if there is some issue
-            questMonitorJob?.cancel()
-            questMonitorJob = lifecycleScope.launch {
-                delay(5000)
-                // sometimes it just doesn't stop, or is started with considerable delay for some reason
-                // try to catch this here
-                try { applicationContext.unbindService(questMonitorConnection) }
-                catch (_: IllegalArgumentException) { }
-            }
-        }
-    }
 
     companion object {
         private const val BOTTOM_SHEET = "bottom_sheet"
 
         private const val TAG_LOCATION_REQUEST = "LocationRequestFragment"
-
-        // quest monitor connection needs to work with multiple main activities
-        private val questMonitorConnection: ServiceConnection by lazy { object : ServiceConnection {
-            override fun onServiceConnected(p0: ComponentName?, p1: IBinder?) {}
-            override fun onServiceDisconnected(p0: ComponentName?) {}
-        } }
     }
 }
-
-private const val TAG = "MainActivity"

@@ -65,22 +65,13 @@ class OpenChangesetsManager(
     }
 
     private fun createChangesetTags(type: ElementEditType, source: String) =
-        if (source.endsWith(",extra"))
-            mapOf(
-                "comment" to "Other edits in context of: ${type.changesetComment}".take(255),
-                "created_by" to ApplicationConstants.USER_AGENT,
-                "locale" to Locale.current.toLanguageTag(),
-                ApplicationConstants.QUESTTYPE_TAG_KEY to type.name,
-                "source" to source.substringBefore(",extra")
-            )
-        else
-            mapOf(
-                "comment" to type.changesetComment,
-                "created_by" to ApplicationConstants.USER_AGENT,
-                "locale" to Locale.current.toLanguageTag(),
-                ApplicationConstants.QUESTTYPE_TAG_KEY to type.name,
-                "source" to source
-            )
+        mapOf(
+            "comment" to type.changesetComment,
+            "created_by" to ApplicationConstants.USER_AGENT,
+            "locale" to Locale.current.toLanguageTag(),
+            ApplicationConstants.QUESTTYPE_TAG_KEY to type.name,
+            "source" to source
+        )
 
     companion object {
         private const val TAG = "ChangesetManager"

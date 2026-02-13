@@ -13,17 +13,12 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import de.westnordost.streetcomplete.ApplicationConstants
-import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
 import de.westnordost.streetcomplete.data.sync.createSyncNotification
 import kotlinx.serialization.json.Json
 
 class DownloadControllerAndroid(private val context: Context) : DownloadController {
-    override fun download(bbox: BoundingBox, isUserInitiated: Boolean, enqueue: Boolean) {
-        if (enqueue && DownloadWorker.downloading) {
-            DownloadWorker.enqueuedDownloads.add(bbox)
-            return
-        }
+    override fun download(bbox: BoundingBox, isUserInitiated: Boolean) {
         WorkManager.getInstance(context).enqueueUniqueWork(
             Downloader.TAG,
             if (isUserInitiated) ExistingWorkPolicy.REPLACE else ExistingWorkPolicy.KEEP,
@@ -52,34 +47,20 @@ class DownloadWorker(
     override suspend fun doWork(): Result {
         val bbox: BoundingBox = inputData.getString(ARG_BBOX)?.let { Json.decodeFromString(it) }
             ?: return Result.failure()
-        downloading = true
 
         return try {
             val isPriorityDownload = inputData.getBoolean(ARG_IS_USER_INITIATED, false)
-            downloader.download(bbox,
-                isPriorityDownload,
-                context.getSharedPreferences(context.packageName + "_preferences", Context.MODE_PRIVATE)
-                    .getBoolean(Prefs.MANUAL_DOWNLOAD_OVERRIDE_CACHE, true)
-            )
+            downloader.download(bbox, isPriorityDownload)
             Result.success()
         } catch (e: Exception) {
             Result.failure()
-        } finally {
-            downloading = false
-            if (enqueuedDownloads.isNotEmpty()) {
-                val next = enqueuedDownloads.first()
-                enqueuedDownloads.removeFirstOrNull()
-                DownloadControllerAndroid(context).download(next, true)
-            }
         }
     }
 
     companion object {
         private const val ARG_BBOX = "bbox"
         private const val ARG_IS_USER_INITIATED = "isUserInitiated"
-        var downloading = false
 
-        val enqueuedDownloads = mutableListOf<BoundingBox>()
         fun createWorkRequest(bbox: BoundingBox, isUserInitiated: Boolean): OneTimeWorkRequest =
             OneTimeWorkRequestBuilder<DownloadWorker>()
                 .setExpedited(OutOfQuotaPolicy.DROP_WORK_REQUEST)

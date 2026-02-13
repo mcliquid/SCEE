@@ -1,8 +1,6 @@
 package de.westnordost.streetcomplete.data
 
-import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.ApplicationConstants
-import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesController
 import de.westnordost.streetcomplete.data.logs.LogsController
 import de.westnordost.streetcomplete.data.maptiles.MapTilesDownloader
@@ -27,14 +25,13 @@ class Cleaner(
     private val downloadedTilesController: DownloadedTilesController,
     private val logsController: LogsController,
     private val mapTilesDownloader: MapTilesDownloader,
-    private val prefs: ObservableSettings,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + CoroutineName("Cleaner") + Dispatchers.IO)
 
     fun cleanOld() = scope.launch {
         val time = nowAsEpochMilliseconds()
 
-        val oldDataTimestamp = nowAsEpochMilliseconds() - prefs.getInt(Prefs.DATA_RETAIN_TIME, ApplicationConstants.DELETE_OLD_DATA_AFTER_DAYS) * 24L * 60 * 60 * 1000
+        val oldDataTimestamp = nowAsEpochMilliseconds() - ApplicationConstants.DELETE_OLD_DATA_AFTER
         noteController.deleteOlderThan(oldDataTimestamp, MAX_DELETE_ELEMENTS)
         mapDataController.deleteOlderThan(oldDataTimestamp, MAX_DELETE_ELEMENTS)
         downloadedTilesController.deleteOlderThan(oldDataTimestamp)

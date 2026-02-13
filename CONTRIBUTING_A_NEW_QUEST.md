@@ -12,7 +12,7 @@ Reading the text below is not necessary to create a new quest. Duplicating an ex
 
 - install necessary software ([Android Studio](https://developer.android.com/studio) and [git](https://git-scm.com/downloads))
 - create a GitHub [account](https://github.com/signup) if needed
-- visit [https://github.com/Helium314/SCEE](https://github.com/Helium314/SCEE) and press the "fork" button on the top right
+- visit [https://github.com/streetcomplete/StreetComplete](https://github.com/streetcomplete/StreetComplete) and press the "fork" button on the top right
   - this creates a copy of StreetComplete repository that you control and can prepare code there
 - clone your fork of a StreetComplete repository
   - in Android Studio it can be achieved without command line ( File -> New -> Project from Version Control... )
@@ -33,11 +33,11 @@ If you are doing it for the first time, don't worry if there is an error to solv
 
 ## Own ideas
 
-To [repeat](CONTRIBUTING.md#developing-new-quests) from that documentation file:  [**open an issue** discussing the quest](CONTRIBUTING.md#developing-new-quests), before starting other work. This way it can be confirmed that such a quest can be included. This can be skipped if you are an [experienced](https://github.com/streetcomplete/StreetComplete/discussions/3450) StreetComplete / SCEE contributor.
+To [repeat](CONTRIBUTING.md#developing-new-quests) from that documentation file:  [**open an issue** discussing the quest](CONTRIBUTING.md#developing-new-quests), before starting other work. This way it can be confirmed that such a quest can be included. This can be skipped if you are an [experienced](https://github.com/streetcomplete/StreetComplete/discussions/3450) StreetComplete contributor.
 
 ## Existing proposals
 
-You can also look at [quest proposals waiting for implementation](https://github.com/Helium314/SCEE/issues?q=is%3Aissue+is%3Aopen+label%3A%22new+quest%22+-label%3A%22blocked%22).
+You can also look at [quest proposals waiting for implementation](https://github.com/streetcomplete/StreetComplete/issues?q=is%3Aissue+is%3Aopen+label%3A%22new+quest%22+-label%3A%22blocked%22).
 
 # Prepare repository for development
 
@@ -84,7 +84,7 @@ Implementing a quest by duplicating and modifiying an existing one is the recomm
 
 Search across the code for part of a question or other text specific to this quest. For example "the name of this place?".
 
-You will find an [XML file](app/src/androidMain/res/values/strings_ee.xml) with an entry looking like this:
+You will find an [XML file](app/src/androidMain/res/values/strings.xml) with an entry looking like this:
 
 ```xml
     <string name="quest_placeName_title">"What’s the name of this place?"</string>
@@ -248,7 +248,7 @@ override fun getTitle(tags: Map<String, String>) = R.string.quest_is_defibrillat
 
 It is a message displayed to the user, code here passes a [reference](https://developer.android.com/guide/topics/resources/string-resource) to the string. You can change it to the new, not yet existing one and use a built in tool to place text.
 
-Actual strings sit in [app/src/androidMain/res/values/strings_ee.xml](app/src/androidMain/res/values/strings_ee.xml) (note the different SCEE location compared to StreetComplete)
+Actual strings sit in [app/src/androidMain/res/values/strings.xml](app/src/androidMain/res/values/strings.xml)
 
 There are separate files with translated text, but do not worry about it - [translations are handled separately](CONTRIBUTING.md#translating-the-app).
 
@@ -395,7 +395,7 @@ You can put into the description of the PR something like "fixes #1234" to [mark
 
 If you are stuck on something, need some help or guidance and you are willing and able to continue after solving the problem - you can open a pull request in an incomplete state and mention the blocker.
 
-You can see [already submitted pull requests](https://github.com/Helium314/SCEE/pulls?q=is%3Apr+) to see how this process works in practice.
+You can see [already submitted pull requests](https://github.com/streetcomplete/StreetComplete/pulls?q=is%3Apr+) to see how this process works in practice.
 
 # Future
 
@@ -409,13 +409,13 @@ When the pull request appears to be ready, it will be marked as approved and wai
 
 After the PR is finished it will be merged before the beta release of the next version. This way it can be additionally tested with a wider audience before release to all and translators have time to [translate text into other languages](CONTRIBUTING.md#translating-the-app).
 
-After full release it will reach the entire SCEE audience who now will be able to more easily contribute to OpenStreetMap. Thanks in advance for that!
+After full release it will reach the entire StreetComplete audience who now will be able to more easily contribute to OpenStreetMap. Thanks in advance for that!
 
-Once your code is merged into SCEE you will be credited at [repository statistics](https://github.com/Helium314/SCEE/graphs/contributors).
+Once your code is merged into StreetComplete you will be credited at [repository statistics](https://github.com/streetcomplete/StreetComplete/graphs/contributors).
 
 # Bad documentation is a bug
 
-Unclear documents, including this one, are a bug. Feel free to either submit a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) with a fix or [open an issue](https://github.com/Helium314/SCEE/issues/new) describing your confusion.
+Unclear documents, including this one, are a bug. Feel free to either submit a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) with a fix or [open an issue](https://github.com/streetcomplete/StreetComplete/issues/new) describing your confusion.
 
 Note that not everything will be directly described. This document very intentionally doesn't include a step-by-step guide to installing Android Studio, [linking](CONTRIBUTING.md#development) to official docs instead.
 
@@ -469,8 +469,6 @@ The [rescaling script](https://github.com/matkoniecz/rescaling_for_android) may 
 Please make sure that the images do not take too much disk space. Most useful way to do that is by lowering JPEG quality, which can make images noticeably smaller. Play with settings to see which is the smallest size which does not degrade image quality visibly.
 
 [GIMP](https://gimp.org/) allows such previews while saving JPG files, and there are also online tools like [squoosh](https://squoosh.app/) which allow for quick visual comparison if you prefer that.
-
-Please try to keep the images small (consider they already make up more than half of the APK size), and consider using vector graphics instead of photos where it's reasonable.
 
 After adding a photo, remember to update [the credits file](app/src/androidMain/res/authors.txt) (different to the one for icons).
 

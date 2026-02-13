@@ -12,6 +12,7 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestTable.Columns.LA
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestTable.Columns.LONGITUDE
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestTable.Columns.QUEST_TYPE
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestTable.NAME
+import de.westnordost.streetcomplete.data.queryIn
 import de.westnordost.streetcomplete.data.quest.OsmQuestKey
 
 /** Persists OsmQuest objects, or more specifically, OsmQuestEntry objects */
@@ -50,10 +51,10 @@ class OsmQuestDao(private val db: Database) {
 
     fun getAllForElements(keys: Collection<ElementKey>): List<OsmQuestDaoEntry> {
         if (keys.isEmpty()) return emptyList()
-        return db.query(NAME,
-                where = "$ELEMENT_ID IN (${keys.map { it.id }.joinToString(",")})",
-            // this is faster than queryIn... even without ID index
-            ) { it.toOsmQuestEntry() }.filter { ElementKey(it.elementType, it.elementId) in keys }
+        return db.queryIn(NAME,
+            whereColumns = arrayOf(ELEMENT_TYPE, ELEMENT_ID),
+            whereArgs = keys.map { arrayOf(it.type.name, it.id) }
+        ) { it.toOsmQuestEntry() }
     }
 
     fun getAllInBBox(bounds: BoundingBox, questTypes: Collection<String>? = null): List<OsmQuestDaoEntry> {

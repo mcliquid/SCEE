@@ -153,18 +153,6 @@ import de.westnordost.streetcomplete.resources.religion_christian
 import de.westnordost.streetcomplete.resources.religion_jewish
 import de.westnordost.streetcomplete.resources.religion_muslim
 import de.westnordost.streetcomplete.resources.sport_volleyball
-import de.westnordost.streetcomplete.resources.quest_buildingType_transit_shelter
-import de.westnordost.streetcomplete.resources.quest_buildingType_digester
-import de.westnordost.streetcomplete.resources.quest_buildingType_sports_hall
-import de.westnordost.streetcomplete.resources.quest_buildingType_riding_hall
-import de.westnordost.streetcomplete.resources.quest_buildingType_presbytery
-import de.westnordost.streetcomplete.resources.quest_buildingType_barn
-import de.westnordost.streetcomplete.resources.quest_buildingType_cowshed
-import de.westnordost.streetcomplete.resources.quest_buildingType_stable
-import de.westnordost.streetcomplete.resources.quest_buildingType_sty
-import de.westnordost.streetcomplete.resources.quest_buildingType_transformer_tower
-import de.westnordost.streetcomplete.resources.quest_buildingType_elevator
-import de.westnordost.streetcomplete.resources.sport_equestrian
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 
@@ -238,17 +226,6 @@ val BuildingType.title: StringResource get() = when (this) {
     RELIGIOUS ->       Res.string.quest_buildingType_religious
     GUARDHOUSE ->      Res.string.quest_buildingType_guardhouse
     CONSTRUCTION ->    Res.string.quest_buildingType_under_construction
-    TRANSIT_SHELTER -> Res.string.quest_buildingType_transit_shelter
-    DIGESTER ->        Res.string.quest_buildingType_digester
-    SPORTS_HALL ->     Res.string.quest_buildingType_sports_hall
-    RIDING_HALL ->     Res.string.quest_buildingType_riding_hall
-    PRESBYTERY ->      Res.string.quest_buildingType_presbytery
-    BARN ->            Res.string.quest_buildingType_barn
-    COWSHED ->         Res.string.quest_buildingType_cowshed
-    STABLE ->          Res.string.quest_buildingType_stable
-    STY ->             Res.string.quest_buildingType_sty
-    TRANSFORMER_TOWER -> Res.string.quest_buildingType_transformer_tower
-    ELEVATOR ->        Res.string.quest_buildingType_elevator
 }
 
 val BuildingType.description: StringResource? get() = when (this) {
@@ -349,15 +326,4 @@ val BuildingType.icon: DrawableResource get() = when (this) {
     RELIGIOUS ->       Res.drawable.building_temple
     GUARDHOUSE ->      Res.drawable.building_guardhouse
     CONSTRUCTION ->    Res.drawable.building_construction
-    TRANSIT_SHELTER -> Res.drawable.building_transportation
-    DIGESTER ->        Res.drawable.building_storage_tank
-    SPORTS_HALL ->     Res.drawable.sport_volleyball
-    RIDING_HALL ->     Res.drawable.sport_equestrian
-    PRESBYTERY ->      Res.drawable.religion_christian
-    BARN ->            Res.drawable.building_barn
-    COWSHED ->         Res.drawable.building_barn
-    STABLE ->          Res.drawable.building_barn
-    STY ->             Res.drawable.building_barn
-    TRANSFORMER_TOWER -> Res.drawable.building_service
-    ELEVATOR ->        Res.drawable.building_bridge
 }

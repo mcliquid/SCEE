@@ -73,7 +73,7 @@ fun AboutScreen(
 
     Column(Modifier.fillMaxSize()) {
         TopAppBar(
-            title = { Text(stringResource(Res.string.action_about2) + " SCEE") },
+            title = { Text(stringResource(Res.string.action_about2)) },
             windowInsets = AppBarDefaults.topAppBarWindowInsets,
             navigationIcon = { IconButton(onClick = onClickBack) { BackIcon() } },
         )
@@ -125,13 +125,8 @@ fun AboutScreen(
                 ) { OpenInBrowserIcon() }
 
                 Preference(
-                    name = "SCEE: " + stringResource(Res.string.about_title_faq),
-                    onClick = { uriHandler.openUri("https://wiki.openstreetmap.org/wiki/SCEE/FAQ") },
-                ) { OpenInBrowserIcon() }
-
-                Preference(
                     name = stringResource(Res.string.about_title_report_error),
-                    onClick = { uriHandler.openUri("https://github.com/helium314/SCEE/issues") },
+                    onClick = { uriHandler.openUri("https://github.com/streetcomplete/StreetComplete/issues") },
                 ) { OpenInBrowserIcon() }
 
                 Preference(
@@ -160,18 +155,8 @@ fun AboutScreen(
                 ) { OpenInBrowserIcon() }
 
                 Preference(
-                    name = "SCEE: " + stringResource(Res.string.about_title_translate),
-                    onClick = { uriHandler.openUri("https://translate.codeberg.org/projects/scee/") },
-                ) { OpenInBrowserIcon() }
-
-                Preference(
                     name = stringResource(Res.string.about_title_repository),
                     onClick = { uriHandler.openUri("https://github.com/streetcomplete/StreetComplete") },
-                ) { OpenInBrowserIcon() }
-
-                Preference(
-                    name = "SCEE " + stringResource(Res.string.about_title_repository),
-                    onClick = { uriHandler.openUri("https://github.com/Helium314/SCEE") },
                 ) { OpenInBrowserIcon() }
             }
 
@@ -186,7 +171,7 @@ fun AboutScreen(
 
                 Preference(
                     name = stringResource(Res.string.about_title_feedback),
-                    onClick = { uriHandler.openUri("https://github.com/helium314/SCEE/discussions") },
+                    onClick = { uriHandler.openUri("https://github.com/streetcomplete/StreetComplete/discussions") },
                 ) { OpenInBrowserIcon() }
             }
         }

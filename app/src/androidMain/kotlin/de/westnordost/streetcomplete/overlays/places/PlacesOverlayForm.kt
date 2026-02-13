@@ -142,8 +142,6 @@ class PlacesOverlayForm : AbstractOverlayForm() {
                 { it.toElement().isPlace() || it.id == "shop/vacant" },
                 ::onSelectedFeature,
                 POPULAR_PLACE_FEATURE_IDS,
-                false,
-                geometry.center
             ).show()
         }
 

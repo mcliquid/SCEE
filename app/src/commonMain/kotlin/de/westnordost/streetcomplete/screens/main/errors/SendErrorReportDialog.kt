@@ -1,13 +1,7 @@
 package de.westnordost.streetcomplete.screens.main.errors
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.window.DialogProperties
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.crash_compose_email
@@ -20,24 +14,13 @@ import org.jetbrains.compose.resources.stringResource
 fun SendErrorReportDialog(
     onDismissRequest: () -> Unit,
     onConfirmed: () -> Unit,
-    title: String,
-    reportText: String,
+    title: String
 ) {
-    val context = LocalContext.current
     ConfirmationDialog(
         onDismissRequest = onDismissRequest,
         onConfirmed = onConfirmed,
         title = { Text(title) },
-        text = {
-            Column {
-                Text(stringResource(Res.string.crash_message))
-                Button({
-                    val clip = ClipData.newPlainText("SCEE error message", reportText)
-                    (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(clip)
-                }) {
-                    Text(androidx.compose.ui.res.stringResource(android.R.string.copy)) }
-            }
-        },
+        text = { Text(stringResource(Res.string.crash_message)) },
         confirmButtonText = stringResource(Res.string.crash_compose_email),
         // should be more of a modal dialog
         properties = DialogProperties(

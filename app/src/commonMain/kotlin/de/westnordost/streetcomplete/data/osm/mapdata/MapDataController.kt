@@ -20,7 +20,7 @@ class MapDataController internal constructor(
     private val elementDB: ElementDao,
     private val geometryDB: ElementGeometryDao,
     private val elementGeometryCreator: ElementGeometryCreator,
-    private val createdElementsController: CreatedElementsController,
+    private val createdElementsController: CreatedElementsController
 ) : MapDataRepository {
 
     /* Must be a singleton because there is a listener that should respond to a change in the
@@ -72,7 +72,7 @@ class MapDataController internal constructor(
             geometryEntries = createGeometries(mapData, mapData)
 
             // don't use cache here, because if not everything is already cached, db call will be faster
-            oldElementKeys = elementDB.getAllKeys(mapData.boundingBox!!).toHashSet()
+            oldElementKeys = elementDB.getAllKeys(mapData.boundingBox!!).toMutableSet()
             for (element in mapData) {
                 oldElementKeys.remove(element.key)
             }
@@ -89,7 +89,7 @@ class MapDataController internal constructor(
 
         Log.i(TAG,
             "Persisted ${geometryEntries.size} and deleted ${oldElementKeys.size} elements and geometries" +
-                " in ${((nowAsEpochMilliseconds() - time) / 1000.0).format(1)}s"
+            " in ${((nowAsEpochMilliseconds() - time) / 1000.0).format(1)}s"
         )
 
         val mapDataWithGeometry = MutableMapDataWithGeometry(mapData, geometryEntries)
@@ -222,7 +222,7 @@ class MapDataController internal constructor(
 
     override fun getWayComplete(id: Long): MapData? {
         val way = getWay(id) ?: return null
-        val nodeIds = way.nodeIds.toHashSet()
+        val nodeIds = way.nodeIds.toSet()
         val nodes = getNodes(nodeIds)
         if (nodes.size < nodeIds.size) return null
         return MutableMapData(nodes + way)
@@ -230,7 +230,7 @@ class MapDataController internal constructor(
 
     override fun getRelationComplete(id: Long): MapData? {
         val relation = getRelation(id) ?: return null
-        val elementKeys = relation.members.mapTo(HashSet(relation.members.size)) { it.key }
+        val elementKeys = relation.members.map { it.key }.toSet()
         val elements = getAll(elementKeys)
         if (elements.size < elementKeys.size) return null
         return MutableMapData(elements + relation)
@@ -278,7 +278,7 @@ class MapDataController internal constructor(
 
     fun clearCache() = lock.withLock { cache.clear() }
 
-    fun trimCache() = lock.withLock { cache.trim(SPATIAL_CACHE_TILES / 4) }
+    fun trimCache() = lock.withLock { cache.trim(SPATIAL_CACHE_TILES / 3) }
 
     fun addListener(listener: Listener) {
         listeners.add(listener)

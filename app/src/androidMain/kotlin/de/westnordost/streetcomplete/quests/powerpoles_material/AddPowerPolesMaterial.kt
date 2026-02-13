@@ -37,8 +37,6 @@ class AddPowerPolesMaterial : OsmFilterQuestType<PowerPolesMaterialAnswer>(), An
 
     override fun createForm() = AddPowerPolesMaterialForm()
 
-    override val isDeleteElementEnabled = false
-
     override fun applyAnswerTo(answer: PowerPolesMaterialAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         if (answer is PowerPolesMaterial) {
             tags["material"] = answer.osmValue

@@ -67,7 +67,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.ElementType
  *  | `!(amenity or craft)`          | `!amenity and !craft`                                    |
  */
 class ElementFilterExpression(
-    val elementsTypes: Set<ElementsTypeFilter>,
+    internal val elementsTypes: Set<ElementsTypeFilter>,
     internal val elementExprRoot: BooleanExpression<ElementFilter, Element>?
 ) {
     // Performance improvement: Allows to skip early on elements that have no tags at all
@@ -98,7 +98,7 @@ private val BooleanExpression<ElementFilter, Element>.mayEvaluateToTrueWithNoTag
         else -> throw IllegalStateException("Unexpected expression")
     }
 
-val ElementFilter.mayEvaluateToTrueWithNoTags: Boolean get() = when (this) {
+private val ElementFilter.mayEvaluateToTrueWithNoTags: Boolean get() = when (this) {
     is CompareElementAge,
     is CompareTagAge ->
         true

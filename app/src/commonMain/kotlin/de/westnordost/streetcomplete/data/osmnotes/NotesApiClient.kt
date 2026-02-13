@@ -107,28 +107,6 @@ class NotesApiClient(
         }
     }
 
-    // copy of comment with different URL
-    suspend fun close(id: Long, comment: String): Note = wrapApiClientExceptions {
-        try {
-            val response = httpClient.post(baseUrl + "notes/$id/close") {
-                userAccessTokenSource.accessToken?.let { bearerAuth(it) }
-                if (comment.isNotEmpty())
-                    parameter("text", comment)
-                expectSuccess = true
-            }
-            val source = response.bodyAsChannel().asSource().buffered()
-            return notesApiParser.parseNotes(source).single()
-        } catch (e: ClientRequestException) {
-            when (e.response.status) {
-                // hidden by moderator, does not exist (yet), has already been closed
-                HttpStatusCode.Gone, HttpStatusCode.NotFound, HttpStatusCode.Conflict -> {
-                    throw ConflictException(e.message, e)
-                }
-                else -> throw e
-            }
-        }
-    }
-
     /**
      * Retrieve all open notes in the given area
      *

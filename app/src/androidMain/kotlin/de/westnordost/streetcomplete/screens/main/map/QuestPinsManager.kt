@@ -2,35 +2,21 @@ package de.westnordost.streetcomplete.screens.main.map
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.russhwolf.settings.ObservableSettings
-import de.westnordost.streetcomplete.DayNightBehavior
-import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.download.tiles.TilesRect
 import de.westnordost.streetcomplete.data.download.tiles.enclosingTilesRect
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
-import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
-import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementType
-import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuest
-import de.westnordost.streetcomplete.data.overlays.SelectedOverlaySource
-import de.westnordost.streetcomplete.data.quest.DayNightCycle
 import de.westnordost.streetcomplete.data.quest.OsmNoteQuestKey
 import de.westnordost.streetcomplete.data.quest.OsmQuestKey
-import de.westnordost.streetcomplete.data.quest.ExternalSourceQuestKey
 import de.westnordost.streetcomplete.data.quest.Quest
 import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.data.quest.QuestType
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.data.quest.VisibleQuestsSource
 import de.westnordost.streetcomplete.data.visiblequests.QuestTypeOrderSource
-import de.westnordost.streetcomplete.overlays.places.PlacesOverlay
-import de.westnordost.streetcomplete.quests.show_poi.ShowBusiness
 import de.westnordost.streetcomplete.screens.main.map.components.Pin
 import de.westnordost.streetcomplete.screens.main.map.components.PinsMapComponent
 import de.westnordost.streetcomplete.screens.main.map.maplibre.screenAreaToBoundingBox
-import de.westnordost.streetcomplete.screens.main.map.maplibre.toLatLon
-import de.westnordost.streetcomplete.util.getNameLabel
-import de.westnordost.streetcomplete.util.isDay
 import de.westnordost.streetcomplete.util.math.contains
 import kotlinx.atomicfu.locks.ReentrantLock
 import kotlinx.atomicfu.locks.withLock
@@ -54,29 +40,23 @@ class QuestPinsManager(
     private val pinsMapComponent: PinsMapComponent,
     private val questTypeOrderSource: QuestTypeOrderSource,
     private val questTypeRegistry: QuestTypeRegistry,
-    private val visibleQuestsSource: VisibleQuestsSource,
-    private val prefs: ObservableSettings,
-    private val mapDataSource: MapDataWithEditsSource,
-    private val selectedOverlaySource: SelectedOverlaySource,
+    private val visibleQuestsSource: VisibleQuestsSource
 ) : DefaultLifecycleObserver {
 
     // draw order in which the quest types should be rendered on the map
     private val questTypeOrdersLock = ReentrantLock()
-    private val questTypeOrders: MutableMap<QuestType, Int> = hashMapOf()
+    private val questTypeOrders: MutableMap<QuestType, Int> = mutableMapOf()
     // last displayed rect of (zoom 16) tiles
     private var lastDisplayedRect: TilesRect? = null
     // quests in current view: key -> [pin, ...]
-    private val questsInView: MutableMap<QuestKey, List<Pin>> = hashMapOf()
-    var reversedOrder = false
-        private set
+    private val questsInView: MutableMap<QuestKey, List<Pin>> = mutableMapOf()
     private val questsInViewMutex = Mutex()
 
     private val visibleQuestsSourceMutex = Mutex()
 
-    private val viewLifecycleScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO) // todo: remove?
+    private val viewLifecycleScope: CoroutineScope = CoroutineScope(SupervisorJob())
 
     private var updateJob: Job? = null
-    private val m = Mutex() // todo: remove?
 
     /** Switch visibility of quest pins layer */
     var isVisible: Boolean = false
@@ -144,7 +124,6 @@ class QuestPinsManager(
     }
 
     private fun invalidate() {
-        viewLifecycleScope.launch { questsInViewMutex.withLock { questsInView.clear() } }
         lastDisplayedRect = null
         onNewScreenPosition()
     }
@@ -213,7 +192,7 @@ class QuestPinsManager(
                 // or has no pins in the current view
                 pins.none { it.position in bbox }
             }
-            quests.forEach { questsInView[it.key] = it.pins ?: createQuestPins(it) }
+            quests.forEach { questsInView[it.key] = createQuestPins(it) }
             questsInView.values.flatten()
         }
         pinsMapComponent.set(pins)
@@ -243,28 +222,10 @@ class QuestPinsManager(
         pinsMapComponent.set(pins)
     }
 
-    fun setQuestOrder(reverse: Boolean) {
-        reversedOrder = reverse
-        reinitializeQuestTypeOrders()
-    }
-
     private fun initializeQuestTypeOrders() {
         // this needs to be reinitialized when the quest order changes
         val sortedQuestTypes = questTypeRegistry.toMutableList()
         questTypeOrderSource.sort(sortedQuestTypes)
-        // move specific quest types to front if set by preference
-        val moveToFront = if (DayNightBehavior.valueOf(prefs.getString(Prefs.DAY_NIGHT_BEHAVIOR, "IGNORE")) == DayNightBehavior.PRIORITY)
-            if (map.cameraPosition.target?.toLatLon()?.let { isDay(it) } != false)
-                sortedQuestTypes.filter { it.dayNightCycle == DayNightCycle.ONLY_DAY }
-            else
-                sortedQuestTypes.filter { it.dayNightCycle == DayNightCycle.ONLY_NIGHT }
-        else
-            emptyList()
-        moveToFront.reversed().forEach { // reversed to keep order within moveToFront
-            sortedQuestTypes.remove(it)
-            sortedQuestTypes.add(0, it)
-        }
-        if (reversedOrder) sortedQuestTypes.reverse() // invert only after doing the sorting changes
         questTypeOrdersLock.withLock {
             questTypeOrders.clear()
             sortedQuestTypes.forEachIndexed { index, questType ->
@@ -274,34 +235,12 @@ class QuestPinsManager(
     }
 
     private fun createQuestPins(quest: Quest): List<Pin> {
-        val color = quest.type.dotColor
-        val label = if (color != null && quest is OsmQuest) getLabel(quest) else null
-        val geometry = if (quest.geometry !is ElementPointGeometry && prefs.getBoolean(Prefs.QUEST_GEOMETRIES, false) && color == null)
-                quest.geometry
-            else null
-
-        val props = if (label == null) quest.key.toProperties() else (quest.key.toProperties() + ("label" to label))
+        val props = quest.key.toProperties()
         val order = questTypeOrdersLock.withLock { questTypeOrders[quest.type] ?: 0 }
-
-        val pins = quest.markerLocations.map { Pin(it, quest.type.icon, props, order, geometry, color) }
-        // storing importance in the quest requires the VisibleQuestsSource.cache to be invalidated on order change!
-        // or what we do: clear quest.pins if the order changed
-        quest.pins = pins
-        return pins
-    }
-
-    private fun getLabel(quest: OsmQuest): String? {
-        if (quest.type is ShowBusiness && selectedOverlaySource.selectedOverlay is PlacesOverlay)
-            return null // avoid duplicate business labels if shops overlay is active
-        val labelSources = quest.type.dotLabelSources.ifEmpty { return null }
-        val tags = mapDataSource.get(quest.elementType, quest.elementId)?.tags ?: return null
-        return labelSources.firstNotNullOfOrNull {
-            if (it == "label") getNameLabel(tags) else tags[it]
-        }
+        return quest.markerLocations.map { Pin(it, quest.type.icon, props, order) }
     }
 
     private fun reinitializeQuestTypeOrders() {
-        visibleQuestsSource.clearCachedQuestPins() // pin.importance contains quest order, so we need to reset it
         initializeQuestTypeOrders()
         invalidate()
     }
@@ -317,12 +256,9 @@ private const val MARKER_ELEMENT_TYPE = "element_type"
 private const val MARKER_ELEMENT_ID = "element_id"
 private const val MARKER_QUEST_TYPE = "quest_type"
 private const val MARKER_NOTE_ID = "note_id"
-private const val MARKER_OTHER_ID = "other_id"
-private const val MARKER_OTHER_SOURCE = "other_source"
 
 private const val QUEST_GROUP_OSM = "osm"
 private const val QUEST_GROUP_OSM_NOTE = "osm_note"
-private const val QUEST_GROUP_OTHER = "other"
 
 private fun QuestKey.toProperties(): List<Pair<String, String>> = when (this) {
     is OsmNoteQuestKey -> listOf(
@@ -335,11 +271,6 @@ private fun QuestKey.toProperties(): List<Pair<String, String>> = when (this) {
         MARKER_ELEMENT_ID to elementId.toString(),
         MARKER_QUEST_TYPE to questTypeName
     )
-    is ExternalSourceQuestKey -> listOf(
-        MARKER_QUEST_GROUP to QUEST_GROUP_OTHER,
-        MARKER_OTHER_ID to id,
-        MARKER_OTHER_SOURCE to source,
-    )
 }
 
 private fun Map<String, String>.toQuestKey(): QuestKey? = when (get(MARKER_QUEST_GROUP)) {
@@ -351,7 +282,5 @@ private fun Map<String, String>.toQuestKey(): QuestKey? = when (get(MARKER_QUEST
             getValue(MARKER_ELEMENT_ID).toLong(),
             getValue(MARKER_QUEST_TYPE)
         )
-    QUEST_GROUP_OTHER ->
-        ExternalSourceQuestKey(getValue(MARKER_OTHER_ID), getValue(MARKER_OTHER_SOURCE))
     else -> null
 }

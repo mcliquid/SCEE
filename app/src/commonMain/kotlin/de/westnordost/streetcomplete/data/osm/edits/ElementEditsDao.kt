@@ -24,9 +24,8 @@ import de.westnordost.streetcomplete.data.osm.edits.move.RevertMoveNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitWayAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.RevertUpdateElementTagsAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
-import de.westnordost.streetcomplete.data.osm.edits.create.CreateRelationAction
-import de.westnordost.streetcomplete.data.osm.edits.delete.DeleteRelationAction
-import de.westnordost.streetcomplete.data.osm.edits.delete.RevertDeleteRelationAction
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -35,8 +34,6 @@ import kotlinx.serialization.modules.subclass
 class ElementEditsDao(
     private val db: Database,
     private val allEditTypes: AllEditTypes,
-    private val tagEdit: ElementEditType,
-    private val addNodeEdit: ElementEditType
 ) {
     private val json = Json {
         serializersModule = SerializersModule {
@@ -51,9 +48,6 @@ class ElementEditsDao(
                 subclass(MoveNodeAction::class)
                 subclass(RevertMoveNodeAction::class)
                 subclass(CreateNodeFromVertexAction::class)
-                subclass(CreateRelationAction::class)
-                subclass(DeleteRelationAction::class)
-                subclass(RevertDeleteRelationAction::class)
             }
         }
     }
@@ -114,9 +108,7 @@ class ElementEditsDao(
 
     private fun CursorPosition.toElementEdit() = ElementEdit(
         getLong(ID),
-        allEditTypes.getByName(getString(QUEST_TYPE)) as? ElementEditType
-            ?: addNodeEdit.takeIf { getString(QUEST_TYPE) == addNodeEdit.name }
-            ?: tagEdit, // always assume it's a tagEdit if nothing matches, to avoid crashes if SCEE quests are removed
+        allEditTypes.getByName(getString(QUEST_TYPE)) as ElementEditType,
         json.decodeFromString(getString(GEOMETRY)),
         getString(SOURCE),
         getLong(CREATED_TIMESTAMP),

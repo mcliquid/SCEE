@@ -5,30 +5,32 @@ package de.westnordost.streetcomplete.data
  *  2. or recalled by ordinal
  *  3. or iterated in the order as specified in the constructor
  */
-open class ObjectTypeRegistry<T>(private val ordinalsAndEntries: List<Pair<Int, T & Any>>) : AbstractList<T>() {
+open class ObjectTypeRegistry<T>(ordinalsAndEntries: List<Pair<Int, T & Any>>) : AbstractList<T>() {
 
-    protected val byName = hashMapOf<String, T>()
-    protected val byOrdinal = hashMapOf<Int, T>()
-    protected val ordinalByObject = hashMapOf<T, Int>()
-    protected val objects = mutableListOf<T>()
+    private val byName: Map<String, T>
+    private val byOrdinal: Map<Int, T>
+    private val ordinalByObject: Map<T, Int>
+    private val objects = ordinalsAndEntries.map { it.second }
 
-    init { reloadInit() }
-
-    protected fun reloadInit() {
+    init {
+        val byNameMap = mutableMapOf<String, T>()
+        val highestOrdinal = ordinalsAndEntries.maxBy { it.first }.first
+        val byOrdinalMap = HashMap<Int, T>(highestOrdinal + 1)
         for ((ordinal, objectType) in ordinalsAndEntries) {
-            val typeName = objectType::class.simpleName!!.intern()
-            require(!byName.containsKey(typeName)) {
+            val typeName = objectType::class.simpleName!!
+            require(!byNameMap.containsKey(typeName)) {
                 "A object type's name must be unique! \"$typeName\" is defined twice!"
             }
-            require(!byOrdinal.containsKey(ordinal)) {
-                val otherTypeName = byOrdinal[ordinal]!!::class.simpleName!!
+            require(!byOrdinalMap.containsKey(ordinal)) {
+                val otherTypeName = byOrdinalMap[ordinal]!!::class.simpleName!!
                 "Duplicate ordinal for \"$typeName\" and \"$otherTypeName\""
             }
-            byName[typeName] = objectType
-            byOrdinal[ordinal] = objectType
+            byNameMap[typeName] = objectType
+            byOrdinalMap[ordinal] = objectType
         }
-        ordinalsAndEntries.associateTo(ordinalByObject) { it.second to it.first }
-        ordinalsAndEntries.mapTo(objects) { it.second }
+        ordinalByObject = ordinalsAndEntries.associate { it.second to it.first }
+        byName = byNameMap
+        byOrdinal = byOrdinalMap
     }
 
     fun getByName(typeName: String): T? = byName[typeName]

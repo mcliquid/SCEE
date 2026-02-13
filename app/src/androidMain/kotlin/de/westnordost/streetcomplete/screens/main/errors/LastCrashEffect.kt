@@ -24,8 +24,7 @@ fun LastCrashEffect(
         SendErrorReportDialog(
             onDismissRequest = { showErrorDialog = false },
             onConfirmed = { onReport(lastReport) },
-            title = stringResource(Res.string.crash_title),
-            reportText = lastReport
+            title = stringResource(Res.string.crash_title)
         )
     }
 }

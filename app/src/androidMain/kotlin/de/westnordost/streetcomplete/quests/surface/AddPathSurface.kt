@@ -1,6 +1,5 @@
 package de.westnordost.streetcomplete.quests.surface
 
-import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
@@ -13,13 +12,11 @@ import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.changeToSteps
 import de.westnordost.streetcomplete.osm.surface.INVALID_SURFACES
 import de.westnordost.streetcomplete.osm.surface.applyTo
-import de.westnordost.streetcomplete.quests.questPrefix
-import de.westnordost.streetcomplete.quests.SingleTypeElementSelectionDialog
 
 class AddPathSurface : OsmFilterQuestType<SurfaceOrIsStepsAnswer>(), AndroidQuest {
 
     override val elementFilter = """
-        ways with highway ~ ${prefs.getString("${questPrefix(prefs)}qs_${name}_highway_selection", HIGHWAY_TYPES)}
+        ways with highway ~ path|footway|cycleway|bridleway|steps
         and segregated != yes
         and access !~ private|no
         and (!conveying or conveying = no)
@@ -60,19 +57,4 @@ class AddPathSurface : OsmFilterQuestType<SurfaceOrIsStepsAnswer>(), AndroidQues
             }
         }
     }
-
-    override val hasQuestSettings = true
-
-    @Composable
-    override fun QuestSettings(onDismissRequest: () -> Unit) {
-        SingleTypeElementSelectionDialog(
-            prefs,
-            "${questPrefix(prefs)}qs_${name}_highway_selection",
-            HIGHWAY_TYPES,
-            R.string.quest_settings_eligible_highways,
-            onDismissRequest
-        )
-    }
 }
-
-private const val HIGHWAY_TYPES = "path|footway|cycleway|bridleway|steps"

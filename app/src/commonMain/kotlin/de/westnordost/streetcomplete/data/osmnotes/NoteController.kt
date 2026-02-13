@@ -33,7 +33,7 @@ class NoteController(
     fun putAllForBBox(bbox: BoundingBox, notes: Collection<Note>) {
         val time = nowAsEpochMilliseconds()
 
-        val oldNotesById = hashMapOf<Long, Note>()
+        val oldNotesById = mutableMapOf<Long, Note>()
         val addedNotes = mutableListOf<Note>()
         val updatedNotes = mutableListOf<Note>()
         lock.withLock {

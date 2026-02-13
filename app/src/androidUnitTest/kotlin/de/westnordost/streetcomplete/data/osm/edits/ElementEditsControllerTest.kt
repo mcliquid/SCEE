@@ -103,7 +103,7 @@ class ElementEditsControllerTest {
 
         verify(db).markSynced(edit0Synced.id)
         verify(idProvider).updateIds(updates.idUpdates)
-        verify(listener).onSyncedEdit(edit0Synced, hashSetOf(9L)) // forwards the edits with updated elements
+        verify(listener).onSyncedEdit(edit0Synced)
     }
 
     @Test fun `undo unsynced`() {
@@ -144,8 +144,6 @@ class ElementEditsControllerTest {
         on(db.get(4L)).thenReturn(edit4)
         on(db.get(5L)).thenReturn(edit5)
 
-        on(db.getAll()).thenReturn(listOf(edit1, edit2, edit3, edit4, edit5))
-
         ctrl.undo(edit1)
 
         verifyDelete(edit5, edit2, edit3, edit4, edit1)
@@ -169,9 +167,9 @@ class ElementEditsControllerTest {
     private fun verifyAdd(edit: ElementEdit) {
         verify(db).put(any())
         verify(elementsDb).put(edit.id, edit.action.elementKeys)
-        //verify(listener).onAddedEdit(any(), any())
         val c = edit.action.newElementsCount
         verify(idProvider).assign(edit.id, c.nodes, c.ways, c.relations)
+        verify(listener).onAddedEdit(any())
         verify(prefs).lastEditTime = anyLong()
     }
 

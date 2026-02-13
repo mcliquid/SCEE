@@ -17,14 +17,14 @@ data class ElementIdUpdate(
 fun createMapDataUpdates(
     elements: Collection<Element>,
     updates: Map<ElementKey, ElementUpdate>,
-    ignoreRelation: (tags: Map<String, String>, members: Int) -> Boolean = { _, _ -> false }
+    ignoreRelation: (tags: Map<String, String>) -> Boolean = { false }
 ): MapDataUpdates {
     val updatedElements = mutableListOf<Element>()
     val deletedElementKeys = mutableListOf<ElementKey>()
     val idUpdates = mutableListOf<ElementIdUpdate>()
 
     for (element in elements) {
-        if (element is Relation && ignoreRelation(element.tags, element.members.size)) continue
+        if (element is Relation && ignoreRelation(element.tags)) continue
 
         val newElement = element.update(updates)
         if (newElement == null) {

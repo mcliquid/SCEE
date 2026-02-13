@@ -1,7 +1,6 @@
 package de.westnordost.streetcomplete.screens.main
 
 import android.content.Intent
-import android.view.KeyEvent
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -10,7 +9,6 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,7 +20,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.MaterialTheme
@@ -38,19 +35,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
-import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.messages.Message
-import de.westnordost.streetcomplete.data.user.UserLoginController
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.location_dot_small
 import de.westnordost.streetcomplete.resources.map_attribution_osm
@@ -65,7 +57,6 @@ import de.westnordost.streetcomplete.screens.main.controls.MapButton
 import de.westnordost.streetcomplete.screens.main.controls.MessagesButton
 import de.westnordost.streetcomplete.screens.main.controls.OverlaySelectionButton
 import de.westnordost.streetcomplete.screens.main.controls.PointerPinButton
-import de.westnordost.streetcomplete.screens.main.controls.QuickSettingsDropdown
 import de.westnordost.streetcomplete.screens.main.controls.ScaleBar
 import de.westnordost.streetcomplete.screens.main.controls.StarsCounter
 import de.westnordost.streetcomplete.screens.main.controls.ZoomButtons
@@ -76,7 +67,6 @@ import de.westnordost.streetcomplete.screens.main.errors.LastCrashEffect
 import de.westnordost.streetcomplete.screens.main.errors.LastDownloadErrorEffect
 import de.westnordost.streetcomplete.screens.main.errors.LastUploadErrorEffect
 import de.westnordost.streetcomplete.screens.main.messages.MessageDialog
-import de.westnordost.streetcomplete.screens.main.overlays.OverlayQuickSelector
 import de.westnordost.streetcomplete.screens.main.overlays.OverlaySelectionDropdownMenu
 import de.westnordost.streetcomplete.screens.main.teammode.TeamModeWizard
 import de.westnordost.streetcomplete.screens.main.urlconfig.ApplyUrlConfigEffect
@@ -86,7 +76,6 @@ import de.westnordost.streetcomplete.screens.tutorial.OverlaysTutorialScreen
 import de.westnordost.streetcomplete.screens.user.UserActivity
 import de.westnordost.streetcomplete.ui.common.AnimatedScreenVisibility
 import de.westnordost.streetcomplete.ui.common.LargeCreateIcon
-import de.westnordost.streetcomplete.ui.common.QuickSettingsIcon
 import de.westnordost.streetcomplete.ui.common.StopRecordingIcon
 import de.westnordost.streetcomplete.ui.common.UndoIcon
 import de.westnordost.streetcomplete.ui.ktx.dir
@@ -105,7 +94,6 @@ fun MainScreen(
     editHistoryViewModel: EditHistoryViewModel,
     onClickZoomIn: () -> Unit,
     onClickZoomOut: () -> Unit,
-    onZoomDrag: (Float) -> Unit,
     onClickCompass: () -> Unit,
     onClickLocation: () -> Unit,
     onClickLocationPointer: () -> Unit,
@@ -161,15 +149,11 @@ fun MainScreen(
 
     val isRequestingLogin by viewModel.isRequestingLogin.collectAsState()
 
-    val showQuickSettings by viewModel.showQuickSettings.collectAsState()
-    var showQuickSettingsMenu by remember { mutableStateOf(false) }
-    val showOverlaySelector by viewModel.showOverlaySelector.collectAsState()
-
     var showOverlaysDropdown by remember { mutableStateOf(false) }
     var showOverlaysTutorial by remember { mutableStateOf(false) }
     var showIntroTutorial by remember { mutableStateOf(false) }
     var showTeamModeWizard by remember { mutableStateOf(false) }
-    var showMainMenuDialog by viewModel.showMainMenuDialog
+    var showMainMenuDialog by remember { mutableStateOf(false) }
     var shownMessage by remember { mutableStateOf<Message?>(null) }
     val showEditHistorySidebar by editHistoryViewModel.isShowingSidebar.collectAsState()
 
@@ -199,8 +183,7 @@ fun MainScreen(
         if (viewModel.isConnected) {
             viewModel.upload()
         } else {
-            if (ApplicationConstants.DEBUG && !UserLoginController.loggedIn) viewModel.upload()
-            else context.toast(R.string.offline)
+            context.toast(R.string.offline)
         }
     }
 
@@ -262,56 +245,43 @@ fun MainScreen(
                         .defaultMinSize(minWidth = 96.dp)
                         .clickable(null, null) { viewModel.toggleShowingCurrentWeek() },
                     isCurrentWeek = isShowingStarsCurrentWeek,
-                    showProgress = isUploadingOrDownloading,
-                    hasUnsyncedChanges = unsyncedEditsCount != 0 && isAutoSync
+                    showProgress = isUploadingOrDownloading
                 )
             }
 
             // top-end controls
-            Column(
+            Row(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(4.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    AnimatedVisibility(hasMessages) {
-                        MessagesButton(
-                            onClick = ::onClickMessages,
-                            messagesCount = messagesCount
-                        )
-                    }
-                    if (overlays.isNotEmpty()) {
-                        Box {
-                            OverlaySelectionButton(
-                                onClick = ::onClickOverlays,
-                                overlay = selectedOverlay
-                            )
-                            OverlaySelectionDropdownMenu(
-                                expanded = showOverlaysDropdown,
-                                onDismissRequest = { showOverlaysDropdown = false },
-                                overlays = overlays,
-                                onSelect = { viewModel.selectOverlay(it) }
-                            )
-                        }
-                    }
-
-                    MainMenuButton(
-                        onClick = { showMainMenuDialog = true },
-                        unsyncedEditsCount = if (!isAutoSync) unsyncedEditsCount else 0,
-                        indexInTeam = if (isTeamMode) indexInTeam else null
+                AnimatedVisibility(hasMessages) {
+                    MessagesButton(
+                        onClick = ::onClickMessages,
+                        messagesCount = messagesCount
                     )
                 }
-                if (showOverlaySelector)
-                    // todo: avoid overlap with bottom controls
-                    OverlayQuickSelector(
-                        overlays = overlays,
-                        selectedOverlay = selectedOverlay,
-                        modifier = Modifier.align(Alignment.End),
-                        onOverlaySelected = { viewModel.selectOverlay(it) }
-                    )
+                if (overlays.isNotEmpty()) {
+                    Box {
+                        OverlaySelectionButton(
+                            onClick = ::onClickOverlays,
+                            overlay = selectedOverlay
+                        )
+                        OverlaySelectionDropdownMenu(
+                            expanded = showOverlaysDropdown,
+                            onDismissRequest = { showOverlaysDropdown = false },
+                            overlays = overlays,
+                            onSelect = { viewModel.selectOverlay(it) }
+                        )
+                    }
+                }
+
+                MainMenuButton(
+                    onClick = { showMainMenuDialog = true },
+                    unsyncedEditsCount = if (!isAutoSync) unsyncedEditsCount else 0,
+                    indexInTeam = if (isTeamMode) indexInTeam else null
+                )
             }
 
             // bottom controls
@@ -336,8 +306,7 @@ fun MainScreen(
                         if (showZoomButtons) {
                             ZoomButtons(
                                 onZoomIn = onClickZoomIn,
-                                onZoomOut = onClickZoomOut,
-                                onZoomDrag = onZoomDrag
+                                onZoomOut = onClickZoomOut
                             )
                         }
                         LocationStateButton(
@@ -375,21 +344,6 @@ fun MainScreen(
                             .padding(4.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        if (showQuickSettings) {
-                        Box{
-                            MapButton(
-                                onClick = { showQuickSettingsMenu = !showQuickSettingsMenu },
-                                modifier = Modifier.size(48.dp)
-                            ) {
-                                QuickSettingsIcon()
-                            }
-                            QuickSettingsDropdown(
-                                expanded = showQuickSettingsMenu,
-                                onDismissRequest = { showQuickSettingsMenu = false },
-                                viewModel = viewModel
-                            )
-                        }
-                    }
                         if (isRecordingTracks) {
                             MapButton(
                                 onClick = onClickStopTrackRecording,
@@ -464,7 +418,6 @@ fun MainScreen(
     }
 
     if (showMainMenuDialog) {
-        val requester = remember { FocusRequester() } // necessary for receiving key event
         MainMenuDialog(
             onDismissRequest = { showMainMenuDialog = false },
             onClickProfile = { context.startActivity(Intent(context, UserActivity::class.java)) },
@@ -478,18 +431,7 @@ fun MainScreen(
             indexInTeam = if (isTeamMode) indexInTeam else null,
             unsyncedEditsCount = if (!isAutoSync) unsyncedEditsCount else null,
             isUploadingOrDownloading = isUploadingOrDownloading,
-            modifier = Modifier
-                .focusRequester(requester)
-                .focusable()
-                .onKeyEvent {
-                    if (it.nativeKeyEvent.keyCode == KeyEvent.KEYCODE_MENU && it.nativeKeyEvent.action == KeyEvent.ACTION_UP){
-                        context.startActivity(Intent(context, SettingsActivity::class.java))
-                        showMainMenuDialog = false
-                    }
-                    false
-                }
         )
-        LaunchedEffect(Unit) { requester.requestFocus() }
     }
 
     urlConfig?.let { config ->

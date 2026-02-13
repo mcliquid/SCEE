@@ -35,7 +35,6 @@ import de.westnordost.streetcomplete.resources.quest_enabled
 import de.westnordost.streetcomplete.resources.quest_type
 import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmationDialog
 import de.westnordost.streetcomplete.ui.theme.titleMedium
-import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import sh.calvin.reorderable.ReorderableItem
@@ -100,7 +99,7 @@ fun QuestSelectionList(
                 ReorderableItem(
                     state = dragDropState,
                     key = item.questType.name,
-                    enabled = item.isInteractionEnabled(koinInject())
+                    enabled = item.isInteractionEnabled
                 ) { isDragging ->
                     val elevation by animateDpAsState(if (isDragging) 4.dp else 0.dp)
                     val haptic = LocalHapticFeedback.current
@@ -109,7 +108,7 @@ fun QuestSelectionList(
                         elevation = elevation,
                         modifier = Modifier
                             .longPressDraggableHandle(
-                                enabled = item.isInteractionEnabled(koinInject()),
+                                enabled = item.isInteractionEnabled,
                                 onDragStarted = { haptic.performHapticFeedback(HapticFeedbackType.LongPress) },
                                 onDragStopped = ::onDragStopped,
                             )
@@ -173,9 +172,9 @@ private fun QuestSelectionHeader(modifier: Modifier = Modifier) {
 private fun PreviewQuestSelectionList() {
     QuestSelectionList(
         items = listOf(
-            QuestSelection(OsmNoteQuestType, true, true, koinInject()),
-            QuestSelection(AddSeating(), false, true, koinInject()),
-            QuestSelection(AddTactilePavingBusStop(), true, false, koinInject()),
+            QuestSelection(OsmNoteQuestType, true, true),
+            QuestSelection(AddSeating(), false, true),
+            QuestSelection(AddTactilePavingBusStop(), true, false),
         ),
         displayCountry = "Atlantis",
         onSelect = { _, _ -> },

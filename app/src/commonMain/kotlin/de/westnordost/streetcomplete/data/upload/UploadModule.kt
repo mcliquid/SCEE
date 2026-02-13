@@ -6,9 +6,9 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val uploadModule = module {
-    factory { VersionIsBannedChecker(get(), BANNED_VERSION_URL, ApplicationConstants.USER_AGENT) }
+    factory { VersionIsBannedChecker(get(), "https://streetcomplete.app/banned_versions.txt", ApplicationConstants.USER_AGENT) }
 
-    single { Uploader(get(), get(), get(), get(), get(), get(), get(named("SerializeSync")), get(), get()) }
+    single { Uploader(get(), get(), get(), get(), get(), get(), get(named("SerializeSync"))) }
     /* uploading and downloading should be serialized, i.e. may not run in parallel, to avoid
      * certain race-condition.
      *
@@ -22,4 +22,3 @@ val uploadModule = module {
 
     single<UploadProgressSource> { get<Uploader>() }
 }
-const val BANNED_VERSION_URL = "https://streetcomplete.mnalis.com/streetcomplete/banned_versions.txt"

@@ -143,7 +143,7 @@ class AddHousenumber(
         for (areaWithAddress in areasWithAddresses + areasWithAddressesOnOutline) {
             val nearbyBuildings = buildingPositions.getAll(areaWithAddress.bounds)
             val buildingPositionsInArea = nearbyBuildings.filter { it.isInMultipolygon(areaWithAddress.polygons) }
-            val buildingsInArea = buildingPositionsInArea.mapNotNullTo(HashSet(buildingPositionsInArea.size)) { buildingsByCenterPosition[it] }
+            val buildingsInArea = buildingPositionsInArea.mapNotNull { buildingsByCenterPosition[it] }.toSet()
 
             buildings.removeAll(buildingsInArea)
         }

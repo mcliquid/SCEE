@@ -2,7 +2,6 @@ package de.westnordost.streetcomplete.data.osm.osmquests
 
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
 import de.westnordost.streetcomplete.data.quest.OsmQuestKey
-import de.westnordost.streetcomplete.data.quest.QuestType
 
 interface OsmQuestSource {
 
@@ -15,7 +14,7 @@ interface OsmQuestSource {
     fun get(key: OsmQuestKey): OsmQuest?
 
     /** Get all quests of optionally the given types in given bounding box */
-    fun getAllInBBox(bbox: BoundingBox, questTypes: Collection<QuestType>? = null): Collection<OsmQuest>
+    fun getAllInBBox(bbox: BoundingBox, questTypes: Collection<String>? = null): List<OsmQuest>
 
     fun addListener(listener: Listener)
     fun removeListener(listener: Listener)

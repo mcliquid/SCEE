@@ -13,8 +13,5 @@ interface ShowsGeometryMarkers {
 data class Marker(
     val geometry: ElementGeometry,
     @DrawableRes val icon: Int? = null,
-    val title: String? = null,
-    val color: Int? = null,
-    val rotation: Double? = null,
-    val direction: Double? = null,
+    val title: String? = null
 )

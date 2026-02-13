@@ -1,11 +1,7 @@
 package de.westnordost.streetcomplete.quests.smoothness
 
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
-import de.westnordost.streetcomplete.data.osm.mapdata.Element
-import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
-import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
@@ -45,15 +41,6 @@ class AddRoadSmoothness : OsmFilterQuestType<SmoothnessAnswer>(), AndroidQuest {
         }
 
     override fun createForm() = AddSmoothnessForm()
-
-    override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry): Sequence<Element> {
-        val nodes = (element as Way).nodeIds
-        return getMapData().nodes.asSequence().filter { it.id in nodes && barrierFilter.matches(it) }
-    }
-
-    private val barrierFilter by lazy {
-        "nodes with barrier or traffic_calming".toElementFilterExpression()
-    }
 
     override fun applyAnswerTo(answer: SmoothnessAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         if (answer is IsActuallyStepsAnswer) throw IllegalStateException()

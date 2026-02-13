@@ -1,6 +1,5 @@
 package de.westnordost.streetcomplete.data.edithistory
 
-import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditsController
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditsSource
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
@@ -35,7 +34,6 @@ class EditHistoryControllerTest {
     private lateinit var questTypeRegistry: QuestTypeRegistry
     private lateinit var listener: EditHistorySource.Listener
     private lateinit var ctrl: EditHistoryController
-    private lateinit var externalSourceController: ExternalSourceQuestController
 
     private lateinit var elementEditsListener: ElementEditsSource.Listener
     private lateinit var noteEditsListener: NoteEditsSource.Listener
@@ -47,11 +45,10 @@ class EditHistoryControllerTest {
         hiddenQuestsController = mock()
         notesSource = mock()
         mapDataSource = mock()
-        questTypeRegistry = QuestTypeRegistry({ listOf(
+        questTypeRegistry = QuestTypeRegistry(listOf(
             0 to QUEST_TYPE,
-        ) })
+        ))
         listener = mock()
-        externalSourceController = mock()
 
         elementEditsListener = mock()
         noteEditsListener = mock()
@@ -72,7 +69,7 @@ class EditHistoryControllerTest {
 
         ctrl = EditHistoryController(
             elementEditsController, noteEditsController, hiddenQuestsController, notesSource,
-            mapDataSource, questTypeRegistry, externalSourceController
+            mapDataSource, questTypeRegistry
         )
         ctrl.addListener(listener)
     }

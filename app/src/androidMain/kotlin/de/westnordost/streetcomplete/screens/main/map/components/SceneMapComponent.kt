@@ -4,16 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.provider.Settings
 import androidx.annotation.UiThread
-import de.westnordost.streetcomplete.ApplicationConstants
-import de.westnordost.streetcomplete.Prefs
-import de.westnordost.streetcomplete.data.preferences.Preferences
-import de.westnordost.streetcomplete.data.preferences.Theme
-import de.westnordost.streetcomplete.screens.main.map.createMapStyle
 import de.westnordost.streetcomplete.screens.main.map.maplibre.awaitSetStyle
-import de.westnordost.streetcomplete.screens.main.map.rasterBackground
-import de.westnordost.streetcomplete.screens.main.map.themeDarkContrast
-import de.westnordost.streetcomplete.screens.main.map.themeLight
-import de.westnordost.streetcomplete.util.logs.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.maplibre.android.maps.MapLibreMap
@@ -30,34 +21,18 @@ import java.util.Locale
 class SceneMapComponent(
     private val context: Context,
     private val map: MapLibreMap,
-    private val prefs: Preferences,
 ) {
     /** Load the scene */
     suspend fun loadStyle(): Style {
         val currentNightMode = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         val isNightMode = currentNightMode == Configuration.UI_MODE_NIGHT_YES
-        val token = context.resources.assets.open("map_theme/streetcomplete.json").bufferedReader()
-            .use { it.readText() }.substringAfter("?access-token=").substringBefore("\"]")
-        if (ApplicationConstants.DEBUG) {
-            // make sure created file for light theme is same as map_theme/streetcomplete.json
-            // this is to avoid overlooking style updates
-            val lightTheme = context.resources.assets.open("map_theme/streetcomplete.json").bufferedReader().use { it.readText() }.lines()
-            val createdLightTheme = createMapStyle("StreetComplete", token, emptyList(), themeLight).lines()
-            for (i in lightTheme.indices) {
-                if (lightTheme[i] != createdLightTheme[i]) {
-                    Log.i("SceneMapComponent", "different-o: ${lightTheme[i]}")
-                    Log.i("SceneMapComponent", "different-n: ${createdLightTheme[i]}")
-                }
-            }
-            require(lightTheme == createdLightTheme) { "Created light theme is not the same as the file in assets. Please update MapStyles or MapStyleCreator." }
-        }
-        val styleJsonString = when {
-            prefs.prefs.getString(Prefs.THEME_BACKGROUND, "MAP") != "MAP" ->
-                createMapStyle("StreetComplete-Raster", token, emptyList(), rasterBackground(prefs.prefs.getBoolean(Prefs.NO_SATELLITE_LABEL, false)), prefs.prefs.getString(Prefs.RASTER_TILE_URL, ApplicationConstants.RASTER_DEFAULT_URL), prefs.prefs.getInt(Prefs.RASTER_TILE_MAXZOOM, ApplicationConstants.RASTER_DEFAULT_MAXZOOM))
-            prefs.theme == Theme.DARK_CONTRAST -> createMapStyle("StreetComplete-Dark_Contrast", token, emptyList(), themeDarkContrast)
-            isNightMode -> context.resources.assets.open("map_theme/streetcomplete-night.json").bufferedReader().use { it.readText() }
-            else -> context.resources.assets.open("map_theme/streetcomplete.json").bufferedReader().use { it.readText() }
-        }
+        val mapFile =
+            if (isNightMode) "map_theme/streetcomplete-night.json"
+            else "map_theme/streetcomplete.json"
+
+        val styleJsonString = context.resources.assets.open(mapFile)
+            .bufferedReader()
+            .use { it.readText() }
 
         val styleBuilder = Style.Builder().fromJson(styleJsonString)
         val style = map.awaitSetStyle(styleBuilder)

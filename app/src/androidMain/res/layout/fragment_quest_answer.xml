@@ -163,23 +163,6 @@
                         android:autoLink="web"
                         android:textIsSelectable="true" />
 
-                    <TextView
-                        android:id="@+id/titleFixmeLabel"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="@style/TextAppearance.TitleMedium"
-                        android:text="@string/fixme_for_object" />
-
-                    <TextView
-                        android:id="@+id/fixmeLabel"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="@style/TextAppearance.Body"
-                        android:textStyle="italic"
-                        android:textColor="@color/hint_text"
-                        android:autoLink="web"
-                        android:textIsSelectable="true" />
-
                 </LinearLayout>
 
 
@@ -279,30 +262,16 @@
         android:paddingBottom="8dp"
         tools:ignore="RtlSymmetry">
 
-        <TextView
+        <ImageView
             android:id="@+id/okButton"
-            app:drawableBottomCompat="@drawable/ic_check_48dp"
-            app:drawableTint="@color/button_white"
+            app:srcCompat="@drawable/ic_check_48dp"
             android:scaleType="centerInside"
             style="@style/RoundAccentButton"
             android:layout_width="@dimen/ok_button_size"
-            android:layout_height="@dimen/ok_button_size"/>
+            android:layout_height="@dimen/ok_button_size"
+            android:padding="20dp"/>
 
     </RelativeLayout>
-
-    <TextView
-        android:id="@+id/hideButton"
-        android:text="@string/hide_button"
-        style="@style/RoundAccentButton"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="8dp"
-        android:visibility="gone"
-        android:scaleX="0.5"
-        android:scaleY="0.5"
-        android:alpha="0"/>
 
     <View
         android:id="@+id/glassPane"

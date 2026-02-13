@@ -35,7 +35,7 @@ class AddPathSurfaceForm : AItemSelectQuestForm<Surface, SurfaceOrIsStepsAnswer>
     private fun createConvertToStepsAnswer(): AnswerItem? =
         if (element.couldBeSteps()) {
             AnswerItem(R.string.quest_generic_answer_is_actually_steps) {
-                applyAnswer(IsActuallyStepsAnswer, true)
+                applyAnswer(IsActuallyStepsAnswer)
             }
         } else {
             null
@@ -46,7 +46,7 @@ class AddPathSurfaceForm : AItemSelectQuestForm<Surface, SurfaceOrIsStepsAnswer>
         if (way.tags["indoor"] == "yes") return null
 
         return AnswerItem(R.string.quest_generic_answer_is_indoors) {
-            applyAnswer(IsIndoorsAnswer, true)
+            applyAnswer(IsIndoorsAnswer)
         }
     }
 }

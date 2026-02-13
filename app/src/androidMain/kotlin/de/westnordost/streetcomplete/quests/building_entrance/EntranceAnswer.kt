@@ -9,7 +9,6 @@ import de.westnordost.streetcomplete.resources.quest_building_entrance_main
 import de.westnordost.streetcomplete.resources.quest_building_entrance_service
 import de.westnordost.streetcomplete.resources.quest_building_entrance_shop
 import de.westnordost.streetcomplete.resources.quest_building_entrance_staircase
-import de.westnordost.streetcomplete.resources.quest_building_entrance_parking
 import de.westnordost.streetcomplete.resources.quest_building_entrance_yes
 import org.jetbrains.compose.resources.StringResource
 
@@ -25,7 +24,6 @@ enum class EntranceType(val osmValue: String) : EntranceAnswer {
     EMERGENCY_EXIT("emergency"),
     EXIT("exit"),
     SHOP("shop"),
-    PARKING("parking"),
     GENERIC("yes"),
 }
 
@@ -36,7 +34,6 @@ val EntranceType.text: StringResource get() = when (this) {
     EMERGENCY_EXIT -> Res.string.quest_building_entrance_emergency_exit
     EXIT -> Res.string.quest_building_entrance_exit
     SHOP -> Res.string.quest_building_entrance_shop
-    PARKING -> Res.string.quest_building_entrance_parking
     GENERIC -> Res.string.quest_building_entrance_yes
 }
 

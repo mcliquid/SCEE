@@ -171,9 +171,10 @@ fun getSelectableCycleways(
 ): List<CyclewayAndDirection> {
     val direction = direction?.takeUnless { it == BOTH } ?: Direction.getDefault(isRightSide, isLeftHandTraffic)
     val cycleways = mutableListOf(
-        EXCLUSIVE_LANE, ADVISORY_LANE, UNSPECIFIED_LANE, SUGGESTION_LANE, TRACK, SIDEWALK_EXPLICIT,
-        SEPARATE, NONE,
-        SIDEWALK_OK, PICTOGRAMS, BUSWAY, SHOULDER
+        NONE, SEPARATE,
+        EXCLUSIVE_LANE, ADVISORY_LANE, UNSPECIFIED_LANE, SUGGESTION_LANE,
+        TRACK, SIDEWALK_EXPLICIT, SIDEWALK_OK,
+        PICTOGRAMS, BUSWAY, SHOULDER
     )
     val dualCycleways = listOf(
         CyclewayAndDirection(if (countryInfo.hasAdvisoryCycleLane) EXCLUSIVE_LANE else UNSPECIFIED_LANE, BOTH),

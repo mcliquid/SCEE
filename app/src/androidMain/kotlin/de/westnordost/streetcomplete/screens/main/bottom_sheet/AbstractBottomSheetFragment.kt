@@ -15,14 +15,10 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_COLLAPS
 import com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
-import de.westnordost.streetcomplete.data.preferences.Preferences
-import de.westnordost.streetcomplete.quests.TagEditor
-import de.westnordost.streetcomplete.util.ktx.dpToPx
 import de.westnordost.streetcomplete.util.ktx.updateMargins
 import de.westnordost.streetcomplete.view.RoundRectOutlineProvider
 import de.westnordost.streetcomplete.view.SlidingRelativeLayout
 import de.westnordost.streetcomplete.view.insets_animation.respectSystemInsets
-import org.koin.android.ext.android.inject
 import kotlin.math.min
 
 /** Abstract base class for expandable and closeable bottom sheets. In detail, it does manage the
@@ -37,7 +33,6 @@ abstract class AbstractBottomSheetFragment : Fragment(), IsCloseableBottomSheet 
     protected abstract val bottomSheetContainer: SlidingRelativeLayout
     protected abstract val bottomSheet: ViewGroup
     protected abstract val scrollViewChild: View
-    protected val prefs: Preferences by inject()
 
     /** Title view of the bottom sheet. Tapping on it expands / retracts the bottom sheet */
     protected abstract val bottomSheetTitle: View?
@@ -46,8 +41,6 @@ abstract class AbstractBottomSheetFragment : Fragment(), IsCloseableBottomSheet 
 
     /** View that floats at the bottom on top of any retracted/expanded bottom sheet */
     protected abstract val floatingBottomView: View?
-    protected abstract val floatingBottomView2: View?
-    open val hideButtonBottomMarginDp = 8
 
     private lateinit var bottomSheetBehavior: BottomSheetBehavior<*>
 
@@ -64,7 +57,6 @@ abstract class AbstractBottomSheetFragment : Fragment(), IsCloseableBottomSheet 
             scrollViewChild.updatePadding(bottom = it.bottom)
             bottomSheetContainer.updateMargins(top = it.top, left = it.left, right = it.right)
             floatingBottomView?.updateMargins(bottom = it.bottom)
-            floatingBottomView2?.updateMargins(bottom = it.bottom + context.resources.dpToPx(hideButtonBottomMarginDp).toInt())
 
             // expanding bottom sheet when keyboard is opened
             if (minBottomInset < it.bottom) expand()
@@ -130,8 +122,7 @@ abstract class AbstractBottomSheetFragment : Fragment(), IsCloseableBottomSheet 
      * requires user confirmation if any changes have been made  */
     @UiThread
     override fun onClickClose(onConfirmed: () -> Unit) {
-        // changes != null means we just answered a quest inside tag editor
-        if (TagEditor.changes != null || !isRejectingClose()) {
+        if (!isRejectingClose()) {
             onDiscard()
             onConfirmed()
         } else {

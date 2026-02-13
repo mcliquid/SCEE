@@ -10,7 +10,6 @@ import de.westnordost.osmfeatures.Feature
 import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
-import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.databinding.DialogShopGoneBinding
 import de.westnordost.streetcomplete.databinding.ViewShopTypeBinding
 import de.westnordost.streetcomplete.osm.POPULAR_PLACE_FEATURE_IDS
@@ -28,8 +27,7 @@ class ShopGoneDialog(
     private val countryCode: String?,
     private val featureDictionary: FeatureDictionary,
     private val onSelectedFeatureFn: (Feature) -> Unit,
-    private val onLeaveNoteFn: () -> Unit,
-    private val pos: LatLon? = null,
+    private val onLeaveNoteFn: () -> Unit
 ) : AlertDialog(context) {
 
     private val binding: ViewShopTypeBinding
@@ -62,8 +60,7 @@ class ShopGoneDialog(
                 { it.toElement().isPlace() },
                 ::onSelectedFeature,
                 POPULAR_PLACE_FEATURE_IDS,
-                true,
-                pos
+                true
             ).show()
         }
 

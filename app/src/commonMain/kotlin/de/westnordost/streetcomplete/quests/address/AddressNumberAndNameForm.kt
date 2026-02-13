@@ -12,7 +12,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import de.westnordost.streetcomplete.osm.address.AddressNumber
 import de.westnordost.streetcomplete.osm.address.HouseNumber
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.quest_address_house_name_label
@@ -28,7 +27,7 @@ fun AddressNumberAndNameForm(
     onValueChange: (AddressNumberAndName) -> Unit,
     countryCode: String?,
     modifier: Modifier = Modifier,
-    houseNumberSuggestion: AddressNumber? = null,
+    houseNumberSuggestion: String? = null,
     blockSuggestion: String? = null,
 ) {
     val hasNumber = value.number != null

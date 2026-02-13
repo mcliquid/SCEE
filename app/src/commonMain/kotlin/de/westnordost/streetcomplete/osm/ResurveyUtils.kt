@@ -1,6 +1,5 @@
 package de.westnordost.streetcomplete.osm
 
-import de.westnordost.streetcomplete.data.elementfilter.filters.CompareTagAge
 import de.westnordost.streetcomplete.util.ktx.systemTimeNow
 import de.westnordost.streetcomplete.util.ktx.toLocalDate
 import kotlinx.datetime.LocalDate
@@ -51,7 +50,7 @@ fun Tags.updateWithCheckDate(key: String, value: String) {
      * before v32.0 was to delete the check date. However, this destroys data that was
      * previously collected by another surveyor - we don't want to destroy other people's data.
      */
-    if (previousValue == value || hasCheckDateForKey(key) || hasCheckDate() || CompareTagAge.resurveyKeys.contains(key)) {
+    if (previousValue == value || hasCheckDateForKey(key) || hasCheckDate()) {
         updateCheckDateForKey(key)
     }
 }

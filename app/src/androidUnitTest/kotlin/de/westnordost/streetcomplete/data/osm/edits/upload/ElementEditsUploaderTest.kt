@@ -15,7 +15,6 @@ import de.westnordost.streetcomplete.testutils.any
 import de.westnordost.streetcomplete.testutils.edit
 import de.westnordost.streetcomplete.testutils.eq
 import de.westnordost.streetcomplete.testutils.mock
-import de.westnordost.streetcomplete.testutils.mockPrefs2
 import de.westnordost.streetcomplete.testutils.node
 import de.westnordost.streetcomplete.testutils.on
 import kotlinx.coroutines.cancelAndJoin
@@ -49,12 +48,12 @@ class ElementEditsUploaderTest {
 
         listener = mock()
 
-        uploader = ElementEditsUploader(elementEditsController, noteEditsController, mapDataController, singleUploader, mapDataApi, statisticsController, mock(), mock(), mockPrefs2())
+        uploader = ElementEditsUploader(elementEditsController, noteEditsController, mapDataController, singleUploader, mapDataApi, statisticsController)
         uploader.uploadedChangeListener = listener
     }
 
     @Test fun `cancel upload works`() = runBlocking {
-        val job = launch { uploader.upload(mock()) }
+        val job = launch { uploader.upload() }
         job.cancelAndJoin()
         verifyNoInteractions(elementEditsController, mapDataController, singleUploader, statisticsController)
     }
@@ -66,13 +65,15 @@ class ElementEditsUploaderTest {
         on(elementEditsController.getOldestUnsynced()).thenReturn(edit).thenReturn(null)
         on(singleUploader.upload(any(), any())).thenReturn(updates)
 
-        uploader.upload(mock())
+        uploader.upload()
 
         verify(singleUploader).upload(eq(edit), any())
         verify(listener).onUploaded(any(), any())
         verify(elementEditsController).markSynced(edit, updates)
         verify(noteEditsController).updateElementIds(any())
         verify(mapDataController).updateAll(updates)
+
+        verify(statisticsController).addOne(any(), any())
     }
 
     @Test fun `upload catches conflict exception`() = runBlocking {
@@ -93,7 +94,7 @@ class ElementEditsUploaderTest {
         on(elementEditsController.getOldestUnsynced()).thenReturn(edit).thenReturn(null)
         on(singleUploader.upload(any(), any())).thenThrow(ConflictException())
 
-        uploader.upload(mock())
+        uploader.upload()
 
         verify(singleUploader).upload(eq(edit), any())
         verify(listener).onDiscarded(any(), any())

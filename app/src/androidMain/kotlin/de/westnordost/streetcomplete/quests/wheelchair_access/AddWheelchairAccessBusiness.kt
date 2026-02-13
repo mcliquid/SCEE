@@ -135,12 +135,5 @@ class AddWheelchairAccessBusiness : OsmFilterQuestType<WheelchairAccess>(), Andr
 
     override fun applyAnswerTo(answer: WheelchairAccess, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         tags["wheelchair"] = answer.osmValue
-        answer.updatedDescriptions?.forEach { (language, description) ->
-            // language already contains the colon, or may be empty
-            if (description.isEmpty())
-                tags.remove("wheelchair:description$language")
-            else
-                tags["wheelchair:description$language"] = description
-        }
     }
 }

@@ -18,7 +18,3 @@ data class OsmQuestKey(
     val elementId: Long,
     val questTypeName: String
 ) : QuestKey()
-
-@Serializable
-@SerialName("externalsource")
-data class ExternalSourceQuestKey(val id: String, val source: String) : QuestKey()

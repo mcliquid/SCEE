@@ -1,9 +1,7 @@
 package de.westnordost.streetcomplete.data.overlays
 
 import com.russhwolf.settings.SettingsListener
-import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.preferences.Preferences
-//import de.westnordost.streetcomplete.overlays.custom.CustomOverlay
 import de.westnordost.streetcomplete.util.Listeners
 
 class SelectedOverlayController(
@@ -20,14 +18,7 @@ class SelectedOverlayController(
 
     override var selectedOverlay: Overlay?
         set(value) {
-            if (value?.title == 0) {
-                value.wikiLink?.toIntOrNull()?.let { prefs.putInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, it) }
-                if (prefs.selectedOverlayName == /*CustomOverlay::class.simpleName*/ "CustomOverlay") { // todo, but later...
-                    listeners.forEach { it.onSelectedOverlayChanged() }
-                }
-                prefs.selectedOverlayName = /*CustomOverlay::class.simpleName*/ "CustomOverlay" // todo, but later...
-            }
-            else if (value != null && value in overlayRegistry) {
+            if (value != null && value in overlayRegistry) {
                 prefs.selectedOverlayName = value.name
             } else {
                 prefs.selectedOverlayName = null

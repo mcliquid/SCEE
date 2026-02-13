@@ -114,7 +114,6 @@ class MapDataControllerTest {
             deleted = deleteKeys,
             idUpdates = idUpdates
         ))
-        sleep(50)
 
         val expectedDeleteKeys = deleteKeys + idUpdates.map { ElementKey(it.elementType, it.oldElementId) }
         verify(geometryDB).deleteAll(expectedDeleteKeys)

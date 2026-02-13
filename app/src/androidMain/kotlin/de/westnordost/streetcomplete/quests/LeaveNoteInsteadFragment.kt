@@ -1,13 +1,11 @@
 package de.westnordost.streetcomplete.quests
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.core.view.isGone
-import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementType
@@ -22,6 +20,7 @@ import de.westnordost.streetcomplete.util.viewBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.android.inject
@@ -40,16 +39,8 @@ class LeaveNoteInsteadFragment : AbstractCreateNoteFragment() {
     override val bottomSheetTitle get() = binding.speechBubbleTitleContainer
     override val bottomSheetContent get() = binding.speechbubbleContentContainer
     override val floatingBottomView get() = binding.okButtonContainer
-    override val floatingBottomView2 get() = binding.hideButton
+    override val okButton get() = binding.okButton
     override val okButtonContainer get() = binding.okButtonContainer
-    override val gpxButton get() = if (prefs.getBoolean(Prefs.SWAP_GPX_NOTE_BUTTONS, false) && prefs.getBoolean(Prefs.GPX_BUTTON, false))
-            binding.okButton
-        else
-            binding.hideButton
-    override val okButton get() = if (prefs.getBoolean(Prefs.SWAP_GPX_NOTE_BUTTONS, false) && prefs.getBoolean(Prefs.GPX_BUTTON, false))
-            binding.hideButton
-        else
-            binding.okButton
 
     private val contentBinding by viewBinding(FormLeaveNoteBinding::bind, R.id.content)
 
@@ -80,17 +71,11 @@ class LeaveNoteInsteadFragment : AbstractCreateNoteFragment() {
         return binding.root
     }
 
-    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.buttonPanel.isGone = true
         contentBinding.descriptionLabel.isGone = true
         binding.titleLabel.text = getString(R.string.map_btn_create_note)
-        if (prefs.getBoolean(Prefs.GPX_BUTTON, false)) {
-            binding.okButton.setCompoundDrawablesRelativeWithIntrinsicBounds(0,0,0,0)
-            gpxButton.text = "GPX"
-            okButton.text = "OSM"
-        }
     }
 
     override fun onDestroyView() {
@@ -98,15 +83,15 @@ class LeaveNoteInsteadFragment : AbstractCreateNoteFragment() {
         _binding = null
     }
 
-    override fun onComposedNote(text: String, imagePaths: List<String>, isGpxNote: Boolean) {
+    override fun onComposedNote(text: String, imagePaths: List<String>) {
         val fullText = mutableListOf<String>()
         leaveNoteContext?.let { fullText += it }
         fullText += "– https://osm.org/${elementType.name.lowercase()}/$elementId"
-        fullText += if (isGpxNote) "\n$text" else "via ${ApplicationConstants.USER_AGENT}:\n\n$text"
+        fullText += "via ${ApplicationConstants.USER_AGENT}:\n\n$text"
 
         viewLifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                noteEditsController.add(0, NoteEditAction.CREATE, position, fullText.joinToString(" "), imagePaths, emptyList(), isGpxNote, context)
+                noteEditsController.add(0, NoteEditAction.CREATE, position, fullText.joinToString(" "), imagePaths)
             }
             listener?.onCreatedNote(position)
         }

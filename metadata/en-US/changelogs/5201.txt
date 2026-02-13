@@ -1,5 +1,0 @@
-- Allow inserting nodes into a single way
-- Add some options to nearby quest monitor
-- Allow answering one lane for non-oneways
-- Indicate whether quest settings are in use
-- Small fixes and improvements

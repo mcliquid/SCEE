@@ -32,7 +32,7 @@ fun createSyncNotification(context: Context, cancelIntent: PendingIntent): Notif
 
     return NotificationCompat.Builder(context, ApplicationConstants.NOTIFICATIONS_CHANNEL_SYNC)
         .setSmallIcon(R.mipmap.ic_notification)
-        .setContentTitle(context.resources.getString(R.string.app_name))
+        .setContentTitle(ApplicationConstants.NAME)
         .setTicker(context.resources.getString(R.string.notification_syncing))
         .setContentIntent(cancelIntent)
         .setOngoing(true)

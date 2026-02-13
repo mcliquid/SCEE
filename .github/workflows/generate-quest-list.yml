@@ -1,6 +1,9 @@
 name: Generate quest list
 
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
 
 jobs:

@@ -7,7 +7,6 @@ import de.westnordost.streetcomplete.osm.address.AddressNumber
 import de.westnordost.streetcomplete.osm.address.BlockAndHouseNumber
 import de.westnordost.streetcomplete.osm.address.ConscriptionNumber
 import de.westnordost.streetcomplete.osm.address.HouseNumber
-import de.westnordost.streetcomplete.osm.address.streetHouseNumber
 
 /** Form to input a housenumber or housenumber + block or conscription number + orientation number,
  *  depending on country. */
@@ -17,12 +16,12 @@ fun AddressNumberForm(
     onValueChange: (AddressNumber) -> Unit,
     countryCode: String?,
     modifier: Modifier = Modifier,
-    houseNumberSuggestion: AddressNumber? = null,
+    houseNumberSuggestion: String? = null,
     blockSuggestion: String? = null,
 ) {
     val blockAndHouseNumberSuggestion = remember(blockSuggestion, houseNumberSuggestion) {
         if (houseNumberSuggestion != null || blockSuggestion != null) {
-            BlockAndHouseNumber(blockSuggestion.orEmpty(), houseNumberSuggestion?.streetHouseNumber.orEmpty())
+            BlockAndHouseNumber(blockSuggestion.orEmpty(), houseNumberSuggestion.orEmpty())
         } else null
     }
 
@@ -53,7 +52,7 @@ fun AddressNumberForm(
             value = value,
             onValueChange = onValueChange,
             modifier = modifier,
-            suggestion = houseNumberSuggestion as? HouseNumber
+            suggestion = houseNumberSuggestion?.let { HouseNumber(it) }
         )
     }
 }

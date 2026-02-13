@@ -1602,6 +1602,13 @@ If there are no signs along the whole street which apply for the highlighted sec
     <string name="quest_smoothness_obstacle_hint">Please provide an answer for the overall smoothness. Single obstacles like kerbs, speed bumps or cattle grids can be ignored. Repeated or unexpected obstacles should count towards the answer.</string>
     <string name="quest_smoothness_hint">The icons indicate for which vehicles the surface should be usable. What matters is the big picture rather than single hazards.</string>
 
+    <string name="quest_socket_title">Which sockets does this charging station have?</string>
+    <string name="quest_socket_type2">Type 2 (Mennekes)</string>
+    <string name="quest_socket_type2_cable">Type 2 (Mennekes) Cable</string>
+    <string name="quest_socket_type2_combo">Type 2 Combo (CCS)</string>
+    <string name="quest_socket_chademo">CHAdeMO</string>
+    <string name="quest_socket_domestic">Household-plug</string>
+
     <string name="quest_sport_title">What sport is played here?</string>
     <string name="quest_sport_answer_multi">Not any specific sport</string>
     <string name="quest_sport_soccer">Soccer</string>

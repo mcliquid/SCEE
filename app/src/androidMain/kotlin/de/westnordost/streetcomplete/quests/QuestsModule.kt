@@ -162,7 +162,7 @@ import de.westnordost.streetcomplete.quests.sidewalk.AddSidewalk
 import de.westnordost.streetcomplete.quests.smoking.AddSmoking
 import de.westnordost.streetcomplete.quests.smoothness.AddPathSmoothness
 import de.westnordost.streetcomplete.quests.smoothness.AddRoadSmoothness
-import de.westnordost.streetcomplete.quests.socket_type.AddChargingStationSockets
+import de.westnordost.streetcomplete.quests.socket.AddSocket
 import de.westnordost.streetcomplete.quests.sport.AddSport
 import de.westnordost.streetcomplete.quests.step_count.AddStepCount
 import de.westnordost.streetcomplete.quests.step_count.AddStepCountStile
@@ -430,7 +430,7 @@ fun questTypeRegistry(
     87 to AddChargingStationCapacity(),  // after question for bicycles because user has possibility to answer that it is only for bicycles
     179 to AddChargingStationBicycleCapacity(),
     88 to AddChargingStationOperator(),
-    197 to AddChargingStationSockets(),
+    197 to AddSocket(),
 
     // postboxes (collection times are further up, see comment)
     89 to AddPostboxRoyalCypher(), // can be glanced across the road (if postbox facing the right way)

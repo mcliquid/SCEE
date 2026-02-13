@@ -1,4 +1,4 @@
-package de.westnordost.streetcomplete.quests.socket_type
+package de.westnordost.streetcomplete.quests.socket
 
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
@@ -11,11 +11,15 @@ import de.westnordost.streetcomplete.data.quest.AllCountriesExcept
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement
 import de.westnordost.streetcomplete.osm.Tags
 
-class AddChargingStationSockets : OsmElementQuestType<Set<SocketType>>, AndroidQuest {
+class AddSocket : OsmElementQuestType<Set<SocketType>>, AndroidQuest {
 
     private val filter by lazy {
-        "nodes, ways with amenity = charging_station"
-            .toElementFilterExpression()
+        """
+        nodes, ways with
+          amenity = charging_station
+          and bicycle != yes
+          and motorcar != no
+        """.toElementFilterExpression()
     }
 
     override val enabledInCountries = AllCountriesExcept(
@@ -26,35 +30,27 @@ class AddChargingStationSockets : OsmElementQuestType<Set<SocketType>>, AndroidQ
 
     override val changesetComment = "Add charging station sockets"
     override val wikiLink = "Key:socket"
-    override val icon = R.drawable.ic_quest_charging_station
+    override val icon = R.drawable.ic_quest_socket
     override val achievements = listOf(EditTypeAchievement.RARE)
 
-    override fun getTitle(tags: Map<String, String>): Int =
-        R.string.quest_charging_station_sockets_title
+    override fun getTitle(tags: Map<String, String>): Int = R.string.quest_socket_title
 
-    override fun createForm() = AddChargingStationSocketsForm()
+    override fun createForm() = AddSocketForm()
 
-    override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> {
-        // explicit type to avoid platform-nullability inference warnings
-        val candidates: Iterable<Element> = mapData.filter { element: Element ->
-            filter.matches(element)
+    override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> =
+        mapData.filter { element: Element ->
+            isApplicableTo(element)
         }
-
-        return candidates
-            .filter { element: Element ->
-                // show only if no supported socket tag exists
-                SocketType.selectableValues.none { socketType ->
-                    element.tags.containsKey("socket:${socketType.osmKey}")
-                }
-            }
-            .asIterable()
-    }
 
     override fun isApplicableTo(element: Element): Boolean {
         if (!filter.matches(element)) return false
 
-        // skip if any socket:* tag already exists
-        if (element.tags.keys.any { key -> key.startsWith("socket:") }) {
+        val supportedSockets = supportedSocketTypes(element)
+
+        // skip if any supported socket already exists
+        if (supportedSockets.any { socketType ->
+                element.tags.containsKey("socket:${socketType.osmKey}")
+            }) {
             return false
         }
 
@@ -70,5 +66,15 @@ class AddChargingStationSockets : OsmElementQuestType<Set<SocketType>>, AndroidQ
         answer.forEach { socketType ->
             tags["socket:${socketType.osmKey}"] = "1"
         }
+    }
+
+    /**
+     * Returns the list of socket types that should be shown for this element.
+     *
+     * Currently only car-relevant sockets are supported.
+     * Future versions may extend this depending on bicycle=yes / motorcar=yes.
+     */
+    private fun supportedSocketTypes(element: Element): List<SocketType> {
+        return SocketType.selectableValues
     }
 }

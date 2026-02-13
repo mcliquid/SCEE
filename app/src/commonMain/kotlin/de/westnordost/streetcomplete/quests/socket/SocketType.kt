@@ -1,4 +1,4 @@
-package de.westnordost.streetcomplete.quests.socket_type
+package de.westnordost.streetcomplete.quests.socket
 
 enum class SocketType(val osmKey: String) {
     TYPE2("type2"),

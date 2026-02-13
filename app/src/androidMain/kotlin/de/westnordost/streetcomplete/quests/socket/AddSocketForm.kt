@@ -1,4 +1,4 @@
-package de.westnordost.streetcomplete.quests.socket_type
+package de.westnordost.streetcomplete.quests.socket
 
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
@@ -7,7 +7,7 @@ import androidx.compose.ui.res.stringResource
 import de.westnordost.streetcomplete.quests.ACheckboxGroupQuestForm
 import de.westnordost.streetcomplete.ui.common.item_select.ImageWithLabel
 
-class AddChargingStationSocketsForm :
+class AddSocketForm :
     ACheckboxGroupQuestForm<SocketType, Set<SocketType>>() {
 
     override val items = SocketType.selectableValues

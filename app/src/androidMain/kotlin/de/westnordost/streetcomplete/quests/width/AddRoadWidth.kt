@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.quests.width
 
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
@@ -13,6 +14,8 @@ import de.westnordost.streetcomplete.osm.ROADS_ASSUMED_TO_BE_PAVED
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.maxspeed.MAX_SPEED_TYPE_KEYS
 import de.westnordost.streetcomplete.osm.surface.PAVED_SURFACES
+import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
+import de.westnordost.streetcomplete.quests.questPrefix
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.default_disabled_msg_difficult_and_time_consuming
 import de.westnordost.streetcomplete.resources.default_disabled_msg_no_ar
@@ -32,20 +35,7 @@ class AddRoadWidth(
 
     private val wayFilter by lazy { """
         ways with (
-          (
-            highway ~ trunk|primary|secondary|tertiary|unclassified|residential|busway
-            and (lane_markings = no or lanes < 2)
-          ) or (
-            highway = residential
-            and (
-              maxspeed < 33
-              or maxspeed = walk
-              or ~"${MAX_SPEED_TYPE_KEYS.joinToString("|")}" ~ ".*:(zone)?:?([1-9]|[1-2][0-9]|30)"
-            )
-            and lane_markings != yes and (!lanes or lanes < 2)
-          )
-          or highway = living_street
-          or highway = service and service = alley
+          ${prefs.getString(questPrefix(prefs) + PREF_ROAD_WIDTH_ELEMENTS, ROAD_SELECTION)}
         )
         and area != yes
         and (!width or source:width ~ ".*estimat.*")
@@ -93,6 +83,32 @@ class AddRoadWidth(
             tags["width:carriageway"] = answer.width.toOsmValue()
         }
     }
+
+    override val hasQuestSettings = true
+
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        FullElementSelectionDialog(prefs, questPrefix(prefs) + PREF_ROAD_WIDTH_ELEMENTS, R.string.quest_settings_element_selection, ROAD_SELECTION.trimIndent(), onDismissRequest)
+    }
 }
 
 private val ROAD_NARROWERS = setOf("choker", "chicane", "choked_table")
+
+private val ROAD_SELECTION = """
+              (
+                highway ~ trunk|primary|secondary|tertiary|unclassified|residential|busway
+                and (lane_markings = no or lanes < 2)
+              ) or (
+                highway = residential
+                and (
+                  maxspeed < 33
+                  or maxspeed = walk
+                  or ~"${MAX_SPEED_TYPE_KEYS.joinToString("|")}" ~ ".*:(zone)?:?([1-9]|[1-2][0-9]|30)"
+                )
+                and lane_markings != yes and (!lanes or lanes < 2)
+              )
+              or highway = living_street
+              or highway = service and service = alley
+"""
+
+private const val PREF_ROAD_WIDTH_ELEMENTS = "qs_AddRoadWidth_element_selection"

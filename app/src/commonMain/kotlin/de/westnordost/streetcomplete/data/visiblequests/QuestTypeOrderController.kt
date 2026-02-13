@@ -85,7 +85,7 @@ class QuestTypeOrderController(
     private fun onQuestTypeOrderAdded(item: QuestType, toAfter: QuestType) {
         listeners.forEach { it.onQuestTypeOrderAdded(item, toAfter) }
     }
-    private fun onQuestTypeOrderChanged() {
+    fun onQuestTypeOrderChanged() {
         listeners.forEach { it.onQuestTypeOrdersChanged() }
     }
 }

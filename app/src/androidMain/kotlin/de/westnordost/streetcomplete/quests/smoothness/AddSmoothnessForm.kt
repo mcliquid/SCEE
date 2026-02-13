@@ -1,5 +1,7 @@
 package de.westnordost.streetcomplete.quests.smoothness
 
+import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.databinding.ComposeViewBinding
 import de.westnordost.streetcomplete.osm.surface.Surface
 import de.westnordost.streetcomplete.osm.surface.icon
@@ -34,24 +37,32 @@ import org.jetbrains.compose.resources.stringResource
 class AddSmoothnessForm : AItemSelectQuestForm<Smoothness, SmoothnessAnswer>() {
 
     private val surfaceTag get() = element.tags["surface"]
-    override val items get() = Smoothness.entries.filter { it.getImage(surfaceTag) != null }
+    private val isGeneric by lazy { surfaceTag !in SURFACES_FOR_SMOOTHNESS }
+    override val items get() = Smoothness.entries.filter { isGeneric || it.getImage(surfaceTag) != null }
 
     override val itemsPerRow = 1
     override val moveFavoritesToFront = false
     override val serializer = serializer<Smoothness>()
 
     override val otherAnswers get() = listOfNotNull(
-        AnswerItem(R.string.quest_smoothness_wrong_surface) { surfaceWrong() },
+        if (Surface.entries.find { it.osmValue == surfaceTag } != null)
+            AnswerItem(R.string.quest_smoothness_wrong_surface) { surfaceWrong() }
+        else null,
         createConvertToStepsAnswer(),
         AnswerItem(R.string.quest_smoothness_obstacle) { showObstacleHint() }
     )
 
     @Composable override fun ItemContent(item: Smoothness) {
+        val tag = if (isGeneric) when (item) {
+                Smoothness.EXCELLENT, Smoothness.GOOD -> "asphalt"
+                else -> "gravel"
+            }
+        else surfaceTag
         Box {
             ImageWithDescription(
-                painter = item.getImage(surfaceTag)?.let { painterResource(it) },
+                painter = item.getImage(tag)?.let { painterResource(it) },
                 title = stringResource(item.title),
-                description = item.getDescription(surfaceTag)?.let { stringResource(it) }
+                description = item.getDescription(tag)?.let { stringResource(it) }
             )
             Image(
                 painter = painterResource(item.icon),
@@ -59,6 +70,11 @@ class AddSmoothnessForm : AItemSelectQuestForm<Smoothness, SmoothnessAnswer>() {
                 modifier = Modifier.padding(8.dp)
             )
         }
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        surfaceTag?.let { setTitle(resources.getString((questType as OsmElementQuestType<*>).getTitle(element.tags)) + " ($it)") }
     }
 
     override fun onClickOk(selectedItem: Smoothness) {
@@ -79,6 +95,10 @@ class AddSmoothnessForm : AItemSelectQuestForm<Smoothness, SmoothnessAnswer>() {
     }
 
     private fun showWrongSurfaceDialog(surface: Surface) {
+        if (dontShowAgain) {
+            applyAnswer(WrongSurfaceAnswer, true)
+            return
+        }
         val dialogBinding = ComposeViewBinding.inflate(layoutInflater)
         dialogBinding.composeViewBase.content { Surface(Modifier.padding(24.dp)) {
             Column(
@@ -97,16 +117,24 @@ class AddSmoothnessForm : AItemSelectQuestForm<Smoothness, SmoothnessAnswer>() {
         AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
             .setPositiveButton(R.string.quest_generic_hasFeature_yes_leave_note) { _, _ -> composeNote() }
-            .setNegativeButton(R.string.quest_generic_hasFeature_no) { _, _ -> applyAnswer(WrongSurfaceAnswer) }
+            .setNegativeButton(R.string.quest_generic_hasFeature_no) { _, _ -> applyAnswer(WrongSurfaceAnswer, true) }
+            .setNeutralButton(R.string.dialog_session_dont_show_again) { _, _ ->
+                dontShowAgain = true
+                applyAnswer(WrongSurfaceAnswer, true)
+            }
             .show()
     }
 
     private fun createConvertToStepsAnswer(): AnswerItem? =
         if (element.couldBeSteps()) {
             AnswerItem(R.string.quest_generic_answer_is_actually_steps) {
-                applyAnswer(IsActuallyStepsAnswer)
+                applyAnswer(IsActuallyStepsAnswer, true)
             }
         } else {
             null
         }
+
+    companion object {
+        private var dontShowAgain = false
+    }
 }

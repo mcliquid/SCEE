@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
+import android.widget.RelativeLayout
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import androidx.core.view.isGone
@@ -14,7 +15,9 @@ import androidx.exifinterface.media.ExifInterface
 import androidx.exifinterface.media.ExifInterface.TAG_GPS_IMG_DIRECTION
 import androidx.exifinterface.media.ExifInterface.TAG_GPS_IMG_DIRECTION_REF
 import androidx.fragment.app.Fragment
+import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.ApplicationConstants
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.databinding.FragmentAttachPhotoBinding
 import de.westnordost.streetcomplete.util.decodeScaledBitmapAndNormalize
@@ -23,6 +26,7 @@ import de.westnordost.streetcomplete.util.ktx.toast
 import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.util.viewBinding
 import de.westnordost.streetcomplete.view.AdapterDataChangedWatcher
+import org.koin.android.ext.android.inject
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -30,6 +34,7 @@ import java.io.IOException
 class AttachPhotoFragment : Fragment(R.layout.fragment_attach_photo) {
 
     private val binding by viewBinding(FragmentAttachPhotoBinding::bind)
+    private val prefs: ObservableSettings by inject()
 
     private val takePhoto = registerForActivityResult(ActivityResultContracts.TakePicture(), ::onTookPhoto)
 
@@ -59,6 +64,10 @@ class AttachPhotoFragment : Fragment(R.layout.fragment_attach_photo) {
         binding.attachedGpxView.isGone = !hasGpxAttached
 
         updateHintVisibility()
+
+        // use default StreetComplete layout (no margin) if there is no GPX button
+        if (!prefs.getBoolean(Prefs.GPX_BUTTON, false))
+            (binding.takePhotoButton.layoutParams as RelativeLayout.LayoutParams).marginStart = 0
     }
 
     private fun updateHintVisibility() {
@@ -99,6 +108,12 @@ class AttachPhotoFragment : Fragment(R.layout.fragment_attach_photo) {
         }
         if (file != null) {
             val exif = ExifInterface(file)
+            val dir = activity?.getExternalFilesDir(null)
+            if (prefs.getBoolean(Prefs.SAVE_PHOTOS, false) && dir != null) {
+                val target = File(dir.absolutePath + File.separator + "full_photos", file.name)
+                target.parentFile?.mkdirs()
+                file.copyTo(target)
+            }
             rescaleImageFile(file)
             copyDirectionExifData(file, exif)
 

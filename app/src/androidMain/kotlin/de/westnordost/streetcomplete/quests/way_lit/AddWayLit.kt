@@ -5,6 +5,7 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
+import de.westnordost.streetcomplete.data.quest.DayNightCycle.ONLY_NIGHT
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.changeToSteps
 import de.westnordost.streetcomplete.osm.lit.applyTo
@@ -38,13 +39,13 @@ class AddWayLit : OsmFilterQuestType<WayLitOrIsStepsAnswer>(), AndroidQuest {
           or highway ~ ${LIT_WAYS.joinToString("|")}
           or highway = path and (foot = designated or bicycle = designated)
         )
+        and (access !~ private|no or (foot and foot !~ private|no))
         and
         (
           !lit
           or lit = no and lit older today -8 years
           or lit older today -16 years
         )
-        and (access !~ private|no or (foot and foot !~ private|no))
         and indoor != yes
         and ~path|footway|cycleway !~ link
     """
@@ -54,6 +55,7 @@ class AddWayLit : OsmFilterQuestType<WayLitOrIsStepsAnswer>(), AndroidQuest {
     override val icon = R.drawable.quest_lantern
     override val achievements = listOf(PEDESTRIAN)
     override val defaultDisabledMessage = Res.string.default_disabled_msg_overlay
+    override val dayNightCycle = ONLY_NIGHT
 
     override fun getTitle(tags: Map<String, String>) = R.string.quest_lit_title
 

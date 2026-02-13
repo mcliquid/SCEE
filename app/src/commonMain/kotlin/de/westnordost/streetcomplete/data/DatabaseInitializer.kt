@@ -190,6 +190,7 @@ object DatabaseInitializer {
         }
         if (oldVersion <= 8 && newVersion > 8) {
             db.renameQuest("AddPicnicTableCover", "AddAmenityCover")
+            db.renameValue(ElementEditsTable.NAME, ElementEditsTable.Columns.QUEST_TYPE,"ExternalQuest", "CustomQuest")
         }
         if (oldVersion <= 9 && newVersion > 9) {
             db.exec("DROP TABLE ${DownloadedTilesTable.NAME};")

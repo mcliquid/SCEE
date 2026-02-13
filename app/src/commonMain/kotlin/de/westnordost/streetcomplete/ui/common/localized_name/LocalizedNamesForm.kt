@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.intl.Locale
@@ -43,6 +44,7 @@ import de.westnordost.streetcomplete.util.ktx.displayName
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import de.westnordost.streetcomplete.Prefs
 
 /** Edit a list of [localizedNames] of at most [languageTags] different languages.*/
 @Composable
@@ -168,6 +170,8 @@ private fun LocalizedNameRow(
                     else null,
                 keyboardType = KeyboardType.Text,
                 imeAction = ImeAction.Done,
+                capitalization = if (Prefs.preferences.getBoolean(Prefs.CAPS_WORD_NAME_INPUT, false))
+                    KeyboardCapitalization.Words else KeyboardCapitalization.Sentences
             ),
         )
 

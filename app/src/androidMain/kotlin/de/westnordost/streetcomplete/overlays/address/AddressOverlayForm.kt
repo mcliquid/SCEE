@@ -274,7 +274,7 @@ class AddressOverlayForm : AbstractOverlayForm(), IsMapPositionAware {
         val streetOrPlaceName = streetOrPlaceName.value
 
         lastWasPlaceName = streetOrPlaceName is PlaceName
-        number?.streetHouseNumber?.let { lastHouseNumber = it }
+        number?.let { lastHouseNumber = it }
         lastBlock = if (number is BlockAndHouseNumber) number.block else null
         lastPlaceName = if (streetOrPlaceName is PlaceName) streetOrPlaceName.name else null
         lastStreetName = if (streetOrPlaceName is StreetName) streetOrPlaceName.name else null
@@ -360,7 +360,7 @@ class AddressOverlayForm : AbstractOverlayForm(), IsMapPositionAware {
 
     companion object {
         private var lastBlock: String? = null
-        private var lastHouseNumber: String? = null
+        private var lastHouseNumber: AddressNumber? = null
 
         private var lastPlaceName: String? = null
         private var lastStreetName: String? = null

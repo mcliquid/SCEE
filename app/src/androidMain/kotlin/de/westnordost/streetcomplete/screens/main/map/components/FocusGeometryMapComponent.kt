@@ -6,8 +6,12 @@ import android.provider.Settings
 import androidx.annotation.UiThread
 import androidx.core.graphics.Insets
 import androidx.lifecycle.DefaultLifecycleObserver
+import com.russhwolf.settings.ObservableSettings
+import de.westnordost.streetcomplete.Prefs
 import androidx.lifecycle.LifecycleOwner
+import com.google.gson.JsonObject
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
+import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.screens.main.map.maplibre.CameraPosition
 import de.westnordost.streetcomplete.screens.main.map.maplibre.Padding
 import de.westnordost.streetcomplete.screens.main.map.maplibre.camera
@@ -17,6 +21,10 @@ import de.westnordost.streetcomplete.screens.main.map.maplibre.isArea
 import de.westnordost.streetcomplete.screens.main.map.maplibre.isPoint
 import de.westnordost.streetcomplete.screens.main.map.maplibre.toMapLibreGeometry
 import de.westnordost.streetcomplete.screens.main.map.maplibre.updateCamera
+import org.maplibre.android.style.expressions.Expression.has
+import org.maplibre.android.style.layers.SymbolLayer
+import org.maplibre.geojson.Feature
+import org.maplibre.geojson.FeatureCollection
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.style.layers.CircleLayer
 import org.maplibre.android.style.layers.FillLayer
@@ -34,7 +42,7 @@ import kotlin.math.sin
 /** Display element geometry and enables focussing on given geometry. I.e. to highlight the geometry
  *  of the element a selected quest refers to. Also zooms to the element in question so that it is
  *  contained in the screen area */
-class FocusGeometryMapComponent(private val contentResolver: ContentResolver, private val map: MapLibreMap) :
+class FocusGeometryMapComponent(private val contentResolver: ContentResolver, private val map: MapLibreMap, private val prefs: ObservableSettings) :
     DefaultLifecycleObserver {
 
     private val focusedGeometrySource = GeoJsonSource(SOURCE)
@@ -58,6 +66,17 @@ class FocusGeometryMapComponent(private val contentResolver: ContentResolver, pr
                 lineColor("#D14000"),
                 lineOpacity(0.7f),
                 lineCap(Property.LINE_CAP_ROUND)
+            ),
+        SymbolLayer("focus-geo-arrows", SOURCE)
+            .withFilter(has("arrows"))
+            .withProperties(
+                iconColor("#D14000"),
+                iconOpacity(0.7f),
+                symbolPlacement(Property.SYMBOL_PLACEMENT_LINE),
+                iconAllowOverlap(true),
+                iconIgnorePlacement(true),
+                iconImage("oneway-arrow"),
+                iconRotate(90f)
             ),
         CircleLayer("focus-geo-circle", SOURCE)
             .withFilter(isPoint())
@@ -94,7 +113,22 @@ class FocusGeometryMapComponent(private val contentResolver: ContentResolver, pr
 
     /** Show the given geometry. Previously shown geometry is replaced. */
     @UiThread fun showGeometry(geometry: ElementGeometry) {
-        focusedGeometrySource.setGeoJson(geometry.toMapLibreGeometry())
+        if (geometry is ElementPolylinesGeometry && prefs.getBoolean(Prefs.SHOW_WAY_DIRECTION, false)) {
+            val feature = Feature.fromGeometry(geometry.toMapLibreGeometry(), JsonObject().apply { addProperty("arrows", "yes") })
+            focusedGeometrySource.setGeoJson(feature)
+        } else focusedGeometrySource.setGeoJson(geometry.toMapLibreGeometry())
+        val animatorDurationScale = Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
+        if (animatorDurationScale > 0f) animation.start()
+    }
+
+    // as above, but shows more than 1 geometry
+    fun showGeometries(geometries: Collection<ElementGeometry>) {
+        val geoFeatures = geometries.map {
+            if (it is ElementPolylinesGeometry && prefs.getBoolean(Prefs.SHOW_WAY_DIRECTION, false))
+                Feature.fromGeometry(it.toMapLibreGeometry(), JsonObject().apply { addProperty("arrows", "yes") })
+            else Feature.fromGeometry(it.toMapLibreGeometry())
+        }
+        focusedGeometrySource.setGeoJson(FeatureCollection.fromFeatures(geoFeatures))
         val animatorDurationScale = Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
         if (animatorDurationScale > 0f) animation.start()
     }

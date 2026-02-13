@@ -178,7 +178,7 @@ class MapDataUpdatesTest {
     @Test fun `does nothing with ignored relation types`() {
         val updates = createMapDataUpdates(
             elements = listOf(
-                rel(-4, tags = mapOf("type" to "route"))
+                rel(-4, tags = mapOf("type" to "boundary"))
             ),
             updates = mapOf(ElementKey(RELATION, -4) to ElementUpdate.Update(4, 1)),
             ApplicationConstants::ignoreRelation
@@ -192,7 +192,7 @@ class MapDataUpdatesTest {
         val updates = createMapDataUpdates(
             elements = listOf(
                 rel(1, members = listOf(member(RELATION, -4))),
-                rel(-4, tags = mapOf("type" to "route"))
+                rel(-4, tags = mapOf("type" to "boundary"))
             ),
             updates = mapOf(ElementKey(RELATION, -4) to ElementUpdate.Update(4, 1)),
             ApplicationConstants::ignoreRelation

@@ -55,6 +55,12 @@ import de.westnordost.streetcomplete.resources.surface_unpaved_area
 import de.westnordost.streetcomplete.resources.surface_wood
 import de.westnordost.streetcomplete.resources.surface_woodchips
 import de.westnordost.streetcomplete.resources.unknown_surface_title
+import de.westnordost.streetcomplete.resources.quest_surface_value_chipseal
+import de.westnordost.streetcomplete.resources.quest_surface_value_metal_grid
+import de.westnordost.streetcomplete.resources.quest_surface_value_stepping_stones
+import de.westnordost.streetcomplete.resources.surface_chipseal
+import de.westnordost.streetcomplete.resources.surface_metal_grid
+import de.westnordost.streetcomplete.resources.surface_stepping_stones
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 
@@ -86,6 +92,9 @@ val Surface.title: StringResource get() = when (this) {
     UNPAVED -> Res.string.quest_surface_value_unpaved
     GROUND -> Res.string.quest_surface_value_ground
     UNSUPPORTED -> Res.string.unknown_surface_title
+    CHIPSEAL -> Res.string.quest_surface_value_chipseal
+    METAL_GRID -> Res.string.quest_surface_value_metal_grid
+    STEPPING_STONES -> Res.string.quest_surface_value_stepping_stones
 }
 
 val Surface.icon: DrawableResource? get() = when (this) {
@@ -116,4 +125,7 @@ val Surface.icon: DrawableResource? get() = when (this) {
     UNPAVED -> Res.drawable.surface_unpaved_area
     GROUND -> Res.drawable.surface_ground_area
     UNSUPPORTED -> null
+    CHIPSEAL -> Res.drawable.surface_chipseal
+    METAL_GRID -> Res.drawable.surface_metal_grid
+    STEPPING_STONES -> Res.drawable.surface_stepping_stones
 }

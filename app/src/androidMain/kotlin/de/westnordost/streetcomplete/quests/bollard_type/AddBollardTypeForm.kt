@@ -17,7 +17,7 @@ class AddBollardTypeForm : AItemSelectQuestForm<BollardType, BollardTypeAnswer>(
 
     override val otherAnswers = listOf(
         AnswerItem(R.string.quest_bollard_type_not_bollard) {
-            applyAnswer(BarrierTypeIsNotBollard)
+            applyAnswer(BarrierTypeIsNotBollard, true)
         },
     )
 

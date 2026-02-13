@@ -6,6 +6,7 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
+import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
@@ -130,7 +131,7 @@ class AddMaxHeight : OsmElementQuestType<MaxHeightAnswer>, AndroidQuest {
                 // , that is in a layer above this way
                 bridgeLayer > layer
                     // and with which it does not share any node (=connects) (#2555)
-                    && !bridge.nodeIds.toSet().containsAny(way.nodeIds)
+                    && !bridge.nodeIds.toHashSet().containsAny(way.nodeIds)
                     // , it intersects
                     && bridgeGeometry != null && bridgeGeometry.intersects(geometry)
             }
@@ -158,6 +159,19 @@ class AddMaxHeight : OsmElementQuestType<MaxHeightAnswer>, AndroidQuest {
     }
 
     override fun createForm() = AddMaxHeightForm()
+
+    override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry): Sequence<Element> {
+        val mapData = getMapData()
+        val bridges = mapData.ways.filter { bridgeFilter.matches(it) }
+        val layer = element.tags["layer"]?.toIntOrNull() ?: 0
+        val geometry = mapData.getWayGeometry(element.id) as? ElementPolylinesGeometry ?: return emptySequence()
+        return bridges.filter { bridge ->
+            val bridgeGeometry = mapData.getWayGeometry(bridge.id) as? ElementPolylinesGeometry ?: return@filter false
+            (bridge.tags["layer"]?.toIntOrNull() ?: 0) > layer
+                && !bridge.nodeIds.toSet().containsAny((element as Way).nodeIds)
+                && bridgeGeometry.intersects(geometry)
+        }.asSequence()
+    }
 
     override fun applyAnswerTo(answer: MaxHeightAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         when (answer) {

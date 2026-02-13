@@ -69,7 +69,7 @@ fun Node.couldBeAKerb(): Boolean = tags.keys.all { key ->
  *  2. the shared nodes at intersections of barrier=kerb ways with footways
  *  3. certain shared nodes between a footway=sidewalk and a footway=crossing */
 fun MapData.findAllKerbNodes(): Iterable<Node> {
-    val footwayNodes = mutableSetOf<Node>()
+    val footwayNodes = hashSetOf<Node>()
     ways.asSequence()
         .filter { footwaysFilter.matches(it) }
         .flatMap { it.nodeIds }
@@ -112,7 +112,7 @@ private fun MapData.findCrossingKerbEndNodeIds(ways: Collection<Way>): Set<Long>
         .filter { it.tags["footway"] == "crossing" || it.tags["footway"] == "access_aisle" }
         .flatMap { it.nodeIds.firstAndLast() }
 
-    val connectionsById = mutableMapOf<Long, Int>()
+    val connectionsById = hashMapOf<Long, Int>()
     for (id in crossingEndNodeIds) {
         val count = connectionsById[id] ?: 0
         connectionsById[id] = count + 1

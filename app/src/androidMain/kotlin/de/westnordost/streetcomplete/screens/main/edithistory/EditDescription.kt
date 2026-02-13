@@ -6,10 +6,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Modifier
 import de.westnordost.streetcomplete.data.edithistory.Edit
+import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestHidden
 import de.westnordost.streetcomplete.data.osm.edits.ElementEdit
 import de.westnordost.streetcomplete.data.osm.edits.create.CreateNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.create.CreateNodeFromVertexAction
+import de.westnordost.streetcomplete.data.osm.edits.create.CreateRelationAction
 import de.westnordost.streetcomplete.data.osm.edits.delete.DeletePoiNodeAction
+import de.westnordost.streetcomplete.data.osm.edits.delete.DeleteRelationAction
 import de.westnordost.streetcomplete.data.osm.edits.move.MoveNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitWayAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
@@ -24,6 +27,7 @@ import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.added_tag_action_title
 import de.westnordost.streetcomplete.resources.changed_tag_action_title
 import de.westnordost.streetcomplete.resources.create_node_action_description
+import de.westnordost.streetcomplete.resources.create_relation_action_description
 import de.westnordost.streetcomplete.resources.deleted_poi_action_description
 import de.westnordost.streetcomplete.resources.hid_action_description
 import de.westnordost.streetcomplete.resources.move_node_action_description
@@ -45,7 +49,7 @@ fun EditDescription(
             when (edit.action) {
                 is UpdateElementTagsAction ->
                     TagUpdatesList(edit.action.changes.changes, modifier)
-                is DeletePoiNodeAction ->
+                is DeletePoiNodeAction, is DeleteRelationAction ->
                     Text(stringResource(Res.string.deleted_poi_action_description), modifier)
                 is SplitWayAction ->
                     Text(stringResource(Res.string.split_way_action_description), modifier)
@@ -58,11 +62,16 @@ fun EditDescription(
                     TagUpdatesList(edit.action.changes.changes, modifier)
                 is MoveNodeAction ->
                     Text(stringResource(Res.string.move_node_action_description), modifier)
+                is CreateRelationAction ->
+                    Column(modifier) {
+                        Text(stringResource(Res.string.create_relation_action_description))
+                        TagList(edit.action.tags)
+                    }
             }
         }
         is NoteEdit ->
             Text(edit.text.orEmpty(), modifier)
-        is OsmQuestHidden ->
+        is OsmQuestHidden, is ExternalSourceQuestHidden ->
             Text(stringResource(Res.string.hid_action_description), modifier)
         is OsmNoteQuestHidden ->
             Text(stringResource(Res.string.hid_action_description), modifier)

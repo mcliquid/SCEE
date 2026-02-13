@@ -75,4 +75,15 @@ val BuildingType.iconResId: Int get() = when (this) {
     RELIGIOUS ->       R.drawable.building_temple
     GUARDHOUSE ->      R.drawable.building_guardhouse
     CONSTRUCTION ->    R.drawable.building_construction
+    TRANSIT_SHELTER -> R.drawable.building_transportation
+    DIGESTER ->        R.drawable.building_storage_tank
+    SPORTS_HALL ->     R.drawable.sport_volleyball
+    RIDING_HALL ->     R.drawable.sport_equestrian
+    PRESBYTERY ->      R.drawable.religion_christian
+    BARN ->            R.drawable.building_barn
+    COWSHED ->         R.drawable.building_barn
+    STABLE ->          R.drawable.building_barn
+    STY ->             R.drawable.building_barn
+    TRANSFORMER_TOWER -> R.drawable.building_service
+    ELEVATOR ->        R.drawable.building_bridge
 }

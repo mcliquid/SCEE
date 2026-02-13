@@ -37,7 +37,7 @@ class VisibleEditTypeControllerTest {
         visibleEditTypeDao = mock()
         editTypePresetsSource = mock()
         allEditTypes = AllEditTypes(listOf(
-            QuestTypeRegistry(listOf(0 to quest1, 1 to quest2, 2 to disabledQuest)),
+            QuestTypeRegistry({ listOf(0 to quest1, 1 to quest2, 2 to disabledQuest) }),
         ))
 
         on(editTypePresetsSource.addListener(any())).then { invocation ->

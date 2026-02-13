@@ -10,6 +10,7 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.UiThread
 import androidx.core.content.getSystemService
 import androidx.core.graphics.Insets
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesSource
 import de.westnordost.streetcomplete.data.edithistory.EditHistorySource
 import de.westnordost.streetcomplete.data.edithistory.EditKey
@@ -24,8 +25,10 @@ import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.data.quest.VisibleQuestsSource
+import de.westnordost.streetcomplete.data.visiblequests.LevelFilter
 import de.westnordost.streetcomplete.data.visiblequests.QuestTypeOrderSource
 import de.westnordost.streetcomplete.screens.main.map.components.CurrentLocationMapComponent
+import de.westnordost.streetcomplete.screens.main.map.components.CustomGeometryMapComponent
 import de.westnordost.streetcomplete.screens.main.map.components.DownloadedAreaMapComponent
 import de.westnordost.streetcomplete.screens.main.map.components.FocusGeometryMapComponent
 import de.westnordost.streetcomplete.screens.main.map.components.GeometryMarkersMapComponent
@@ -37,6 +40,8 @@ import de.westnordost.streetcomplete.screens.main.map.maplibre.CameraPosition
 import de.westnordost.streetcomplete.screens.main.map.maplibre.MapImages
 import de.westnordost.streetcomplete.screens.main.map.maplibre.camera
 import de.westnordost.streetcomplete.screens.main.map.maplibre.toLatLon
+import de.westnordost.streetcomplete.screens.settings.loadCustomGeometryText
+import de.westnordost.streetcomplete.screens.settings.loadGpxTrackPoints
 import de.westnordost.streetcomplete.util.ktx.currentDisplay
 import de.westnordost.streetcomplete.util.ktx.dpToPx
 import de.westnordost.streetcomplete.util.ktx.isLocationAvailable
@@ -67,6 +72,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
     private val mapDataSource: MapDataWithEditsSource by inject()
     private val selectedOverlaySource: SelectedOverlaySource by inject()
     private val downloadedTilesSource: DownloadedTilesSource by inject()
+    private val levelFilter: LevelFilter by inject()
     private val locationAvailabilityReceiver: LocationAvailabilityReceiver by inject()
     private val surveyChecker: SurveyChecker by inject()
     private val prefs: Preferences by inject()
@@ -87,6 +93,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
     private var downloadedAreaManager: DownloadedAreaManager? = null
     private var locationMapComponent: CurrentLocationMapComponent? = null
     private var tracksMapComponent: TracksMapComponent? = null
+    private var customGeometryMapComponent: CustomGeometryMapComponent? = null
 
     interface Listener {
         fun onClickedQuest(questKey: QuestKey)
@@ -195,7 +202,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
     private fun setupComponents(context: Context, map: MapLibreMap, style: Style) {
         val fingerRadius = context.resources.dpToPx(CLICK_AREA_SIZE_IN_DP / 2)
 
-        mapImages = MapImages(context.resources, style)
+        mapImages = MapImages(context.resources, map)
 
         geometryMarkersMapComponent = GeometryMarkersMapComponent(context, map, mapImages!!)
 
@@ -205,8 +212,8 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         tracksMapComponent = TracksMapComponent(context, style, map)
         viewLifecycleOwner.lifecycle.addObserver(tracksMapComponent!!)
 
-        pinsMapComponent = PinsMapComponent(context, context.contentResolver, map, mapImages!!, ::onClickPin)
-        geometryMapComponent = FocusGeometryMapComponent(context.contentResolver, map)
+        pinsMapComponent = PinsMapComponent(context, context.contentResolver, map, mapImages!!, prefs, ::onClickPin)
+        geometryMapComponent = FocusGeometryMapComponent(context.contentResolver, map, prefs.prefs)
         viewLifecycleOwner.lifecycle.addObserver(geometryMapComponent!!)
 
         styleableOverlayMapComponent = StyleableOverlayMapComponent(context, map, mapImages!!, fingerRadius, ::onClickElement)
@@ -215,6 +222,8 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
 
         selectedPinsMapComponent = SelectedPinsMapComponent(context, map, mapImages!!)
         viewLifecycleOwner.lifecycle.addObserver(selectedPinsMapComponent!!)
+
+        customGeometryMapComponent = CustomGeometryMapComponent(context, map)
     }
 
     private fun setupLayers(style: Style) {
@@ -247,7 +256,8 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
             geometryMapComponent?.layers,
             locationMapComponent?.layers,
             pinsMapComponent?.layers,
-            selectedPinsMapComponent?.layers
+            selectedPinsMapComponent?.layers,
+            customGeometryMapComponent?.layers
         ).flatten()) {
             style.addLayer(layer)
         }
@@ -257,7 +267,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         restoreMapState()
         centerCurrentPositionIfFollowing()
 
-        questPinsManager = QuestPinsManager(map, pinsMapComponent!!, questTypeOrderSource, questTypeRegistry, visibleQuestsSource)
+        questPinsManager = QuestPinsManager(map, pinsMapComponent!!, questTypeOrderSource, questTypeRegistry, visibleQuestsSource, prefs.prefs, mapDataSource, selectedOverlaySource)
         questPinsManager!!.isVisible = pinMode == PinMode.QUESTS
         viewLifecycleOwner.lifecycle.addObserver(questPinsManager!!)
 
@@ -265,14 +275,16 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         editHistoryPinsManager!!.isVisible = pinMode == PinMode.EDITS
         viewLifecycleOwner.lifecycle.addObserver(editHistoryPinsManager!!)
 
-        styleableOverlayManager = StyleableOverlayManager(map, styleableOverlayMapComponent!!, mapDataSource, selectedOverlaySource)
+        styleableOverlayManager = StyleableOverlayManager(map, styleableOverlayMapComponent!!, mapDataSource, selectedOverlaySource, levelFilter)
         viewLifecycleOwner.lifecycle.addObserver(styleableOverlayManager!!)
 
-        downloadedAreaManager = DownloadedAreaManager(downloadedAreaMapComponent!!, downloadedTilesSource)
+        downloadedAreaManager = DownloadedAreaManager(downloadedAreaMapComponent!!, downloadedTilesSource, prefs.prefs)
         viewLifecycleOwner.lifecycle.addObserver(downloadedAreaManager!!)
 
         onSelectedOverlayChanged()
         selectedOverlaySource.addListener(overlayListener)
+        loadGpxTrack()
+        loadCustomGeometry()
 
         locationMapComponent?.targetLocation = displayedLocation
 
@@ -301,6 +313,18 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
     }
 
     //endregion
+    fun loadGpxTrack() {
+        val gpxPoints = if (prefs.getBoolean(Prefs.SHOW_GPX_TRACK, false))
+            loadGpxTrackPoints(requireContext()) ?: emptyList()
+        else emptyList()
+        tracksMapComponent?.setGpxTrack(gpxPoints)
+    }
+
+    fun loadCustomGeometry() {
+        val text = context?.let { loadCustomGeometryText(it) }
+        if (text == null || !prefs.getBoolean(Prefs.SHOW_CUSTOM_GEOMETRY, false)) customGeometryMapComponent?.clear()
+        else customGeometryMapComponent?.set(text)
+    }
 
     //region Tracking GPS, Rotation, location availability, pin mode, click ...
 
@@ -457,6 +481,10 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         geometryMapComponent?.showGeometry(geometry)
     }
 
+    fun highlightGeometries(geometries: Collection<ElementGeometry>) {
+        geometryMapComponent?.showGeometries(geometries)
+    }
+
     /** Clear all highlighting */
     fun clearHighlighting() {
         pinsMapComponent?.setVisible(true)
@@ -476,6 +504,10 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         }
     }
 
+    fun setQuestOrder(reverse: Boolean) {
+        questPinsManager?.setQuestOrder(reverse)
+    }
+
     @UiThread override fun deleteMarkerForCurrentHighlighting(geometry: ElementGeometry) {
         geometryMarkersMapComponent?.delete(geometry)
     }
@@ -491,7 +523,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
     @SuppressLint("MissingPermission")
     fun startPositionTracking() {
         locationMapComponent?.isVisible = true
-        locationManager.requestUpdates(0, 5000, 1f)
+        locationManager.requestUpdates(prefs.prefs.getInt(Prefs.GPS_INTERVAL, 0) * 1000L, prefs.prefs.getInt(Prefs.NETWORK_INTERVAL, 5) * 1000L, 1f)
     }
 
     fun stopPositionTracking() {

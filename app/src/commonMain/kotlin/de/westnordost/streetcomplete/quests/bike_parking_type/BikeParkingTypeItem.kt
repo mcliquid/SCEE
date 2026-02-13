@@ -11,6 +11,7 @@ import de.westnordost.streetcomplete.resources.bicycle_parking_type_shed
 import de.westnordost.streetcomplete.resources.bicycle_parking_type_stand
 import de.westnordost.streetcomplete.resources.bicycle_parking_type_two_tier
 import de.westnordost.streetcomplete.resources.bicycle_parking_type_wheelbenders
+import de.westnordost.streetcomplete.resources.bicycle_parking_type_saddleholder
 import de.westnordost.streetcomplete.resources.quest_bicycle_parking_type_building
 import de.westnordost.streetcomplete.resources.quest_bicycle_parking_type_floor
 import de.westnordost.streetcomplete.resources.quest_bicycle_parking_type_handlebarholder
@@ -20,6 +21,7 @@ import de.westnordost.streetcomplete.resources.quest_bicycle_parking_type_shed
 import de.westnordost.streetcomplete.resources.quest_bicycle_parking_type_stand
 import de.westnordost.streetcomplete.resources.quest_bicycle_parking_type_two_tier
 import de.westnordost.streetcomplete.resources.quest_bicycle_parking_type_wheelbender
+import de.westnordost.streetcomplete.resources.quest_bicycle_parking_type_saddleholder
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 
@@ -33,6 +35,7 @@ val BikeParkingType.title: StringResource get() = when (this) {
     HANDLEBAR_HOLDER -> Res.string.quest_bicycle_parking_type_handlebarholder
     TWO_TIER ->         Res.string.quest_bicycle_parking_type_two_tier
     FLOOR ->            Res.string.quest_bicycle_parking_type_floor
+    SADDLE_HOLDER ->    Res.string.quest_bicycle_parking_type_saddleholder
 }
 
 val BikeParkingType.icon: DrawableResource get() = when (this) {
@@ -45,4 +48,5 @@ val BikeParkingType.icon: DrawableResource get() = when (this) {
     HANDLEBAR_HOLDER -> Res.drawable.bicycle_parking_type_handlebarholder
     TWO_TIER ->         Res.drawable.bicycle_parking_type_two_tier
     FLOOR ->            Res.drawable.bicycle_parking_type_floor
+    SADDLE_HOLDER ->    Res.drawable.bicycle_parking_type_saddleholder
 }

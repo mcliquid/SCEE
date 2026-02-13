@@ -231,7 +231,7 @@ private fun StringWithCursor.parseElementFilter(): ElementFilter {
         return ElementNewerThan(parseDateFilter())
     }
 
-    val key = parseTag()
+    val key = parseTag().intern()
     val operator = parseOperatorWithSurroundingSpaces() ?: return HasKey(key)
 
     if (operator == OLDER) {
@@ -244,8 +244,8 @@ private fun StringWithCursor.parseElementFilter(): ElementFilter {
     if (operator in KEY_VALUE_OPERATORS) {
         val value = parseTag()
         when (operator) {
-            EQUALS       -> return HasTag(key, value)
-            NOT_EQUALS   -> return NotHasTag(key, value)
+            EQUALS       -> return HasTag(key, value.intern())
+            NOT_EQUALS   -> return NotHasTag(key, value.intern())
             LIKE         -> return HasTagValueLike(key, value)
             NOT_LIKE     -> return NotHasTagValueLike(key, value)
         }

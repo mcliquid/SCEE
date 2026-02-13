@@ -1,5 +1,8 @@
 package de.westnordost.streetcomplete.data.osm.mapdata
 
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import de.westnordost.streetcomplete.data.Database
 import de.westnordost.streetcomplete.data.osm.mapdata.WayTables.Columns.ID
 import de.westnordost.streetcomplete.data.osm.mapdata.WayTables.Columns.INDEX
@@ -11,9 +14,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.WayTables.Columns.VERSION
 import de.westnordost.streetcomplete.data.osm.mapdata.WayTables.NAME
 import de.westnordost.streetcomplete.data.osm.mapdata.WayTables.NAME_NODES
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import de.westnordost.streetcomplete.util.ktx.toInternedMap
 
 /** Stores OSM ways */
 class WayDao(private val db: Database) {
@@ -51,7 +52,7 @@ class WayDao(private val db: Database) {
                     arrayOf(
                         way.id,
                         way.version,
-                        if (way.tags.isNotEmpty()) Json.encodeToString(way.tags) else null,
+                        if (way.tags.isNotEmpty()) jsonAdapter.toJson(way.tags) else null,
                         way.timestampEdited,
                         time
                     )
@@ -65,8 +66,8 @@ class WayDao(private val db: Database) {
         val idsString = ids.joinToString(",")
 
         return db.transaction {
-            val nodeIdsByWayId = mutableMapOf<Long, MutableList<Long>>()
-            db.query(NAME_NODES, where = "$ID IN ($idsString)", orderBy = "$ID, $INDEX") { c ->
+            val nodeIdsByWayId = hashMapOf<Long, MutableList<Long>>()
+            db.query(NAME_NODES, where = "$ID IN ($idsString)", orderBy = "$ID, $INDEX", columns = arrayOf(ID, NODE_ID)) { c ->
                 val nodeIds = nodeIdsByWayId.getOrPut(c.getLong(ID)) { ArrayList() }
                 nodeIds.add(c.getLong(NODE_ID))
             }
@@ -75,8 +76,7 @@ class WayDao(private val db: Database) {
                 Way(
                     cursor.getLong(ID),
                     nodeIdsByWayId.getValue(cursor.getLong(ID)),
-                    cursor.getStringOrNull(TAGS)?.let { Json.decodeFromString(it) }
-                        ?: emptyMap(),
+                    cursor.getStringOrNull(TAGS)?.let { jsonAdapter.fromJson(it)?.toInternedMap() } ?: emptyMap(),
                     cursor.getInt(VERSION),
                     cursor.getLong(TIMESTAMP)
                 )
@@ -103,8 +103,29 @@ class WayDao(private val db: Database) {
     fun getAllForNode(nodeId: Long): List<Way> =
         getAllForNodes(listOf(nodeId))
 
-    fun getAllForNodes(nodeIds: Collection<Long>): List<Way> =
-        getAll(getAllIdsForNodes(nodeIds).toSet())
+    // longer code, but 10-20% faster
+    fun getAllForNodes(nodeIds: Collection<Long>): List<Way> {
+        if (nodeIds.isEmpty()) return emptyList()
+        val idsString = nodeIds.joinToString(",")
+
+        return db.transaction {
+            val nodeIdsByWayId = hashMapOf<Long, MutableList<Long>>()
+            db.query(NAME_NODES, where = "$ID IN (SELECT $ID FROM $NAME_NODES WHERE $NODE_ID IN ($idsString))", orderBy = "$ID, $INDEX", columns = arrayOf(ID, NODE_ID)) { c ->
+                val nodeIds2 = nodeIdsByWayId.getOrPut(c.getLong(ID)) { ArrayList() }
+                nodeIds2.add(c.getLong(NODE_ID))
+            }
+
+            db.query(NAME, where = "$ID IN (${nodeIdsByWayId.keys.joinToString(",")})") { cursor ->
+                Way(
+                    cursor.getLong(ID),
+                    nodeIdsByWayId.getValue(cursor.getLong(ID)),
+                    cursor.getStringOrNull(TAGS)?.let { jsonAdapter.fromJson(it)?.toInternedMap() } ?: emptyMap(),
+                    cursor.getInt(VERSION),
+                    cursor.getLong(TIMESTAMP)
+                )
+            }
+        }
+    }
 
     fun getAllIdsForNodes(nodeIds: Collection<Long>): List<Long> {
         if (nodeIds.isEmpty()) return emptyList()
@@ -131,3 +152,6 @@ class WayDao(private val db: Database) {
         return nodeIds - nodeIdsWithWays.toHashSet()
     }
 }
+
+private val jsonAdapter: JsonAdapter<Map<String, String>> = Moshi.Builder().build()
+    .adapter(Types.newParameterizedType(Map::class.java, String::class.java, String::class.java))

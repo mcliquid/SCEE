@@ -9,22 +9,6 @@ plugins {
     id("org.jetbrains.kotlinx.atomicfu") version "0.29.0" apply false
 }
 
-val poEditorProjectId = "97843"
-
-tasks.register<UpdateWebsiteTranslationsTask>("updateWebsiteTranslations") {
-    group = "streetcomplete"
-    targetDir = "$projectDir/../streetcomplete-website/res"
-    projectId = poEditorProjectId
-    apiToken = properties["app.streetcomplete.POEditorAPIToken"] as String
-}
-
-tasks.register<UpdateStoreDescriptionsTask>("updateStoreDescriptions") {
-    group = "streetcomplete"
-    targetDir = "$projectDir/metadata"
-    projectId = poEditorProjectId
-    apiToken = properties["app.streetcomplete.POEditorAPIToken"] as String
-}
-
 tasks.register<QLeverCountValueByCountryTask>("updateAtmOperators") {
     group = "streetcomplete"
     targetFile = "$projectDir/res/country_metadata/atmOperators.yml"

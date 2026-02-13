@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.screens.main
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import de.westnordost.streetcomplete.data.messages.Message
@@ -70,7 +71,7 @@ abstract class MainViewModel : ViewModel() {
     abstract fun finishRequestingLogin()
 
     abstract fun upload()
-    abstract fun download(bbox: BoundingBox)
+    abstract fun download(bbox: BoundingBox, enqueue: Boolean = false)
 
     /* stars */
     abstract val starsCount: StateFlow<Int>
@@ -90,6 +91,12 @@ abstract class MainViewModel : ViewModel() {
     abstract val isRecordingTracks: MutableStateFlow<Boolean>
 
     abstract val userHasMovedCamera: MutableStateFlow<Boolean>
+
+    abstract val showQuickSettings: StateFlow<Boolean>
+    abstract val showOverlaySelector: StateFlow<Boolean>
+    abstract val reverseQuestOrder: MutableStateFlow<Boolean>
+    abstract val showMainMenuDialog: MutableState<Boolean>
+    abstract val showingBottomSheet: MutableStateFlow<Boolean>
 }
 
 data class ShownUrlConfig(val urlConfig: UrlConfig, val alreadyExists: Boolean)

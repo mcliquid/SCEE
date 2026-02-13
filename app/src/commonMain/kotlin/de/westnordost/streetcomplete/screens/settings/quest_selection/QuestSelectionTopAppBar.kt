@@ -36,6 +36,8 @@ import de.westnordost.streetcomplete.ui.common.TopAppBarWithContent
 import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmationDialog
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import de.westnordost.streetcomplete.resources.action_all_quests
+import de.westnordost.streetcomplete.resources.action_scee_quests
 
 /** Top bar and search field for the quest selection screen */
 @Composable
@@ -44,6 +46,8 @@ fun QuestSelectionTopAppBar(
     onClickBack: () -> Unit,
     onUnselectAll: () -> Unit,
     onReset: () -> Unit,
+    onSceeOnly: () -> Unit,
+    showingSceeOnly: Boolean,
     search: String,
     onSearchChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -63,6 +67,8 @@ fun QuestSelectionTopAppBar(
             QuestSelectionTopBarActions(
                 onUnselectAll = onUnselectAll,
                 onReset = onReset,
+                onSceeOnly = onSceeOnly,
+                showingSceeOnly = showingSceeOnly,
                 onClickSearch = { setShowSearch(!showSearch) }
             )
         },
@@ -105,6 +111,8 @@ private fun QuestSelectionTitle(currentPresetName: String) {
 private fun QuestSelectionTopBarActions(
     onUnselectAll: () -> Unit,
     onReset: () -> Unit,
+    onSceeOnly: () -> Unit,
+    showingSceeOnly: Boolean,
     onClickSearch: () -> Unit,
 ) {
     var showResetDialog by remember { mutableStateOf(false) }
@@ -129,6 +137,12 @@ private fun QuestSelectionTopBarActions(
                 showActionsDropdown = false
             }) {
                 Text(stringResource(Res.string.action_deselect_all))
+            }
+            DropdownMenuItem(onClick = {
+                onSceeOnly()
+                showActionsDropdown = false
+            }) {
+                Text(stringResource(if (showingSceeOnly) Res.string.action_all_quests else Res.string.action_scee_quests))
             }
         }
     }
@@ -159,6 +173,8 @@ private fun PreviewQuestSelectionTopBar() {
         onClickBack = {},
         onUnselectAll = {},
         onReset = {},
+        onSceeOnly = {},
+        showingSceeOnly = false,
         search = searchText,
         onSearchChange = { searchText = it },
     )

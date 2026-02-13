@@ -1,5 +1,0 @@
-Bidra till att förbättra OpenStreetMap med StreetComplete!
-
-Appen hittar saknad kartdata i din närhet och visar detta på en karta som uppdrag. Lös respektive uppdrag genom att besöka platsen och besvara en enkel fråga för att uppdatera kartan.
-
-Den information du anger skickas sedan direkt till OpenStreetMap i ditt namn, utan att du behöver använda en annan redigerare.

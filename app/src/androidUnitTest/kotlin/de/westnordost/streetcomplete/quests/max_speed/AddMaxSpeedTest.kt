@@ -16,7 +16,7 @@ class AddMaxSpeedTest {
     @Test fun `apply no sign answer`() {
         assertEquals(
             setOf(StringMapEntryAdd("maxspeed:type", "XX:flubberway")),
-            questType.answerApplied(ImplicitMaxSpeed("XX", "flubberway", null))
+            questType.answerApplied(ImplicitMaxSpeed("XX", "flubberway", null) to null)
         )
     }
 
@@ -26,7 +26,7 @@ class AddMaxSpeedTest {
                 StringMapEntryAdd("maxspeed", "123"),
                 StringMapEntryAdd("maxspeed:type", "sign")
             ),
-            questType.answerApplied(MaxSpeedSign(Kmh(123)))
+            questType.answerApplied(MaxSpeedSign(Kmh(123)) to null)
         )
     }
 
@@ -36,7 +36,7 @@ class AddMaxSpeedTest {
                 StringMapEntryAdd("maxspeed", "123 mph"),
                 StringMapEntryAdd("maxspeed:type", "sign")
             ),
-            questType.answerApplied(MaxSpeedSign(Mph(123)))
+            questType.answerApplied(MaxSpeedSign(Mph(123)) to null)
         )
     }
 
@@ -46,7 +46,7 @@ class AddMaxSpeedTest {
                 StringMapEntryAdd("maxspeed:advisory", "123"),
                 StringMapEntryAdd("maxspeed:type:advisory", "sign")
             ),
-            questType.answerApplied(AdvisorySpeedSign(Kmh(123)))
+            questType.answerApplied(AdvisorySpeedSign(Kmh(123)) to null)
         )
     }
 
@@ -56,14 +56,14 @@ class AddMaxSpeedTest {
                 StringMapEntryAdd("maxspeed", "123"),
                 StringMapEntryAdd("maxspeed:type", "AA:zoneXYZ")
             ),
-            questType.answerApplied(MaxSpeedZone(Kmh(123), "AA", "zoneXYZ"))
+            questType.answerApplied(MaxSpeedZone(Kmh(123), "AA", "zoneXYZ") to null)
         )
     }
 
     @Test fun `apply living street answer`() {
         assertEquals(
             setOf(StringMapEntryModify("highway", "residential", "living_street")),
-            questType.answerAppliedTo(IsLivingStreet, mapOf("highway" to "residential"))
+            questType.answerAppliedTo(IsLivingStreet to null, mapOf("highway" to "residential"))
         )
     }
 
@@ -74,7 +74,7 @@ class AddMaxSpeedTest {
                 StringMapEntryModify("lit", "yes", "yes")
             ),
             questType.answerAppliedTo(
-                ImplicitMaxSpeed("GB", "nsl_restricted", true),
+                ImplicitMaxSpeed("GB", "nsl_restricted", true) to null,
                 mapOf("lit" to "yes")
             )
         )
@@ -87,7 +87,7 @@ class AddMaxSpeedTest {
                 StringMapEntryAdd("lit", "yes")
             ),
             questType.answerApplied(
-                ImplicitMaxSpeed("GB", "nsl_restricted", true),
+                ImplicitMaxSpeed("GB", "nsl_restricted", true) to null,
             )
         )
     }
@@ -99,7 +99,7 @@ class AddMaxSpeedTest {
                 StringMapEntryModify("lit", "no", "no")
             ),
             questType.answerAppliedTo(
-                ImplicitMaxSpeed("GB", "nsl_single", false),
+                ImplicitMaxSpeed("GB", "nsl_single", false) to null,
                 mapOf("lit" to "no")
             )
         )
@@ -111,7 +111,7 @@ class AddMaxSpeedTest {
                 StringMapEntryAdd("maxspeed:type", "GB:nsl_single"),
                 StringMapEntryAdd("lit", "no")
             ),
-            questType.answerApplied(ImplicitMaxSpeed("GB", "nsl_single", false))
+            questType.answerApplied(ImplicitMaxSpeed("GB", "nsl_single", false) to null)
         )
     }
 
@@ -120,7 +120,7 @@ class AddMaxSpeedTest {
             setOf(
                 StringMapEntryAdd("maxspeed:type", "GB:nsl_dual")
             ),
-            questType.answerApplied(ImplicitMaxSpeed("GB", "nsl_dual", null))
+            questType.answerApplied(ImplicitMaxSpeed("GB", "nsl_dual", null) to null)
         )
     }
 }

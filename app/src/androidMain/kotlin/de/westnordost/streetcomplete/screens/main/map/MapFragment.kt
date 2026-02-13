@@ -3,9 +3,12 @@ package de.westnordost.streetcomplete.screens.main.map
 import android.graphics.PointF
 import android.os.Bundle
 import android.view.View
+import androidx.annotation.UiThread
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.russhwolf.settings.SettingsListener
 import de.westnordost.streetcomplete.ApplicationConstants
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
@@ -44,6 +47,23 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
     private var sceneMapComponent: SceneMapComponent? = null
 
     private val prefs: Preferences by inject()
+
+    private var started = true
+    private var styleNeedsReload = false
+
+    private val themeChangeListener: SettingsListener = prefs.prefs.addStringListener(Prefs.THEME_BACKGROUND, "MAP") {
+        if (started)
+            viewLifecycleScope.launch {
+                if (it == "AERIAL")
+                    // crappy workaround for a bug: when switching to raster background, the raster tile in current view is invisible
+                    // so we zoom out and in again and hope the tile is loaded
+                    updateCameraPosition { zoomBy = -1.0}
+                reloadStyle()
+                if (it == "AERIAL")
+                    updateCameraPosition { zoomBy = 1.0}
+            }
+        else styleNeedsReload = true
+    }
 
     interface Listener {
         /** Called when the map has been completely initialized */
@@ -93,15 +113,19 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
         // the offline manager is only available together with the map, i.e. not from the CleanerWorker
         lifecycleScope.launch {
             delay(30000) // cleaning is low priority, do it once startup is done
-            val oldDataTimestamp = nowAsEpochMilliseconds() - ApplicationConstants.DELETE_OLD_DATA_AFTER
+            val retainTime = prefs.getInt(Prefs.DATA_RETAIN_TIME, ApplicationConstants.DELETE_OLD_DATA_AFTER_DAYS)
+            val oldDataTimestamp = nowAsEpochMilliseconds() - retainTime
             OfflineManager.getInstance(requireContext()).deleteRegionsOlderThan(oldDataTimestamp)
         }
     }
 
     override fun onStart() {
         super.onStart()
+        started = true
         // sceneMapComponent might actually be null if map style not initialized yet
-        sceneMapComponent?.updateStyle()
+        if (styleNeedsReload) viewLifecycleScope.launch { reloadStyle() }
+        else sceneMapComponent?.updateStyle()
+        styleNeedsReload = false
     }
 
     override fun onResume() {
@@ -116,6 +140,7 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
 
     override fun onStop() {
         super.onStop()
+        started = false
         saveMapState()
     }
 
@@ -138,10 +163,11 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
         map.uiSettings.isLogoEnabled = false
         map.uiSettings.flingThreshold = 250
         map.uiSettings.flingAnimationBaseTime = 500
-        map.uiSettings.isDisableRotateWhenScaling = true
+        map.uiSettings.isDisableRotateWhenScaling = !prefs.getBoolean(Prefs.ROTATE_WHILE_ZOOMING, false)
+
         // workaround for https://github.com/maplibre/maplibre-native/issues/2792
         map.gesturesManager.moveGestureDetector.moveThreshold = resources.dpToPx(5f)
-        map.gesturesManager.rotateGestureDetector.angleThreshold = 1.5f
+        map.gesturesManager.rotateGestureDetector.angleThreshold = prefs.getFloat(Prefs.ROTATE_ANGLE_THRESHOLD, 1.5f)
         map.gesturesManager.shoveGestureDetector.pixelDeltaThreshold = resources.dpToPx(8f)
 
         map.addOnMoveListener(object : MapLibreMap.OnMoveListener {
@@ -164,7 +190,7 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
             true
         }
 
-        val sceneMapComponent = SceneMapComponent(requireContext(), map)
+        val sceneMapComponent = SceneMapComponent(requireContext(), map, prefs)
         val style = sceneMapComponent.loadStyle()
         this.sceneMapComponent = sceneMapComponent
 
@@ -174,6 +200,13 @@ open class MapFragment : Fragment(R.layout.fragment_map) {
         onMapStyleLoaded(map, style)
 
         listener?.onMapInitialized()
+    }
+
+    @UiThread
+    private suspend fun reloadStyle() {
+        val map = map ?: return
+        val sceneMapComponent = sceneMapComponent ?: return
+        onMapStyleLoaded(map, sceneMapComponent.loadStyle())
     }
 
     /* ----------------------------- Overridable map callbacks --------------------------------- */

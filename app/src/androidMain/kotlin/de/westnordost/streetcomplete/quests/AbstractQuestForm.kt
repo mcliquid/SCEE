@@ -10,6 +10,7 @@ import androidx.compose.runtime.MutableFloatState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.core.os.bundleOf
 import androidx.core.view.isGone
+import androidx.core.view.size
 import androidx.core.widget.NestedScrollView
 import androidx.viewbinding.ViewBinding
 import de.westnordost.countryboundaries.CountryBoundaries
@@ -62,7 +63,9 @@ abstract class AbstractQuestForm :
     override val bottomSheetTitle get() = binding.speechBubbleTitleContainer
     override val bottomSheetContent get() = binding.speechbubbleContentContainer
     override val floatingBottomView get() = binding.okButtonContainer
+    override val floatingBottomView2 get() = binding.hideButton
     protected val scrollView: NestedScrollView get() = binding.scrollView
+    override val hideButtonBottomMarginDp get() = if (binding.buttonPanel.size > 3) 32 else 8
 
     private var startedOnce = false
 
@@ -151,6 +154,7 @@ abstract class AbstractQuestForm :
         if (binding.content.childCount == 0) {
             binding.content.visibility = View.GONE
         }
+
     }
 
     override fun onStart() {
@@ -171,6 +175,8 @@ abstract class AbstractQuestForm :
         binding.titleLabel.text = text
     }
 
+    protected fun getCurrentTitle(): CharSequence = binding.titleLabel.text
+
     protected fun setTitleHintLabel(text: CharSequence?) {
         binding.titleHintLabel.isGone = text == null
         binding.titleHintLabel.text = text
@@ -182,9 +188,14 @@ abstract class AbstractQuestForm :
         updateInfoButtonVisibility()
     }
 
-    protected fun setObjNote(text: CharSequence?) {
+    protected fun setObjNote(text: CharSequence?, fixmeText: CharSequence?) {
         binding.noteLabel.text = text
-        binding.speechbubbleNoteContainer.isGone = binding.noteLabel.text.isEmpty()
+        binding.fixmeLabel.text = if (prefs.expertMode) fixmeText else null
+        binding.titleNoteLabel.isGone = binding.noteLabel.text.isEmpty()
+        binding.noteLabel.isGone = binding.noteLabel.text.isEmpty()
+        binding.titleFixmeLabel.isGone = binding.fixmeLabel.text.isEmpty()
+        binding.fixmeLabel.isGone = binding.fixmeLabel.text.isEmpty()
+        binding.speechbubbleNoteContainer.isGone = binding.noteLabel.text.isEmpty() && binding.fixmeLabel.text.isEmpty()
     }
     protected fun setHintImages(images: List<Drawable>) {
         binding.infoPictures.isGone = images.isEmpty()

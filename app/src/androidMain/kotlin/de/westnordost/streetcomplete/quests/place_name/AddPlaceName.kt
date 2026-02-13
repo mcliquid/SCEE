@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.quests.place_name
 
+import androidx.compose.runtime.Composable
 import de.westnordost.osmfeatures.Feature
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
@@ -12,6 +13,8 @@ import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.isPlaceOrDisusedPlace
 import de.westnordost.streetcomplete.osm.localized_name.applyTo
+import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
+import de.westnordost.streetcomplete.quests.questPrefix
 
 class AddPlaceName(
     private val getFeature: (Element) -> Feature?
@@ -34,96 +37,7 @@ class AddPlaceName(
         // So when adding other tags to the common list keep in mind that they need to be appropriate for all those quests.
         // Independent tags can by added in the "name only" tab.
 
-        mapOf(
-            "amenity" to arrayOf(
-                // common
-                "restaurant", "cafe", "ice_cream", "fast_food", "bar", "pub", "biergarten",         // eat & drink
-                "food_court", "nightclub", "hookah_lounge",
-                "cinema", "planetarium", "casino",                                                  // amenities
-                "townhall", "courthouse", "embassy", "community_centre", "youth_centre", "library", // civic
-                "driving_school", "music_school", "prep_school", "language_school", "dive_centre",  // learning
-                "dancing_school", "ski_school", "flight_school", "surf_school", "sailing_school",
-                "cooking_school",
-                "bank", "bureau_de_change", "money_transfer", "post_office", "marketplace",         // commercial
-                "internet_cafe", "payment_centre",
-                "car_wash", "car_rental", "fuel",                                                   // car stuff
-                "dentist", "doctors", "clinic", "pharmacy", "veterinary", "veterinary_pharmacy",    // health
-                "animal_boarding", "animal_shelter", "animal_breeding",                             // animals
-                "coworking_space",                                                                  // work
-
-                // name & opening hours
-                "boat_rental", "vehicle_inspection", "motorcycle_rental", "crematorium",
-
-                // name & wheelchair
-                "theatre",                                        // culture
-                "conference_centre", "arts_centre",               // events
-                "police", "ranger_station",                       // civic
-                "ferry_terminal",                                 // transport
-                "place_of_worship",                               // religious
-                "hospital",                                       // health care
-                "brothel", "gambling", "love_hotel", "stripclub", // bad stuff
-
-                // name only
-                "studio",                                                                // culture
-                "events_venue", "exhibition_centre", "music_venue", "funeral_hall",      // events
-                "prison", "fire_station", "bus_station", "refugee_site",                 // civic
-                "social_facility", "nursing_home", "childcare", "retirement_home", "social_centre", // social
-                "monastery",                                                             // religious
-                "kindergarten", "school", "college", "university", "research_institute", // education
-                "dojo",                                                                  // sport
-            ),
-            "tourism" to arrayOf(
-                // common
-                "zoo", "aquarium", "theme_park", "gallery", "museum",
-
-                // name & wheelchair
-                "attraction",
-                "hotel", "guest_house", "motel", "hostel", "alpine_hut", "apartment", "resort", "camp_site", "caravan_site", "chalet", // accommodations
-
-                // name only
-                "wilderness_hut"
-
-                // and tourism = information, see above
-            ),
-            "leisure" to arrayOf(
-                // common
-                "fitness_centre", "golf_course", "water_park", "miniature_golf", "bowling_alley",
-                "amusement_arcade", "adult_gaming_centre", "tanning_salon", "sauna",
-                "indoor_play",
-
-                // name & wheelchair
-                "sports_centre", "stadium",
-
-                // name & opening hours
-                "trampoline_park",
-
-                // name only
-                "dance", "nature_reserve", "marina", "horse_riding",
-                "bathing_place", "escape_game",
-            ),
-            "landuse" to arrayOf(
-                "cemetery", "allotments"
-            ),
-            "military" to arrayOf(
-                "airfield", "barracks", "training_area", "base",
-            ),
-            "healthcare" to arrayOf(
-                // common
-                "pharmacy", "doctor", "clinic", "dentist", "centre", "physiotherapist",
-                "laboratory", "alternative", "psychotherapist", "optometrist", "podiatrist",
-                "nurse", "counselling", "speech_therapist", "blood_donation", "sample_collection",
-                "occupational_therapist", "dialysis", "vaccination_centre", "audiologist",
-                "blood_bank", "nutrition_counselling",
-
-                // name & wheelchair
-                "rehabilitation", "hospice", "midwife", "birthing_centre"
-            ),
-            "historic" to arrayOf(
-                // name only
-                "castle", "church", "farm", "fort", "manor", "monument", "mosque", "temple",
-                "ship",
-            ),
-        ).map { it.key + " ~ " + it.value.joinToString("|") }.joinToString("\n  or ") + "\n" + """
+        prefs.getString(questPrefix(prefs) + PREF_ELEMENTS, NAME_PLACES)+ "\n" + """
         )
         and !name and !brand and noname != yes and name:signed != no
     """).toElementFilterExpression() }
@@ -155,6 +69,106 @@ class AddPlaceName(
             is PlaceName -> {
                 answer.localizedNames.applyTo(tags)
             }
+            is PlaceNameAnswer.FeatureName -> {
+                for (addTag in answer.feature.addTags)
+                    tags[addTag.key] = addTag.value
+            }
+            is PlaceNameAnswer.BrandName -> {
+                tags["brand"] = answer.name
+                tags["name"] = answer.name
+            }
         }
     }
+
+    override val hasQuestSettings = true
+
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        FullElementSelectionDialog(prefs, questPrefix(prefs) + PREF_ELEMENTS, R.string.quest_settings_element_selection, NAME_PLACES, onDismissRequest)
+    }
 }
+
+private val NAME_PLACES = mapOf(
+    "amenity" to arrayOf(
+        // common
+        "restaurant", "cafe", "ice_cream", "fast_food", "bar", "pub", "biergarten",         // eat & drink
+        "food_court", "nightclub", "hookah_lounge",
+        "cinema", "planetarium", "casino",                                                  // amenities
+        "townhall", "courthouse", "embassy", "community_centre", "youth_centre", "library", // civic
+        "driving_school", "music_school", "prep_school", "language_school", "dive_centre",  // learning
+        "dancing_school", "ski_school", "flight_school", "surf_school", "sailing_school",
+        "cooking_school",
+        "bank", "bureau_de_change", "money_transfer", "post_office", "marketplace",         // commercial
+        "internet_cafe", "payment_centre",
+        "car_wash", "car_rental", "fuel",                                                   // car stuff
+        "dentist", "doctors", "clinic", "pharmacy", "veterinary", "veterinary_pharmacy",    // health
+        "animal_boarding", "animal_shelter", "animal_breeding",                             // animals
+        "coworking_space",                                                                  // work
+
+        // name & opening hours
+        "boat_rental", "vehicle_inspection", "motorcycle_rental", "crematorium",
+
+        // name & wheelchair
+        "theatre",                                        // culture
+        "conference_centre", "arts_centre",               // events
+        "police", "ranger_station",                       // civic
+        "ferry_terminal",                                 // transport
+        "place_of_worship",                               // religious
+        "hospital",                                       // health care
+        "brothel", "gambling", "love_hotel", "stripclub", // bad stuff
+
+        // name only
+        "studio",                                                                // culture
+        "events_venue", "exhibition_centre", "music_venue", "funeral_hall",      // events
+        "prison", "fire_station", "bus_station", "refugee_site",                 // civic
+        "social_facility", "nursing_home", "childcare", "retirement_home", "social_centre", // social
+        "monastery",                                                             // religious
+        "kindergarten", "school", "college", "university", "research_institute", // education
+        "dojo",                                                                  // sport
+    ),
+    "tourism" to arrayOf(
+        // common
+        "zoo", "aquarium", "theme_park", "gallery", "museum",
+
+        // name & wheelchair
+        "attraction",
+        "hotel", "guest_house", "motel", "hostel", "alpine_hut", "apartment", "resort", "camp_site", "caravan_site", "chalet", // accommodations
+
+        // and tourism = information, see above
+    ),
+    "leisure" to arrayOf(
+        // common
+        "fitness_centre", "golf_course", "water_park", "miniature_golf", "bowling_alley",
+        "amusement_arcade", "adult_gaming_centre", "tanning_salon", "sauna",
+        "indoor_play",
+
+        // name & wheelchair
+        "sports_centre", "stadium",
+
+        // name & opening hours
+        "trampoline_park",
+
+        // name only
+        "dance", "nature_reserve", "marina", "horse_riding",
+        "bathing_place", "escape_game",
+    ),
+    "landuse" to arrayOf(
+        "cemetery", "allotments"
+    ),
+    "military" to arrayOf(
+        "airfield", "barracks", "training_area", "base",
+    ),
+    "healthcare" to arrayOf(
+        // common
+        "pharmacy", "doctor", "clinic", "dentist", "centre", "physiotherapist",
+        "laboratory", "alternative", "psychotherapist", "optometrist", "podiatrist",
+        "nurse", "counselling", "speech_therapist", "blood_donation", "sample_collection",
+        "occupational_therapist", "dialysis", "vaccination_centre", "audiologist",
+        "blood_bank", "nutrition_counselling",
+
+        // name & wheelchair
+        "rehabilitation", "hospice", "midwife", "birthing_centre"
+    ),
+).map { it.key + " ~ " + it.value.joinToString("|") }.joinToString("\n  or ")
+
+private const val PREF_ELEMENTS = "qs_AddPlaceName_element_selection"

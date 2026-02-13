@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.quests.surface
 
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
@@ -12,17 +13,14 @@ import de.westnordost.streetcomplete.osm.surface.INVALID_SURFACES_FOR_TRACKTYPES
 import de.westnordost.streetcomplete.osm.surface.Surface
 import de.westnordost.streetcomplete.osm.surface.UNPAVED_SURFACES
 import de.westnordost.streetcomplete.osm.surface.applyTo
+import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
+import de.westnordost.streetcomplete.quests.questPrefix
 
 class AddRoadSurface : OsmFilterQuestType<Surface>(), AndroidQuest {
 
     override val elementFilter = """
         ways with (
-          highway ~ ${listOf(
-            "primary", "primary_link", "secondary", "secondary_link", "tertiary", "tertiary_link",
-            "unclassified", "residential", "living_street", "pedestrian", "track", "busway",
-            ).joinToString("|")
-          }
-          or highway = service and service !~ driveway|slipway
+          ${prefs.getString("${questPrefix(prefs)}qs_${name}_element_selection", highwaySelection)}
         )
         and (
           !surface
@@ -59,4 +57,20 @@ class AddRoadSurface : OsmFilterQuestType<Surface>(), AndroidQuest {
     override fun applyAnswerTo(answer: Surface, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         answer.applyTo(tags)
     }
+
+    override val hasQuestSettings = true
+
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        FullElementSelectionDialog(prefs, "${questPrefix(prefs)}qs_${name}_element_selection", R.string.quest_settings_element_selection, highwaySelection, onDismissRequest)
+    }
 }
+
+private val highwaySelection = """
+    highway ~ ${listOf(
+    "primary", "primary_link", "secondary", "secondary_link", "tertiary", "tertiary_link",
+    "unclassified", "residential", "living_street", "pedestrian", "track", "busway"
+).joinToString("|")
+}
+          or highway = service and service !~ driveway|slipway
+""".trimIndent()

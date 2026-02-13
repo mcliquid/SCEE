@@ -42,6 +42,48 @@ fun Collection<TilePos>.minTileRect(): TilesRect? {
     return TilesRect(left, top, right, bottom)
 }
 
+/** Returns up to two TileRects that together enclose all the tiles.
+ *  These TilesRects together should contain fewer TilePos than [minTileRect].
+ *  This method is specifically aimed at the SpatialCache to avoid loading the whole bbox after
+ *  scrolling diagonally, and may not produce good results in other situations.
+ *  If this function can't divide the Collection into two smaller TileRects, [minTileRect] is
+ *  returned.
+ */
+fun Collection<TilePos>.upToTwoMinTileRects(): List<TilesRect>? {
+    val minTileRect = minTileRect() ?: return null
+    if (minTileRect.size == size)
+        return listOf(minTileRect)
+
+    val grouped = groupBy { it.y } // sort tiles in lines
+    val lines = grouped.keys.sorted()
+    if (lines != (lines.min()..lines.max()).toList())
+        return listOf(minTileRect) // can't deal with missing lines
+
+    val minXTop = grouped[lines.first()]!!.minOf { it.x }
+    val maxXTop = grouped[lines.first()]!!.maxOf { it.x }
+    val minXBottom = grouped[lines.last()]!!.minOf { it.x }
+    val maxXBottom = grouped[lines.last()]!!.maxOf { it.x }
+
+    // Find the line where minX or maxX change. Typically there should be such a line, because
+    // otherwise minTileRect.size == size would return true. Exception is when there are holes,
+    // e.g. from zooming out with the center cached and thus loading a "ring".
+    val changeLine = lines.firstOrNull { line ->
+        grouped[line]!!.minOf { it.x } != minXTop || grouped[line]!!.maxOf { it.x } != maxXTop
+    } ?: return listOf(minTileRect)
+
+    // Fall back to minTileRect if there is a second change in line width. We could deal with this,
+    // but this is not a situation expected in spatialCache.
+    if ((changeLine..lines.last()).any { line ->
+            grouped[line]!!.minOf { it.x } != minXBottom || grouped[line]!!.maxOf { it.x } != maxXBottom
+        })
+        return listOf(minTileRect)
+
+    return listOf(
+        TilesRect(minXTop, lines.first(), maxXTop, changeLine-1),
+        TilesRect(minXBottom, changeLine, maxXBottom, lines.last())
+    )
+}
+
 /** Returns the tile that encloses the position at the given zoom level */
 fun LatLon.enclosingTilePos(zoom: Int) = TilePos(
     lon2tile(((longitude + 180) % 360) - 180, zoom),
@@ -120,6 +162,6 @@ private fun lon2tile(lon: Double, zoom: Int): Int =
     (numTiles(zoom) * (lon + 180.0) / 360.0).toInt()
 
 private fun lat2tile(lat: Double, zoom: Int): Int =
-    (numTiles(zoom) * (1.0 - asinh(tan(PI * lat / 180.0)) / PI) / 2.0).nextUp().toInt()
+    (numTiles(zoom) * (1.0 - asinh(tan(lat * (PI / 180.0))) / PI) / 2.0).nextUp().toInt()
 
 private fun numTiles(zoom: Int): Int = 1 shl zoom

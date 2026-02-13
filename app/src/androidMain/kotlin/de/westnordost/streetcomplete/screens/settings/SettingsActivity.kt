@@ -66,7 +66,7 @@ class SettingsActivity : BaseActivity(), AbstractOsmQuestForm.Listener {
                     SettingsNavHost(
                         onClickBack = { finish() },
                         onClickShowQuestTypeForDebug = ::onClickQuestType,
-                        startDestination = if (launchQuestSelection) SettingsDestination.QuestSelection else null
+                        startDestination = if (launchQuestSelection) SettingsDestination.QuestSelection else null,
                     )
                 }
             }
@@ -120,6 +120,10 @@ class SettingsActivity : BaseActivity(), AbstractOsmQuestForm.Listener {
         popQuestForm()
     }
 
+    override fun onEditTags(element: Element, geometry: ElementGeometry, questKey: QuestKey?, editTypeName: String?) {
+        popQuestForm()
+    }
+
     private fun popQuestForm() {
         binding.questFormContainer.visibility = View.GONE
         supportFragmentManager.popBackStack()
@@ -146,6 +150,7 @@ class SettingsActivity : BaseActivity(), AbstractOsmQuestForm.Listener {
             f.requireArguments().putAll(AbstractOsmQuestForm.createArguments(element))
             f.hideQuestController = object : HideQuestController {
                 override fun hide(key: QuestKey) {}
+                override fun tempHide(key: QuestKey) {}
             }
             f.addElementEditsController = object : AddElementEditsController {
                 override fun add(
@@ -153,7 +158,8 @@ class SettingsActivity : BaseActivity(), AbstractOsmQuestForm.Listener {
                     geometry: ElementGeometry,
                     source: String,
                     action: ElementEditAction,
-                    isNearUserLocation: Boolean
+                    isNearUserLocation: Boolean,
+                    key: QuestKey?
                 ) {
                     when (action) {
                         is DeletePoiNodeAction -> {
@@ -177,6 +183,8 @@ class SettingsActivity : BaseActivity(), AbstractOsmQuestForm.Listener {
 
     private fun updateContainerVisibility() {
         binding.questFormContainer.isGone = supportFragmentManager.findFragmentById(R.id.questForm) == null
+        binding.sceeSettingsFragmentContainer.isGone = supportFragmentManager.findFragmentById(R.id.sceeSettingsFragment) == null
+        binding.toolbar.toolbar.isGone = supportFragmentManager.findFragmentById(R.id.sceeSettingsFragment) == null
     }
 
     private fun createMockElementWithGeometry(questType: OsmElementQuestType<*>): Pair<Element, ElementGeometry> {

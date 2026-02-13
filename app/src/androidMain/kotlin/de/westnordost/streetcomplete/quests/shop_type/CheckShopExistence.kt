@@ -50,8 +50,7 @@ class CheckShopExistence(
 
     override fun isApplicableTo(element: Element): Boolean =
         filter.matches(element) &&
-        element.isPlace() &&
-        hasName(element)
+        element.isPlace()
 
     override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry) =
         getMapData().asSequence().filter { it.isPlaceOrDisusedPlace() }
@@ -61,11 +60,4 @@ class CheckShopExistence(
     override fun applyAnswerTo(answer: Unit, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         tags.updateCheckDate()
     }
-
-    private fun hasName(element: Element) = hasProperName(element.tags) || hasFeatureName(element)
-
-    private fun hasProperName(tags: Map<String, String>): Boolean =
-        tags.containsKey("name") || tags.containsKey("brand")
-
-    private fun hasFeatureName(element: Element) = getFeature(element)?.name != null
 }

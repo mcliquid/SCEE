@@ -11,5 +11,5 @@ interface DownloadController {
      * @param isUserInitiated whether this shall be a priority download (cancels previous downloads
      *        and puts itself in the front)
      */
-    fun download(bbox: BoundingBox, isUserInitiated: Boolean = false)
+    fun download(bbox: BoundingBox, isUserInitiated: Boolean = false, enqueue: Boolean = false)
 }

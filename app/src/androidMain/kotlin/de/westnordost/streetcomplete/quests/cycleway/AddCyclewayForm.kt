@@ -35,8 +35,6 @@ class AddCyclewayForm : AbstractOsmQuestForm<Sides<CyclewayAndDirection>>() {
     override val contentLayoutResId = R.layout.compose_view
     private val binding by contentViewBinding(ComposeViewBinding::bind)
 
-    private val prefs: Preferences by inject()
-
     override val contentPadding = false
 
     override val buttonPanelAnswers get() =

@@ -1,5 +1,8 @@
 package de.westnordost.streetcomplete.data.osm.mapdata
 
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
 import de.westnordost.streetcomplete.data.Database
 import de.westnordost.streetcomplete.data.osm.mapdata.RelationTables.Columns.ID
 import de.westnordost.streetcomplete.data.osm.mapdata.RelationTables.Columns.INDEX
@@ -13,8 +16,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.RelationTables.Columns.VER
 import de.westnordost.streetcomplete.data.osm.mapdata.RelationTables.NAME
 import de.westnordost.streetcomplete.data.osm.mapdata.RelationTables.NAME_MEMBERS
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import de.westnordost.streetcomplete.util.ktx.toInternedMap
 
 /** Stores OSM relations */
 class RelationDao(private val db: Database) {
@@ -57,7 +59,7 @@ class RelationDao(private val db: Database) {
                     arrayOf(
                         relation.id,
                         relation.version,
-                        if (relation.tags.isNotEmpty()) Json.encodeToString(relation.tags) else null,
+                        if (relation.tags.isNotEmpty()) jsonAdapter.toJson(relation.tags) else null,
                         relation.timestampEdited,
                         time
                     )
@@ -71,14 +73,14 @@ class RelationDao(private val db: Database) {
         val idsString = ids.joinToString(",")
 
         return db.transaction {
-            val membersByRelationId = mutableMapOf<Long, MutableList<RelationMember>>()
+            val membersByRelationId = hashMapOf<Long, MutableList<RelationMember>>()
             db.query(NAME_MEMBERS, where = "$ID IN ($idsString)", orderBy = "$ID, $INDEX") { cursor ->
                 val members = membersByRelationId.getOrPut(cursor.getLong(ID)) { ArrayList() }
                 members.add(
                     RelationMember(
                         ElementType.valueOf(cursor.getString(TYPE)),
                         cursor.getLong(REF),
-                        cursor.getString(ROLE)
+                        cursor.getString(ROLE).intern()
                     )
                 )
             }
@@ -87,7 +89,7 @@ class RelationDao(private val db: Database) {
                 Relation(
                     cursor.getLong(ID),
                     membersByRelationId.getValue(cursor.getLong(ID)),
-                    cursor.getStringOrNull(TAGS)?.let { Json.decodeFromString(it) } ?: emptyMap(),
+                    cursor.getStringOrNull(TAGS)?.let { jsonAdapter.fromJson(it)?.toInternedMap() } ?: emptyMap(),
                     cursor.getInt(VERSION),
                     cursor.getLong(TIMESTAMP)
                 )
@@ -134,7 +136,7 @@ class RelationDao(private val db: Database) {
         wayIds: Collection<Long> = emptyList(),
         relationIds: Collection<Long> = emptyList()
     ): List<Relation> =
-        getAll(getAllIdsForElements(nodeIds, wayIds, relationIds).toSet())
+        getAll(getAllIdsForElements(nodeIds, wayIds, relationIds).toHashSet())
 
     fun getAllIdsForElements(
         nodeIds: Collection<Long> = emptyList(),
@@ -171,7 +173,10 @@ class RelationDao(private val db: Database) {
                 columns = arrayOf(ID),
                 where = "$TYPE = ? AND $REF = $elementId",
                 args = arrayOf(elementType.name)
-            ) { it.getLong(ID) }.toSet()
+            ) { it.getLong(ID) }.toHashSet()
             getAll(ids)
         }
 }
+
+private val jsonAdapter: JsonAdapter<Map<String, String>> = Moshi.Builder().build()
+    .adapter(Types.newParameterizedType(Map::class.java, String::class.java, String::class.java))

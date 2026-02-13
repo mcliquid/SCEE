@@ -109,7 +109,7 @@ class VisibleEditTypeController(
     private fun onVisibilityChanged(editType: EditType, visible: Boolean) {
         listeners.forEach { it.onVisibilityChanged(editType, visible) }
     }
-    private fun onVisibilitiesChanged() {
+    fun onVisibilitiesChanged() {
         listeners.forEach { it.onVisibilitiesChanged() }
     }
 }

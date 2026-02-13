@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.quests.roof_shape
 
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.meta.CountryInfo
@@ -12,6 +13,8 @@ import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BUILDING
 import de.westnordost.streetcomplete.osm.BUILDINGS_WITH_LEVELS
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.quests.NumberSelectionDialog
+import de.westnordost.streetcomplete.quests.questPrefix
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.default_disabled_msg_roofShape
 
@@ -44,7 +47,7 @@ class AddRoofShape(
             filter.matches(element) && (
                 (element.tags["roof:levels"]?.toFloatOrNull() ?: 0f) > 0f
                     || roofsAreUsuallyFlatAt(element, mapData) == false
-            )
+            ) && levelsOk(element)
         }
 
     override fun isApplicableTo(element: Element): Boolean? {
@@ -53,8 +56,12 @@ class AddRoofShape(
            the quest should only be shown in certain countries. But whether
            the element is in a certain country cannot be ascertained without the element's geometry */
         if ((element.tags["roof:levels"]?.toFloatOrNull() ?: 0f) == 0f) return null
-        return true
+        return levelsOk(element)
     }
+
+    private fun levelsOk(element: Element): Boolean =
+        ((element.tags["building:levels"]?.toIntOrNull() ?: 0) -
+            (element.tags["roof:levels"]?.toIntOrNull() ?: 0)) <= prefs.getInt(questPrefix(prefs) + PREF_ROOF_SHAPE_MAX_LEVELS, 99)
 
     private fun roofsAreUsuallyFlatAt(element: Element, mapData: MapDataWithGeometry): Boolean? {
         val center = mapData.getGeometry(element.type, element.id)?.center ?: return null
@@ -64,4 +71,13 @@ class AddRoofShape(
     override fun applyAnswerTo(answer: RoofShape, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         tags["roof:shape"] = answer.osmValue
     }
+
+    override val hasQuestSettings = true
+
+    @Composable
+    override fun QuestSettings(onDismissRequest: () -> Unit) {
+        NumberSelectionDialog(prefs, questPrefix(prefs) + PREF_ROOF_SHAPE_MAX_LEVELS, 99, R.string.quest_settings_max_roof_levels, onDismissRequest)
+    }
 }
+
+private const val PREF_ROOF_SHAPE_MAX_LEVELS = "qs_AddRoofShape_max_levels"

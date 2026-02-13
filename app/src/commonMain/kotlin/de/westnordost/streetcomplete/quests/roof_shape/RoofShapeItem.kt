@@ -19,6 +19,12 @@ import de.westnordost.streetcomplete.resources.roof_round
 import de.westnordost.streetcomplete.resources.roof_round_gabled
 import de.westnordost.streetcomplete.resources.roof_saltbox
 import de.westnordost.streetcomplete.resources.roof_skillion
+import de.westnordost.streetcomplete.resources.ic_roof_sawtooth
+import de.westnordost.streetcomplete.resources.ic_roof_side_hipped
+import de.westnordost.streetcomplete.resources.ic_roof_side_half_hipped
+import de.westnordost.streetcomplete.resources.ic_roof_crosspitched
+import de.westnordost.streetcomplete.resources.ic_roof_hip_and_gable
+import de.westnordost.streetcomplete.resources.ic_roof_gabled_height_moved
 import org.jetbrains.compose.resources.DrawableResource
 
 val RoofShape.icon: DrawableResource get() = when (this) {
@@ -38,5 +44,11 @@ val RoofShape.icon: DrawableResource get() = when (this) {
     ROUND_GABLED ->      Res.drawable.roof_round_gabled
     ONION ->             Res.drawable.roof_onion
     CONE ->              Res.drawable.roof_cone
+    SAWTOOTH ->          Res.drawable.ic_roof_sawtooth
+    SIDE_HIPPED ->       Res.drawable.ic_roof_side_hipped
+    SIDE_HALF_HIPPED ->  Res.drawable.ic_roof_side_half_hipped
+    CROSSPITCHED ->      Res.drawable.ic_roof_crosspitched
+    HIPPED_AND_GABLED -> Res.drawable.ic_roof_hip_and_gable
+    GABLED_HEIGHT_MOVED -> Res.drawable.ic_roof_gabled_height_moved
     MANY ->              Res.drawable.empty_96
 }

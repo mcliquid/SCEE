@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.data.osm.edits
 
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
+import de.westnordost.streetcomplete.data.quest.QuestKey
 
 interface AddElementEditsController {
     fun add(
@@ -8,6 +9,7 @@ interface AddElementEditsController {
         geometry: ElementGeometry,
         source: String,
         action: ElementEditAction,
-        isNearUserLocation: Boolean
+        isNearUserLocation: Boolean,
+        key: QuestKey? = null
     )
 }

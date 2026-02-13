@@ -9,6 +9,7 @@ import android.net.ConnectivityManager
 import androidx.core.content.getSystemService
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.UnsyncedChangesCountSource
 import de.westnordost.streetcomplete.data.download.DownloadController
 import de.westnordost.streetcomplete.data.download.DownloadProgressSource
@@ -41,12 +42,12 @@ class QuestAutoSyncer(
     private val mobileDataDownloadStrategy: MobileDataAutoDownloadStrategy,
     private val wifiDownloadStrategy: WifiAutoDownloadStrategy,
     private val context: Context,
-    private val unsyncedChangesCountSource: UnsyncedChangesCountSource,
     private val downloadProgressSource: DownloadProgressSource,
     private val userLoginSource: UserLoginSource,
     private val prefs: Preferences,
     private val teamModeQuestFilter: TeamModeQuestFilter,
-    private val downloadedTilesController: DownloadedTilesController
+    private val downloadedTilesController: DownloadedTilesController,
+    private val unsyncedChangesCountSource: UnsyncedChangesCountSource,
 ) : DefaultLifecycleObserver {
 
     private val coroutineScope = CoroutineScope(SupervisorJob() + CoroutineName("QuestAutoSyncer"))
@@ -159,6 +160,7 @@ class QuestAutoSyncer(
     private fun triggerAutoDownload() {
         val pos = pos ?: return
         if (!isConnected) return
+        if (!prefs.getBoolean(Prefs.AUTO_DOWNLOAD, true)) return
         if (downloadProgressSource.isDownloadInProgress) return
 
         Log.i(TAG, "Checking whether to automatically download new quests at ${pos.latitude.format(7)},${pos.longitude.format(7)}")

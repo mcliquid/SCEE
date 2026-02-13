@@ -21,13 +21,16 @@ import de.westnordost.streetcomplete.ui.util.content
 import de.westnordost.streetcomplete.ui.util.rememberSerializable
 import org.jetbrains.compose.resources.stringResource
 import org.koin.android.ext.android.inject
+import de.westnordost.streetcomplete.view.AdapterDataChangedWatcher
+import kotlinx.serialization.json.Json
+import java.util.Queue
 
 abstract class AAddLocalizedNameForm<T> : AbstractOsmQuestForm<T>() {
 
     override val contentLayoutResId = R.layout.compose_view
     private val binding by contentViewBinding(ComposeViewBinding::bind)
 
-    private val prefs: Preferences by inject()
+    //private val prefs: Preferences by inject()
     protected lateinit var localizedNames: MutableState<List<LocalizedName>>
     private lateinit var selectableLanguages: List<String>
 

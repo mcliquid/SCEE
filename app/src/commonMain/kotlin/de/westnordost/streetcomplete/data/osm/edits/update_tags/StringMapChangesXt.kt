@@ -29,3 +29,16 @@ fun Element.changesApplied(changes: StringMapChanges): Element {
         timestampEdited = nowAsEpochMilliseconds()
     )
 }
+
+fun Map<String, String>.createChanges(originalTags: Map<String, String>): StringMapChangesBuilder {
+    val builder = StringMapChangesBuilder(originalTags)
+    for (key in originalTags.keys) {
+        if (!containsKey(key))
+            builder.remove(key)
+    }
+    for ((key, value) in this) {
+        if (originalTags[key] == value) continue
+        builder[key] = value
+    }
+    return builder
+}

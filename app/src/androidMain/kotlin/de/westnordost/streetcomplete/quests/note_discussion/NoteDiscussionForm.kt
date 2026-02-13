@@ -8,9 +8,11 @@ import android.text.format.DateUtils.MINUTE_IN_MILLIS
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osmnotes.NoteComment
@@ -27,6 +29,7 @@ import de.westnordost.streetcomplete.databinding.QuestNoteDiscussionItemsBinding
 import de.westnordost.streetcomplete.quests.AbstractQuestForm
 import de.westnordost.streetcomplete.quests.AnswerItem
 import de.westnordost.streetcomplete.util.ktx.createBitmap
+import de.westnordost.streetcomplete.util.ktx.popIn
 import de.westnordost.streetcomplete.util.ktx.nonBlankTextOrNull
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
 import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
@@ -91,6 +94,19 @@ class NoteDiscussionForm : AbstractQuestForm() {
             val comments = withContext(Dispatchers.IO) { noteSource.get(noteId) }!!.comments
             inflateNoteDiscussion(comments)
         }
+
+        if (prefs.getBoolean(Prefs.SHOW_HIDE_BUTTON, false)) {
+            floatingBottomView2.popIn()
+            floatingBottomView2.setOnClickListener {
+                tempHideQuest()
+            }
+            floatingBottomView2.setOnLongClickListener {
+                hideQuest()
+                true
+            }
+        }
+        if (prefs.getBoolean(Prefs.EXPERT_MODE, false))
+            binding.closeNoteCheckBox.isVisible = true
     }
 
     private fun inflateNoteDiscussion(comments: List<NoteComment>) {
@@ -108,11 +124,13 @@ class NoteDiscussionForm : AbstractQuestForm() {
     }
 
     override fun onClickOk() {
-        require(noteText != null) { "NoteQuest has been answered with an empty comment!" }
+        val close = binding.closeNoteCheckBox.isChecked
+        require(noteText != null || close) { "NoteQuest has been answered with an empty comment!" }
         val imagePaths = attachPhotoFragment?.imagePaths.orEmpty()
         viewLifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                noteEditsController.add(noteId, NoteEditAction.COMMENT, geometry.center, noteText, imagePaths)
+                val action = if (close) NoteEditAction.CLOSE else NoteEditAction.COMMENT
+                noteEditsController.add(noteId, action, geometry.center, noteText, imagePaths)
             }
             listener?.onNoteQuestSolved(questType, noteId, geometry.center)
         }
@@ -125,6 +143,12 @@ class NoteDiscussionForm : AbstractQuestForm() {
     private fun hideQuest() {
         viewLifecycleScope.launch {
             withContext(Dispatchers.IO) { hiddenQuestsController.hide(questKey) }
+        }
+    }
+
+    private fun tempHideQuest() {
+        viewLifecycleScope.launch {
+            withContext(Dispatchers.IO) { hiddenQuestsController.tempHide(questKey) }
         }
     }
 

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.westnordost.osmfeatures.FeatureDictionary
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.edithistory.Edit
 import de.westnordost.streetcomplete.data.edithistory.EditHistoryController
 import de.westnordost.streetcomplete.data.edithistory.EditHistorySource
@@ -15,8 +16,10 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestHidden
+import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.util.ktx.launch
 import de.westnordost.streetcomplete.util.ktx.toLocalDateTime
+import de.westnordost.streetcomplete.util.logs.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
@@ -40,6 +43,7 @@ abstract class EditHistoryViewModel : ViewModel() {
 
     abstract fun select(editKey: EditKey?)
     abstract fun undo(editKey: EditKey)
+    abstract fun updateEdits()
 
     abstract val featureDictionaryLazy: Lazy<FeatureDictionary>
 
@@ -62,6 +66,7 @@ class EditHistoryViewModelImpl(
     private val mapDataSource: MapDataWithEditsSource,
     private val editHistoryController: EditHistoryController,
     override val featureDictionaryLazy: Lazy<FeatureDictionary>,
+    private val prefs: Preferences,
 ) : EditHistoryViewModel() {
 
     private val edits = MutableStateFlow<List<Edit>>(emptyList())
@@ -100,7 +105,7 @@ class EditHistoryViewModelImpl(
     }
 
     override fun showSidebar() {
-        selectedEdit.value = edits.value.lastOrNull()
+        selectedEdit.value = if (prefs.getBoolean(Prefs.SELECT_FIRST_EDIT, true)) edits.value.lastOrNull() else null
         isShowingSidebar.value = true
     }
 
@@ -159,7 +164,7 @@ class EditHistoryViewModelImpl(
         editHistoryController.removeListener(editHistoryListener)
     }
 
-    private fun updateEdits() {
+    override fun updateEdits() {
         launch(Dispatchers.IO) {
             edits.value = editHistoryController.getAll().sortedBy { it.createdTimestamp }
             if (edits.value.isEmpty()) hideSidebar()

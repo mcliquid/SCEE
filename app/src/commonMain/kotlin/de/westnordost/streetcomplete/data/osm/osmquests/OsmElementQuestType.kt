@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.data.osm.osmquests
 
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditType
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -47,7 +48,7 @@ interface OsmElementQuestType<T> : QuestType, ElementEditType {
      *  ...should be deletable.
      *
      *  By default: false.*/
-    val isDeleteElementEnabled: Boolean get() = false
+    val isDeleteElementEnabled: Boolean get() = prefs.getBoolean(Prefs.EXPERT_MODE, false)
 
     /** Whether the user should be able to replace this element with another preset. Only
      *  elements that are expected to be some kind of shop/amenity should be replaceable this way,
@@ -96,4 +97,11 @@ interface OsmElementQuestType<T> : QuestType, ElementEditType {
      * with the given [tags] and the given [geometry].
      * The element is not directly modified, instead, a map of [tags] is modified */
     fun applyAnswerTo(answer: T, tags: Tags, geometry: ElementGeometry, timestampEdited: Long)
+
+    /** tags to derive label of the dot, checked in given order. Use "label" to get the label
+     * using NameAndLocationLabel.getNameLabel. Use empty list to show no label.
+     * Ignored if [dotColor] is null. */
+    val dotLabelSources: List<String> get() = labelList
 }
+
+private val labelList = listOf("label")

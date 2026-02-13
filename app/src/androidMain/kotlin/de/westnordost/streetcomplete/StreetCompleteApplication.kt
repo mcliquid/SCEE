@@ -1,7 +1,10 @@
 package de.westnordost.streetcomplete
 
+import android.app.ActivityManager
+import android.app.ActivityManager.MemoryInfo
 import android.app.Application
 import android.content.ComponentCallbacks2
+import android.content.Context
 import android.net.ConnectivityManager
 import android.os.LocaleList
 import androidx.appcompat.app.AppCompatDelegate
@@ -12,6 +15,7 @@ import androidx.work.WorkManager
 import com.russhwolf.settings.SettingsListener
 import de.westnordost.streetcomplete.data.CacheTrimmer
 import de.westnordost.streetcomplete.data.CleanerWorker
+import de.westnordost.streetcomplete.data.DatabaseInitializer
 import de.westnordost.streetcomplete.data.Preloader
 import de.westnordost.streetcomplete.data.allEditTypesModule
 import de.westnordost.streetcomplete.data.download.downloadModule
@@ -30,6 +34,7 @@ import de.westnordost.streetcomplete.data.osmApiModule
 import de.westnordost.streetcomplete.data.osmnotes.edits.noteEditsModule
 import de.westnordost.streetcomplete.data.osmnotes.notequests.osmNoteQuestModule
 import de.westnordost.streetcomplete.data.osmnotes.notesModule
+import de.westnordost.streetcomplete.data.externalsource.externalSourceModule
 import de.westnordost.streetcomplete.data.overlays.overlayModule
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.preferences.ResurveyIntervalsUpdater
@@ -52,9 +57,13 @@ import de.westnordost.streetcomplete.quests.questsModule
 import de.westnordost.streetcomplete.screens.about.aboutScreenModule
 import de.westnordost.streetcomplete.screens.main.mainModule
 import de.westnordost.streetcomplete.screens.measure.arModule
+import de.westnordost.streetcomplete.screens.settings.LAST_KNOWN_DB_VERSION
+import de.westnordost.streetcomplete.screens.settings.renamedQuests
+import de.westnordost.streetcomplete.screens.settings.renameUpdatedQuests
 import de.westnordost.streetcomplete.screens.settings.settingsModule
 import de.westnordost.streetcomplete.screens.user.userScreenModule
 import de.westnordost.streetcomplete.util.CrashReportExceptionHandler
+import de.westnordost.streetcomplete.util.TempLogger
 import de.westnordost.streetcomplete.util.getSelectedLocales
 import de.westnordost.streetcomplete.util.ktx.deleteRecursively
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
@@ -95,6 +104,11 @@ class StreetCompleteApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        // got a crash report where prefs were not initialized, not sure how this can happen for a
+        // single person and not for everyone, but this should help (means that we keep using android-specific prefs interface)
+        Prefs.sharedPreferences = getSharedPreferences(packageName + "_preferences", MODE_PRIVATE)
+        ApplicationConstants.DEBUG = packageName.endsWith(".debug")
 
         deleteDatabase(ApplicationConstants.OLD_DATABASE_NAME)
 
@@ -138,11 +152,19 @@ class StreetCompleteApplication : Application() {
                 overlayModule,
                 urlConfigModule,
                 urlConfigModule,
-                androidModule
+                androidModule,
+                externalSourceModule,
             )
         }
 
         setLoggerInstances()
+
+        applicationScope.launch {
+            editHistoryController.deleteSyncedOlderThan(nowAsEpochMilliseconds() - ApplicationConstants.MAX_UNDO_HISTORY_AGE)
+            preloader.preload()
+        }
+
+        Prefs.preferences = prefs
 
         // Force logout users who are logged in with OAuth 1.0a, they need to re-authenticate with OAuth 2
         if (prefs.hasOAuth1AccessToken) {
@@ -153,11 +175,6 @@ class StreetCompleteApplication : Application() {
 
         crashReportExceptionHandler.install()
 
-        applicationScope.launch {
-            preloader.preload()
-            editHistoryController.deleteSyncedOlderThan(nowAsEpochMilliseconds() - ApplicationConstants.MAX_UNDO_HISTORY_AGE)
-        }
-
         if (isConnected) userUpdater.update()
 
         enqueuePeriodicCleanupWork()
@@ -166,18 +183,38 @@ class StreetCompleteApplication : Application() {
 
         resurveyIntervalsUpdater.update()
 
+        require(DatabaseInitializer.DB_VERSION == LAST_KNOWN_DB_VERSION.toInt()) { "update database import/export" }
         val lastVersion = prefs.lastDataVersion
+
         if (BuildConfig.VERSION_NAME != lastVersion) {
             prefs.lastDataVersion = BuildConfig.VERSION_NAME
             if (lastVersion != null) {
                 onNewVersion()
             }
+            // update prefs referring to renamed quests
+            val prefsToRename = Prefs.sharedPreferences.all.filter { pref ->
+                val v = pref.value
+                renamedQuests.keys.any { pref.key.contains(it) || (v is String && v.contains(it)) }
+            }
+            val e = Prefs.sharedPreferences.edit()
+            prefsToRename.forEach {
+                e.remove(it.key)
+                when (it.value) {
+                    is String -> e.putString(it.key.renameUpdatedQuests(), (it.value as String).renameUpdatedQuests())
+                    is Boolean -> e.putBoolean(it.key.renameUpdatedQuests(), it.value as Boolean)
+                    is Int -> e.putInt(it.key.renameUpdatedQuests(), it.value as Int)
+                    is Long -> e.putLong(it.key.renameUpdatedQuests(), it.value as Long)
+                    is Float -> e.putFloat(it.key.renameUpdatedQuests(), it.value as Float)
+                    is Set<*> -> e.putStringSet(it.key.renameUpdatedQuests(), it.value as? Set<String>?)
+                }
+            }
+            e.apply()
         }
         clearTangramCache()
-
         settingsListeners += prefs.onLanguageChanged { updateDefaultLocales() }
         settingsListeners += prefs.onThemeChanged { updateTheme(it) }
     }
+
 
     private fun onNewVersion() {
         // on each new version, invalidate quest cache
@@ -195,9 +232,11 @@ class StreetCompleteApplication : Application() {
             ComponentCallbacks2.TRIM_MEMORY_COMPLETE, ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL -> {
                 // very low on memory -> drop caches
                 cacheTrimmer.clearCaches()
+                Log.i("StreetCompleteApplication", "onTrimMemory, level $level: ${getMemString()}")
             }
             ComponentCallbacks2.TRIM_MEMORY_MODERATE, ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW -> {
                 // memory needed, but not critical -> trim only
+                Log.i("StreetCompleteApplication", "onTrimMemory, level $level: ${getMemString()}")
                 cacheTrimmer.trimCaches()
             }
         }
@@ -207,13 +246,25 @@ class StreetCompleteApplication : Application() {
         LocaleList.setDefault(getSelectedLocales(prefs))
     }
 
+    private fun getMemString(): String {
+        val memInfo = MemoryInfo()
+        getSystemService<ActivityManager>()?.getMemoryInfo(memInfo)
+        return "${memInfo.availMem / 0x100000L} MB of ${memInfo.totalMem / 0x100000L} available, mem low: ${memInfo.lowMemory}, mem low threshold: ${memInfo.threshold / 0x100000L} MB"
+    }
+
     private fun updateTheme(theme: Theme) {
+        if (theme == Theme.DARK_CONTRAST || theme == Theme.DARK)
+            // night mode off to trigger reload (maybe there is a way to do it without this, but at least ir works...)
+            AppCompatDelegate.setDefaultNightMode(Theme.LIGHT.appCompatNightMode)
         AppCompatDelegate.setDefaultNightMode(theme.appCompatNightMode)
     }
 
     private fun setLoggerInstances() {
         Log.instances.add(AndroidLogger())
-        Log.instances.add(databaseLogger)
+        if (prefs.getBoolean(Prefs.TEMP_LOGGER, false))
+            Log.instances.add(TempLogger)
+        else
+            Log.instances.add(databaseLogger)
     }
 
     private fun enqueuePeriodicCleanupWork() {
@@ -245,6 +296,6 @@ class StreetCompleteApplication : Application() {
 
 private val Theme.appCompatNightMode: Int get() = when (this) {
     Theme.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
-    Theme.DARK -> AppCompatDelegate.MODE_NIGHT_YES
+    Theme.DARK, Theme.DARK_CONTRAST -> AppCompatDelegate.MODE_NIGHT_YES
     Theme.SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
 }

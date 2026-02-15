@@ -12,16 +12,15 @@ import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.databinding.ComposeViewBinding
 import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
 import de.westnordost.streetcomplete.quests.AnswerItem
+import de.westnordost.streetcomplete.quests.questPrefix
 import de.westnordost.streetcomplete.ui.util.content
 import de.westnordost.streetcomplete.util.takeFavorites
-import org.koin.android.ext.android.inject
 
 class AddBuildingLevelsForm : AbstractOsmQuestForm<BuildingLevels>() {
 
     override val contentLayoutResId = R.layout.compose_view
     private val binding by contentViewBinding(ComposeViewBinding::bind)
 
-    private val prefs: Preferences by inject()
     private lateinit var levels: MutableState<String>
     private lateinit var roofLevels: MutableState<String>
     override val otherAnswers = listOf(
@@ -78,7 +77,7 @@ class AddBuildingLevelsForm : AbstractOsmQuestForm<BuildingLevels>() {
     override fun isFormComplete(): Boolean {
         val roofShape = element.tags["roof:shape"]
         val hasNonFlatRoofShape = roofShape != null && roofShape != "flat"
-        val roofLevelsAreOptional = countryInfo.roofsAreUsuallyFlat && !hasNonFlatRoofShape
+        val roofLevelsAreOptional = !prefs.getBoolean(questPrefix(prefs) + MANDATORY_ROOF_LEVELS, true) || (countryInfo.roofsAreUsuallyFlat && !hasNonFlatRoofShape)
 
         return levels.value.isValidLevel()
             && (

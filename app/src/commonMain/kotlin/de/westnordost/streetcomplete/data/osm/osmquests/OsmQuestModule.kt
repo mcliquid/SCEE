@@ -8,5 +8,5 @@ val osmQuestModule = module {
     factory { OsmQuestsHiddenDao(get()) }
 
     single<OsmQuestSource> { get<OsmQuestController>() }
-    single { OsmQuestController(get(), get(), get(), get(), get(named("CountryBoundariesLazy"))) }
+    single { OsmQuestController(get(), get(), get(), get(), get(named("CountryBoundariesLazy")), get()) }
 }

@@ -21,7 +21,7 @@ class AddRecyclingContainerMaterialsForm : AbstractOsmQuestForm<RecyclingContain
     private val binding by contentViewBinding(ComposeViewBinding::bind)
     override val defaultExpanded = false
 
-    private val prefs: Preferences by inject()
+    //private val prefs: Preferences by inject()
 
     override val otherAnswers = listOf(
         AnswerItem(R.string.quest_recycling_materials_answer_waste) { confirmJustTrash() }

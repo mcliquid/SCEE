@@ -6,6 +6,7 @@ import de.westnordost.streetcomplete.resources.quest_seating_indoor_and_outdoor
 import de.westnordost.streetcomplete.resources.quest_seating_indoor_only
 import de.westnordost.streetcomplete.resources.quest_seating_outdoor_only
 import de.westnordost.streetcomplete.resources.quest_seating_takeaway
+import de.westnordost.streetcomplete.resources.quest_seating_no
 import org.jetbrains.compose.resources.StringResource
 
 enum class Seating(val hasOutdoorSeating: Boolean, val hasIndoorSeating: Boolean) {
@@ -13,6 +14,7 @@ enum class Seating(val hasOutdoorSeating: Boolean, val hasIndoorSeating: Boolean
     ONLY_INDOOR(false, true),
     ONLY_OUTDOOR(true, false),
     TAKEAWAY_ONLY(false, false),
+    NO(false, false),
 }
 
 val Seating.text: StringResource get() = when (this) {
@@ -20,4 +22,5 @@ val Seating.text: StringResource get() = when (this) {
     ONLY_INDOOR -> Res.string.quest_seating_indoor_only
     ONLY_OUTDOOR -> Res.string.quest_seating_outdoor_only
     TAKEAWAY_ONLY -> Res.string.quest_seating_takeaway
+    NO -> Res.string.quest_seating_no
 }

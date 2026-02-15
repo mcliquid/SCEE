@@ -36,6 +36,7 @@ import de.westnordost.streetcomplete.resources.tutorial_solving_quests
 import de.westnordost.streetcomplete.resources.tutorial_stay_safe
 import de.westnordost.streetcomplete.resources.tutorial_welcome_to_osm
 import de.westnordost.streetcomplete.resources.tutorial_welcome_to_osm_subtitle
+import de.westnordost.streetcomplete.resources.tutorial_info_fork_message
 import de.westnordost.streetcomplete.screens.main.controls.LocationState
 import de.westnordost.streetcomplete.screens.main.controls.LocationStateButton
 import de.westnordost.streetcomplete.ui.common.Pin
@@ -55,7 +56,7 @@ fun IntroTutorialScreen(
     dismissOnBackPress: Boolean = false,
 ) {
     TutorialScreen(
-        pageCount = 4,
+        pageCount = 5,
         onDismissRequest = onDismissRequest,
         onFinished = onFinished,
         onPageChanged = { page ->
@@ -77,6 +78,7 @@ fun IntroTutorialScreen(
                 1 -> IntroTutorialStep1Text()
                 2 -> IntroTutorialStep2Text()
                 3 -> IntroTutorialStep3Text()
+                4 -> IntroTutorialStep4Text()
             }
         }
     }
@@ -255,6 +257,15 @@ private fun IntroTutorialStep3Text() {
         style = MaterialTheme.typography.headlineLarge,
         textAlign = TextAlign.Center,
         modifier = Modifier.padding(top = 24.dp)
+    )
+}
+
+@Composable
+private fun IntroTutorialStep4Text() {
+    Text(
+        text = stringResource(Res.string.tutorial_info_fork_message),
+        style = MaterialTheme.typography.body1,
+        textAlign = TextAlign.Center,
     )
 }
 

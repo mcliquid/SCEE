@@ -1,0 +1,12 @@
+SCEE yw versyon chanjys a StreetComplete, medrys usyoryon OSM prevys moredhek a-dro an fowt a gallosow chanjyell avonsys yn StreetComplete normal.
+
+Mar pleg, bedhewgh SCEE yw anwiw rag pobel usys gans skonya aswon messajys gwarnyans heb ow redya!
+Usyoryon nowydh dhe OpenStreetMap kodh bos avisys a ty kodh devnydhya StreetComplete: https://f-droid.org/en/packages/de.westnordost.streetcomplete/
+
+Nasyow addys yn SCEE yw meur lowr le prevys es pyth ty yw usys gans yn StreetComplete, ytho kudynnow po fara angwaytys a wra happya martesen. Mar ty dos erbynn neb, derivas an kudyn, mar pleg.
+Nasyow moy a wra kawsya SCEE rag fara yn agwedh pur dihaval es StreetComplete martesen.
+
+Rag rol leun a dihevelepterow dhe StreetComplete gweles https://github.com/Helium314/SCEE#differences-to-streetcomplete
+
+Gorthnas F-Droid: rosweyth anrydh,
+SCEE devnydhya prileghennow mappa kilva provys gans jawg, ha dre dhewis avenyow ayrel / lorell gans Esri.

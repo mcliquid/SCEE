@@ -1,10 +1,13 @@
 package de.westnordost.streetcomplete.data.osm.edits.upload
 
+import com.russhwolf.settings.ObservableSettings
+import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.data.ConflictException
+import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.data.download.Downloader
 import de.westnordost.streetcomplete.data.osm.edits.ElementEdit
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditsController
 import de.westnordost.streetcomplete.data.osm.edits.ElementIdProvider
-import de.westnordost.streetcomplete.data.osm.edits.IsRevertAction
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementType
@@ -14,14 +17,21 @@ import de.westnordost.streetcomplete.data.osm.mapdata.MapDataController
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataUpdates
 import de.westnordost.streetcomplete.data.osm.mapdata.MutableMapData
 import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditsController
+import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
+import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestType
+import de.westnordost.streetcomplete.data.osm.edits.IsRevertAction
 import de.westnordost.streetcomplete.data.upload.OnUploadedChangeListener
+import de.westnordost.streetcomplete.data.upload.Uploader
+import de.westnordost.streetcomplete.data.user.UserLoginController
 import de.westnordost.streetcomplete.data.user.statistics.StatisticsController
 import de.westnordost.streetcomplete.util.logs.Log
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -32,21 +42,40 @@ class ElementEditsUploader(
     private val mapDataController: MapDataController,
     private val singleUploader: ElementEditUploader,
     private val mapDataApi: MapDataApiClient,
-    private val statisticsController: StatisticsController
+    private val statisticsController: StatisticsController,
+    private val downloader: Downloader,
+    private val externalSourceQuestController: ExternalSourceQuestController,
+    private val prefs: ObservableSettings,
 ) {
     var uploadedChangeListener: OnUploadedChangeListener? = null
 
     private val mutex = Mutex()
     private val scope = CoroutineScope(SupervisorJob() + CoroutineName("ElementEditsUploader"))
 
-    suspend fun upload() = mutex.withLock { withContext(Dispatchers.IO) {
+    suspend fun upload(uploader: Uploader) = mutex.withLock { withContext(Dispatchers.IO) {
         while (true) {
             val edit = elementEditsController.getOldestUnsynced() ?: break
             val getIdProvider: () -> ElementIdProvider = { elementEditsController.getIdProvider(edit.id) }
+            if (downloader.isDownloadInProgress) {
+                // cancel upload, and re-start uploading a second later
+                // then download will already be running
+                scope.launch {
+                    delay(1000)
+                    try {
+                        uploader.upload()
+                    } catch (e: Exception) {
+                        Log.i(TAG, "exception when continuing interrupted upload: $e")
+                        throw CancellationException() // not caught by UploadWorker.doWork, but we don't want
+                    }
+                }
+                throw CancellationException() // don't simply break, because otherwise upload will continue with notes
+            }
             /* the sync of local change -> API and its response should not be cancellable because
              * otherwise an inconsistency in the data would occur. E.g. no "star" for an uploaded
              * change, a change could be uploaded twice etc */
             withContext(scope.coroutineContext) { uploadEdit(edit, getIdProvider) }
+            if (ApplicationConstants.DEBUG && !UserLoginController.loggedIn)
+                break // slow uploading is much better to read in logs
         }
     } }
 
@@ -54,24 +83,29 @@ class ElementEditsUploader(
         val editActionClassName = edit.action::class.simpleName!!
 
         try {
+            if (edit.type is ExternalSourceQuestType && !externalSourceQuestController.onUpload(edit))
+                throw(ConflictException())
             val updates = singleUploader.upload(edit, getIdProvider)
 
-            Log.d(TAG, "Uploaded a $editActionClassName")
+            Log.d(TAG, "Uploaded a $editActionClassName for ${edit.action.elementKeys}")
             uploadedChangeListener?.onUploaded(edit.type.name, edit.position)
 
             elementEditsController.markSynced(edit, updates)
             mapDataController.updateAll(updates)
             noteEditsController.updateElementIds(updates.idUpdates)
 
-            if (edit.action is IsRevertAction) {
-                statisticsController.subtractOne(edit.type.name, edit.position)
-            } else {
-                statisticsController.addOne(edit.type.name, edit.position)
+            if (prefs.getBoolean(Prefs.UPDATE_LOCAL_STATISTICS, true)) {
+                if (edit.action is IsRevertAction) {
+                    statisticsController.subtractOne(edit.type.name, edit.position)
+                } else {
+                    statisticsController.addOne(edit.type.name, edit.position)
+                }
             }
         } catch (e: ConflictException) {
-            Log.d(TAG, "Dropped a $editActionClassName: ${e.message}")
+            Log.d(TAG, "Dropped a $editActionClassName for ${edit.action.elementKeys}: ${e.message}")
             uploadedChangeListener?.onDiscarded(edit.type.name, edit.position)
 
+            externalSourceQuestController.onSyncEditFailed(edit)
             elementEditsController.markSyncFailed(edit)
 
             /* fetching the current version of the element(s) edited on conflict and persisting

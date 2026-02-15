@@ -16,7 +16,7 @@ import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.default_disabled_msg_maxspeed
 import de.westnordost.streetcomplete.util.ktx.toYesNo
 
-class AddMaxSpeed : OsmFilterQuestType<MaxSpeedAnswer>(), AndroidQuest {
+class AddMaxSpeed : OsmFilterQuestType<Pair<MaxSpeedAnswer, Pair<String, String>?>>(), AndroidQuest {
 
     override val elementFilter = """
         ways with
@@ -46,7 +46,11 @@ class AddMaxSpeed : OsmFilterQuestType<MaxSpeedAnswer>(), AndroidQuest {
 
     override fun createForm() = AddMaxSpeedForm()
 
-    override fun applyAnswerTo(answer: MaxSpeedAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+    override fun applyAnswerTo(answer: Pair<MaxSpeedAnswer, Pair<String, String>?>, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+        if (answer.second != null) {
+            tags[answer.second!!.first] = answer.second!!.second
+        }
+        val answer = answer.first
         when (answer) {
             is MaxSpeedSign -> {
                 tags["maxspeed"] = answer.value.toString()

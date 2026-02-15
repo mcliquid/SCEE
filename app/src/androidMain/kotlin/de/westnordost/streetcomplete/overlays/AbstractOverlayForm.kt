@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.overlays
 
+import android.app.DatePickerDialog
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.PointF
@@ -9,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.PopupMenu
 import android.widget.RelativeLayout
 import androidx.annotation.UiThread
@@ -24,7 +26,9 @@ import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
 import de.westnordost.countryboundaries.CountryBoundaries
 import de.westnordost.osmfeatures.FeatureDictionary
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.location.SurveyChecker
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.meta.CountryInfos
@@ -34,6 +38,9 @@ import de.westnordost.streetcomplete.data.osm.edits.ElementEditAction
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditType
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditsController
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
+import de.westnordost.streetcomplete.data.osm.edits.delete.DeletePoiNodeAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
@@ -45,17 +52,33 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.mapdata.key
 import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.overlays.OverlayRegistry
+import de.westnordost.streetcomplete.data.preferences.Preferences
+import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.databinding.FragmentOverlayBinding
+import de.westnordost.streetcomplete.osm.ALL_PATHS
+import de.westnordost.streetcomplete.osm.ALL_ROADS
+import de.westnordost.streetcomplete.overlays.custom.CustomOverlayForm
+import de.westnordost.streetcomplete.overlays.street_parking.LaneNarrowingTrafficCalmingForm
+import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsCloseableBottomSheet
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsMapOrientationAware
+import de.westnordost.streetcomplete.util.AccessManagerDialog
 import de.westnordost.streetcomplete.util.FragmentViewBindingPropertyDelegate
+import de.westnordost.streetcomplete.util.accessKeys
 import de.westnordost.streetcomplete.util.getNameAndLocationSpanned
+import de.westnordost.streetcomplete.util.dialogs.setViewWithDefaultPadding
+import de.westnordost.streetcomplete.util.ktx.containsAnyKey
+import de.westnordost.streetcomplete.util.ktx.isArea
 import de.westnordost.streetcomplete.util.ktx.isSplittable
 import de.westnordost.streetcomplete.util.ktx.popIn
 import de.westnordost.streetcomplete.util.ktx.popOut
 import de.westnordost.streetcomplete.util.ktx.setMargins
+import de.westnordost.streetcomplete.util.ktx.systemTimeNow
+import de.westnordost.streetcomplete.util.ktx.toInstant
+import de.westnordost.streetcomplete.util.ktx.toLocalDate
 import de.westnordost.streetcomplete.util.ktx.toast
 import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
+import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.util.math.getOrientationAtCenterLineInDegrees
 import de.westnordost.streetcomplete.view.CharSequenceText
 import de.westnordost.streetcomplete.view.ResText
@@ -67,9 +90,14 @@ import de.westnordost.streetcomplete.view.insets_animation.respectSystemInsets
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
+import kotlinx.datetime.toJavaLocalDate
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.android.inject
 import org.koin.core.qualifier.named
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /** Abstract base class for any form displayed for an overlay */
@@ -85,6 +113,7 @@ abstract class AbstractOverlayForm :
     private val surveyChecker: SurveyChecker by inject()
     private val featureDictionaryLazy: Lazy<FeatureDictionary> by inject(named("FeatureDictionaryLazy"))
     protected val featureDictionary: FeatureDictionary get() = featureDictionaryLazy.value
+    private val prefs: Preferences by inject()
     private var _countryInfo: CountryInfo? = null // lazy but resettable because based on lateinit var
         get() {
             if (field == null) {
@@ -165,6 +194,9 @@ abstract class AbstractOverlayForm :
 
         fun getMapPositionAt(screenPos: PointF): LatLon?
         fun getPointOf(pos: LatLon): PointF?
+
+        /** Called when the user chose to edit tags */
+        fun onEditTags(element: Element, geometry: ElementGeometry, questKey: QuestKey? = null, editTypeName: String?)
     }
     private val listener: Listener? get() = parentFragment as? Listener ?: activity as? Listener
 
@@ -209,7 +241,7 @@ abstract class AbstractOverlayForm :
         setTitleHintLabel(
             element?.let { getNameAndLocationSpanned(it, resources, featureDictionary) }
         )
-        setObjNote(element?.tags?.get("note"))
+        setObjNote(element?.tags?.get("note"), element?.tags?.get("fixme") ?: element?.tags?.get("FIXME"))
 
         binding.moreButton.setOnClickListener {
             showOtherAnswers()
@@ -259,17 +291,22 @@ abstract class AbstractOverlayForm :
         _binding = null
     }
 
-    protected fun setObjNote(text: CharSequence?) {
+    protected fun setObjNote(text: CharSequence?, fixmeText: CharSequence?) {
         binding.noteLabel.text = text
+        binding.fixmeLabel.text = if (prefs.expertMode) fixmeText else null
         val titleHintLayout = (binding.titleHintLabelContainer.layoutParams as? RelativeLayout.LayoutParams)
         titleHintLayout?.removeRule(RelativeLayout.ABOVE)
         titleHintLayout?.addRule(RelativeLayout.ABOVE,
-            if (binding.noteLabel.text.isEmpty())
+            if (binding.noteLabel.text.isEmpty() && binding.fixmeLabel.text.isEmpty())
                 binding.speechbubbleContentContainer.id
             else
                 binding.speechbubbleNoteContainer.id
         )
-        binding.speechbubbleNoteContainer.isGone = binding.noteLabel.text.isEmpty()
+        binding.titleNoteLabel.isGone = binding.noteLabel.text.isEmpty()
+        binding.noteLabel.isGone = binding.noteLabel.text.isEmpty()
+        binding.titleFixmeLabel.isGone = binding.fixmeLabel.text.isEmpty()
+        binding.fixmeLabel.isGone = binding.fixmeLabel.text.isEmpty()
+        binding.speechbubbleNoteContainer.isGone = binding.noteLabel.text.isEmpty() && binding.fixmeLabel.text.isEmpty()
     }
 
     /* --------------------------------- IsCloseableBottomSheet  ------------------------------- */
@@ -400,10 +437,22 @@ abstract class AbstractOverlayForm :
             if (element.isSplittable()) {
                 answers.add(AnswerItem(R.string.split_way) { splitWay(element) })
             }
-
+            if (prefs.getBoolean(Prefs.EXPERT_MODE, false) && element is Node
+                && this !is LaneNarrowingTrafficCalmingForm
+                && otherAnswers.none { (it.title as? ResText)?.resId == R.string.quest_generic_answer_does_not_exist })
+                answers.add(createDeleteElementAnswer(element))
+            if (prefs.getBoolean(Prefs.EXPERT_MODE, false)) {
+                createItsDemolishedAnswer()?.let { answers.add(it) }
+                createConstructionAnswer()?.let { answers.add(it) }
+                createAccessManagerAnswer()?.let { answers.add(it) }
+            }
+            if (prefs.getBoolean(Prefs.EXPERT_MODE, false) && this !is CustomOverlayForm)
+                answers.add(AnswerItem(R.string.quest_generic_answer_show_edit_tags) { editTags(element) })
             if (element is Node // add moveNodeAnswer only if it's a free floating node
-                && mapDataWithEditsSource.getWaysForNode(element.id).isEmpty()
-                && mapDataWithEditsSource.getRelationsForNode(element.id).isEmpty()) {
+                    && (prefs.getBoolean(Prefs.EXPERT_MODE, false) ||
+                        (mapDataWithEditsSource.getWaysForNode(element.id).isEmpty()
+                        && mapDataWithEditsSource.getRelationsForNode(element.id).isEmpty())
+                    )) {
                 answers.add(AnswerItem(R.string.move_node) { moveNode() })
             }
         }
@@ -412,12 +461,113 @@ abstract class AbstractOverlayForm :
         return answers
     }
 
+    protected fun editTags(element: Element, elementGeometry: ElementGeometry? = null, editTypeName: String? = null) {
+        listener?.onEditTags(element, elementGeometry ?: geometry, editTypeName = editTypeName)
+    }
+
     protected fun splitWay(element: Element) {
         listener?.onSplitWay(overlay, element as Way, geometry as ElementPolylinesGeometry)
     }
 
     private fun moveNode() {
         listener?.onMoveNode(overlay, element as Node)
+    }
+
+    private fun createDeleteElementAnswer(node: Node): AnswerItem {
+        return AnswerItem(R.string.quest_generic_answer_does_not_exist) {
+            AlertDialog.Builder(requireContext())
+                .setMessage(R.string.osm_element_gone_description)
+                .setPositiveButton(R.string.osm_element_gone_confirmation) { _, _ -> viewLifecycleScope.launch { solve(DeletePoiNodeAction(node), geometry, true) } }
+                .setNeutralButton(R.string.leave_note) { _, _ -> composeNote(node) }
+                .show()
+        }
+    }
+
+    private fun createAccessManagerAnswer(): AnswerItem? {
+        val element = element ?: return null
+        if (!"ways with highway ~ ${(ALL_ROADS + ALL_PATHS).joinToString("|")}".toElementFilterExpression().matches(element)) return null
+        val title = if (element.tags.containsAnyKey(*accessKeys))
+            R.string.manage_access
+        else R.string.add_access
+        return AnswerItem(title) {
+            AccessManagerDialog(requireContext(), element.tags) {
+                viewLifecycleScope.launch { solve(UpdateElementTagsAction(element, it.create()), geometry, true) }
+            }.show()
+        }
+    }
+
+    private fun createConstructionAnswer(): AnswerItem? {
+        val element = element ?: return null
+        if (!AbstractOsmQuestForm.elementWithoutAccessTagsFilter.matches(element)
+            || !element.tags.containsKey("highway")
+            || element.tags["highway"] == "construction"
+        ) return null
+        return AnswerItem(R.string.quest_construction) {
+            val tomorrow = systemTimeNow().toLocalDate().plus(1, DateTimeUnit.DAY)
+            val p = DatePickerDialog(requireContext(), { _, y, m, d ->
+                val finishDate = LocalDate(y, m + 1, d)
+                val today = systemTimeNow().toLocalDate()
+                val builder = StringMapChangesBuilder(element.tags)
+                val diff = finishDate.toEpochDays() - today.toEpochDays()
+                if (diff <= 0) return@DatePickerDialog // don't even bother to tell the user if they are trying to enter wrong data
+
+                // for short construction up to a few months it's better to use conditional access
+                // as per https://wiki.openstreetmap.org/wiki/Tag:highway%3Dconstruction
+                if (diff < 200) { // we arbitrarily set the few months to 200 days
+                    val f = DateTimeFormatter.ofPattern("MMM dd yyyy", Locale.US)
+                    builder["access:conditional"] =
+                        "no @ (${f.format(today.toJavaLocalDate())}-${f.format(finishDate.toJavaLocalDate())})"
+                    viewLifecycleScope.launch { solve(UpdateElementTagsAction(element, builder.create()), geometry, true) }
+                } else {
+                    // if we actually change the highway to construction, we let the user set a construction value
+                    val t = EditText(requireContext()).apply {
+                        setText(element.tags["highway"])
+                    }
+                    val f = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.US)
+                    builder["opening_date"] = f.format(finishDate.toJavaLocalDate())
+                    builder["highway"] = "construction"
+                    AlertDialog.Builder(requireContext())
+                        .setTitle(R.string.quest_construction_value)
+                        .setViewWithDefaultPadding(t)
+                        .setNegativeButton(android.R.string.cancel, null)
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
+                            t.text.toString().takeIf { it.isNotBlank() }
+                                ?.let { builder["construction"] = it }
+                            viewLifecycleScope.launch { solve(UpdateElementTagsAction(element, builder.create()), geometry, true) }
+                        }
+                        .show()
+                }
+            }, tomorrow.year, tomorrow.monthNumber - 1, tomorrow.dayOfMonth)
+            p.datePicker.minDate = tomorrow.toInstant().toEpochMilliseconds()
+            p.show()
+        }
+    }
+
+    private fun createItsDemolishedAnswer(): AnswerItem? {
+        val element = element ?: return null
+        if (!element.isArea()) return null
+        return if (AbstractOsmQuestForm.demolishableBuildingsFilter.matches(element))
+            AnswerItem(R.string.quest_generic_answer_does_not_exist) {
+                AlertDialog.Builder(requireContext())
+                    .setItems(arrayOf(requireContext().getString(R.string.quest_building_demolished), requireContext().getString(R.string.leave_note))) { di, i ->
+                        di.dismiss()
+                        if (i == 0) {
+                            viewLifecycleScope.launch {
+                                val builder = StringMapChangesBuilder(element.tags)
+                                builder["demolished:building"] = builder["building"] ?: "yes"
+                                builder.remove("building")
+                                builder.keys.toList().filter { it.matches(Regex("^(building:|roof:).*")) }
+                                    .forEach { builder.remove(it) }
+                                solve(UpdateElementTagsAction(element, builder.create()), geometry, true)
+                            }
+                        } else {
+                            composeNote(element)
+                        }
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show()
+            }
+        else null
     }
 
     protected fun composeNote(element: Element) {
@@ -433,16 +583,17 @@ abstract class AbstractOverlayForm :
 
     /* -------------------------------------- Apply edit  -------------------------------------- */
 
-    private suspend fun solve(action: ElementEditAction, geometry: ElementGeometry) {
+    private suspend fun solve(action: ElementEditAction, geometry: ElementGeometry, extra: Boolean = false) {
+        Log.i(TAG, "solve ${overlay.name} for ${element?.key}, extra: $extra")
+        val source = if (extra) "survey,extra" else "survey"
         setLocked(true)
         val isSurvey = surveyChecker.checkIsSurvey(geometry)
         if (!isSurvey && !confirmIsSurvey(requireContext())) {
             setLocked(false)
             return
         }
-
         withContext(Dispatchers.IO) {
-            addElementEditsController.add(overlay, geometry, "survey", action, isSurvey)
+            addElementEditsController.add(overlay, geometry, source, action, isSurvey)
         }
         listener?.onEdited(overlay, geometry)
     }
@@ -498,3 +649,5 @@ data class AnswerItem(val titleResourceId: Int, override val action: () -> Unit)
 data class AnswerItem2(val titleString: String, override val action: () -> Unit) : IAnswerItem {
     override val title: Text get() = CharSequenceText(titleString)
 }
+
+private const val TAG = "AbstractOverlayForm"

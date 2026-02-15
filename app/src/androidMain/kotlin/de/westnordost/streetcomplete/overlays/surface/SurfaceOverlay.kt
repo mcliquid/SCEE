@@ -98,7 +98,7 @@ private fun Surface?.getColor(element: Element): Color =
  *   by extremely strong association between surface and colour
  */
 private val Surface.color get() = when (this) {
-    ASPHALT, CONCRETE,
+    ASPHALT, CHIPSEAL, CONCRETE
         -> OverlayColor.Blue
     PAVING_STONES,
         -> OverlayColor.Sky
@@ -108,7 +108,7 @@ private val Surface.color get() = when (this) {
         -> OverlayColor.Aquamarine
     COMPACTED, FINE_GRAVEL,
         -> OverlayColor.Teal
-    DIRT, MUD, GROUND, WOODCHIPS,
+    DIRT, MUD, GROUND, WOODCHIPS, STEPPING_STONES
         -> OverlayColor.Orange
     GRASS,
         -> OverlayColor.Lime // greenish colour for grass is deliberate
@@ -116,7 +116,7 @@ private val Surface.color get() = when (this) {
         -> OverlayColor.Gold // yellowish color for sand is deliberate
     GRAVEL, PEBBLES, ROCK,
         // very different from above but unlikely to be used in same places, i.e. below are usually on bridges
-    WOOD, METAL,
+    WOOD, METAL, METAL_GRID
         -> OverlayColor.Purple
     UNSUPPORTED, PAVED, UNPAVED,
         // not encountered in normal situations, get the same as generic surface

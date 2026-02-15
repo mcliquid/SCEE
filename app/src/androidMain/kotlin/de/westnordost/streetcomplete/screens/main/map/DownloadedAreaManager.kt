@@ -2,7 +2,9 @@ package de.westnordost.streetcomplete.screens.main.map
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.ApplicationConstants
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesSource
 import de.westnordost.streetcomplete.screens.main.map.components.DownloadedAreaMapComponent
 import kotlinx.coroutines.CoroutineScope
@@ -15,7 +17,8 @@ import kotlinx.coroutines.withContext
 
 class DownloadedAreaManager(
     private val mapComponent: DownloadedAreaMapComponent,
-    private val downloadedTilesSource: DownloadedTilesSource
+    private val downloadedTilesSource: DownloadedTilesSource,
+    private val prefs: ObservableSettings,
 ) : DefaultLifecycleObserver {
 
     private val viewLifecycleScope: CoroutineScope = CoroutineScope(SupervisorJob())
@@ -44,7 +47,8 @@ class DownloadedAreaManager(
 
     private fun update() {
         viewLifecycleScope.launch {
-            val tiles = withContext(Dispatchers.IO) { downloadedTilesSource.getAll(ApplicationConstants.DELETE_OLD_DATA_AFTER) }
+            val deleteOldDataAfter = prefs.getInt(Prefs.DATA_RETAIN_TIME, ApplicationConstants.DELETE_OLD_DATA_AFTER_DAYS) * 24L * 60 * 60 * 1000
+            val tiles = withContext(Dispatchers.IO) { downloadedTilesSource.getAll(deleteOldDataAfter) }
             mapComponent.set(tiles)
         }
     }

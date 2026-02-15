@@ -8,8 +8,8 @@ import java.util.Properties
 
 
 /** App version name, code and flavor */
-val appVersionName = "62.2"
-val appVersionCode = 6203
+val appVersionName = "62.21-alpha1"
+val appVersionCode = 6204
 
 /** Localizations the app should be available in */
 val bcp47ExportLanguages = setOf(
@@ -79,7 +79,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-
+/*
     listOf(
         iosX64(),
         iosArm64(),
@@ -90,7 +90,7 @@ kotlin {
             isStatic = true
         }
     }
-
+*/
     sourceSets {
         commonMain {
             dependencies {
@@ -215,6 +215,18 @@ kotlin {
 
                 // map and location
                 implementation("org.maplibre.gl:android-sdk:12.3.1")
+
+                // fast json (de)serialization used for database read and write
+                implementation("com.squareup.moshi:moshi:1.15.1")
+
+                // sunset-sunrise parser for lit quests
+                implementation("com.luckycatlabs:SunriseSunsetCalculator:1.2")
+
+                // diff utils for comparing filters modified by quest settings with original
+                implementation("io.github.java-diff-utils:java-diff-utils:4.12")
+
+                // parser for user-supplied GPX tracks
+                implementation("com.github.ticofab:android-gpx-parser:2.3.1")
             }
         }
         iosMain {
@@ -251,8 +263,15 @@ android {
     namespace = "de.westnordost.streetcomplete"
     compileSdk = 36
 
+    dependenciesInfo {
+        // Disables dependency metadata when building APKs.
+        includeInApk = false
+        // Disables dependency metadata when building Android App Bundles.
+        includeInBundle = false
+    }
+
     defaultConfig {
-        applicationId = "de.westnordost.streetcomplete"
+        applicationId = "de.westnordost.streetcomplete.expert"
         minSdk = 25
         targetSdk = 35
         versionCode = appVersionCode
@@ -468,4 +487,11 @@ tasks.register("copyDefaultStringsToEnStrings") {
         sourceStrings.copyTo(File("$projectDir/src/commonMain/composeResources/values-en/strings.xml"), true)
         sourceStrings.copyTo(File("$projectDir/src/commonMain/composeResources/values/strings.xml"), true)
     }
+}
+
+// this task is EE only, suggestions are used in the tag editor
+tasks.register<GenerateTagSuggestions>("generateTagSuggestions") {
+    group = "streetcomplete"
+    version = presetsVersion
+    targetDir = "$projectDir/src/androidMain/assets/tag_editor"
 }

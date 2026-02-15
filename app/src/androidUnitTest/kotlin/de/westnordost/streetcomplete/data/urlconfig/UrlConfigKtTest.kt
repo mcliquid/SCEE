@@ -27,7 +27,7 @@ internal class UrlConfigKtTest {
 
     private val oUnknown = TestOverlayC()
 
-    private val quests = QuestTypeRegistry(listOf(0 to q0, 1 to q1, 2 to q2, 3 to q3))
+    private val quests = QuestTypeRegistry({ listOf(0 to q0, 1 to q1, 2 to q2, 3 to q3) })
 
     private val overlays = OverlayRegistry(listOf(0 to o0, 1 to o1))
 

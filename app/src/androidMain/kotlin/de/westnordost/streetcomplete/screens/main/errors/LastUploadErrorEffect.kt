@@ -57,7 +57,8 @@ fun LastUploadErrorEffect(
         SendErrorReportDialog(
             onDismissRequest = { showUploadErrorDialog = false },
             onConfirmed = { onReportError(lastError) },
-            title = stringResource(Res.string.upload_error)
+            title = stringResource(Res.string.upload_error),
+            reportText = lastError.toString()
         )
     }
 }

@@ -9,7 +9,10 @@ class UserLoginController(
 
     private val listeners = Listeners<UserLoginSource.Listener>()
 
-    override val isLoggedIn: Boolean get() = accessToken != null
+    override val isLoggedIn: Boolean get() {
+        loggedIn = accessToken != null
+        return loggedIn
+    }
 
     override val accessToken: String? get() =
         prefs.oAuth2AccessToken
@@ -30,5 +33,9 @@ class UserLoginController(
     }
     override fun removeListener(listener: UserLoginSource.Listener) {
         listeners.remove(listener)
+    }
+
+    companion object {
+        var loggedIn = true // used for debugging: allows fake-uploading edits of logged out, always making them as success
     }
 }

@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.util.location
 
 import android.location.Location
+import android.location.LocationManager.GPS_PROVIDER
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.nanoseconds
 
@@ -40,6 +41,7 @@ fun Location.isBetterThan(previous: Location?): Boolean {
         isMoreAccurate -> true
         isNewer && !isLessAccurate -> true
         isNewer && !isMuchLessAccurate && isFromSameProvider -> true
+        isNewer && !isMuchLessAccurate && this.provider == GPS_PROVIDER -> true
         else -> false
     }
 }

@@ -10,7 +10,8 @@ sealed class RegexOrSet {
 
         fun from(string: String): RegexOrSet =
             if (!string.contains(anyRegexStuffExceptPipe)) {
-                SetRegex(string.split('|').toSet())
+                val split = string.split('|')
+                SetRegex(HashSet<String>(split.size, 0.9f).apply { split.forEach { add(it.intern()) } })
             } else {
                 RealRegex(string.toRegex())
             }

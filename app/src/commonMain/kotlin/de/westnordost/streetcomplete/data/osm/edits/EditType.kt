@@ -21,7 +21,7 @@ interface EditType {
     val wikiLink: String?
 
     /** towards which achievements solving an edit of this type should count */
-    val achievements: List<EditTypeAchievement>
+    val achievements: List<EditTypeAchievement> get() = emptyList()
 
     /** the string resource that explains why this edit type is disabled by default or zero if it
      *  is not disabled by default.

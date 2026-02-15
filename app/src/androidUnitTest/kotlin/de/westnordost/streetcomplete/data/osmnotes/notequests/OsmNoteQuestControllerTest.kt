@@ -10,6 +10,7 @@ import de.westnordost.streetcomplete.testutils.argThat
 import de.westnordost.streetcomplete.testutils.bbox
 import de.westnordost.streetcomplete.testutils.comment
 import de.westnordost.streetcomplete.testutils.mock
+import de.westnordost.streetcomplete.testutils.mockPrefs3
 import de.westnordost.streetcomplete.testutils.note
 import de.westnordost.streetcomplete.testutils.on
 import de.westnordost.streetcomplete.testutils.osmNoteQuest
@@ -39,7 +40,7 @@ class OsmNoteQuestControllerTest {
         noteSource = mock()
         userDataSource = mock()
         userLoginSource = mock()
-        prefs = mock()
+        prefs = mockPrefs3()
 
         listener = mock()
 
@@ -70,6 +71,18 @@ class OsmNoteQuestControllerTest {
         on(userDataSource.userId).thenReturn(1)
 
         assertNull(ctrl.get(1))
+    }
+
+    @Test fun `get note quest with comment from user returns non-null if reallyAllNotes`() {
+        on(prefs.reallyAllNotes).thenReturn(true)
+        on(prefs.showAllNotes).thenReturn(true)
+        on(noteSource.get(1)).thenReturn(note(comments = listOf(
+            comment(text = "test?", user = User(id = 100, "Blaubär")),
+            comment(text = "test", user = User(id = 1, "Blubbi"))
+        )))
+        on(userDataSource.userId).thenReturn(1)
+
+        assertNotNull(ctrl.get(1))
     }
 
     @Test fun `get note quest with comment from user that contains a survey required marker returns non-null`() {

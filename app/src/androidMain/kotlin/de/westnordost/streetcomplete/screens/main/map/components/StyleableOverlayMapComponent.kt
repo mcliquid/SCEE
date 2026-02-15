@@ -10,12 +10,8 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementType
-import de.westnordost.streetcomplete.data.osm.mapdata.key
 import de.westnordost.streetcomplete.data.overlays.OverlayColor.Invisible
 import de.westnordost.streetcomplete.data.overlays.OverlayStyle
-import de.westnordost.streetcomplete.data.overlays.OverlayStyle.Point
-import de.westnordost.streetcomplete.data.overlays.OverlayStyle.Polygon
-import de.westnordost.streetcomplete.data.overlays.OverlayStyle.Polyline
 import de.westnordost.streetcomplete.screens.main.map.createIconBitmap
 import de.westnordost.streetcomplete.screens.main.map.maplibre.MapImages
 import de.westnordost.streetcomplete.screens.main.map.maplibre.clear
@@ -191,8 +187,8 @@ class StyleableOverlayMapComponent(
                 textColor(if (isNightMode) "#ccf" else "#124"),
                 textHaloColor(if (isNightMode) "#2e2e48" else "#fff"),
                 textHaloWidth(2.5f),
-                iconColor(if (isNightMode) "#ccf" else "#124"),
-                iconHaloColor(if (isNightMode) "#2e2e48" else "#fff"),
+                iconColor(get("icon-color")),
+                iconHaloColor(get("icon-halo-color")),
                 iconHaloWidth(2.5f),
                 textOptional(true),
                 iconAllowOverlap(true),
@@ -252,6 +248,10 @@ class StyleableOverlayMapComponent(
             is OverlayStyle.Point -> {
                 if (overlayStyle.icon != null) {
                     p.addProperty("icon", context.resources.getResourceEntryName(overlayStyle.icon))
+                    val color = overlayStyle.color?.toRgbaString() ?: if (isNightMode) "#ccf" else "#124"
+                    p.addProperty("icon-color", color)
+                    val haloColor = overlayStyle.color?.darkened()?.toRgbaString() ?: if (isNightMode) "#2e2e48" else "#fff"
+                    p.addProperty("icon-halo-color", haloColor)
                 }
                 if (overlayStyle.label != null) p.addProperty("label", overlayStyle.label)
 
@@ -278,6 +278,10 @@ class StyleableOverlayMapComponent(
                     val pp = getElementKeyProperties(element.key)
                     if (overlayStyle.icon != null) {
                         pp.addProperty("icon", context.resources.getResourceEntryName(overlayStyle.icon))
+                        val color = if (isNightMode) "#ccf" else "#124"
+                        pp.addProperty("icon-color", color)
+                        val haloColor = if (isNightMode) "#2e2e48" else "#fff"
+                        pp.addProperty("icon-halo-color", haloColor)
                     }
                     if (overlayStyle.label != null) pp.addProperty("label", overlayStyle.label)
                     Feature.fromGeometry(geometry.center.toPoint(), pp)
@@ -331,6 +335,19 @@ class StyleableOverlayMapComponent(
                     Feature.fromGeometry(line, p2)
                 }
 
+                // looks similar to "normal" private dashes, but doesn't have round line cap
+                val private = overlayStyle.stroke.let {
+                    if (it != null && it.color != Invisible && !it.dashed && element.tags["highway"] != null && element.tags["access"] in privateWays) {
+                        val p2 = p.deepCopy()
+                        p2.addProperty("width", width * 0.5f)
+                        p2.addProperty("color", it.color.darkened().toRgbaString())
+                        p2.addProperty("dashed", true)
+                        Feature.fromGeometry(line, p2)
+                    } else {
+                        null
+                    }
+                }
+
                 val label = if (overlayStyle.label != null) {
                     Feature.fromGeometry(
                         geometry.center.toPoint(),
@@ -340,7 +357,7 @@ class StyleableOverlayMapComponent(
                     null
                 }
 
-                listOfNotNull(left, right, center, label)
+                listOfNotNull(left, right, center, label, private)
             }
         }
     }
@@ -410,3 +427,6 @@ private fun OverlayStyle.getIcon(): Int? = when (this) {
     is OverlayStyle.Polygon -> icon
     is OverlayStyle.Polyline -> null
 }
+
+// same as in streetcomplete.json
+private val privateWays = hashSetOf("no", "private", "destination", "customers", "delivery", "agricultural", "forestry", "emergency")

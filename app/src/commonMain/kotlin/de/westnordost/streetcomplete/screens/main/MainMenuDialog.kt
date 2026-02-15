@@ -3,7 +3,6 @@ package de.westnordost.streetcomplete.screens.main
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,6 +23,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -39,8 +40,15 @@ import de.westnordost.streetcomplete.resources.team_mode
 import de.westnordost.streetcomplete.resources.team_mode_exit
 import de.westnordost.streetcomplete.resources.user_login
 import de.westnordost.streetcomplete.resources.user_profile
+import de.westnordost.streetcomplete.resources.quick_switch_preset
+import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.data.preferences.Preferences
+import de.westnordost.streetcomplete.data.presets.EditTypePresetsController
 import de.westnordost.streetcomplete.screens.main.controls.NotificationBox
 import de.westnordost.streetcomplete.screens.main.teammode.TeamModeColorCircle
+import de.westnordost.streetcomplete.util.showProfileSelectionDialog
+import org.koin.compose.koinInject
 import de.westnordost.streetcomplete.ui.common.DownloadIcon
 import de.westnordost.streetcomplete.ui.common.TeamModeIcon
 import de.westnordost.streetcomplete.ui.common.UploadIcon
@@ -48,7 +56,6 @@ import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MainMenuDialog(
     onDismissRequest: () -> Unit,
@@ -68,6 +75,9 @@ fun MainMenuDialog(
     backgroundColor: Color = MaterialTheme.colors.surface,
     contentColor: Color = contentColorFor(backgroundColor),
 ) {
+    val prefs: Preferences = koinInject()
+    val editTypePresetsController: EditTypePresetsController = koinInject()
+    val ctx = LocalContext.current
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(
             modifier = modifier,
@@ -76,66 +86,140 @@ fun MainMenuDialog(
             contentColor = contentColor
         ) {
             Column {
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    BigMenuButton(
-                        onClick = { onDismissRequest(); onClickProfile() },
-                        icon = { Icon(painterResource(Res.drawable.ic_profile_48), null) },
-                        text = stringResource(
-                            if (isLoggedIn) Res.string.user_profile else Res.string.user_login
-                        ),
-                    )
-                    BigMenuButton(
-                        onClick = { onDismissRequest(); onClickSettings() },
-                        icon = { Icon(painterResource(Res.drawable.ic_settings_48), null) },
-                        text = stringResource(Res.string.action_settings),
-                    )
-                    BigMenuButton(
-                        onClick = { onDismissRequest(); onClickAbout() },
-                        icon = { Icon(painterResource(Res.drawable.ic_info_outline_48), null) },
-                        text = stringResource(Res.string.action_about2),
-                    )
-                }
-                Divider()
-                CompactMenuButton(
-                    onClick = { onDismissRequest(); onClickDownload() },
-                    icon = { DownloadIcon() },
-                    text = stringResource(Res.string.action_download),
-                )
-                if (unsyncedEditsCount != null) {
+                if (!prefs.getBoolean(Prefs.MAIN_MENU_FULL_GRID, false)) {
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        BigMenuButton(
+                            onClick = { onDismissRequest(); onClickProfile() },
+                            icon = { Icon(painterResource(Res.drawable.ic_profile_48), null) },
+                            text = stringResource(
+                                if (isLoggedIn) Res.string.user_profile else Res.string.user_login
+                            ),
+                        )
+                        BigMenuButton(
+                            onClick = { onDismissRequest(); onClickSettings() },
+                            icon = { Icon(painterResource(Res.drawable.ic_settings_48), null) },
+                            text = stringResource(Res.string.action_settings),
+                        )
+                        BigMenuButton(
+                            onClick = { onDismissRequest(); onClickAbout() },
+                            icon = { Icon(painterResource(Res.drawable.ic_info_outline_48), null) },
+                            text = stringResource(Res.string.action_about2) + " SCEE",
+                        )
+                    }
+                    Divider()
                     CompactMenuButton(
-                        onClick = { onDismissRequest(); onClickUpload() },
-                        icon = {
-                            UploadIcon()
-                            if (unsyncedEditsCount > 0) {
-                                NotificationBox {
-                                    Text(unsyncedEditsCount.toString(), textAlign = TextAlign.Center)
+                        onClick = { onDismissRequest(); onClickDownload() },
+                        icon = { DownloadIcon() },
+                        text = stringResource(Res.string.action_download),
+                    )
+                    if (unsyncedEditsCount != null) {
+                        CompactMenuButton(
+                            onClick = { onDismissRequest(); onClickUpload() },
+                            icon = {
+                                UploadIcon()
+                                if (unsyncedEditsCount > 0) {
+                                    NotificationBox {
+                                        Text(unsyncedEditsCount.toString(), textAlign = TextAlign.Center)
+                                    }
                                 }
-                            }
-                        },
-                        text = stringResource(Res.string.action_upload),
-                        enabled = !isUploadingOrDownloading,
-                    )
-                }
-                if (indexInTeam == null) {
-                    CompactMenuButton(
-                        onClick = { onDismissRequest(); onClickEnterTeamMode() },
-                        icon = { TeamModeIcon() },
-                        text = stringResource(Res.string.team_mode)
-                    )
+                            },
+                            text = stringResource(Res.string.action_upload),
+                            enabled = !isUploadingOrDownloading,
+                        )
+                    }
+                    if (indexInTeam == null) {
+                        CompactMenuButton(
+                            onClick = { onDismissRequest(); onClickEnterTeamMode() },
+                            icon = { TeamModeIcon() },
+                            text = stringResource(Res.string.team_mode)
+                        )
+                    } else {
+                        CompactMenuButton(
+                            onClick = { onDismissRequest(); onClickExitTeamMode() },
+                            icon = {
+                                TeamModeColorCircle(
+                                    index = indexInTeam,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            },
+                            text = stringResource(Res.string.team_mode_exit)
+                        )
+                    }
+                    if (prefs.getBoolean(Prefs.MAIN_MENU_SWITCH_PRESETS, false))
+                        CompactMenuButton(
+                            onClick = { onDismissRequest(); showProfileSelectionDialog(ctx, editTypePresetsController, prefs) },
+                            icon = { },
+                            text = stringResource(R.string.quick_switch_preset)
+                        )
                 } else {
-                    CompactMenuButton(
-                        onClick = { onDismissRequest(); onClickExitTeamMode() },
-                        icon = {
-                            TeamModeColorCircle(
-                                index = indexInTeam,
-                                modifier = Modifier.size(24.dp)
+                    FlowRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        BigMenuButton(
+                            onClick = { onDismissRequest(); onClickProfile() },
+                            icon = { Icon(painterResource(Res.drawable.ic_profile_48), null) },
+                            text = stringResource(
+                                if (isLoggedIn) Res.string.user_profile else Res.string.user_login
+                            ),
+                        )
+                        BigMenuButton(
+                            onClick = { onDismissRequest(); onClickSettings() },
+                            icon = { Icon(painterResource(Res.drawable.ic_settings_48), null) },
+                            text = stringResource(Res.string.action_settings),
+                        )
+                        BigMenuButton(
+                            onClick = { onDismissRequest(); onClickAbout() },
+                            icon = { Icon(painterResource(Res.drawable.ic_info_outline_48), null) },
+                            text = stringResource(Res.string.action_about2) + " SCEE",
+                        )
+                        BigMenuButton(
+                            onClick = { onDismissRequest(); onClickDownload() },
+                            icon = { DownloadIcon() },
+                            text = stringResource(Res.string.action_download),
+                        )
+                        if (unsyncedEditsCount != null && !isUploadingOrDownloading) {
+                            BigMenuButton(
+                                onClick = { onDismissRequest(); onClickUpload() },
+                                icon = {
+                                    UploadIcon()
+                                    if (unsyncedEditsCount > 0) {
+                                        NotificationBox {
+                                            Text(unsyncedEditsCount.toString(), textAlign = TextAlign.Center)
+                                        }
+                                    }
+                                },
+                                text = stringResource(Res.string.action_upload),
                             )
-                        },
-                        text = stringResource(Res.string.team_mode_exit)
-                    )
+                        }
+                        if (indexInTeam == null) {
+                            BigMenuButton(
+                                onClick = { onDismissRequest(); onClickEnterTeamMode() },
+                                icon = { TeamModeIcon() },
+                                text = stringResource(Res.string.team_mode)
+                            )
+                        } else {
+                            BigMenuButton(
+                                onClick = { onDismissRequest(); onClickExitTeamMode() },
+                                icon = {
+                                    TeamModeColorCircle(
+                                        index = indexInTeam,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                },
+                                text = stringResource(Res.string.team_mode_exit)
+                            )
+                        }
+                        if (prefs.getBoolean(Prefs.MAIN_MENU_SWITCH_PRESETS, false))
+                            BigMenuButton(
+                                onClick = { onDismissRequest(); showProfileSelectionDialog(ctx, editTypePresetsController, prefs) },
+                                icon = { },
+                                text = stringResource(Res.string.quick_switch_preset)
+                            )
+                    }
                 }
             }
         }

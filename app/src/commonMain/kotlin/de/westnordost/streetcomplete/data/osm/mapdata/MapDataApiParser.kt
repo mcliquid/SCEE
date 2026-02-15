@@ -14,7 +14,7 @@ import nl.adaptivity.xmlutil.xmlStreaming
 class MapDataApiParser {
     fun parseMapData(
         source: Source,
-        ignoreRelation: (tags: Map<String, String>) -> Boolean = { false }
+        ignoreRelation: (tags: Map<String, String>, members: Int) -> Boolean = { _, _ -> false }
     ): MutableMapData =
         xmlStreaming.newReader(source).parseMapData(ignoreRelation)
 
@@ -22,7 +22,7 @@ class MapDataApiParser {
         xmlStreaming.newReader(source).parseElementUpdates()
 }
 
-private fun XmlReader.parseMapData(ignoreRelation: (tags: Map<String, String>) -> Boolean): MutableMapData = try {
+private fun XmlReader.parseMapData(ignoreRelation: (tags: Map<String, String>, members: Int) -> Boolean): MutableMapData = try {
     val result = MutableMapData()
     var tags: MutableMap<String, String>? = null
     var nodes: MutableList<Long> = ArrayList()
@@ -67,7 +67,7 @@ private fun XmlReader.parseMapData(ignoreRelation: (tags: Map<String, String>) -
         END_ELEMENT -> when (localName) {
             "node" -> result.add(Node(id!!, position!!, tags.orEmpty(), version!!, timestamp!!))
             "way" -> result.add(Way(id!!, nodes, tags.orEmpty(), version!!, timestamp!!))
-            "relation" -> if (!ignoreRelation(tags.orEmpty())) {
+            "relation" -> if (!ignoreRelation(tags.orEmpty(), members.size)) {
                 result.add(Relation(id!!, members, tags.orEmpty(), version!!, timestamp!!))
             }
         }

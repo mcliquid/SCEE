@@ -33,6 +33,10 @@ fun BuildingType.applyTo(tags: Tags) {
 
     tags[osmKey] = osmValue
 
+    if (this == TRANSIT_SHELTER) {
+        tags["shelter_type"] = "public_transport"
+    }
+
     // we set the check date and not check_date:building because this is about the primary feature,
     // not a property of a feature.
     if (!tags.hasChanges) {

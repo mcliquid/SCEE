@@ -13,6 +13,7 @@
     <color name="inverted_background">#666</color>
 
     <color name="location_dot">#536dfe</color>
+    <color name="quest_selection_frame">#bbFF5722</color>
 
     <color name="background">#fff</color>
     <color name="background_transparent">#0fff</color>
@@ -44,4 +45,6 @@
     <color name="traffic_gray_b">#4f5250</color>
 
     <color name="pressed">#ddd</color>
+
+    <color name="link">#00f</color>
 </resources>

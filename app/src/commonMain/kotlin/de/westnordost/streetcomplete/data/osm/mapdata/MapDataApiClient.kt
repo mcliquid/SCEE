@@ -1,6 +1,5 @@
 package de.westnordost.streetcomplete.data.osm.mapdata
 
-import de.westnordost.streetcomplete.data.AuthorizationException
 import de.westnordost.streetcomplete.data.ConflictException
 import de.westnordost.streetcomplete.data.ConnectionException
 import de.westnordost.streetcomplete.data.QueryTooBigException
@@ -52,7 +51,7 @@ class MapDataApiClient(
     suspend fun uploadChanges(
         changesetId: Long,
         changes: MapDataChanges,
-        ignoreRelation: (tags: Map<String, String>) -> Boolean = { false }
+        ignoreRelation: (tags: Map<String, String>, members: Int) -> Boolean = { _, _ -> false }
     ): MapDataUpdates = wrapApiClientExceptions {
         try {
             val response = httpClient.post(baseUrl + "changeset/$changesetId/upload") {
@@ -101,7 +100,7 @@ class MapDataApiClient(
      */
     suspend fun getMap(
         bounds: BoundingBox,
-        ignoreRelation: (tags: Map<String, String>) -> Boolean = { false }
+        ignoreRelation: (tags: Map<String, String>, members: Int) -> Boolean = { _, _ -> false }
     ): MutableMapData = wrapApiClientExceptions {
         if (bounds.crosses180thMeridian) {
             throw IllegalArgumentException("Bounding box crosses 180th meridian")
@@ -200,7 +199,7 @@ class MapDataApiClient(
         try {
             val response = httpClient.get(baseUrl + query) { expectSuccess = true }
             val source = response.bodyAsChannel().asSource().buffered()
-            return parser.parseMapData(source) { false }
+            return parser.parseMapData(source) { _, _ -> false }
         } catch (e: ClientRequestException) {
             when (e.response.status) {
                 HttpStatusCode.Gone, HttpStatusCode.NotFound -> return null

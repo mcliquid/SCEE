@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.data.visiblequests
 import de.westnordost.streetcomplete.data.osm.created_elements.CreatedElementsSource
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuest
 import de.westnordost.streetcomplete.data.osmnotes.notequests.OsmNoteQuest
+import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuest
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.quest.Quest
 import de.westnordost.streetcomplete.util.Listeners
@@ -35,6 +36,7 @@ class TeamModeQuestFilter internal constructor(
     private val Quest.stableId: Long get() = when (this) {
         is OsmQuest -> elementId
         is OsmNoteQuest -> id
+        is ExternalSourceQuest -> id.hashCode().toLong()
         else -> 0
     }
 

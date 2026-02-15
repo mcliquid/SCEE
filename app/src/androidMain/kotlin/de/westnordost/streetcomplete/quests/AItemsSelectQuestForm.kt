@@ -40,7 +40,7 @@ abstract class AItemsSelectQuestForm<I, T> : AbstractOsmQuestForm<T>() {
     private val binding by contentViewBinding(ComposeViewBinding::bind)
     override val defaultExpanded = false
 
-    private val prefs: Preferences by inject()
+    //private val prefs: Preferences by inject()
 
     protected open val itemsPerRow = 4
 

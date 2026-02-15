@@ -17,6 +17,11 @@
 
     Foreground service types exists since Android 10.
     -->
+    <!-- SCEE still uses a foreground service and notifications for the nearby quest monitor (test whether it still works properly) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
     <uses-feature android:name="android.hardware.screen.portrait" />
@@ -36,6 +41,7 @@
 
     <application
         android:name="de.westnordost.streetcomplete.StreetCompleteApplication"
+        tools:replace="android:allowBackup"
         android:allowBackup="false"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
@@ -74,6 +80,11 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="streetcomplete" />
             </intent-filter>
+            <intent-filter >
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/*" android:scheme="content" android:host="*"/>
+            </intent-filter>
         </activity>
         <activity
             android:name="de.westnordost.streetcomplete.screens.settings.SettingsActivity"
@@ -105,6 +116,9 @@
             android:foregroundServiceType="dataSync"
             tools:node="merge" />
 
+        <service
+            android:name="de.westnordost.streetcomplete.screens.main.NearbyQuestMonitor"
+            android:foregroundServiceType="location" />
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="@string/fileprovider_authority"

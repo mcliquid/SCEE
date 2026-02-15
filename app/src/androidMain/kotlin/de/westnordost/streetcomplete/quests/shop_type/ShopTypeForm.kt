@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.RadioButton
 import de.westnordost.osmfeatures.Feature
 import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.databinding.ViewShopTypeBinding
 import de.westnordost.streetcomplete.osm.POPULAR_PLACE_FEATURE_IDS
 import de.westnordost.streetcomplete.osm.isPlace
@@ -48,7 +49,14 @@ class ShopTypeForm : AbstractOsmQuestForm<ShopTypeAnswer>() {
                 { it.toElement().isPlace() },
                 ::onSelectedFeature,
                 POPULAR_PLACE_FEATURE_IDS,
+                false,
+                geometry.center
             ).show()
+        }
+        if (questType is SpecifyShopType) {
+            val titlePlus = if (element.tags["shop"] == null) " (amenity=${element.tags["amenity"]})"
+                else " (shop=${element.tags["shop"]})"
+            setTitle(resources.getString((questType as OsmElementQuestType<*>).getTitle(element.tags)) + titlePlus)
         }
     }
 
@@ -59,7 +67,7 @@ class ShopTypeForm : AbstractOsmQuestForm<ShopTypeAnswer>() {
 
     override fun onClickOk() {
         when (selectedRadioButtonId) {
-            R.id.vacantRadioButton    -> applyAnswer(IsShopVacant)
+            R.id.vacantRadioButton    -> applyAnswer(IsShopVacant, true)
             R.id.leaveNoteRadioButton -> composeNote()
             R.id.replaceRadioButton   -> {
                 // if the shop has **some** name (that is displayed to the user), we just want to

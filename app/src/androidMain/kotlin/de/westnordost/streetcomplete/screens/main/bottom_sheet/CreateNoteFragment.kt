@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.screens.main.bottom_sheet
 
+import android.annotation.SuppressLint
 import android.content.res.Configuration
 import android.graphics.PointF
 import android.os.Bundle
@@ -16,7 +17,9 @@ import androidx.core.graphics.toPointF
 import androidx.core.os.bundleOf
 import androidx.core.view.isGone
 import de.westnordost.streetcomplete.ApplicationConstants
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesSource
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditAction
 import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditsController
@@ -29,6 +32,7 @@ import de.westnordost.streetcomplete.util.ktx.getLocationInWindow
 import de.westnordost.streetcomplete.util.ktx.hideKeyboard
 import de.westnordost.streetcomplete.util.ktx.isKeyboardOpen
 import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
+import de.westnordost.streetcomplete.util.dialogs.showOutsideDownloadedAreaDialog
 import de.westnordost.streetcomplete.util.viewBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,6 +43,7 @@ import org.koin.android.ext.android.inject
 class CreateNoteFragment : AbstractCreateNoteFragment() {
 
     private val noteEditsController: NoteEditsController by inject()
+    private val downloadedTilesSource: DownloadedTilesSource by inject()
 
     private var _binding: FragmentCreateNoteBinding? = null
     private val binding: FragmentCreateNoteBinding get() = _binding!!
@@ -51,8 +56,16 @@ class CreateNoteFragment : AbstractCreateNoteFragment() {
     override val bottomSheetTitle get() = bottomSheetBinding.speechBubbleTitleContainer
     override val bottomSheetContent get() = bottomSheetBinding.speechbubbleContentContainer
     override val floatingBottomView get() = bottomSheetBinding.okButton
-    override val okButton get() = bottomSheetBinding.okButton
+    override val floatingBottomView2 get() = bottomSheetBinding.hideButton
     override val okButtonContainer get() = bottomSheetBinding.okButtonContainer
+    override val gpxButton get() = if (prefs.getBoolean(Prefs.SWAP_GPX_NOTE_BUTTONS, false) && prefs.getBoolean(Prefs.GPX_BUTTON, false))
+            bottomSheetBinding.okButton
+        else
+            bottomSheetBinding.hideButton
+    override val okButton get() = if (prefs.getBoolean(Prefs.SWAP_GPX_NOTE_BUTTONS, false) && prefs.getBoolean(Prefs.GPX_BUTTON, false))
+            bottomSheetBinding.hideButton
+        else
+            bottomSheetBinding.okButton
 
     private val contentBinding by viewBinding(FormLeaveNoteBinding::bind, R.id.content)
 
@@ -85,6 +98,7 @@ class CreateNoteFragment : AbstractCreateNoteFragment() {
         return binding.root
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -96,6 +110,11 @@ class CreateNoteFragment : AbstractCreateNoteFragment() {
 
         bottomSheetBinding.titleLabel.text = getString(R.string.map_btn_create_note)
         contentBinding.descriptionLabel.text = getString(R.string.create_new_note_description)
+        if (prefs.getBoolean(Prefs.GPX_BUTTON, false)) {
+            bottomSheetBinding.okButton.setCompoundDrawablesRelativeWithIntrinsicBounds(0,0,0,0) // removes check drawable
+            gpxButton.text = "GPX"
+            okButton.text = "OSM"
+        }
     }
 
     override fun onDestroyView() {
@@ -137,10 +156,10 @@ class CreateNoteFragment : AbstractCreateNoteFragment() {
         binding.markerCreateLayout.markerLayoutContainer.visibility = View.INVISIBLE
     }
 
-    override fun onComposedNote(text: String, imagePaths: List<String>) {
+    override fun onComposedNote(text: String, imagePaths: List<String>, isGpxNote: Boolean) {
         /* pressing once on "OK" should first only close the keyboard, so that the user can review
-           the position of the note he placed */
-        if (contentBinding.noteInput.isKeyboardOpen) {
+           the position of the note he placed (this is now optional) */
+        if (prefs.getBoolean(Prefs.HIDE_KEYBOARD_FOR_NOTE, true) && contentBinding.noteInput.isKeyboardOpen) {
             contentBinding.noteInput.hideKeyboard()
             return
         }
@@ -149,15 +168,18 @@ class CreateNoteFragment : AbstractCreateNoteFragment() {
         val screenPos = createNoteMarker.getLocationInWindow()
         screenPos.offset(createNoteMarker.width / 2, createNoteMarker.height / 2)
         val position = listener?.getMapPositionAt(screenPos.toPointF()) ?: return
+        showOutsideDownloadedAreaDialog(requireContext(), position, downloadedTilesSource) { reallyCreateNote(text, imagePaths, isGpxNote, position) }
+    }
 
+    private fun reallyCreateNote(text: String, imagePaths: List<String>, isGpxNote: Boolean, position: LatLon) {
         binding.markerCreateLayout.markerLayoutContainer.visibility = View.INVISIBLE
 
-        val fullText = "$text\n\nvia ${ApplicationConstants.USER_AGENT}"
+        val fullText = if (isGpxNote) text else "$text\n\nvia ${ApplicationConstants.USER_AGENT}"
         viewLifecycleScope.launch {
             withContext(Dispatchers.IO) {
                 val recordedTrack =
                     if (hasGpxAttached) listener?.getRecordedTrack().orEmpty() else emptyList()
-                noteEditsController.add(0, NoteEditAction.CREATE, position, fullText, imagePaths, recordedTrack)
+                noteEditsController.add(0, NoteEditAction.CREATE, position, fullText, imagePaths, recordedTrack, isGpxNote, context)
             }
         }
 

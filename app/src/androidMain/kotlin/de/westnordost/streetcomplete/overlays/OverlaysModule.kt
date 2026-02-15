@@ -1,6 +1,8 @@
 package de.westnordost.streetcomplete.overlays
 
+import com.russhwolf.settings.ObservableSettings
 import de.westnordost.countryboundaries.CountryBoundaries
+import de.westnordost.streetcomplete.ApplicationConstants.EE_QUEST_OFFSET
 import de.westnordost.osmfeatures.Feature
 import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.data.meta.CountryInfo
@@ -9,11 +11,13 @@ import de.westnordost.streetcomplete.data.meta.getByLocation
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.overlays.OverlayRegistry
+import de.westnordost.streetcomplete.overlays.custom.CustomOverlay
 import de.westnordost.streetcomplete.overlays.address.AddressOverlay
 import de.westnordost.streetcomplete.overlays.buildings.BuildingsOverlay
 import de.westnordost.streetcomplete.overlays.cycleway.CyclewayOverlay
 import de.westnordost.streetcomplete.overlays.mtb_scale.MtbScaleOverlay
 import de.westnordost.streetcomplete.overlays.places.PlacesOverlay
+//import de.westnordost.streetcomplete.overlays.restriction.RestrictionOverlay
 import de.westnordost.streetcomplete.overlays.sidewalk.SidewalkOverlay
 import de.westnordost.streetcomplete.overlays.street_parking.StreetParkingOverlay
 import de.westnordost.streetcomplete.overlays.surface.SurfaceOverlay
@@ -40,7 +44,8 @@ val overlaysModule = module {
             },
             { element ->
                 get<Lazy<FeatureDictionary>>(named("FeatureDictionaryLazy")).value.getFeature(element)
-            }
+            },
+            get(),
         )
     }
 }
@@ -49,6 +54,7 @@ fun overlaysRegistry(
     getCountryInfoByLocation: (LatLon) -> CountryInfo,
     getCountryCodeByLocation: (LatLon) -> String?,
     getFeature: (Element) -> Feature?,
+    prefs: ObservableSettings,
 ) = OverlayRegistry(listOf(
 
     0 to WayLitOverlay(),
@@ -61,4 +67,6 @@ fun overlaysRegistry(
     8 to ThingsOverlay(getFeature),
     7 to BuildingsOverlay(),
     9 to MtbScaleOverlay(),
+//    (EE_QUEST_OFFSET + 1) to RestrictionOverlay(),
+    (EE_QUEST_OFFSET + 0) to CustomOverlay(prefs),
 ))

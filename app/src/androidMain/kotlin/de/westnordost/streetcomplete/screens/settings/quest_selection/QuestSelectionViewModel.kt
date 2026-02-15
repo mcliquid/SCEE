@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.westnordost.countryboundaries.CountryBoundaries
+import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.data.osm.edits.EditType
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.preferences.Preferences
@@ -38,6 +39,7 @@ abstract class QuestSelectionViewModel : ViewModel() {
     abstract val filteredQuests: StateFlow<List<QuestSelection>>
     abstract val currentCountry: String?
     abstract val selectedEditTypePresetName: StateFlow<String?>
+    abstract var onlySceeQuests: Boolean
 
     abstract fun select(questType: QuestType, selected: Boolean)
     abstract fun order(questType: QuestType, toAfter: QuestType)
@@ -54,7 +56,7 @@ class QuestSelectionViewModelImpl(
     private val visibleEditTypeController: VisibleEditTypeController,
     private val questTypeOrderController: QuestTypeOrderController,
     countryBoundaries: Lazy<CountryBoundaries>,
-    prefs: Preferences,
+    private val prefs: Preferences,
 ) : QuestSelectionViewModel() {
 
     override val searchText = MutableStateFlow("")
@@ -76,6 +78,13 @@ class QuestSelectionViewModelImpl(
         // all/many visibilities have changed - re-init list
         override fun onVisibilitiesChanged() { initQuests() }
     }
+
+    override var onlySceeQuests: Boolean = false
+        set(value) {
+            if (field == value) return
+            field = value
+            initQuests()
+        }
 
     private val questTypeOrderListener = object : QuestTypeOrderSource.Listener {
         override fun onQuestTypeOrderAdded(item: QuestType, toAfter: QuestType) {
@@ -179,13 +188,10 @@ class QuestSelectionViewModelImpl(
         launch(IO) {
             val sortedQuestTypes = questTypeRegistry.toMutableList()
             questTypeOrderController.sort(sortedQuestTypes)
-            quests.value = sortedQuestTypes
-                .map { QuestSelection(
-                    questType = it,
-                    selected = visibleEditTypeController.isVisible(it),
-                    enabledInCurrentCountry = isQuestEnabledInCurrentCountry(it)
-                ) }
-                .toMutableList()
+            quests.value = sortedQuestTypes.mapNotNull {
+                if (onlySceeQuests && questTypeRegistry.getOrdinalOf(it)!! < ApplicationConstants.EE_QUEST_OFFSET) null
+                else QuestSelection(it, visibleEditTypeController.isVisible(it), enabledInCurrentCountry = isQuestEnabledInCurrentCountry(it), prefs)
+            }.toMutableList()
         }
     }
 

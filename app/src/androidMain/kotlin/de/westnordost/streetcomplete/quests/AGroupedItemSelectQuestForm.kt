@@ -40,7 +40,7 @@ abstract class AGroupedItemSelectQuestForm<G: Group<I>, I, T> : AbstractOsmQuest
     final override val contentLayoutResId = R.layout.compose_view
     private val binding by contentViewBinding(ComposeViewBinding::bind)
 
-    private val prefs: Preferences by inject()
+    //private val prefs: Preferences by inject()
 
     override val defaultExpanded = false
 

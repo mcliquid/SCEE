@@ -17,7 +17,10 @@ import de.westnordost.streetcomplete.screens.main.map.maplibre.isArea
 import de.westnordost.streetcomplete.screens.main.map.maplibre.isPoint
 import de.westnordost.streetcomplete.screens.main.map.maplibre.toMapLibreGeometry
 import de.westnordost.streetcomplete.screens.main.map.maplibre.toPoint
+import de.westnordost.streetcomplete.util.ktx.toHexColor
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.style.expressions.Expression.*
@@ -30,6 +33,8 @@ import org.maplibre.android.style.layers.SymbolLayer
 import org.maplibre.android.style.sources.GeoJsonSource
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
+import androidx.core.graphics.toColorInt
+import de.westnordost.streetcomplete.util.ktx.toRgba
 
 /** Manages putting some generic geometry markers with an optional drawable on the map. I.e. to
  *  show the geometry of elements surrounding the selected quest */
@@ -39,6 +44,14 @@ class GeometryMarkersMapComponent(
     private val mapImages: MapImages
 ) {
 
+    init {
+        GlobalScope.launch {
+            mapImages.addOnce(listOf(directionIcon)) {
+                val name = context.resources.getResourceEntryName(directionIcon)
+                createIconBitmap(context, it, true) to true
+            }
+        }
+    }
     private val geometrySource = GeoJsonSource(SOURCE)
 
     private val featuresByGeometry: MutableMap<ElementGeometry, List<Feature>> = HashMap()
@@ -47,31 +60,48 @@ class GeometryMarkersMapComponent(
         FillLayer("geo-fill", SOURCE)
             .withFilter(isArea())
             .withProperties(
-                fillColor("#D140D0"),
+                fillColor(get("color")),
                 fillOpacity(0.3f)
             ),
         LineLayer("geo-lines", SOURCE)
             // both polygon and line
             .withProperties(
                 lineWidth(10f),
-                lineColor("#D140D0"),
+                lineColor(get("color")),
                 lineOpacity(0.5f),
                 lineCap(Property.LINE_CAP_ROUND)
             ),
         SymbolLayer("geo-symbols", SOURCE)
             .withFilter(isPoint())
             .withProperties(
-                iconColor("#D140D0"),
+                iconColor(get("color")),
                 iconImage(get("icon")),
                 iconSize(interpolate(linear(), zoom(), stop(17, 0.5f), stop(19, 1f))),
                 iconAllowOverlap(true),
+                iconRotate(get("rotation")),
                 textField(get("label")),
                 textAnchor(Property.TEXT_ANCHOR_TOP),
                 textOffset(arrayOf(0f, 1f)),
                 textSize(16 * context.resources.configuration.fontScale),
-                textColor("#D140D0"),
+                textColor(get("color")),
                 textFont(arrayOf("Roboto Bold")),
                 textOptional(true)
+            ),
+        SymbolLayer("geo-direction", SOURCE)
+            .withFilter(all(isPoint(), has("direction")))
+            .withProperties(
+                iconColor(get("color")),
+                iconImage(context.resources.getResourceEntryName(directionIcon)),
+                iconSize(interpolate(linear(), zoom(), stop(17, 0.7f), stop(19, 1.5f))),
+                iconAllowOverlap(true),
+                iconRotate(get("rotation")),
+                iconRotationAlignment("map"),
+                // how to translate dependent on rotation? needs an array, but how to create
+//                iconTranslateAnchor("map"),
+//                iconTranslate(array(
+//                    product(cos(get("rotation")), literal(5f)),
+//                    product(sin(get("rotation")), literal(5f))
+//                ))
             )
     )
 
@@ -88,7 +118,7 @@ class GeometryMarkersMapComponent(
             createIconBitmap(context, it, sdf) to sdf
         }
         for (marker in markers) {
-            featuresByGeometry[marker.geometry] = marker.toFeatures(context.resources)
+            synchronized(this) {featuresByGeometry[marker.geometry] = marker.toFeatures(context.resources) }
         }
         withContext(Dispatchers.Main) { update() }
     }
@@ -103,7 +133,7 @@ class GeometryMarkersMapComponent(
         geometrySource.clear()
     }
 
-    private fun update() {
+    private fun update() = synchronized(this) {
         geometrySource.setGeoJson(FeatureCollection.fromFeatures(featuresByGeometry.values.flatten()))
     }
 
@@ -114,6 +144,7 @@ class GeometryMarkersMapComponent(
 
 private fun Marker.toFeatures(resources: Resources): List<Feature> {
     val features = ArrayList<Feature>(3)
+    val color = color?.toHexColor() ?: "#D140D0"
     // point marker or any marker with title or icon
     if (icon != null || title != null || geometry is ElementPointGeometry) {
         val p = JsonObject()
@@ -122,12 +153,24 @@ private fun Marker.toFeatures(resources: Resources): List<Feature> {
         if (title != null) {
             p.addProperty("label", title)
         }
+        p.addProperty("color", color)
+        p.addProperty("rotation", rotation?.toFloat() ?: 0.0f)
+        features.add(Feature.fromGeometry(geometry.center.toPoint(), p))
+    }
+
+    if (direction != null && geometry is ElementPointGeometry) {
+        val p = JsonObject()
+        val color = this.color ?: "#80D140D0".toColorInt()
+        p.addProperty("direction", true)
+        p.addProperty("color", color.toRgba())
+        p.addProperty("rotation", direction.toFloat())
         features.add(Feature.fromGeometry(geometry.center.toPoint(), p))
     }
 
     // polygon / polylines marker(s)
     if (geometry is ElementPolygonsGeometry || geometry is ElementPolylinesGeometry) {
-        features.add(Feature.fromGeometry(geometry.toMapLibreGeometry()))
+        features.add(Feature.fromGeometry(geometry.toMapLibreGeometry(), JsonObject().apply { addProperty("color", color) }))
     }
     return features
 }
+private val directionIcon = R.drawable.view_direction

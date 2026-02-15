@@ -1,5 +1,14 @@
 package de.westnordost.streetcomplete.screens.settings
 
+import android.content.Context
+import android.os.Build
+import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,12 +33,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
-import de.westnordost.streetcomplete.ApplicationConstants.DELETE_OLD_DATA_AFTER
+import androidx.core.widget.doAfterTextChanged
+import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.ApplicationConstants.REFRESH_DATA_AFTER
-import de.westnordost.streetcomplete.BuildConfig
+import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.preferences.Autosync
+import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.preferences.ResurveyIntervals
 import de.westnordost.streetcomplete.data.preferences.Theme
 import de.westnordost.streetcomplete.resources.Res
@@ -68,11 +82,14 @@ import de.westnordost.streetcomplete.resources.pref_title_zoom_buttons
 import de.westnordost.streetcomplete.resources.quest_presets_default_name
 import de.westnordost.streetcomplete.resources.restore_confirmation
 import de.westnordost.streetcomplete.resources.restore_dialog_message
+import de.westnordost.streetcomplete.resources.restore_dialog_hint
 import de.westnordost.streetcomplete.resources.resurvey_intervals_default
+import de.westnordost.streetcomplete.resources.resurvey_intervals_even_less_often
 import de.westnordost.streetcomplete.resources.resurvey_intervals_less_often
 import de.westnordost.streetcomplete.resources.resurvey_intervals_more_often
 import de.westnordost.streetcomplete.resources.theme_dark
 import de.westnordost.streetcomplete.resources.theme_light
+import de.westnordost.streetcomplete.resources.theme_dark_contrast
 import de.westnordost.streetcomplete.resources.theme_system_default
 import de.westnordost.streetcomplete.ui.common.BackIcon
 import de.westnordost.streetcomplete.ui.common.NextScreenIcon
@@ -80,6 +97,11 @@ import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmationDialog
 import de.westnordost.streetcomplete.ui.common.dialogs.InfoDialog
 import de.westnordost.streetcomplete.ui.common.settings.Preference
 import de.westnordost.streetcomplete.ui.common.settings.PreferenceCategory
+import de.westnordost.streetcomplete.util.TempLogger
+import de.westnordost.streetcomplete.util.dialogs.setDefaultDialogPadding
+import de.westnordost.streetcomplete.util.logs.DatabaseLogger
+import de.westnordost.streetcomplete.util.logs.Log
+import org.koin.compose.koinInject
 import de.westnordost.streetcomplete.ui.common.settings.Select
 import de.westnordost.streetcomplete.util.ktx.getDisplayName
 import de.westnordost.streetcomplete.util.locale.NumberFormatter
@@ -97,6 +119,11 @@ fun SettingsScreen(
     onClickOverlaySelection: () -> Unit,
     onClickLanguageSelection: () -> Unit,
     onClickBack: () -> Unit,
+    onClickQuestSettings: () -> Unit,
+    onClickUiSettings: () -> Unit,
+    onClickDisplaySettings: () -> Unit,
+    onClickNoteSettings: () -> Unit,
+    onClickDataSettings: () -> Unit,
 ) {
     val hiddenQuestCount by viewModel.hiddenQuestCount.collectAsState()
     val questTypeCount by viewModel.questTypeCount.collectAsState()
@@ -110,6 +137,7 @@ fun SettingsScreen(
     val keepScreenOn by viewModel.keepScreenOn.collectAsState()
     val showZoomButtons by viewModel.showZoomButtons.collectAsState()
     val selectedLanguage by viewModel.selectedLanguage.collectAsState()
+    val expertMode by viewModel.expertMode.collectAsState()
 
     var showDeleteCacheConfirmation by remember { mutableStateOf(false) }
     var showRestoreHiddenQuestsConfirmation by remember { mutableStateOf(false) }
@@ -118,6 +146,24 @@ fun SettingsScreen(
     var showThemeSelect by remember { mutableStateOf(false) }
     var showAutosyncSelect by remember { mutableStateOf(false) }
     var showResurveyIntervalsSelect by remember { mutableStateOf(false) }
+    var showExpertModeConfirmation by remember { mutableStateOf(false) }
+
+    val c = LocalContext.current
+    val databaseLogger: DatabaseLogger = koinInject()
+    val prefs: Preferences = koinInject()
+    var useDebugLogger by remember { mutableStateOf(prefs.getBoolean(Prefs.TEMP_LOGGER, false)) }
+
+    fun useDebugLogger(use: Boolean, prefs: Preferences, databaseLogger: DatabaseLogger) {
+        prefs.putBoolean(Prefs.TEMP_LOGGER, use)
+        useDebugLogger = use
+        if (use) {
+            Log.instances.removeAll { it is DatabaseLogger }
+            Log.instances.add(TempLogger)
+        } else {
+            Log.instances.remove(TempLogger)
+            Log.instances.add(databaseLogger)
+        }
+    }
 
     Column(Modifier.fillMaxSize()) {
         TopAppBar(
@@ -275,7 +321,63 @@ fun SettingsScreen(
                 )
             }
 
-            if (BuildConfig.DEBUG) {
+            PreferenceCategory(stringResource(R.string.pref_category_mods)) {
+
+                Preference(
+                    name = stringResource(R.string.pref_expert_mode_title),
+                    onClick = {
+                        if (expertMode) viewModel.setExpertMode(false)
+                        else showExpertModeConfirmation = true
+                    },
+                    description = stringResource(R.string.pref_expert_mode_summary)
+                ) {
+                    Switch(
+                        checked = expertMode,
+                        onCheckedChange = {
+                            if (!it) viewModel.setExpertMode(it)
+                            else showExpertModeConfirmation = true
+                        }
+                    )
+                }
+
+                Preference(
+                    name = stringResource(R.string.pref_screen_ui),
+                    onClick = onClickUiSettings,
+                )
+                Preference(
+                    name = stringResource(R.string.pref_screen_display),
+                    onClick = onClickDisplaySettings,
+                )
+                Preference(
+                    name = stringResource(R.string.pref_screen_quests),
+                    onClick = onClickQuestSettings,
+                )
+                Preference(
+                    name = stringResource(R.string.pref_screen_notes),
+                    onClick = onClickNoteSettings,
+                )
+                Preference(
+                    name = stringResource(R.string.pref_screen_data_management),
+                    onClick = onClickDataSettings,
+                )
+                if (ApplicationConstants.DEBUG) {
+                    Preference(
+                        name = "Debug log reader",
+                        onClick = { showOldLogReader(c) }
+                    )
+
+                    Preference(
+                        name = "Use temp debug logger",
+                        onClick = { useDebugLogger(!useDebugLogger, prefs, databaseLogger) },
+                    ) {
+                        Switch(
+                            checked = useDebugLogger,
+                            onCheckedChange = { useDebugLogger(it, prefs, databaseLogger) }
+                        )
+                    }
+                }
+            }
+            if (ApplicationConstants.DEBUG) {
                 PreferenceCategory("Debug") {
                     Preference(
                         name = "Show Quest Forms",
@@ -286,6 +388,14 @@ fun SettingsScreen(
         }
     }
 
+    if (showExpertModeConfirmation) {
+        ConfirmationDialog(
+            onDismissRequest = { showExpertModeConfirmation = false },
+            onConfirmed = { viewModel.setExpertMode(true) },
+            text = { Text(stringResource(R.string.pref_expert_mode_message)) },
+            confirmButtonText = stringResource(R.string.dialog_button_understood)
+        )
+    }
     if (showDeleteCacheConfirmation) {
         ConfirmationDialog(
             onDismissRequest = { showDeleteCacheConfirmation = false },
@@ -295,7 +405,7 @@ fun SettingsScreen(
                 Text(stringResource(
                     Res.string.delete_cache_dialog_message,
                     numberFormatter.format(1.0 * REFRESH_DATA_AFTER / (24 * 60 * 60 * 1000)),
-                    numberFormatter.format(1.0 * DELETE_OLD_DATA_AFTER / (24 * 60 * 60 * 1000))
+                    numberFormatter.format(1.0 * viewModel.prefs.getInt(Prefs.DATA_RETAIN_TIME, ApplicationConstants.DELETE_OLD_DATA_AFTER_DAYS))
                 ))
             },
             confirmButtonText = stringResource(Res.string.delete_confirmation)
@@ -306,6 +416,7 @@ fun SettingsScreen(
             onDismissRequest = { showRestoreHiddenQuestsConfirmation = false },
             onConfirmed = { viewModel.unhideQuests() },
             title = { Text(stringResource(Res.string.restore_dialog_message)) },
+            text = { Text(stringResource(Res.string.restore_dialog_hint)) },
             confirmButtonText = stringResource(Res.string.restore_confirmation)
         )
     }
@@ -329,6 +440,7 @@ private val Autosync.title: StringResource get() = when (this) {
 }
 
 private val ResurveyIntervals.title: StringResource get() = when (this) {
+    ResurveyIntervals.EVEN_LESS_OFTEN -> Res.string.resurvey_intervals_even_less_often
     ResurveyIntervals.LESS_OFTEN -> Res.string.resurvey_intervals_less_often
     ResurveyIntervals.DEFAULT -> Res.string.resurvey_intervals_default
     ResurveyIntervals.MORE_OFTEN -> Res.string.resurvey_intervals_more_often
@@ -338,10 +450,75 @@ private val Theme.title: StringResource get() = when (this) {
     Theme.LIGHT -> Res.string.theme_light
     Theme.DARK -> Res.string.theme_dark
     Theme.SYSTEM -> Res.string.theme_system_default
+    Theme.DARK_CONTRAST -> Res.string.theme_dark_contrast
 }
 
 private fun getLanguageDisplayName(languageTag: String): String? {
     if (languageTag.isEmpty()) return null
     val locale = Locale(languageTag)
     return locale.getDisplayName(locale) ?: languageTag
+}
+
+private fun showOldLogReader(context: Context) { // todo: repeats lines... is it the logger, or the dialog?
+    var reversed = false
+    var filter = ""
+    var maxLines = 200
+    val log = TextView(context)
+    var lines = TempLogger.getLog().take(maxLines)
+    log.setTextIsSelectable(true)
+    log.text = lines.joinToString("\n")
+    fun reloadText() {
+        val l = TempLogger.getLog()
+        lines = when {
+            filter.isNotBlank() && reversed -> l.asReversed().filter { line -> line.toString().contains(filter, true) }
+            filter.isNotBlank() -> l.filter { line -> line.toString().contains(filter, true) }
+            reversed -> l.asReversed()
+            else -> l
+        }.take(maxLines)
+        log.text = lines.joinToString("\n")
+    }
+    val scrollLog = ScrollView(context).apply {
+        addView(log)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            setOnScrollChangeListener { _, _, _, _, _ ->
+                if (log.bottom <= height + scrollY && lines.size >= maxLines) {
+                    maxLines *= 2
+                    reloadText()
+                }
+            }
+        }
+    }
+    val reverseButton = Button(context)
+    reverseButton.setText(R.string.pref_read_reverse_button)
+    reverseButton.setOnClickListener {
+        reversed = !reversed
+        reloadText()
+        scrollLog.scrollY = 0
+    }
+    val filterView = EditText(context).apply {
+        setHint(R.string.pref_read_filter_hint)
+        doAfterTextChanged {
+            filter = it.toString()
+            val previousCursorPosition = selectionStart
+            reloadText()
+            scrollLog.fullScroll(View.FOCUS_UP)
+            requestFocus() // focus is lost when scrolling it seems
+            setSelection(previousCursorPosition)
+        }
+        setDefaultDialogPadding() // not a dialog, but still suitable
+    }
+    val layout = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
+    layout.addView(LinearLayout(context).apply {
+        addView(reverseButton)
+        addView(filterView)
+    }) // put this on top, or layout will need more work to keep this visible
+    layout.addView(scrollLog)
+    val d = AlertDialog.Builder(context)
+        .setTitle(R.string.pref_read_log_title)
+        .setView(layout) // not using default padding to allow longer log lines (looks ugly, but is very convenient)
+        .setPositiveButton(R.string.close, null)
+        .create()
+    d.show()
+    // maximize dialog size, because log lines are long
+    d.window?.setLayout(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT)
 }

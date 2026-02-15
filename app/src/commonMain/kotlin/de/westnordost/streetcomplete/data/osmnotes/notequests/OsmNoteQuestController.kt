@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.data.osmnotes.notequests
 
 import com.russhwolf.settings.SettingsListener
 import de.westnordost.streetcomplete.ApplicationConstants
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
 import de.westnordost.streetcomplete.data.osmnotes.Note
 import de.westnordost.streetcomplete.data.osmnotes.NoteComment
@@ -10,6 +11,7 @@ import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.user.UserDataSource
 import de.westnordost.streetcomplete.data.user.UserLoginSource
 import de.westnordost.streetcomplete.util.Listeners
+import kotlinx.serialization.json.Json
 
 /** Used to get visible osm note quests */
 class OsmNoteQuestController(
@@ -26,7 +28,18 @@ class OsmNoteQuestController(
     private val showOnlyNotesPhrasedAsQuestions: Boolean get() =
         !prefs.showAllNotes
 
+    private val reallyAllNotes: Boolean get() =
+        prefs.reallyAllNotes
+
     private val settingsListener: SettingsListener
+
+    private val blockedUserIds = hashSetOf<Long>()
+    private val blockedUserNames = hashSetOf<String>()
+
+    // store it, or it will get GCed and thus not work
+    private val prefsListener = prefs.prefs.addStringListener(Prefs.HIDE_NOTES_BY_USERS, "") {
+        reloadBlocks()
+    }
 
     private val noteUpdatesListener = object : NotesWithEditsSource.Listener {
         override fun onUpdated(added: Collection<Note>, updated: Collection<Note>, deleted: Collection<Long>) {
@@ -65,6 +78,18 @@ class OsmNoteQuestController(
         userLoginSource.addListener(userLoginStatusListener)
         // a lot of notes become visible/invisible if this option is changed
         settingsListener = prefs.onAllShowNotesChanged { onInvalidated() }
+        reloadBlocks()
+    }
+
+    private fun reloadBlocks() {
+        val blockedList: List<String> = getRawBlockList(prefs)
+        blockedUserIds.clear()
+        blockedUserNames.clear()
+        blockedList.forEach {
+            val id = it.toLongOrNull()
+            if (id == null) blockedUserNames.add(it)
+            else blockedUserIds.add(id)
+        }
     }
 
     override fun get(questId: Long): OsmNoteQuest? =
@@ -77,7 +102,7 @@ class OsmNoteQuestController(
         notes.mapNotNull { createQuestForNote(it) }
 
     private fun createQuestForNote(note: Note): OsmNoteQuest? =
-        if (note.shouldShowAsQuest(userDataSource.userId, showOnlyNotesPhrasedAsQuestions)) {
+        if (note.shouldShowAsQuest(userDataSource.userId, showOnlyNotesPhrasedAsQuestions, reallyAllNotes, blockedUserIds, blockedUserNames)) {
             createOsmNoteQuest(note.id, note.position)
         } else {
             null
@@ -107,8 +132,20 @@ class OsmNoteQuestController(
 
 private fun Note.shouldShowAsQuest(
     userId: Long,
-    showOnlyNotesPhrasedAsQuestions: Boolean
+    showOnlyNotesPhrasedAsQuestions: Boolean,
+    reallyAllNotes: Boolean,
+    blockedIds: Collection<Long>,
+    blockedNames: Collection<String>,
 ): Boolean {
+    // don't show notes created by specific users
+    comments.firstOrNull()?.let {
+        if (blockedIds.contains(it.user?.id)) return false
+        if (blockedNames.contains(it.user?.displayName?.lowercase())) return false
+    }
+
+    // If we've chosen that "all notes" means "ALL notes", then show this note too (we need no further checks, as it is not blocked nor closed)
+    if (reallyAllNotes && !showOnlyNotesPhrasedAsQuestions) return true
+
     /*
         We usually don't show notes where either the user is the last responder, or the
         note was created with the app and has no replies.
@@ -118,7 +155,7 @@ private fun Note.shouldShowAsQuest(
     if (
         (
             comments.last().isReplyFromUser(userId) ||
-            (probablyCreatedByUserInThisApp(userId) && !hasReplies)
+            (probablyCreatedByUserInThisApp(userId, !showOnlyNotesPhrasedAsQuestions) && !hasReplies)
         )
         && !comments.last().containsSurveyRequiredMarker()
     ) {
@@ -169,9 +206,12 @@ private fun Note.containsSurveyRequiredMarker(): Boolean =
 private fun NoteComment.containsSurveyRequiredMarker(): Boolean =
     text?.contains("#surveyme", ignoreCase = true) == true
 
-private fun Note.probablyCreatedByUserInThisApp(userId: Long): Boolean {
+private fun Note.probablyCreatedByUserInThisApp(userId: Long, requireMatchingVersion: Boolean): Boolean {
     val firstComment = comments.first()
-    val isViaApp = firstComment.text?.contains("via " + ApplicationConstants.NAME) == true
+    val isViaApp = if (requireMatchingVersion)
+            firstComment.text?.contains("via " + ApplicationConstants.USER_AGENT) == true
+        else
+            firstComment.text?.contains("via " + ApplicationConstants.NAME) == true
     return firstComment.isFromUser(userId) && isViaApp
 }
 
@@ -186,3 +226,11 @@ private val NoteComment.isReply: Boolean get() =
 
 private fun NoteComment.isFromUser(userId: Long): Boolean =
     user?.id == userId
+
+fun getRawBlockList(prefs: Preferences): List<String> {
+    return try {
+        Json.decodeFromString(prefs.getString(Prefs.HIDE_NOTES_BY_USERS, ""))
+    } catch (e: Exception) { // why isn't it showing in the log any more? well, just catch all...
+        emptyList()
+    }
+}

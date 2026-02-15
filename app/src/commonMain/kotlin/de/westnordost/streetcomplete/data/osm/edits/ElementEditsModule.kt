@@ -9,14 +9,14 @@ import org.koin.dsl.module
 val elementEditsModule = module {
     factory { ElementEditUploader(get(), get(), get()) }
 
-    factory { ElementEditsDao(get(), get()) }
+    factory { ElementEditsDao(get(), get(), tagEdit, addNodeEdit) }
     factory { ElementIdProviderDao(get()) }
     factory { OpenChangesetsDao(get()) }
     factory { EditElementsDao(get()) }
 
     single { OpenChangesetsManager(get(), get(), get(), get()) }
 
-    single { ElementEditsUploader(get(), get(), get(), get(), get(), get()) }
+    single { ElementEditsUploader(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 
     single<ElementEditsSource> { get<ElementEditsController>() }
     single { ElementEditsController(get(), get(), get(), get()) }

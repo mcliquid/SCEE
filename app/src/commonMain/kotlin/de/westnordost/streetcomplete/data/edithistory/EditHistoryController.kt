@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.data.edithistory
 
 import de.westnordost.streetcomplete.ApplicationConstants.MAX_UNDO_HISTORY_AGE
+import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
 import de.westnordost.streetcomplete.data.osm.edits.ElementEdit
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditsController
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditsSource
@@ -21,6 +22,9 @@ import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenController
 import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenSource
 import de.westnordost.streetcomplete.util.Listeners
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
+import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestHidden
+import de.westnordost.streetcomplete.data.quest.ExternalSourceQuestKey
+import de.westnordost.streetcomplete.util.logs.Log
 
 /** All edits done by the user in one place: Edits made on notes, on map data, hidings of quests */
 class EditHistoryController(
@@ -30,12 +34,16 @@ class EditHistoryController(
     private val notesSource: NotesWithEditsSource,
     private val mapDataSource: MapDataWithEditsSource,
     private val questTypeRegistry: QuestTypeRegistry,
+    private val externalSourceQuestController: ExternalSourceQuestController,
 ) : EditHistorySource {
     private val listeners = Listeners<EditHistorySource.Listener>()
 
     private val osmElementEditsListener = object : ElementEditsSource.Listener {
         override fun onAddedEdit(edit: ElementEdit) {
             if (edit.action !is IsRevertAction) onAdded(edit)
+        }
+        override fun onSyncedEdit(edit: ElementEdit, updatedEditIds: Collection<Long>) {
+            if (edit.action !is IsRevertAction) onSynced(edit)
         }
         override fun onSyncedEdit(edit: ElementEdit) {
             if (edit.action !is IsRevertAction) onSynced(edit)
@@ -54,6 +62,7 @@ class EditHistoryController(
     private val questHiddenListener = object : QuestsHiddenSource.Listener {
         override fun onHid(key: QuestKey, timestamp: Long) {
             val edit = createQuestHiddenEdit(key, timestamp)
+            if (hiddenQuestsController.get(key) == null) return // must be tempHide -> don't create an edit
             if (edit != null) onAdded(edit)
         }
         override fun onUnhid(key: QuestKey, timestamp: Long) {
@@ -74,6 +83,11 @@ class EditHistoryController(
                 val questType = questTypeRegistry.getByName(key.questTypeName) as? OsmElementQuestType<*> ?: return null
                 OsmQuestHidden(key.elementType, key.elementId, questType, geometry, timestamp)
             }
+            is ExternalSourceQuestKey -> {
+                val type = externalSourceQuestController.getQuestType(key) ?: return null
+                val quest = externalSourceQuestController.get(key) ?: return null
+                ExternalSourceQuestHidden(key.id, type, quest.position, timestamp)
+            }
         }
     }
 
@@ -91,6 +105,7 @@ class EditHistoryController(
             is NoteEdit -> noteEditsController.undo(edit)
             is OsmNoteQuestHidden -> hiddenQuestsController.unhide(edit.questKey)
             is OsmQuestHidden -> hiddenQuestsController.unhide(edit.questKey)
+            is ExternalSourceQuestHidden -> hiddenQuestsController.unhide(edit.questKey)
             else -> throw IllegalArgumentException()
         }
     }
@@ -134,6 +149,8 @@ class EditHistoryController(
     }
 
     private fun onAdded(edit: Edit) {
+        if (edit is ElementEdit) Log.i(TAG, "history: add edit ${edit.type.name} for ${edit.action.elementKeys}")
+        else Log.i(TAG, "history: add edit ${edit.key}")
         listeners.forEach { it.onAdded(edit) }
     }
     private fun onSynced(edit: Edit) {
@@ -146,3 +163,5 @@ class EditHistoryController(
         listeners.forEach { it.onInvalidated() }
     }
 }
+
+private const val TAG = "EditHistoryController"

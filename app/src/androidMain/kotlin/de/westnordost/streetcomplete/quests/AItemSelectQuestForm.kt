@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.cheonjaeung.compose.grid.SimpleGridCells
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.databinding.ComposeViewBinding
@@ -40,7 +41,7 @@ abstract class AItemSelectQuestForm<I, T> : AbstractOsmQuestForm<T>() {
     private val binding by contentViewBinding(ComposeViewBinding::bind)
     override val defaultExpanded = false
 
-    private val prefs: Preferences by inject()
+    //private val prefs: Preferences by inject()
 
     protected open val itemsPerRow = 4
 
@@ -56,7 +57,7 @@ abstract class AItemSelectQuestForm<I, T> : AbstractOsmQuestForm<T>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        actualItems = if (items.size > itemsPerRow && moveFavoritesToFront) {
+        actualItems = if (items.size > prefs.getInt(Prefs.FAVS_FIRST_MIN_LINES, 1) * 2 * itemsPerRow && moveFavoritesToFront) {
             moveFavouritesToFront(items)
         } else items
     }
@@ -101,7 +102,7 @@ abstract class AItemSelectQuestForm<I, T> : AbstractOsmQuestForm<T>() {
 
     private fun moveFavouritesToFront(originalList: List<I>): List<I> {
         val favourites = prefs.getLastPicked(ListSerializer(serializer), this::class.simpleName!!)
-            .takeFavorites(n = itemsPerRow)
+            .takeFavorites(n = 2 * itemsPerRow, history = 50, first = 2)
         return (favourites + originalList).distinct()
     }
 }

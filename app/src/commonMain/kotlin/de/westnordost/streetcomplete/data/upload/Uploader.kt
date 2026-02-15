@@ -1,12 +1,20 @@
 package de.westnordost.streetcomplete.data.upload
 
+import android.content.Context
+import android.widget.Toast
+import androidx.annotation.StringRes
+import androidx.core.content.ContextCompat
+import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.data.AuthorizationException
+import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesController
 import de.westnordost.streetcomplete.data.download.tiles.enclosingTilePos
 import de.westnordost.streetcomplete.data.osm.edits.upload.ElementEditsUploader
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditsUploader
+import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
 import de.westnordost.streetcomplete.data.user.UserLoginController
 import de.westnordost.streetcomplete.data.user.UserLoginSource
 import de.westnordost.streetcomplete.util.Listeners
@@ -14,6 +22,8 @@ import de.westnordost.streetcomplete.util.logs.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 /** Collects and uploads all user changes: notes created, comments left on existing
  * notes, quests answered, edits made in overlays, ...  */
@@ -24,8 +34,11 @@ class Uploader(
     private val userLoginSource: UserLoginSource,
     private val versionIsBannedChecker: VersionIsBannedChecker,
     private val userLoginController: UserLoginController,
-    private val mutex: Mutex
-) : UploadProgressSource {
+    private val mutex: Mutex,
+    private val externalSourceQuestController: ExternalSourceQuestController,
+    private val prefs: ObservableSettings,
+) : UploadProgressSource, KoinComponent {
+    private val context: Context by inject()
 
     private val listeners = Listeners<UploadProgressSource.Listener>()
 
@@ -61,10 +74,21 @@ class Uploader(
             val banned = bannedInfo
             if (banned is BannedInfo.IsBanned) {
                 throw VersionBannedException(banned.reason)
+            } else if (banned is BannedInfo.UnknownIfBanned) {
+                val old = prefs.getInt(Prefs.BAN_CHECK_ERROR_COUNT, 0)
+                prefs.putInt(Prefs.BAN_CHECK_ERROR_COUNT, old + 1)
+            } else
+                prefs.putInt(Prefs.BAN_CHECK_ERROR_COUNT, 0)
+            if (prefs.getInt(Prefs.BAN_CHECK_ERROR_COUNT, 0) > 10) {
+                try {
+                    ContextCompat.getMainExecutor(context).execute {
+                        context.toast(R.string.ban_check_fails, Toast.LENGTH_LONG)
+                    }
+                } catch (_: Exception) { }
             }
 
             // let's fail early in case of no authorization
-            if (!userLoginSource.isLoggedIn) {
+            if (!userLoginSource.isLoggedIn && !ApplicationConstants.DEBUG) {
                 throw AuthorizationException("User is not authorized")
             }
 
@@ -73,8 +97,10 @@ class Uploader(
             mutex.withLock {
                 // element edit and note edit uploader must run in sequence because the notes may need
                 // to be updated if the element edit uploader creates new elements to which notes refer
-                elementEditsUploader.upload()
+                elementEditsUploader.upload(this)
+                if (!userLoginSource.isLoggedIn) return@withLock // avoid the 2 below in debug apk
                 noteEditsUploader.upload()
+                externalSourceQuestController.upload()
             }
             Log.i(TAG, "Finished upload")
         } catch (e: CancellationException) {
@@ -109,4 +135,7 @@ class Uploader(
     companion object {
         const val TAG = "Upload"
     }
+}
+private fun Context.toast(@StringRes resId: Int, duration: Int = Toast.LENGTH_SHORT) {
+    Toast.makeText(this, resId, duration).show()
 }

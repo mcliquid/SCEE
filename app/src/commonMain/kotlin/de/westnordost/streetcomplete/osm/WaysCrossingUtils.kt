@@ -119,8 +119,8 @@ private fun MutableMap<Long, MutableList<Way>>.removeEndNodes() {
 }
 
 /** groups the sequence of ways to a map of node id -> list of ways */
-private fun Sequence<Way>.groupByNodeIds(): MutableMap<Long, MutableList<Way>> {
-    val result = mutableMapOf<Long, MutableList<Way>>()
+fun Sequence<Way>.groupByNodeIds(): MutableMap<Long, MutableList<Way>> {
+    val result = hashMapOf<Long, MutableList<Way>>()
     forEach { way ->
         way.nodeIds.forEach { nodeId ->
             result.getOrPut(nodeId, { mutableListOf() }).add(way)
@@ -138,4 +138,4 @@ private fun List<LatLon>.anyCrossesAnyOf(other: List<LatLon>, vertex: LatLon): B
 /** Returns whether any of the points in this list are on different sides of the line spanned
  *  by p0 and p1 and the line spanned by p1 and p2 */
 private fun List<LatLon>.anyAreOnDifferentSidesOf(p0: LatLon, p1: LatLon, p2: LatLon): Boolean =
-    map { it.isRightOf(p0, p1, p2) }.toSet().size > 1
+    mapTo(HashSet(size)) { it.isRightOf(p0, p1, p2) }.size > 1

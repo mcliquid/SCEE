@@ -102,6 +102,7 @@ import de.westnordost.streetcomplete.quests.diet_type.AddVegan
 import de.westnordost.streetcomplete.quests.diet_type.AddVegetarian
 import de.westnordost.streetcomplete.quests.drinking_water.AddDrinkingWater
 import de.westnordost.streetcomplete.quests.drinking_water_type.AddDrinkingWaterType
+import de.westnordost.streetcomplete.quests.evse_id.AddEvseId
 import de.westnordost.streetcomplete.quests.existence.CheckExistence
 import de.westnordost.streetcomplete.quests.fence_material.AddFenceMaterial
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessBicycle
@@ -704,6 +705,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 60 to AddFerryAccessBicycle(),
     EE_QUEST_OFFSET + 61 to AddIsSidepath(),
     EE_QUEST_OFFSET + 62 to AddToiletsDisposal(),
+    EE_QUEST_OFFSET + 63 to AddEvseId(),
     EE_QUEST_OFFSET + 10 to OsmoseQuest(osmoseDao),
     EE_QUEST_OFFSET + 11 to CustomQuest(customQuestList),
     // POI quests

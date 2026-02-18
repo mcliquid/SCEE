@@ -10,7 +10,6 @@ import androidx.navigation.compose.rememberNavController
 import de.westnordost.streetcomplete.data.quest.QuestType
 import de.westnordost.streetcomplete.screens.settings.debug.ShowQuestFormsScreen
 import de.westnordost.streetcomplete.screens.settings.language_selection.LanguageSelectionScreen
-import de.westnordost.streetcomplete.screens.settings.messages.MessageSelectionScreen
 import de.westnordost.streetcomplete.screens.settings.overlay_selection.OverlaySelectionScreen
 import de.westnordost.streetcomplete.screens.settings.presets.EditTypePresetsScreen
 import de.westnordost.streetcomplete.screens.settings.quest_selection.QuestSelectionScreen
@@ -20,7 +19,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable fun SettingsNavHost(
     onClickBack: () -> Unit,
     onClickShowQuestTypeForDebug: (QuestType) -> Unit,
-    startDestination: String? = null
+    startDestination: String? = null,
 ) {
     val navController = rememberNavController()
     val dir = LocalLayoutDirection.current.dir
@@ -50,7 +49,6 @@ import org.koin.androidx.compose.koinViewModel
                 onClickDisplaySettings = { navController.navigate(SettingsDestination.DisplaySettings) },
                 onClickNoteSettings = { navController.navigate(SettingsDestination.NoteSettings) },
                 onClickDataSettings = { navController.navigate(SettingsDestination.DataManagementSettings) },
-                onClickMessagesSelection = { navController.navigate(SettingsDestination.MessagesSelection) },
                 onClickBack = ::goBack
             )
         }
@@ -74,12 +72,6 @@ import org.koin.androidx.compose.koinViewModel
         }
         composable(SettingsDestination.LanguageSelection) {
             LanguageSelectionScreen(
-                viewModel = koinViewModel(),
-                onClickBack = ::goBack
-            )
-        }
-        composable(SettingsDestination.MessagesSelection) {
-            MessageSelectionScreen(
                 viewModel = koinViewModel(),
                 onClickBack = ::goBack
             )
@@ -125,7 +117,6 @@ object SettingsDestination {
     const val QuestSelection = "quest_selection"
     const val OverlaySelection = "overlay_selection"
     const val LanguageSelection = "language_selection"
-    const val MessagesSelection = "messages_selection"
     const val ShowQuestForms = "show_quest_forms"
     const val QuestSettings = "scee_quest_settings"
     const val UiSettings = "scee_ui_settings"

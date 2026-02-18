@@ -11,8 +11,6 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
-/** Updates user data from OSM API / StreetComplete API: user name, avatar, unread messages,
- *  StreetComplete statistics */
 class UserUpdater(
     private val userApi: UserApiClient,
     private val avatarsDownloader: AvatarsDownloader,

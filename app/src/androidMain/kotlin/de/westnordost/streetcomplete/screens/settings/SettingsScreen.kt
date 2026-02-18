@@ -69,7 +69,6 @@ import de.westnordost.streetcomplete.resources.pref_title_delete_cache
 import de.westnordost.streetcomplete.resources.pref_title_delete_cache_summary
 import de.westnordost.streetcomplete.resources.pref_title_keep_screen_on
 import de.westnordost.streetcomplete.resources.pref_title_language_select2
-import de.westnordost.streetcomplete.resources.pref_title_messages
 import de.westnordost.streetcomplete.resources.pref_title_overlays
 import de.westnordost.streetcomplete.resources.pref_title_quests2
 import de.westnordost.streetcomplete.resources.pref_title_quests_restore_hidden
@@ -119,7 +118,6 @@ fun SettingsScreen(
     onClickQuestSelection: () -> Unit,
     onClickOverlaySelection: () -> Unit,
     onClickLanguageSelection: () -> Unit,
-    onClickMessagesSelection: () -> Unit,
     onClickBack: () -> Unit,
     onClickQuestSettings: () -> Unit,
     onClickUiSettings: () -> Unit,
@@ -233,7 +231,10 @@ fun SettingsScreen(
                         else Res.string.pref_summaryOff_show_notes_not_phrased_as_questions
                     )
                 ) {
-                    Switch(checked = showAllNotes, onCheckedChange = null)
+                    Switch(
+                        checked = showAllNotes,
+                        onCheckedChange = { viewModel.setShowAllNotes(it) }
+                    )
                 }
             }
 
@@ -285,22 +286,23 @@ fun SettingsScreen(
                 }
 
                 Preference(
-                    name = stringResource(Res.string.pref_title_messages),
-                    onClick = onClickMessagesSelection,
-                ) { NextScreenIcon() }
-
-                Preference(
                     name = stringResource(Res.string.pref_title_zoom_buttons),
                     onClick = { viewModel.setShowZoomButtons(!showZoomButtons) },
                 ) {
-                    Switch(checked = showZoomButtons, onCheckedChange = null)
+                    Switch(
+                        checked = showZoomButtons,
+                        onCheckedChange = { viewModel.setShowZoomButtons(it) }
+                    )
                 }
 
                 Preference(
                     name = stringResource(Res.string.pref_title_keep_screen_on),
                     onClick = { viewModel.setKeepScreenOn(!keepScreenOn) },
                 ) {
-                    Switch(checked = keepScreenOn, onCheckedChange = null)
+                    Switch(
+                        checked = keepScreenOn,
+                        onCheckedChange = { viewModel.setKeepScreenOn(it) }
+                    )
                 }
             }
 

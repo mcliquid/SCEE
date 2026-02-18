@@ -69,10 +69,7 @@ class MessagesSource(
         })
 
         // must hold a reference because the listener is a weak reference
-        settingsListeners += prefs.onDisabledMessageTypesChanged { onNumberOfMessagesUpdated() }
         settingsListeners += prefs.onQuestSelectionHintStateChanged { onNumberOfMessagesUpdated() }
-        settingsListeners += prefs.onWeeklyOsmLastPublishDateChanged { onNumberOfMessagesUpdated() }
-        settingsListeners += prefs.onWeeklyOsmLastNotifiedPublishDateChanged { onNumberOfMessagesUpdated() }
     }
 
     fun addListener(listener: UpdateListener) {
@@ -83,93 +80,49 @@ class MessagesSource(
     }
 
     fun getNumberOfMessages(): Int {
-        val disabled = prefs.disabledMessageTypes
-
-        val showQuestSelectionHint =
-            Message.QuestSelectionHint::class !in disabled &&
-            prefs.questSelectionHintState == QuestSelectionHintState.SHOULD_SHOW
-
-        val showUnreadMessages =
-            Message.OsmUnreadMessages::class !in disabled &&
-            userDataController.unreadMessagesCount > 0
-
-        val showNewWeeklyOsm =
-            Message.NewWeeklyOsm::class !in disabled &&
-            prefs.weeklyOsmLastPublishDate != null &&
-            prefs.weeklyOsmLastPublishDate != prefs.weeklyOsmLastNotifiedPublishDate &&
-            achievementsSource.getLinks().any { it.id == "weeklyosm" }
-
-        val showNewAchievements = Message.NewAchievement::class !in disabled
-
+        val shouldShowQuestSelectionHint = prefs.questSelectionHintState == QuestSelectionHintState.SHOULD_SHOW
+        val hasUnreadMessages = userDataController.unreadMessagesCount > 0
         val lastVersion = prefs.lastChangelogVersion
-        // lastVersion is null on a new install. We don't want to show a message in that case, but
-        // we want to mark it as if a message has already been read.
-        // The same with when the message type is disabled
-        if (lastVersion == null || Message.NewVersion::class !in disabled) {
+        val hasNewVersion = lastVersion != null && BuildConfig.VERSION_NAME != lastVersion
+        if (lastVersion == null) {
             prefs.lastChangelogVersion = BuildConfig.VERSION_NAME
         }
-        val showNewVersion =
-            Message.NewVersion::class !in disabled &&
-            lastVersion != null && BuildConfig.VERSION_NAME != lastVersion
 
         var messages = 0
-        if (showQuestSelectionHint) messages++
-        if (showUnreadMessages) messages++
-        if (showNewVersion) messages++
-        if (showNewWeeklyOsm) messages++
-        if (showNewAchievements) messages += newAchievements.size
+        if (shouldShowQuestSelectionHint) messages++
+        if (hasUnreadMessages) messages++
+        if (hasNewVersion) messages++
+        messages += newAchievements.size
         return messages
     }
 
     suspend fun popNextMessage(): Message? {
-        val disabled = prefs.disabledMessageTypes
-
-        if (Message.NewVersion::class !in disabled) {
-            val lastVersion = prefs.lastChangelogVersion
-            if (BuildConfig.VERSION_NAME != lastVersion) {
-                prefs.lastChangelogVersion = BuildConfig.VERSION_NAME
-                if (lastVersion != null) {
-                    val version = "v$lastVersion"
-                    onNumberOfMessagesUpdated()
-                    return Message.NewVersion(res.readChangelog(version))
-                }
-            }
-        }
-
-        if (Message.QuestSelectionHint::class !in disabled) {
-            val shouldShowQuestSelectionHint = prefs.questSelectionHintState == QuestSelectionHintState.SHOULD_SHOW
-            if (shouldShowQuestSelectionHint) {
-                prefs.questSelectionHintState = QuestSelectionHintState.SHOWN
-                return Message.QuestSelectionHint
-            }
-        }
-
-        if (Message.OsmUnreadMessages::class !in disabled) {
-            val unreadOsmMessages = userDataController.unreadMessagesCount
-            if (unreadOsmMessages > 0) {
-                userDataController.unreadMessagesCount = 0
-                return Message.OsmUnreadMessages(unreadOsmMessages)
-            }
-        }
-
-        if (Message.NewAchievement::class !in disabled) {
-            val newAchievement = newAchievements.removeFirstOrNull()
-            if (newAchievement != null) {
+        val lastVersion = prefs.lastChangelogVersion
+        if (BuildConfig.VERSION_NAME != lastVersion) {
+            prefs.lastChangelogVersion = BuildConfig.VERSION_NAME
+            if (lastVersion != null) {
+                val version = "v$lastVersion"
                 onNumberOfMessagesUpdated()
-                return newAchievement
+                return Message.NewVersion(res.readChangelog(version))
             }
         }
 
-        if (Message.NewWeeklyOsm::class !in disabled) {
-            val weeklyOsmPublishDate = prefs.weeklyOsmLastPublishDate
-            if (
-                weeklyOsmPublishDate != null
-                && weeklyOsmPublishDate != prefs.weeklyOsmLastNotifiedPublishDate
-                && achievementsSource.getLinks().any { it.id == "weeklyosm" }
-            ) {
-                prefs.weeklyOsmLastNotifiedPublishDate = weeklyOsmPublishDate
-                return Message.NewWeeklyOsm(weeklyOsmPublishDate)
-            }
+        val shouldShowQuestSelectionHint = prefs.questSelectionHintState == QuestSelectionHintState.SHOULD_SHOW
+        if (shouldShowQuestSelectionHint) {
+            prefs.questSelectionHintState = QuestSelectionHintState.SHOWN
+            return Message.QuestSelectionHint
+        }
+
+        val newAchievement = newAchievements.removeFirstOrNull()
+        if (newAchievement != null) {
+            onNumberOfMessagesUpdated()
+            return newAchievement
+        }
+
+        val unreadOsmMessages = userDataController.unreadMessagesCount
+        if (unreadOsmMessages > 0) {
+            userDataController.unreadMessagesCount = 0
+            return Message.OsmUnreadMessages(unreadOsmMessages)
         }
 
         return null

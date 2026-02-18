@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.consumeWindowInsets
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -143,7 +142,6 @@ private fun LanguageSelectionList(
                     .animateItem()
                     .selectable(isSelected) { onSelect(language) }
                     .padding(horizontal = 24.dp)
-                    .defaultMinSize(minHeight = 48.dp)
             ) {
                 Box(modifier = Modifier.weight(1f)) {
                     Text(
@@ -151,7 +149,10 @@ private fun LanguageSelectionList(
                             ?: stringResource(Res.string.language_default)
                     )
                 }
-                RadioButton(selected = isSelected, onClick = null)
+                RadioButton(
+                    selected = isSelected,
+                    onClick = { onSelect(language) }
+                )
             }
         }
     }

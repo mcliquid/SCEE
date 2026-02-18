@@ -3,18 +3,20 @@ package de.westnordost.streetcomplete.data.preferences
 import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.SettingsListener
 import com.russhwolf.settings.boolean
-import com.russhwolf.settings.contains
 import com.russhwolf.settings.double
 import com.russhwolf.settings.int
 import com.russhwolf.settings.long
 import com.russhwolf.settings.nullableString
-import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.data.messages.Message
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
+import de.westnordost.streetcomplete.util.ktx.putStringOrNull
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
+import kotlin.reflect.KClass
 
-class Preferences(val prefs: ObservableSettings) {
+class Preferences(private val prefs: ObservableSettings) {
     // application settings
     var language: String? by prefs.nullableString(LANGUAGE_SELECT)
 
@@ -41,26 +43,6 @@ class Preferences(val prefs: ObservableSettings) {
             ?: DEFAULT_RESURVEY_INTERVALS
 
     var showAllNotes: Boolean by prefs.boolean(SHOW_ALL_NOTES, false)
-    var reallyAllNotes: Boolean by prefs.boolean(Prefs.REALLY_ALL_NOTES, false)
-
-    fun getBoolean(key: String, default: Boolean) = prefs.getBoolean(key, default)
-    fun putBoolean(key: String, value: Boolean) = prefs.putBoolean(key, value)
-    fun getString(key: String, default: String) = prefs.getString(key, default)
-    fun putString(key: String, value: String) = prefs.putString(key, value)
-    fun getLong(key: String, default: Long) = prefs.getLong(key, default)
-    fun getInt(key: String, default: Int) = prefs.getInt(key, default)
-    fun putInt(key: String, value: Int) = prefs.putInt(key, value)
-    fun getFloat(key: String, default: Float) = prefs.getFloat(key, default)
-    fun remove(key: String) = prefs.remove(key)
-    fun contains(key: String) = prefs.contains(key)
-
-    var expertMode: Boolean by prefs.boolean(Prefs.EXPERT_MODE, false)
-    var showQuickSettings: Boolean by prefs.boolean(Prefs.QUICK_SETTINGS, false)
-    fun onShowQuickSettingsChanged(callback: (Boolean) -> Unit): SettingsListener =
-        prefs.addBooleanListener(Prefs.QUICK_SETTINGS, false, callback)
-    var showOverlaySelector: Boolean by prefs.boolean(Prefs.OVERLAY_QUICK_SELECTOR, false)
-    fun onShowOverlaySelectorChanged(callback: (Boolean) -> Unit): SettingsListener =
-        prefs.addBooleanListener(Prefs.OVERLAY_QUICK_SELECTOR, false, callback)
 
     fun onLanguageChanged(callback: (String?) -> Unit): SettingsListener =
         prefs.addStringOrNullListener(LANGUAGE_SELECT, callback)
@@ -82,9 +64,6 @@ class Preferences(val prefs: ObservableSettings) {
 
     fun onAllShowNotesChanged(callback: (Boolean) -> Unit): SettingsListener =
         prefs.addBooleanListener(SHOW_ALL_NOTES, false, callback)
-
-    fun onExpertModeChanged(callback: (Boolean) -> Unit): SettingsListener =
-        prefs.addBooleanListener(Prefs.EXPERT_MODE, false, callback)
 
     fun onKeepScreenOnChanged(callback: (Boolean) -> Unit): SettingsListener =
         prefs.addBooleanListener(KEEP_SCREEN_ON, false, callback)
@@ -141,6 +120,27 @@ class Preferences(val prefs: ObservableSettings) {
     // main screen UI
     var hasShownTutorial: Boolean by prefs.boolean(HAS_SHOWN_TUTORIAL, false)
     var hasShownOverlaysTutorial: Boolean by prefs.boolean(HAS_SHOWN_OVERLAYS_TUTORIAL, false)
+
+    // update feed
+    var lastFeedUpdate: LocalDate?
+        set(value) { prefs.putStringOrNull(LAST_FEED_UPDATE, value?.toString()) }
+        get() = prefs.getStringOrNull(LAST_FEED_UPDATE)?.let { LocalDate.parse(it) }
+
+    // messages
+    var disabledMessageTypes: Set<KClass<out Message>>
+        set(value) {
+            prefs.putStringOrNull(
+                DISABLED_MESSAGE_TYPES,
+                value.joinToString(";") { it.simpleName!! }.takeIf { it.isNotEmpty() }
+            )
+        }
+        get() = prefs.getStringOrNull(DISABLED_MESSAGE_TYPES)
+            ?.let { it.split(';').mapNotNull { Message.classFromSimpleName(it) }.toSet() }
+            ?: emptySet()
+
+    fun onDisabledMessageTypesChanged(callback: () -> Unit): SettingsListener =
+        prefs.addStringOrNullListener(DISABLED_MESSAGE_TYPES) { callback() }
+
     var questSelectionHintState: QuestSelectionHintState
         set(value) { prefs.putString(QUEST_SELECTION_HINT_STATE, value.name) }
         get() = prefs.getStringOrNull(QUEST_SELECTION_HINT_STATE)?.let { QuestSelectionHintState.valueOf(it) }
@@ -150,6 +150,20 @@ class Preferences(val prefs: ObservableSettings) {
         prefs.addStringOrNullListener(QUEST_SELECTION_HINT_STATE) {
             callback(it?.let { QuestSelectionHintState.valueOf(it) } ?: QuestSelectionHintState.NOT_SHOWN)
         }
+
+    var weeklyOsmLastPublishDate: LocalDate?
+        set(value) { prefs.putStringOrNull(WEEKLY_OSM_LAST_PUB_DATE, value?.toString()) }
+        get() = prefs.getStringOrNull(WEEKLY_OSM_LAST_PUB_DATE)?.let { LocalDate.parse(it) }
+
+    fun onWeeklyOsmLastPublishDateChanged(callback: () -> Unit): SettingsListener =
+        prefs.addStringOrNullListener(WEEKLY_OSM_LAST_PUB_DATE) { callback() }
+
+    var weeklyOsmLastNotifiedPublishDate: LocalDate?
+        set(value) { prefs.putStringOrNull(WEEKLY_OSM_LAST_NOTIFIED_PUB_DATE, value?.toString()) }
+        get() = prefs.getStringOrNull(WEEKLY_OSM_LAST_NOTIFIED_PUB_DATE)?.let { LocalDate.parse(it) }
+
+    fun onWeeklyOsmLastNotifiedPublishDateChanged(callback: () -> Unit): SettingsListener =
+        prefs.addStringOrNullListener(WEEKLY_OSM_LAST_NOTIFIED_PUB_DATE) { callback() }
 
     // quest & overlay UI
     var preferredLanguageForNames: String? by prefs.nullableString(PREFERRED_LANGUAGE_FOR_NAMES)
@@ -219,7 +233,7 @@ class Preferences(val prefs: ObservableSettings) {
         private const val AUTOSYNC = "autosync"
         private const val KEEP_SCREEN_ON = "display.keepScreenOn"
         private const val SHOW_ZOOM_BUTTONS = "display.zoomButtons"
-        const val THEME_SELECT = "theme.select"
+        private const val THEME_SELECT = "theme.select"
         private const val LANGUAGE_SELECT = "language.select"
         private const val RESURVEY_INTERVALS = "quests.resurveyIntervals"
 
@@ -227,7 +241,7 @@ class Preferences(val prefs: ObservableSettings) {
         private const val OSM_USER_ID = "osm.userid"
         private const val OSM_USER_NAME = "osm.username"
         private const val OSM_UNREAD_MESSAGES = "osm.unread_messages"
-        const val OAUTH2_ACCESS_TOKEN = "oauth2.accessToken"
+        private const val OAUTH2_ACCESS_TOKEN = "oauth2.accessToken"
 
         // old keys login keys
         private const val OAUTH1_ACCESS_TOKEN = "oauth.accessToken"
@@ -245,7 +259,15 @@ class Preferences(val prefs: ObservableSettings) {
         // main screen UI
         private const val HAS_SHOWN_TUTORIAL = "hasShownTutorial"
         private const val HAS_SHOWN_OVERLAYS_TUTORIAL = "hasShownOverlaysTutorial"
+
+        // update feed
+        private const val LAST_FEED_UPDATE = "lastFeedUpdate"
+
+        // messages
+        private const val DISABLED_MESSAGE_TYPES = "disabledMessageTypes"
         private const val QUEST_SELECTION_HINT_STATE = "questSelectionHintState"
+        private const val WEEKLY_OSM_LAST_PUB_DATE = "weeklyOsmLastPubDate"
+        private const val WEEKLY_OSM_LAST_NOTIFIED_PUB_DATE = "weeklyOsmLastNotifiedPubDate"
 
         // map state
         private const val MAP_LATITUDE = "map.latitude"
@@ -261,7 +283,7 @@ class Preferences(val prefs: ObservableSettings) {
 
         // quest & overlays
         private const val PREFERRED_LANGUAGE_FOR_NAMES = "preferredLanguageForNames"
-        const val SELECTED_EDIT_TYPE_PRESET = "selectedQuestsPreset"
+        private const val SELECTED_EDIT_TYPE_PRESET = "selectedQuestsPreset"
         private const val SELECTED_OVERLAY = "selectedOverlay"
         private const val LAST_PICKED_PREFIX = "imageListLastPicked."
         private const val LAST_EDIT_TIME = "changesets.lastChangeTime"

@@ -9,26 +9,44 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.quest.AndroidQuest
-import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.RARE
-import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
+import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.quests.YesNoQuestForm
+import de.westnordost.streetcomplete.util.ktx.toYesNo
 
-class AddFerryAccessBicycle : OsmElementQuestType<FerryBicycleAccess>, AndroidQuest {
+class AddFerryToll : OsmElementQuestType<Boolean>, AndroidQuest {
 
     private val filter by lazy {
-        "ways, relations with route = ferry and !bicycle and !bicycle:signed"
-            .toElementFilterExpression()
+        """
+        ways, relations with
+          route = ferry
+          and !toll
+          and !fee
+        """.toElementFilterExpression()
     }
 
-    override val changesetComment = "Specify ferry access for bicycles"
+    override val changesetComment = "Specify whether a ferry requires payment"
     override val wikiLink = "Tag:route=ferry"
-    override val icon = R.drawable.ic_quest_ferry_bicycle
+    override val icon = R.drawable.ic_quest_ferry_fee
     override val hasMarkersAtEnds = true
-    override val achievements = listOf(RARE, EditTypeAchievement.BICYCLIST)
+    override val achievements = listOf(RARE)
 
-    override fun getTitle(tags: Map<String, String>) = R.string.quest_ferry_bicycle_title
+    override fun getTitle(tags: Map<String, String>) =
+        R.string.quest_ferry_toll_title
+
+    override fun createForm() = YesNoQuestForm()
+
+    override fun applyAnswerTo(
+        answer: Boolean,
+        tags: Tags,
+        geometry: ElementGeometry,
+        timestampEdited: Long
+    ) {
+        tags["toll"] = answer.toYesNo()
+    }
 
     override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> {
+        // same logic as other ferry access quests
         val wayIdsInFerryRoutes = wayIdsInFerryRoutes(mapData.relations)
         return mapData
             .filter(filter)
@@ -40,20 +58,5 @@ class AddFerryAccessBicycle : OsmElementQuestType<FerryBicycleAccess>, AndroidQu
         if (!filter.matches(element)) return false
         if (element is Way) return null
         return true
-    }
-
-    override fun createForm() = AddFerryAccessBicycleForm()
-
-    override fun applyAnswerTo(answer: FerryBicycleAccess, tags: StringMapChangesBuilder, geometry: ElementGeometry, timestampEdited: Long) {
-        when (answer) {
-            FerryBicycleAccess.YES ->
-                tags["bicycle"] = "yes"
-
-            FerryBicycleAccess.NO ->
-                tags["bicycle"] = "no"
-
-            FerryBicycleAccess.NOT_SIGNED ->
-                tags["bicycle:signed"] = "no"
-        }
     }
 }

@@ -202,7 +202,7 @@ class AddOpeningHours() : OsmElementQuestType<OpeningHoursAnswer>, AndroidQuest 
         val oh = ohStr.toOpeningHoursOrNull(lenient = false) ?: return true
         if (prefs.getBoolean(RESURVEY_ALL_OPENING_HOURS, false)) return true
         // only display supported rules, or ambiguous rules that should be corrected
-        return oh.isSupported(allowTimePoints = false) || oh.isLikelyIncorrect()
+        return oh.isSupported(allowTimePoints = false, allowAmbiguity = true)
     }
 
     override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry) =

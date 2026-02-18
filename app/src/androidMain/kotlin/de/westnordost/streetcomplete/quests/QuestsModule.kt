@@ -108,7 +108,6 @@ import de.westnordost.streetcomplete.quests.evse_id.AddEvseId
 import de.westnordost.streetcomplete.quests.existence.CheckExistence
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessBicycle
 import de.westnordost.streetcomplete.quests.fence_material.AddFenceMaterial
-import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessBicycle
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessMotorVehicle
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessPedestrian
 import de.westnordost.streetcomplete.quests.ferry.AddFerryToll
@@ -599,7 +598,7 @@ fun getQuestTypeList(
     117 to AddCampPower(),
     162 to AddSanitaryDumpStation(),
 
-    191 to AddHotWater(),
+    198 to AddHotWater(),
 
     177 to AddShelterCapacity(),
 
@@ -714,7 +713,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 55 to AddPostOfficeType(),
     EE_QUEST_OFFSET + 57 to AddLampMount(),
     EE_QUEST_OFFSET + 58 to AddOnewayBicycle(),
-    EE_QUEST_OFFSET + 60 to AddFerryAccessBicycle(),
+    // EE_QUEST_OFFSET + 60 to AddFerryAccessBicycle(),
     EE_QUEST_OFFSET + 61 to AddIsSidepath(),
     EE_QUEST_OFFSET + 62 to AddToiletsDisposal(),
     EE_QUEST_OFFSET + 63 to AddEvseId(),

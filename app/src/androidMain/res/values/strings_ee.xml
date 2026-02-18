@@ -688,6 +688,12 @@
     <string name="quest_is_sidepath_answer_is_sidewalk">This is a sidewalk.</string>
     <string name="quest_is_sidepath_answer_is_crossing">This is a crossing.</string>
 
+    <!-- toilets disposal quest -->
+    <string name="quest_toilets_disposal_title">What kind of toilet disposal is used here?</string>
+    <string name="quest_toilets_disposal_flush">The waste is flushed with water</string>
+    <string name="quest_toilets_disposal_pit">The waste is collected in a pit</string>
+    <string name="quest_toilets_disposal_chemical">The waste is collected in a chemical tank</string>
+
     <!-- new overlays -->
 
     <!-- custom overlay -->

@@ -107,6 +107,7 @@ import de.westnordost.streetcomplete.quests.drinking_water_type.AddDrinkingWater
 import de.westnordost.streetcomplete.quests.evse_id.AddEvseId
 import de.westnordost.streetcomplete.quests.existence.CheckExistence
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessBicycle
+import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessHgv
 import de.westnordost.streetcomplete.quests.fence_material.AddFenceMaterial
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessMotorVehicle
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessPedestrian
@@ -554,6 +555,7 @@ fun getQuestTypeList(
     102 to AddFerryAccessMotorVehicle(),
     195 to AddFerryToll(),
     196 to AddFerryAccessBicycle(),
+    197 to AddFerryAccessHgv(),
 
     // aerial way: usually visible from looking at the aerial way, but not always...
     184 to AddAerialwayBicycleAccess(),
@@ -598,7 +600,7 @@ fun getQuestTypeList(
     117 to AddCampPower(),
     162 to AddSanitaryDumpStation(),
 
-    198 to AddHotWater(),
+    192 to AddHotWater(),
 
     177 to AddShelterCapacity(),
 

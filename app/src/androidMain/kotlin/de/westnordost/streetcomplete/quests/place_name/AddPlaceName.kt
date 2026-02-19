@@ -31,13 +31,12 @@ class AddPlaceName(
           or tourism = information and information ~ office|visitor_centre
           or natural = cave_entrance and fee = yes
           or """ +
-
         // The common list is shared by the opening hours quest and the wheelchair quest.
         // It is also mostly shared by the name quest, that has some wildcards (for say craft and office)
         // So when adding other tags to the common list keep in mind that they need to be appropriate for all those quests.
         // Independent tags can by added in the "name only" tab.
 
-        prefs.getString(questPrefix(prefs) + PREF_ELEMENTS, NAME_PLACES)+ "\n" + """
+        prefs.getString(questPrefix(prefs) + PREF_ELEMENTS, NAME_PLACES) + "\n" + """
         )
         and !name and !brand and noname != yes and name:signed != no
     """).toElementFilterExpression() }
@@ -48,7 +47,10 @@ class AddPlaceName(
     override val isReplacePlaceEnabled = true
     override val achievements = listOf(CITIZEN)
 
-    override fun getTitle(tags: Map<String, String>) = R.string.quest_placeName_title
+    override val hasQuestSettings = true
+
+    override fun getTitle(tags: Map<String, String>) =
+        R.string.quest_placeName_title
 
     override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> =
         mapData.filter { isApplicableTo(it) }
@@ -56,12 +58,19 @@ class AddPlaceName(
     override fun isApplicableTo(element: Element): Boolean =
         filter.matches(element) && getFeature(element) != null
 
-    override fun getHighlightedElements(element: Element, getMapData: () -> MapDataWithGeometry) =
-        getMapData().asSequence().filter { it.isPlaceOrDisusedPlace() }
+    override fun getHighlightedElements(
+        element: Element,
+        getMapData: () -> MapDataWithGeometry
+    ) = getMapData().asSequence().filter { it.isPlaceOrDisusedPlace() }
 
     override fun createForm() = AddPlaceNameForm()
 
-    override fun applyAnswerTo(answer: PlaceNameAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+    override fun applyAnswerTo(
+        answer: PlaceNameAnswer,
+        tags: Tags,
+        geometry: ElementGeometry,
+        timestampEdited: Long
+    ) {
         when (answer) {
             is PlaceNameAnswer.NoNameSign -> {
                 tags["name:signed"] = "no"
@@ -80,11 +89,15 @@ class AddPlaceName(
         }
     }
 
-    override val hasQuestSettings = true
-
     @Composable
     override fun QuestSettings(onDismissRequest: () -> Unit) {
-        FullElementSelectionDialog(prefs, questPrefix(prefs) + PREF_ELEMENTS, R.string.quest_settings_element_selection, NAME_PLACES, onDismissRequest)
+        FullElementSelectionDialog(
+            prefs,
+            questPrefix(prefs) + PREF_ELEMENTS,
+            R.string.quest_settings_element_selection,
+            NAME_PLACES,
+            onDismissRequest
+        )
     }
 }
 
@@ -134,6 +147,9 @@ private val NAME_PLACES = mapOf(
         "attraction",
         "hotel", "guest_house", "motel", "hostel", "alpine_hut", "apartment", "resort", "camp_site", "caravan_site", "chalet", // accommodations
 
+        // name only
+        "wilderness_hut"
+
         // and tourism = information, see above
     ),
     "leisure" to arrayOf(
@@ -169,6 +185,16 @@ private val NAME_PLACES = mapOf(
         // name & wheelchair
         "rehabilitation", "hospice", "midwife", "birthing_centre"
     ),
-).map { it.key + " ~ " + it.value.joinToString("|") }.joinToString("\n  or ")
+    "historic" to arrayOf(
+        // name only
+        "castle", "church", "farm", "fort", "manor", "monument", "mosque", "temple",
+        "ship",
+    ),
+    "waterway" to arrayOf(
+        // name & opening hours
+        "fuel",
+    ),
+).map { it.key + " ~ " + it.value.joinToString("|") }
+    .joinToString("\n  or ")
 
 private const val PREF_ELEMENTS = "qs_AddPlaceName_element_selection"

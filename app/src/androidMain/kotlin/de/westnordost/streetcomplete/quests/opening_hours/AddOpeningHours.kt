@@ -90,35 +90,39 @@ class AddOpeningHours() : OsmElementQuestType<OpeningHoursAnswer>, AndroidQuest 
                 // name & opening hours
                 "trampoline_park",
 
-                // not sports_centre, dance etc because these are often sports clubs which have no
-                // walk-in opening hours but training times
-            ),
-            "office" to arrayOf(
-                // common (AddPlaceName has catchall)
-                "insurance", "government", "travel_agent", "tax_advisor", "religion",
-                "employment_agency", "diplomatic", "coworking", "energy_supplier",
-                "estate_agent", "lawyer", "telecommunication", "educational_institution",
-                "association", "ngo", "it", "accountant", "property_management",
-                "bail_bond_agent", "financial_advisor", "political_party",
-                "private_investigator", "adoption_agency",
-            ),
-            "craft" to arrayOf(
-                // common
-                "carpenter", "shoemaker", "tailor", "photographer", "dressmaker",
-                "electronics_repair", "key_cutter", "stonemason", "bookbinder",
-                "jeweller", "sailmaker", "watchmaker", "clockmaker",
-                "locksmith",  "window_construction", "signmaker", "upholsterer",
-                "electrician", "boatbuilder",
-            ),
-            "healthcare" to arrayOf(
-                // common
-                "pharmacy", "doctor", "clinic", "dentist", "centre", "physiotherapist",
-                "laboratory", "alternative", "psychotherapist", "optometrist", "podiatrist",
-                "nurse", "counselling", "speech_therapist", "blood_donation", "sample_collection",
-                "occupational_therapist", "dialysis", "vaccination_centre", "audiologist",
-                "blood_bank", "nutrition_counselling",
-            ),
-        ).map { it.key + " ~ " + it.value.joinToString("|") }.joinToString("\n or ") + "\n" + """
+        // not sports_centre, dance etc because these are often sports clubs which have no
+        // walk-in opening hours but training times
+    ),
+    "office" to arrayOf(
+        // common (AddPlaceName has catchall)
+        "insurance", "government", "travel_agent", "tax_advisor", "religion",
+        "employment_agency", "diplomatic", "coworking", "energy_supplier",
+        "estate_agent", "lawyer", "telecommunication", "educational_institution",
+        "association", "ngo", "it", "accountant", "property_management",
+        "bail_bond_agent", "financial_advisor", "political_party",
+        "private_investigator", "adoption_agency",
+    ),
+    "craft" to arrayOf(
+        // common
+        "carpenter", "shoemaker", "tailor", "photographer", "dressmaker",
+        "electronics_repair", "key_cutter", "stonemason", "bookbinder",
+        "jeweller", "sailmaker", "watchmaker", "clockmaker",
+        "locksmith",  "window_construction", "signmaker", "upholsterer",
+        "electrician", "boatbuilder",
+    ),
+    "healthcare" to arrayOf(
+        // common
+        "pharmacy", "doctor", "clinic", "dentist", "centre", "physiotherapist",
+        "laboratory", "alternative", "psychotherapist", "optometrist", "podiatrist",
+        "nurse", "counselling", "speech_therapist", "blood_donation", "sample_collection",
+        "occupational_therapist", "dialysis", "vaccination_centre", "audiologist",
+        "blood_bank", "nutrition_counselling",
+    ),
+    "waterway" to arrayOf(
+        // name & opening hours
+        "fuel",
+    ),
+).map { it.key + " ~ " + it.value.joinToString("|") }.joinToString("\n or ") + "\n" + """
                 )
                 and (!opening_hours or opening_hours older today -1 years)
                 and

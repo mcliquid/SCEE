@@ -709,7 +709,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 45 to AddParkingCapacity(),
     EE_QUEST_OFFSET + 46 to AddDisabledParkingCapacity(),
     EE_QUEST_OFFSET + 47 to AddParkingOrientation(),
-    EE_QUEST_OFFSET + 61 to AddPavingStonesMaterial(),
+    EE_QUEST_OFFSET + 64 to AddPavingStonesMaterial(),
     EE_QUEST_OFFSET + 50 to AddCaravanSiteType(),
     EE_QUEST_OFFSET + 52 to AddSaunaAvailability(),
     EE_QUEST_OFFSET + 53 to AddSwimmingPoolAvailability(),

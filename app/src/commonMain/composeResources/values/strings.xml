@@ -276,6 +276,7 @@ Additionally, some overlays allow you to add new data at the position of a displ
 If you are overwhelmed by the number of quests, you can always fine-tune which quests are displayed to you and in what order in the settings.</string>
 
     <string name="weekly_osm_new_edition_title">New Edition!</string>
+    <string name="calendar_new_event_title">New OSM event in your area!</string>
 
     <!-- Team mode -->
 
@@ -628,6 +629,7 @@ Before uploading your changes, the app checks with a &lt;a href="https://www.wes
     <string name="pref_title_message_achievements">Unlocked achievements</string>
     <string name="pref_title_message_weekly_osm">New editions of weeklyOSM</string>
     <string name="pref_title_message_changelog">New app releases</string>
+    <string name="pref_title_message_calendar">New OSM events in your area</string>
 
     <!-- Quest & overlay selection screen -->
 
@@ -1204,7 +1206,7 @@ A level counts as a roof level when its windows are in the roof. Subsequently, r
     <string name="quest_internet_access_terminal">Computer with Internet access</string>
     <string name="quest_internet_access_no">No connection</string>
 
-    <string name="quest_is_amenity_inside_title">Is this inside a building?</string>
+    <string name="quest_is_amenity_inside_title">Is this indoors?</string>
     <string name="quest_isAmenityIndoor_outside_covered">Not inside, but covered</string>
 
     <string name="quest_defibrillator_location">Where is this defibrillator located?</string>

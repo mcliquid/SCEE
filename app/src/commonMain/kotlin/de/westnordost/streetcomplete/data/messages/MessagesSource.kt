@@ -4,6 +4,8 @@ import com.russhwolf.settings.SettingsListener
 import de.westnordost.streetcomplete.ApplicationConstants.QUEST_COUNT_AT_WHICH_TO_SHOW_QUEST_SELECTION_HINT
 import de.westnordost.streetcomplete.BuildConfig
 import de.westnordost.streetcomplete.data.changelog.readChangelog
+import de.westnordost.streetcomplete.data.osmcal.CalendarEventsController
+import de.westnordost.streetcomplete.data.osmcal.CalendarEventsSource
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.preferences.QuestSelectionHintState
 import de.westnordost.streetcomplete.data.quest.Quest
@@ -23,6 +25,7 @@ class MessagesSource(
     private val userDataController: UserDataController,
     private val achievementsSource: AchievementsSource,
     private val visibleQuestsSource: VisibleQuestsSource,
+    private val calendarEventsController: CalendarEventsController,
     private val prefs: Preferences,
     private val res: Res,
 ) {
@@ -67,6 +70,11 @@ class MessagesSource(
 
             override fun onInvalidated() {}
         })
+        calendarEventsController.addListener(object : CalendarEventsSource.Listener {
+            override fun onUnreadCountChanged() {
+                onNumberOfMessagesUpdated()
+            }
+        })
 
         // must hold a reference because the listener is a weak reference
         settingsListeners += prefs.onDisabledMessageTypesChanged { onNumberOfMessagesUpdated() }
@@ -87,19 +95,24 @@ class MessagesSource(
 
         val showQuestSelectionHint =
             Message.QuestSelectionHint::class !in disabled &&
-                prefs.questSelectionHintState == QuestSelectionHintState.SHOULD_SHOW
+            prefs.questSelectionHintState == QuestSelectionHintState.SHOULD_SHOW
 
         val showUnreadMessages =
             Message.OsmUnreadMessages::class !in disabled &&
-                userDataController.unreadMessagesCount > 0
+            userDataController.unreadMessagesCount > 0
 
         val showNewWeeklyOsm =
             Message.NewWeeklyOsm::class !in disabled &&
-                prefs.weeklyOsmLastPublishDate != null &&
-                prefs.weeklyOsmLastPublishDate != prefs.weeklyOsmLastNotifiedPublishDate &&
-                achievementsSource.getLinks().any { it.id == "weeklyosm" }
+            prefs.weeklyOsmLastPublishDate != null &&
+            prefs.weeklyOsmLastPublishDate != prefs.weeklyOsmLastNotifiedPublishDate &&
+            achievementsSource.hasLink("weeklyosm")
+
+        val showCalendarEvents =
+            Message.NewCalendarEvent::class !in disabled &&
+            achievementsSource.hasLink("calendar")
 
         val showNewAchievements = Message.NewAchievement::class !in disabled
+
         val lastVersion = prefs.lastChangelogVersion
         // lastVersion is null on a new install. We don't want to show a message in that case, but
         // we want to mark it as if a message has already been read.
@@ -109,13 +122,14 @@ class MessagesSource(
         }
         val showNewVersion =
             Message.NewVersion::class !in disabled &&
-                lastVersion != null && BuildConfig.VERSION_NAME != lastVersion
+            lastVersion != null && BuildConfig.VERSION_NAME != lastVersion
 
         var messages = 0
         if (showQuestSelectionHint) messages++
         if (showUnreadMessages) messages++
         if (showNewVersion) messages++
         if (showNewWeeklyOsm) messages++
+        if (showCalendarEvents) messages += calendarEventsController.getUnreadCount()
         if (showNewAchievements) messages += newAchievements.size
         return messages
     }
@@ -159,12 +173,23 @@ class MessagesSource(
             }
         }
 
+        if (Message.NewCalendarEvent::class !in disabled) {
+            val unreadEvent = calendarEventsController.getFirstUnread()
+            if (
+                unreadEvent != null &&
+                achievementsSource.hasLink("calendar")
+            ) {
+                calendarEventsController.markRead(unreadEvent.id)
+                return Message.NewCalendarEvent(unreadEvent)
+            }
+        }
+
         if (Message.NewWeeklyOsm::class !in disabled) {
             val weeklyOsmPublishDate = prefs.weeklyOsmLastPublishDate
             if (
                 weeklyOsmPublishDate != null
                 && weeklyOsmPublishDate != prefs.weeklyOsmLastNotifiedPublishDate
-                && achievementsSource.getLinks().any { it.id == "weeklyosm" }
+                && achievementsSource.hasLink("weeklyosm")
             ) {
                 prefs.weeklyOsmLastNotifiedPublishDate = weeklyOsmPublishDate
                 return Message.NewWeeklyOsm(weeklyOsmPublishDate)

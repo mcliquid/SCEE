@@ -209,7 +209,7 @@ kotlin {
 
                 // widgets
                 // TODO implementation("androidx.viewpager2:viewpager2:1.1.0")
-                // TODO implementation("me.grantland:autofittextview:0.2.1")
+                implementation("me.grantland:autofittextview:0.2.1")
                 implementation("com.google.android.flexbox:flexbox:3.0.0")
                 implementation("com.github.chrisbanes:PhotoView:2.3.0")
 

@@ -1455,7 +1455,6 @@
     <string name="label_block2">"οικοδομικό τετράγωνο"</string>
     <string name="quest_address_answer_block2">"Είναι εντός ενός οικοδομικού τετραγώνου…"</string>
     <string name="quest_address_answer_no_block2">"Δεν είναι εντός ενός οικοδομικού τετραγώνου…"</string>
-    <string name="quest_artwork_title">"Τι είδους έργο τέχνης είναι αυτό;"</string>
     <string name="quest_artwork_sculpture">"Γλυπτό"</string>
     <string name="quest_artwork_statue">"Άγαλμα"</string>
     <string name="quest_artwork_mural">"Τοιχογραφία"</string>

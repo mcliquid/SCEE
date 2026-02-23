@@ -1501,9 +1501,8 @@ Zum Beispiel 1,3 oder 2b,4,6."</string>
     <string name="quest_artwork_fountain">"Brunnen"</string>
     <string name="quest_bothway_title">"In welche Richtungen kann man fahren?"</string>
     <string name="quest_camp_tent_title">"Darf man hier im Zelt campen?"</string>
-    <string name="quest_camp_cabin_title">"Gibt es hier Hütten in denen man übernachten darf?"</string>
+    <string name="quest_camp_cabin_title">"Gibt es hier Hütten, in denen man übernachten darf?"</string>
     <string name="quest_camp_caravan_title">"Darf man hier im Wohnmobil oder -wagen campen?"</string>
-    <string name="quest_ferry_bicycle_title">"Darf man auf diese Fähre Fahrräder mitnehmen?"</string>
     <string name="quest_openingHours_add_time">"Öffnungszeiten hinzufügen"</string>
     <string name="quest_openingHours_chooseStartTimeTitle">"Begin der Öffnungszeit"</string>
     <string name="quest_openingHours_chooseEndTimeTitle">"Ende der Öffnungszeit"</string>

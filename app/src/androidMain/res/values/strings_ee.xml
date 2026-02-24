@@ -700,7 +700,6 @@
     <!-- evse id for charging stations -->
     <string name="quest_evse_id_title">What is the EVSE ID of this charging station?</string>
     <string name="quest_evse_id_add_more">Add another EVSE ID</string>
-    <string name="quest_evse_id_not_visible">ID not visible / signed</string>
     <string name="quest_evse_id_hint">e.g. DE*GCE*E1234567</string>
 
     <!-- new overlays -->
@@ -814,13 +813,6 @@ Out of the box SCEE is configured to behave very similar to StreetComplete.</str
 
     <!-- fence material -->
     <string name="quest_fence_material_title">What material is this fence made of?</string>
-    <string name="quest_fence_material_wood">Wood</string>
-    <string name="quest_fence_material_metal">Metal</string>
-    <string name="quest_fence_material_concrete">Concrete</string>
-    <string name="quest_fence_material_stone">Stone</string>
-    <string name="quest_fence_material_brick">Brick</string>
-    <string name="quest_fence_material_plastic">Plastic</string>
-    <string name="quest_fence_material_wire">Wire</string>
-    <string name="quest_fence_material_glass">Glass</string>
+    <string name="quest_material_wire">Wire</string>
 
 </resources>

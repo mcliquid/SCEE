@@ -52,43 +52,43 @@ class AddOpeningHours() : OsmElementQuestType<OpeningHoursAnswer>, AndroidQuest 
 // So when adding other tags to the common list keep in mind that they need to be appropriate for all those quests.
 // Independent tags can by added in the "opening_hours only" tab.
 
-        mapOf(
-            "amenity" to arrayOf(
-                // common
-                "restaurant", "cafe", "ice_cream", "fast_food", "bar", "pub", "biergarten",         // eat & drink
-                "food_court", "nightclub", "hookah_lounge",
-                "cinema", "planetarium", "casino",                                                  // amenities
-                "townhall", "courthouse", "embassy", "community_centre", "youth_centre", "library", // civic
-                "driving_school", "music_school", "prep_school", "language_school", "dive_centre",  // learning
-                "dancing_school", "ski_school", "flight_school", "surf_school", "sailing_school",
-                "cooking_school",
-                "bank", "bureau_de_change", "money_transfer", "post_office", "marketplace",         // commercial
-                "internet_cafe", "payment_centre",
-                "car_wash", "car_rental", "fuel",                                                   // car stuff
-                "dentist", "doctors", "clinic", "pharmacy", "veterinary", "veterinary_pharmacy",    // health
-                "animal_boarding", "animal_shelter", "animal_breeding",                             // animals
-                "coworking_space",                                                                  // work
+mapOf(
+    "amenity" to arrayOf(
+        // common
+        "restaurant", "cafe", "ice_cream", "fast_food", "bar", "pub", "biergarten",         // eat & drink
+        "food_court", "nightclub", "hookah_lounge",
+        "cinema", "planetarium", "casino",                                                  // amenities
+        "townhall", "courthouse", "embassy", "community_centre", "youth_centre", "library", // civic
+        "driving_school", "music_school", "prep_school", "language_school", "dive_centre",  // learning
+        "dancing_school", "ski_school", "flight_school", "surf_school", "sailing_school",
+        "cooking_school",
+        "bank", "bureau_de_change", "money_transfer", "post_office", "marketplace",         // commercial
+        "internet_cafe", "payment_centre",
+        "car_wash", "car_rental", "fuel",                                                   // car stuff
+        "dentist", "doctors", "clinic", "pharmacy", "veterinary", "veterinary_pharmacy",    // health
+        "animal_boarding", "animal_shelter", "animal_breeding",                             // animals
+        "coworking_space",                                                                  // work
 
-                // name & opening hours
-                "boat_rental", "vehicle_inspection", "motorcycle_rental", "crematorium",
+        // name & opening hours
+        "boat_rental", "vehicle_inspection", "motorcycle_rental", "crematorium",
 
-                // not ATM because too often it's simply 24/7 and too often it is confused with
-                // a bank that might be just next door because the app does not tell the user what
-                // kind of object this is about
-            ),
-            "tourism" to arrayOf(
-                // common
-                "zoo", "aquarium", "theme_park", "gallery", "museum"
-                // and tourism = information, see above
-            ),
-            "leisure" to arrayOf(
-                // common
-                "fitness_centre", "golf_course", "water_park", "miniature_golf", "bowling_alley",
-                "amusement_arcade", "adult_gaming_centre", "tanning_salon", "sauna",
-                "indoor_play",
+        // not ATM because too often it's simply 24/7 and too often it is confused with
+        // a bank that might be just next door because the app does not tell the user what
+        // kind of object this is about
+    ),
+    "tourism" to arrayOf(
+        // common
+        "zoo", "aquarium", "theme_park", "gallery", "museum"
+        // and tourism = information, see above
+    ),
+    "leisure" to arrayOf(
+        // common
+        "fitness_centre", "golf_course", "water_park", "miniature_golf", "bowling_alley",
+        "amusement_arcade", "adult_gaming_centre", "tanning_salon", "sauna",
+        "indoor_play",
 
-                // name & opening hours
-                "trampoline_park",
+        // name & opening hours
+        "trampoline_park",
 
         // not sports_centre, dance etc because these are often sports clubs which have no
         // walk-in opening hours but training times
@@ -205,7 +205,6 @@ class AddOpeningHours() : OsmElementQuestType<OpeningHoursAnswer>, AndroidQuest 
         // be strict
         val oh = ohStr.toOpeningHoursOrNull(lenient = false) ?: return true
         if (prefs.getBoolean(RESURVEY_ALL_OPENING_HOURS, false)) return true
-        // only display supported rules, or ambiguous rules that should be corrected
         return oh.isSupported(allowTimePoints = false, allowAmbiguity = true)
     }
 

@@ -6,6 +6,8 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.quest.AndroidQuest
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CITIZEN
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
 
 class AddToiletsDisposal : OsmFilterQuestType<ToiletsDisposalType>(), AndroidQuest {
 
@@ -20,6 +22,7 @@ class AddToiletsDisposal : OsmFilterQuestType<ToiletsDisposalType>(), AndroidQue
     override val changesetComment = "Add toilets disposal type"
     override val wikiLink = "Key:toilets:disposal"
     override val icon = R.drawable.quest_toilets_disposal
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
     override val achievements = listOf(CITIZEN)
 
     override fun getTitle(tags: Map<String, String>) =

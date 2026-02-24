@@ -7,19 +7,14 @@ import kotlinx.serialization.serializer
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
-class AddPavingStonesMaterialForm :
-    AItemSelectQuestForm<PavingStonesMaterial, PavingStonesMaterial>() {
+class AddPavingStonesMaterialForm : AItemSelectQuestForm<PavingStonesMaterial, PavingStonesMaterial>() {
 
     override val items = PavingStonesMaterial.entries
-    override val serializer = serializer<PavingStonesMaterial>()
     override val itemsPerRow = 3
+    override val serializer = serializer<PavingStonesMaterial>()
 
-    @Composable
-    override fun ItemContent(item: PavingStonesMaterial) {
-        ImageWithLabel(
-            painter = painterResource(item.icon),
-            label = stringResource(item.title)
-        )
+    @Composable override fun ItemContent(item: PavingStonesMaterial) {
+        ImageWithLabel(painterResource(item.icon), stringResource(item.title))
     }
 
     override fun onClickOk(selectedItem: PavingStonesMaterial) {

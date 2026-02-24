@@ -48,7 +48,6 @@ import de.westnordost.streetcomplete.data.quest.questModule
 import de.westnordost.streetcomplete.data.upload.uploadModule
 import de.westnordost.streetcomplete.data.urlconfig.urlConfigModule
 import de.westnordost.streetcomplete.data.user.UserLoginController
-import de.westnordost.streetcomplete.data.user.UserUpdater
 import de.westnordost.streetcomplete.data.user.achievements.achievementDefinitionsModule
 import de.westnordost.streetcomplete.data.user.achievements.achievementsModule
 import de.westnordost.streetcomplete.data.user.achievements.editTypeAliasesModule
@@ -160,7 +159,6 @@ class StreetCompleteApplication : Application() {
                 calendarEventsModule,
                 feedsModule,
                 androidModule,
-                androidModule,
                 externalSourceModule,
             )
         }
@@ -182,11 +180,6 @@ class StreetCompleteApplication : Application() {
         updateDefaultLocales()
 
         crashReportExceptionHandler.install()
-
-        applicationScope.launch {
-            preloader.preload()
-            editHistoryController.deleteSyncedOlderThan(nowAsEpochMilliseconds() - ApplicationConstants.MAX_UNDO_HISTORY_AGE)
-        }
 
         feedsUpdater.updateDaily()
 

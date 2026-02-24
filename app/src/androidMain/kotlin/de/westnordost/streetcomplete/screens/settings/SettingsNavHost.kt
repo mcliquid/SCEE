@@ -20,7 +20,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable fun SettingsNavHost(
     onClickBack: () -> Unit,
     onClickShowQuestTypeForDebug: (QuestType) -> Unit,
-    startDestination: String? = null
+    startDestination: String? = null,
 ) {
     val navController = rememberNavController()
     val dir = LocalLayoutDirection.current.dir
@@ -45,12 +45,12 @@ import org.koin.androidx.compose.koinViewModel
                 onClickQuestSelection = { navController.navigate(SettingsDestination.QuestSelection) },
                 onClickOverlaySelection = { navController.navigate(SettingsDestination.OverlaySelection) },
                 onClickLanguageSelection = { navController.navigate(SettingsDestination.LanguageSelection) },
+                onClickMessagesSelection = { navController.navigate(SettingsDestination.MessagesSelection) },
                 onClickQuestSettings = { navController.navigate(SettingsDestination.QuestSettings) },
                 onClickUiSettings = { navController.navigate(SettingsDestination.UiSettings) },
                 onClickDisplaySettings = { navController.navigate(SettingsDestination.DisplaySettings) },
                 onClickNoteSettings = { navController.navigate(SettingsDestination.NoteSettings) },
                 onClickDataSettings = { navController.navigate(SettingsDestination.DataManagementSettings) },
-                onClickMessagesSelection = { navController.navigate(SettingsDestination.MessagesSelection) },
                 onClickBack = ::goBack
             )
         }

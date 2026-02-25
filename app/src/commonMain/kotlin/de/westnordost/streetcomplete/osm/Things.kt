@@ -371,17 +371,13 @@ val POPULAR_THING_FEATURE_IDS = listOf(
     "amenity/bicycle_parking",     // 0.7 M
     //"tourism/information/board",   // 0.3M
     "amenity/toilets",             // 0.4 M
-    "amenity/drinking_water",      // 0.3 M
     "amenity/post_box",            // 0.4 M
     "natural/tree/broadleaved",    // 4.8 M
     "amenity/shelter",             // 0.5 M
     "power/substation",
     "amenity/drinking_water",      // 0.4 M
     "amenity/recycling_container", // 0.4 M
-    "amenity/toilets",
     "amenity/bicycle_wash",
-    "amenity/toilets",             // 0.4 M
-    "amenity/post_box",            // 0.4 M
     "amenity/charging_station",    // 0.2 M
 
     // More:

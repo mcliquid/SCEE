@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.osm
 
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 
@@ -8,7 +9,8 @@ fun Element.isThingOrDisusedThing(): Boolean =
     isThing() || isDisusedThing()
 
 fun Element.isThing(): Boolean =
-    IS_THING_EXPRESSION.matches(this)
+    IS_THING_EXPRESSION.matches(this) ||
+        (Prefs.preferences.expertMode && IS_SCEE_THING_EXPRESSION.matches(this))
 
 fun Element.isDisusedThing(): Boolean =
     this.asIfItWasnt("disused")?.let { IS_THING_EXPRESSION.matches(it) } == true
@@ -299,9 +301,6 @@ private val IS_THING_EXPRESSION by lazy {
         or advertising
         or amenity = recycling and recycling_type = container
         or attraction
-        or marker
-        or marker = utility
-        or (marker and utility)
         or boundary = marker
         or cemetery = grave
         or disc_golf
@@ -316,6 +315,44 @@ private val IS_THING_EXPRESSION by lazy {
         )
         or highway = bus_stop and public_transport != stop_position
         or tourism = information and information !~ office|visitor_centre
+    """.toElementFilterExpression()
+}
+
+private val IS_SCEE_THING_EXPRESSION by lazy {
+    val sceeTags = mapOf(
+        "man_made" to listOf(
+            "mast",
+            // "tower"
+        ),
+        "power" to listOf(
+            "catenary_mast",
+            "substation",
+            "transformer",
+            "generator",
+            "tower"
+        ),
+        "marker" to listOf(
+            "post",
+            "aerial",
+            "pedestal",
+            "stone",
+            "plate",
+            "ground",
+            "utility"
+        ),
+        "utility" to listOf(
+            "gas",
+            "power",
+            "water",
+            "telecom"
+        )
+    )
+        .map { it.key + " ~ " + it.value.joinToString("|") }
+        .joinToString("\n    or ")
+
+    """
+        nodes, ways, relations with
+        $sceeTags
     """.toElementFilterExpression()
 }
 
@@ -339,14 +376,18 @@ val POPULAR_THING_FEATURE_IDS = listOf(
     "natural/tree/broadleaved",    // 4.8 M
     "amenity/shelter",             // 0.5 M
     "power/substation",
+    "amenity/drinking_water",      // 0.4 M
     "amenity/recycling_container", // 0.4 M
     "amenity/toilets",
     "amenity/bicycle_wash",
+    "amenity/toilets",             // 0.4 M
+    "amenity/post_box",            // 0.4 M
+    "amenity/charging_station",    // 0.2 M
+
     // More:
 
     // mostly found in parks/plazas, i.e. specific places instead of ~everywhere
     // "historic/memorial",           // 0.4 M (if this is displayed in quick select, artwork should probably too)
-    // "amenity/drinking_water",      // 0.3 M
     // "leisure/picnic_table",        // 0.3 M
     "historic/wayside_cross",
     "historic/wayside_shrine",

@@ -34,11 +34,11 @@ val nsiVersion = "7.0.20260126"
 val poEditorProjectId = "97843"
 
 plugins {
-    id("org.jetbrains.kotlin.multiplatform") version "2.3.0"
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.0"
-    id("org.jetbrains.kotlin.plugin.compose") version "2.3.0"
-    id("com.android.application") version "8.11.2"
-    id("org.jetbrains.compose") version "1.10.0"
+    id("org.jetbrains.kotlin.multiplatform") version "2.3.10"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.10"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.3.10"
+    id("com.android.application") version "8.13.2"
+    id("org.jetbrains.compose") version "1.10.1"
     id("org.jetbrains.kotlinx.atomicfu") version "0.31.0"
     id("com.codingfeline.buildkonfig") version "0.17.1"
 }
@@ -77,6 +77,10 @@ kotlin {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
+            freeCompilerArgs.addAll(
+                "-Xexpect-actual-classes",
+                "-Xannotation-default-target=param-property"
+            )
         }
     }
 /*
@@ -141,18 +145,18 @@ kotlin {
                 implementation("de.westnordost:osmfeatures:7.1.0")
 
                 // opening hours parser
-                implementation("de.westnordost:osm-opening-hours:0.3.0")
+                implementation("de.westnordost:osm-opening-hours:0.4.0")
 
                 // UI (Compose)
-                implementation("org.jetbrains.compose.runtime:runtime:1.10.0")
-                implementation("org.jetbrains.compose.foundation:foundation:1.10.0")
-                implementation("org.jetbrains.compose.material:material:1.10.0")
-                implementation("org.jetbrains.compose.ui:ui:1.10.0")
-                implementation("org.jetbrains.compose.components:components-resources:1.10.0")
-                implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.10.0")
+                implementation("org.jetbrains.compose.runtime:runtime:1.10.1")
+                implementation("org.jetbrains.compose.foundation:foundation:1.10.1")
+                implementation("org.jetbrains.compose.material:material:1.10.1")
+                implementation("org.jetbrains.compose.ui:ui:1.10.1")
+                implementation("org.jetbrains.compose.components:components-resources:1.10.1")
+                implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.10.1")
 
                 // UI Navigation
-                implementation("org.jetbrains.compose.ui:ui-backhandler:1.10.0")
+                implementation("org.jetbrains.compose.ui:ui-backhandler:1.10.1")
                 implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.2")
 
                 // UI ViewModel
@@ -161,10 +165,10 @@ kotlin {
                 // UI widgets
 
                 // non-lazy grid
-                implementation("com.cheonjaeung.compose.grid:grid:2.5.2")
+                implementation("com.cheonjaeung.compose.grid:grid:2.6.0")
 
                 // reorderable lists (raw Compose API is pretty complicated)
-                implementation("sh.calvin.reorderable:reorderable:2.5.1")
+                implementation("sh.calvin.reorderable:reorderable:3.0.0")
 
                 // multiplatform webview (for login via OAuth)
                 implementation("io.github.kevinnzou:compose-webview-multiplatform:2.0.3")
@@ -192,7 +196,6 @@ kotlin {
                 implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
 
                 // Compose
-                implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.10.0")
                 implementation("androidx.activity:activity-compose:1.12.4")
 
                 // photos
@@ -217,13 +220,13 @@ kotlin {
                 implementation("org.maplibre.gl:android-sdk:12.3.1")
 
                 // fast json (de)serialization used for database read and write
-                implementation("com.squareup.moshi:moshi:1.15.1")
+                implementation("com.squareup.moshi:moshi:1.15.2")
 
                 // sunset-sunrise parser for lit quests
                 implementation("com.luckycatlabs:SunriseSunsetCalculator:1.2")
 
                 // diff utils for comparing filters modified by quest settings with original
-                implementation("io.github.java-diff-utils:java-diff-utils:4.12")
+                implementation("io.github.java-diff-utils:java-diff-utils:4.16")
 
                 // parser for user-supplied GPX tracks
                 implementation("com.github.ticofab:android-gpx-parser:2.3.1")
@@ -244,7 +247,7 @@ kotlin {
         }
         androidUnitTest {
             dependencies {
-                implementation("org.mockito:mockito-core:5.21.0")
+                implementation("org.mockito:mockito-core:5.22.0")
                 implementation(kotlin("test"))
             }
         }
@@ -338,7 +341,7 @@ android {
     }
 
     dependencies {
-        debugImplementation("androidx.compose.ui:ui-tooling:1.10.0")
+        debugImplementation("androidx.compose.ui:ui-tooling:1.10.4")
     }
 }
 
@@ -350,7 +353,7 @@ compose {
 }
 
 dependencies {
-    debugImplementation("org.jetbrains.compose.ui:ui-tooling:1.10.0")
+    debugImplementation("org.jetbrains.compose.ui:ui-tooling:1.10.1")
     // see comment in android.compileOptions.isCoreLibraryDesugaringEnabled
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.runBlocking
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import java.util.Locale
+import java.util.Locale.setDefault
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -85,12 +86,12 @@ class OpenChangesetsManagerTest {
     @Test fun `create correct changeset tags`(): Unit = runBlocking {
         on(openChangesetsDB.get(any(), any())).thenReturn(null)
         val locale = Locale.getDefault()
-        Locale.setDefault(Locale("es", "AR"))
+        setDefault(Locale.Builder().setLanguage("es").setRegion("AR").build())
         on(changesetApiClient.open(any())).thenReturn(1)
 
         manager.getOrCreateChangeset(questType, "my source", LatLon(0.0, 0.0), false)
 
-        Locale.setDefault(locale)
+        setDefault(locale)
 
         verify(changesetApiClient).open(mapOf(
             "source" to "my source",

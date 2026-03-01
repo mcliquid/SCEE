@@ -25,9 +25,9 @@ inline fun <reified T> mock(): T = Mockito.mock(T::class.java)
 // mock SharedPreferences that always return default value
 fun mockPrefs(): SharedPreferences {
     val prefs: SharedPreferences = mock()
-    on(prefs.getString(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())).thenAnswer { inv -> inv.getArgument(1, String::class.java) }
-    on(prefs.getInt(ArgumentMatchers.anyString(), ArgumentMatchers.anyInt())).thenAnswer { inv -> inv.getArgument(1, Integer::class.java) }
-    on(prefs.getLong(ArgumentMatchers.anyString(), ArgumentMatchers.anyLong())).thenAnswer { inv -> inv.getArgument(1, Long::class.java) }
+    on(prefs.getString(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())).thenAnswer { inv -> inv.getArgument<String>(1) }
+    on(prefs.getInt(ArgumentMatchers.anyString(), ArgumentMatchers.anyInt())).thenAnswer { inv -> inv.getArgument<Int>(1) }
+    on(prefs.getLong(ArgumentMatchers.anyString(), ArgumentMatchers.anyLong())).thenAnswer { inv -> inv.getArgument<Long>(1) }
     // style above doesn't work for boolean ("Cannot cast java.lang.Boolean to boolean")
     on(prefs.getBoolean(ArgumentMatchers.anyString(), eq(true))).thenAnswer { true }
     on(prefs.getBoolean(ArgumentMatchers.anyString(), eq(false))).thenAnswer { false }
@@ -36,9 +36,9 @@ fun mockPrefs(): SharedPreferences {
 
 fun mockPrefs2(): ObservableSettings {
     val prefs: ObservableSettings = mock()
-    on(prefs.getString(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())).thenAnswer { inv -> inv.getArgument(1, String::class.java) }
-    on(prefs.getInt(ArgumentMatchers.anyString(), ArgumentMatchers.anyInt())).thenAnswer { inv -> inv.getArgument(1, Integer::class.java) }
-    on(prefs.getLong(ArgumentMatchers.anyString(), ArgumentMatchers.anyLong())).thenAnswer { inv -> inv.getArgument(1, Long::class.java) }
+    on(prefs.getString(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())).thenAnswer { inv -> inv.getArgument<String>(1) }
+    on(prefs.getInt(ArgumentMatchers.anyString(), ArgumentMatchers.anyInt())).thenAnswer { inv -> inv.getArgument<Int>(1) }
+    on(prefs.getLong(ArgumentMatchers.anyString(), ArgumentMatchers.anyLong())).thenAnswer { inv -> inv.getArgument<Long>(1) }
     // style above doesn't work for boolean ("Cannot cast java.lang.Boolean to boolean")
     on(prefs.getBoolean(ArgumentMatchers.anyString(), eq(true))).thenAnswer { true }
     on(prefs.getBoolean(ArgumentMatchers.anyString(), eq(false))).thenAnswer { false }
@@ -49,9 +49,9 @@ fun mockPrefs3(): Preferences {
     val prefs: Preferences = mock()
     val obs = mockPrefs2()
     on(prefs.prefs).thenReturn(obs)
-    on(prefs.getString(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())).thenAnswer { inv -> inv.getArgument(1, String::class.java) }
-    on(prefs.getInt(ArgumentMatchers.anyString(), ArgumentMatchers.anyInt())).thenAnswer { inv -> inv.getArgument(1, Integer::class.java) }
-    on(prefs.getLong(ArgumentMatchers.anyString(), ArgumentMatchers.anyLong())).thenAnswer { inv -> inv.getArgument(1, Long::class.java) }
+    on(prefs.getString(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())).thenAnswer { inv -> inv.getArgument<String>(1) }
+    on(prefs.getInt(ArgumentMatchers.anyString(), ArgumentMatchers.anyInt())).thenAnswer { inv -> inv.getArgument<Int>(1) }
+    on(prefs.getLong(ArgumentMatchers.anyString(), ArgumentMatchers.anyLong())).thenAnswer { inv -> inv.getArgument<Long>(1) }
     // style above doesn't work for boolean ("Cannot cast java.lang.Boolean to boolean")
     on(prefs.getBoolean(ArgumentMatchers.anyString(), eq(true))).thenAnswer { true }
     on(prefs.getBoolean(ArgumentMatchers.anyString(), eq(false))).thenAnswer { false }

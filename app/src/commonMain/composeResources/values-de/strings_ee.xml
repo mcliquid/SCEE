@@ -274,7 +274,6 @@
     <string name="quest_poi_business_title">POI: Unternehmen</string>
     <string name="quick_switch_preset">Voreinstellung wechseln</string>
     <string name="pref_screen_ui">Oberfläche</string>
-    <string name="quest_artwork_title">Was für eine Art von Kunstwerk ist das\?</string>
     <string name="quest_osmose_message_for_element">Artikeltyp %1$s: %2$s</string>
     <string name="restriction_overlay_relation_unsupported">Nicht unterstützter Relationstyp:
 \n%s</string>

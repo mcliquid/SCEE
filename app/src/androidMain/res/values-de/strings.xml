@@ -391,7 +391,7 @@ Teilweise bedeutet, dass man die Toilette schon im Rollstuhl benutzen kann, aber
     <string name="quest_buildingType_dormitory">"Wohnheim-Gebäude"</string>
     <string name="quest_buildingType_houseboat">"Hausboot"</string>
     <string name="quest_buildingType_bungalow">"Bungalow-Gebäude"</string>
-    <string name="quest_buildingType_static_caravan">"Feststehender Wohnwagen"</string>
+    <string name="quest_buildingType_static_caravan">"Fest stehender Wohnwagen"</string>
     <string name="quest_buildingType_commercial">"Gewerbliches Gebäude"</string>
     <string name="quest_buildingType_commercial_generic_description">"Gebäude, in dem Leute arbeiten, einkaufen oder anderen gewerblichen Aktivitäten nachgehen"</string>
     <string name="quest_buildingType_industrial">"Industriegebäude"</string>
@@ -1483,8 +1483,8 @@ Zum Beispiel 1,3 oder 2b,4,6."</string>
     <string name="pref_title_message_weekly_osm">"Neue Ausgaben von weeklyOSM"</string>
     <string name="pref_title_message_changelog">"Neue Veröffentlichungen der App"</string>
     <string name="label_block2">"Stadtblock"</string>
-    <string name="quest_address_answer_block2">"Es befindet sich innerhalb eines Stadtblocks..."</string>
-    <string name="quest_address_answer_no_block2">"Es befindet sich nicht innerhalb eines Stadtblocks..."</string>
+    <string name="quest_address_answer_block2">"Es befindet sich innerhalb eines Stadtblocks…"</string>
+    <string name="quest_address_answer_no_block2">"Es befindet sich nicht innerhalb eines Stadtblocks…"</string>
     <string name="quest_artwork_title">"Was für ein Kunstwerk ist das?"</string>
     <string name="quest_artwork_sculpture">"Skulptur"</string>
     <string name="quest_artwork_statue">"Statue"</string>

@@ -305,6 +305,7 @@ fun questTypeRegistry(
 ) = QuestTypeRegistry({ getQuestTypeList(
     arSupportChecker,
     getCountryInfoByLocation,
+    getCountryOrSubdivisionCode,
     getFeature,
     osmoseDao,
     customQuestList,
@@ -313,6 +314,7 @@ fun questTypeRegistry(
 fun getQuestTypeList(
     arSupportChecker: ArSupportChecker,
     getCountryInfoByLocation: (location: LatLon) -> CountryInfo,
+    getCountryOrSubdivisionCode: (LatLon) -> String?,
     getFeature: (Element) -> Feature?,
     osmoseDao: OsmoseDao,
     customQuestList: CustomQuestList,

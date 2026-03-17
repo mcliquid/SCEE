@@ -365,6 +365,7 @@ val POPULAR_THING_FEATURE_IDS = listOf(
     //"marker/utility/power",
     "man_made/street_cabinet",
     "highway/street_lamp",         // 4.3 M
+    "highway/bus_stop",            // 4.0 M
     "amenity/bench",               // 2.6 M
     "emergency/fire_hydrant",      // 2.1 M
     "amenity/waste_basket",        // 0.9 M

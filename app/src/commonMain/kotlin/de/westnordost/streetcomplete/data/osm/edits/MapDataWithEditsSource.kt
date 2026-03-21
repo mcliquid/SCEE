@@ -437,9 +437,11 @@ class MapDataWithEditsSource internal constructor(
         }
 
         for (way in addWays) {
-            // !!: It should not be possible that a node referred to by a way is missing,
-            // as when a node is removed, it is removed from the way, too
-            val nodes = getWayNodes(way)!!
+            val nodes = getWayNodes(way)
+            if (nodes == null) {
+                Log.w(TAG, "Skipping way ${way.id} because not all nodes are available")
+                continue
+            }
             val geometries = nodes.map { ElementGeometryEntry(it.type, it.id, ElementPointGeometry(it.position)) }
             mapData.putAll(nodes, geometries)
         }

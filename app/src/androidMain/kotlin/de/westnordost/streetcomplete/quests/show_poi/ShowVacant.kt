@@ -11,7 +11,6 @@ import de.westnordost.streetcomplete.osm.applyReplacePlaceTo
 import de.westnordost.streetcomplete.osm.isPlace
 import de.westnordost.streetcomplete.osm.updateCheckDate
 import de.westnordost.streetcomplete.quests.getLabelSources
-import de.westnordost.streetcomplete.quests.shop_type.IsShopVacant
 import de.westnordost.streetcomplete.quests.shop_type.ShopType
 import de.westnordost.streetcomplete.quests.shop_type.ShopTypeAnswer
 import de.westnordost.streetcomplete.quests.shop_type.ShopTypeForm
@@ -45,8 +44,9 @@ class ShowVacant : OsmFilterQuestType<ShopTypeAnswer>(), AndroidQuest {
 
     override fun applyAnswerTo(answer: ShopTypeAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         when (answer) {
-            is IsShopVacant -> tags.updateCheckDate()
+            is ShopTypeAnswer.IsShopVacant -> tags.updateCheckDate()
             is ShopType -> answer.feature.applyReplacePlaceTo(tags)
+            is ShopTypeAnswer.LeaveNote -> {} // can this happen?
         }
     }
 

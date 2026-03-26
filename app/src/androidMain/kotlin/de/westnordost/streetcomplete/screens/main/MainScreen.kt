@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.messages.Message
+import de.westnordost.streetcomplete.data.quest.Quest
 import de.westnordost.streetcomplete.data.user.UserLoginController
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.location_dot_small
@@ -113,6 +114,7 @@ fun MainScreen(
     onClickStopTrackRecording: () -> Unit,
     onClickDownload: () -> Unit,
     onExplainedNeedForLocationPermission: () -> Unit,
+    showQuestDetails: (Quest) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
@@ -164,6 +166,7 @@ fun MainScreen(
     val showQuickSettings by viewModel.showQuickSettings.collectAsState()
     var showQuickSettingsMenu by remember { mutableStateOf(false) }
     val showOverlaySelector by viewModel.showOverlaySelector.collectAsState()
+    val nearbyQuests by viewModel.nearbyQuests.collectAsState()
 
     var showOverlaysDropdown by remember { mutableStateOf(false) }
     var showOverlaysTutorial by remember { mutableStateOf(false) }
@@ -312,6 +315,12 @@ fun MainScreen(
                         modifier = Modifier.align(Alignment.End),
                         onOverlaySelected = { viewModel.selectOverlay(it) }
                     )
+                else if (!nearbyQuests.isNullOrEmpty()) {
+                    // on quest selected -> set it as selected, and then set nearbyQuests to null
+                    NearbyQuestsView(nearbyQuests!!, Modifier.align(Alignment.End)) {
+                        showQuestDetails(it)
+                    }
+                }
             }
 
             // bottom controls

@@ -54,7 +54,7 @@ class SpecifyShopType : OsmFilterQuestType<ShopTypeAnswer>(), AndroidQuest {
         if (tags["amenity"] in listOf("shop", "shopping"))
             tags.remove("amenity")
         when (answer) {
-            is IsShopVacant -> {
+            is ShopTypeAnswer.IsShopVacant -> {
                 val shopTag = tags["shop"]
                 removePlaceRelatedTags(tags)
                 tags["disused:shop"] = shopTag ?: "yes"
@@ -66,6 +66,7 @@ class SpecifyShopType : OsmFilterQuestType<ShopTypeAnswer>(), AndroidQuest {
                     answer.feature.applyReplacePlaceTo(tags)
                 }
             }
+            is ShopTypeAnswer.LeaveNote -> { /* already handled by form */ }
         }
     }
 }

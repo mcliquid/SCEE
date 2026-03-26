@@ -11,6 +11,9 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.PopupMenu
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.os.bundleOf
 import androidx.core.view.children
 import de.westnordost.osmfeatures.Feature
@@ -43,18 +46,24 @@ import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.data.visiblequests.HideQuestController
 import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenController
 import de.westnordost.streetcomplete.osm.applyReplacePlaceTo
+import de.westnordost.streetcomplete.osm.isPlace
 import de.westnordost.streetcomplete.osm.isPlaceOrDisusedPlace
 import de.westnordost.streetcomplete.osm.ALL_PATHS
 import de.westnordost.streetcomplete.osm.ALL_ROADS
 import de.westnordost.streetcomplete.quests.custom.CustomQuestList
+import de.westnordost.streetcomplete.osm.toElement
+import de.westnordost.streetcomplete.osm.toPrefixedFeature
 import de.westnordost.streetcomplete.quests.shop_type.ShopGoneDialog
 import de.westnordost.streetcomplete.quests.show_poi.ShowFixme
 import de.westnordost.streetcomplete.util.AccessManagerDialog
+import de.westnordost.streetcomplete.quests.shop_type.ShopType
+import de.westnordost.streetcomplete.quests.shop_type.ShopTypeAnswer
 import de.westnordost.streetcomplete.util.getNameAndLocationSpanned
 import de.westnordost.streetcomplete.util.accessKeys
 import de.westnordost.streetcomplete.util.dialogs.setViewWithDefaultPadding
 import de.westnordost.streetcomplete.util.ktx.containsAnyKey
 import de.westnordost.streetcomplete.util.ktx.isArea
+import de.westnordost.streetcomplete.util.ktx.geometryType
 import de.westnordost.streetcomplete.util.ktx.isSplittable
 import de.westnordost.streetcomplete.util.ktx.popIn
 import de.westnordost.streetcomplete.util.ktx.systemTimeNow
@@ -62,6 +71,7 @@ import de.westnordost.streetcomplete.util.ktx.toInstant
 import de.westnordost.streetcomplete.util.ktx.toLocalDate
 import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
 import de.westnordost.streetcomplete.util.logs.Log
+import de.westnordost.streetcomplete.util.locale.getLanguagesForFeatureDictionary
 import de.westnordost.streetcomplete.view.add
 import de.westnordost.streetcomplete.view.confirmIsSurvey
 import kotlinx.coroutines.Dispatchers
@@ -112,6 +122,8 @@ abstract class AbstractOsmQuestForm<T> : AbstractQuestForm(), IsShowingQuestDeta
     open val otherAnswers = listOf<IAnswerItem>()
     open val buttonPanelAnswers = listOf<IAnswerItem>()
 
+    private val showReplacePlaceDialog: MutableState<Boolean> = mutableStateOf(false)
+
     interface Listener { // this is also used in AbstractOtherQuestForm for convenience
         /** The GPS position at which the user is displayed at */
         val displayedMapLocation: Location?
@@ -159,6 +171,26 @@ abstract class AbstractOsmQuestForm<T> : AbstractQuestForm(), IsShowingQuestDeta
                 hideQuest()
                 true
             }
+        }
+    }
+
+    @Composable
+    override fun DialogContainer() {
+        if (showReplacePlaceDialog.value) {
+            ShopGoneDialog(
+                onDismissRequest = { showReplacePlaceDialog.value = false },
+                onSelectAnswer = { answer ->
+                    when (answer) {
+                        is ShopType -> onShopReplacementSelected(answer.feature)
+                        ShopTypeAnswer.IsShopVacant -> onShopDisusedSelected()
+                        ShopTypeAnswer.LeaveNote -> composeNote()
+                    }
+                },
+                featureDictionary = featureDictionary,
+                geometryType = element.geometryType,
+                countryCode = countryOrSubdivisionCode,
+
+            )
         }
     }
 
@@ -338,18 +370,20 @@ abstract class AbstractOsmQuestForm<T> : AbstractQuestForm(), IsShowingQuestDeta
 
     protected fun replacePlace(extra: Boolean = true) {
         if (element.isPlaceOrDisusedPlace()) {
-            ShopGoneDialog(
-                requireContext(),
-                element,
-                countryOrSubdivisionCode,
-                featureDictionary,
-                onSelectedFeatureFn = { onShopReplacementSelected(it, extra) },
-                onLeaveNoteFn = this::composeNote,
-                geometry.center
-            ).show()
+            showReplacePlaceDialog.value = true
         } else {
             composeNote()
         }
+    }
+
+    private fun onShopDisusedSelected() {
+        val languages = getLanguagesForFeatureDictionary()
+        val vacantShop = featureDictionary
+            .getByTags(element.tags)
+            .firstOrNull { it.toElement().isPlace() }
+            ?.toPrefixedFeature("disused")
+            ?: featureDictionary.getById("shop/vacant", languages)!!
+        onShopReplacementSelected(vacantShop)
     }
 
     private fun onShopReplacementSelected(feature: Feature, extra: Boolean = true) {

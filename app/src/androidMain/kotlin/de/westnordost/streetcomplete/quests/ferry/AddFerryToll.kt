@@ -13,6 +13,8 @@ import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.YesNoQuestForm
 import de.westnordost.streetcomplete.util.ktx.toYesNo
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.quest_ferry_toll_title
 
 class AddFerryToll : OsmElementQuestType<Boolean>, AndroidQuest {
 
@@ -27,12 +29,10 @@ class AddFerryToll : OsmElementQuestType<Boolean>, AndroidQuest {
 
     override val changesetComment = "Specify whether a ferry requires payment"
     override val wikiLink = "Tag:route=ferry"
+    override val title = Res.string.quest_ferry_toll_title
     override val icon = R.drawable.ic_quest_ferry_fee
     override val hasMarkersAtEnds = true
     override val achievements = listOf(RARE)
-
-    override fun getTitle(tags: Map<String, String>) =
-        R.string.quest_ferry_toll_title
 
     override fun createForm() = YesNoQuestForm()
 

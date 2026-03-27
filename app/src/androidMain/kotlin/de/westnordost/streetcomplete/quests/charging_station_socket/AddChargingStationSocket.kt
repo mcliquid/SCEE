@@ -12,6 +12,8 @@ import de.westnordost.streetcomplete.data.quest.NoCountriesExcept
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.util.math.contains
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.quest_charging_station_socket_title
 
 class AddChargingStationSocket :
     OsmElementQuestType<Map<SocketType, Int>>,
@@ -35,10 +37,8 @@ class AddChargingStationSocket :
     override val changesetComment = "Specify charging station sockets"
     override val wikiLink = "Key:socket"
     override val icon = R.drawable.quest_charger_socket
+    override val title = Res.string.quest_charging_station_socket_title
     override val achievements = listOf(CAR)
-
-    override fun getTitle(tags: Map<String, String>) =
-        R.string.quest_charging_station_socket_title
 
     override fun createForm() = AddChargingStationSocketForm()
 

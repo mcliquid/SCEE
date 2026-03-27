@@ -12,7 +12,7 @@ import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
 import de.westnordost.streetcomplete.quests.getPrefixedFullElementSelectionPref
 import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
+import de.westnordost.streetcomplete.resources.*
 
 class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer>, AndroidQuest {
 
@@ -49,11 +49,10 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer>, AndroidQuest {
     override val changesetComment = "Specify whether a path is a sidepath of a road"
     override val wikiLink = "Key:is_sidepath"
     override val icon = R.drawable.ic_quest_poi_bicycle
-    override val hint =  R.string.quest_is_sidepath_hint
-    override val hasQuestSettings = true
+    override val hint = Res.string.quest_is_sidepath_hint
     override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
-
-    override fun getTitle(tags: Map<String, String>) = R.string.quest_is_sidepath_title
+    override val title = Res.string.quest_is_sidepath_title
+    override val hasQuestSettings = true
 
     @Composable
     override fun QuestSettings(onDismissRequest: () -> Unit) {

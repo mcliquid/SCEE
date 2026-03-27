@@ -20,11 +20,11 @@ import androidx.compose.ui.graphics.BlendModeColorFilter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.ColorUtils
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.quest.Quest
+import org.jetbrains.compose.resources.stringResource
 import kotlin.collections.forEach
 
 @Composable

@@ -275,7 +275,6 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val questsModule = module {
-//    factory { NameSuggestionsSource(get()) }
     single { CustomQuestList(androidContext()) }
     single { OsmoseDao(get(), get()) }
 
@@ -283,14 +282,13 @@ val questsModule = module {
         val countryInfos = get<CountryInfos>()
         val countryBoundariesLazy = get<Lazy<CountryBoundaries>>(named("CountryBoundariesLazy"))
         val featureDictionaryLazy = get<Lazy<FeatureDictionary>>(named("FeatureDictionaryLazy"))
-
         questTypeRegistry(
             get(),
             { countryInfos.getByLocation(countryBoundariesLazy.value, it.longitude, it.latitude) },
             { countryBoundariesLazy.value.getIds(it.longitude, it.latitude).firstOrNull() },
             { featureDictionaryLazy.value.getFeature(it) },
             get(),
-            get(),
+            get()
         )
     }
 }

@@ -52,9 +52,7 @@ import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.messages.Message
 import de.westnordost.streetcomplete.data.quest.Quest
 import de.westnordost.streetcomplete.data.user.UserLoginController
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.location_dot_small
-import de.westnordost.streetcomplete.resources.map_attribution_osm
+import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.screens.about.AboutActivity
 import de.westnordost.streetcomplete.screens.main.controls.AttributionButton
 import de.westnordost.streetcomplete.screens.main.controls.AttributionLink

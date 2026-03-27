@@ -65,6 +65,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementType
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
+import de.westnordost.streetcomplete.data.osm.mapdata.LazyMapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.MutableMapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
@@ -1243,7 +1244,7 @@ class MainActivity :
             e
         } ?: return
             else null
-        val highlightedElementMarkers = lifecycleScope.async(Dispatchers.IO) { getHighlightedElements(quest, element) }
+        val highlightedElementMarkers = lifecycleScope.async(Dispatchers.IO) { showHighlightedElements(quest, element) }
         val otherQuestMarkers = lifecycleScope.async(Dispatchers.IO) { showOtherQuests(quest) }
         if (quest is OsmQuest) {
             val osmArgs = AbstractOsmQuestForm.createArguments(element!!)
@@ -1280,7 +1281,7 @@ class MainActivity :
         return m.values.toList()
     }
 
-    private fun getHighlightedElements(quest: Quest, element: Element? = null): List<Marker> {
+    private fun showHighlightedElements(quest: Quest, element: Element? = null): List<Marker> {
         val bbox = when (quest) {
             is OsmQuest -> quest.geometry.bounds.enlargedBy(quest.type.highlightedElementsRadius)
             is ExternalSourceQuest -> quest.geometry.bounds.enlargedBy(quest.type.highlightedElementsRadius)
@@ -1302,7 +1303,7 @@ class MainActivity :
 
         val elements =
             when (quest) {
-                is OsmQuest -> element?.let { quest.type.getHighlightedElements(it, ::getMapData) } ?: emptySequence()
+                is OsmQuest -> element?.let { quest.type.getHighlightedElements(it, mapData ?: getMapData()) } ?: emptySequence()
                 is ExternalSourceQuest -> quest.type.getHighlightedElements(::getMapData)
                 else -> emptySequence()
             }

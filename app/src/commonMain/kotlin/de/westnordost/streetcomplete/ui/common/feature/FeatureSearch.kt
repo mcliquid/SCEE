@@ -39,9 +39,7 @@ import de.westnordost.osmfeatures.Feature
 import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.osmfeatures.GeometryType
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.no_search_results
-import de.westnordost.streetcomplete.resources.quest_shop_gone_replaced_answer_hint
+import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.CenteredLargeTitleHint
 import de.westnordost.streetcomplete.ui.common.ClearIcon
 import de.westnordost.streetcomplete.ui.common.SearchIcon

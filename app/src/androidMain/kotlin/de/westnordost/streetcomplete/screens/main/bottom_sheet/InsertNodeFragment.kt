@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.core.graphics.Insets
 import androidx.core.os.bundleOf
 import androidx.core.view.doOnLayout
@@ -60,14 +61,10 @@ import de.westnordost.streetcomplete.screens.main.map.ShowsGeometryMarkers
 import de.westnordost.streetcomplete.screens.main.map.getIcon
 import de.westnordost.streetcomplete.screens.main.map.getTitle
 import de.westnordost.streetcomplete.screens.main.map.maplibre.toPadding
-import de.westnordost.streetcomplete.ui.common.dialogs.AlertDialogLayout
-import de.westnordost.streetcomplete.ui.common.dialogs.InfoDialog
 import de.westnordost.streetcomplete.ui.common.feature.FeatureSearchDialog
-import de.westnordost.streetcomplete.ui.common.feature.FeatureSelect
 import de.westnordost.streetcomplete.ui.theme.AppTheme
-import de.westnordost.streetcomplete.util.getNameAndLocationSpanned
+import de.westnordost.streetcomplete.util.getNameAndLocationLabel
 import de.westnordost.streetcomplete.util.ktx.dpToPx
-import de.westnordost.streetcomplete.util.ktx.geometryType
 import de.westnordost.streetcomplete.util.ktx.popIn
 import de.westnordost.streetcomplete.util.ktx.popOut
 import de.westnordost.streetcomplete.util.ktx.setMargins
@@ -83,8 +80,9 @@ import de.westnordost.streetcomplete.util.math.getPositionOnWaysForInsertNodeFra
 import de.westnordost.streetcomplete.view.RoundRectOutlineProvider
 import de.westnordost.streetcomplete.view.insets_animation.respectSystemInsets
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
-import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.getSystemResourceEnvironment
 import org.koin.android.ext.android.inject
 import org.koin.core.qualifier.named
 
@@ -379,7 +377,9 @@ class InsertNodeFragment :
     }
 
     private fun getElementText(element: Element): CharSequence {
-        val title = getNameAndLocationSpanned(element, resources, featureDictionary.value, false)
+        val title = runBlocking {
+            getNameAndLocationLabel(getSystemResourceEnvironment(), LayoutDirection.Ltr, element, featureDictionary.value, false)
+        }
         return title ?: "${element.type} ${element.id}"
     }
 

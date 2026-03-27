@@ -1,8 +1,10 @@
 package de.westnordost.streetcomplete.quests.max_speed
 
 import android.os.Bundle
+import android.text.InputType
 import android.view.View
 import androidx.appcompat.app.AlertDialog
+import de.westnordost.streetcomplete.Prefs
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -18,19 +20,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.quests.max_speed.MaxSpeedSign.Type.*
 import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.data.meta.SpeedMeasurementUnit
 import de.westnordost.streetcomplete.databinding.ComposeViewBinding
 import de.westnordost.streetcomplete.osm.maxspeed.ROADS_WHERE_SLOW_ZONE_IS_LIKELY
 import de.westnordost.streetcomplete.osm.maxspeed.Speed
 import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
 import de.westnordost.streetcomplete.quests.AnswerItem
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.quest_maxspeed_answer_noSign_confirmation
-import de.westnordost.streetcomplete.resources.quest_maxspeed_answer_noSign_info_zone
+import de.westnordost.streetcomplete.util.dialogs.showAddConditionalDialog
+import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.theme.extraLargeInput
 import de.westnordost.streetcomplete.ui.util.content
 import org.jetbrains.compose.resources.stringResource
 
-class AddMaxSpeedForm : AbstractOsmQuestForm<MaxSpeedAnswer>() {
+class AddMaxSpeedForm : AbstractOsmQuestForm<Pair<MaxSpeedAnswer, Pair<String, String>?>>() {
 
     override val contentLayoutResId = R.layout.compose_view
     private val binding by contentViewBinding(ComposeViewBinding::bind)
@@ -43,6 +45,8 @@ class AddMaxSpeedForm : AbstractOsmQuestForm<MaxSpeedAnswer>() {
                 maxSpeedAnswer.value = MaxSpeedSign(Speed(null, countryInfo.speedUnits.first()), ADVISORY)
             })
         }
+        if (prefs.getBoolean(Prefs.EXPERT_MODE, false))
+            add(AnswerItem(R.string.quest_maxspeed_conditional) { addConditional() })
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -60,6 +64,30 @@ class AddMaxSpeedForm : AbstractOsmQuestForm<MaxSpeedAnswer>() {
                 initialZoneSpeedValue = LAST_INPUT_SLOW_ZONE,
             )
         } }
+    }
+
+    private fun addConditional() {
+        // first require selecting sth for normal limit
+        if (!isFormComplete()) {
+            AlertDialog.Builder(requireContext())
+                .setMessage(R.string.quest_maxspeed_conditional_limited_enter_default)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+            return
+        }
+        showConditionalDialog()
+    }
+
+    private fun showConditionalDialog() {
+        showAddConditionalDialog(requireContext(), listOf("maxspeed", "maxspeed:hgv", "maxspeed:psv", "maxspeed:bus"), null, InputType.TYPE_CLASS_NUMBER) { k, v ->
+            val speedText = v.substringBefore("@").trim()
+            val speedNumber = speedText.toIntOrNull() ?: return@showAddConditionalDialog
+            val unit = (maxSpeedAnswer.value as? MaxSpeedSign)?.speed?.unit ?: return@showAddConditionalDialog
+            val speed = Speed(speedNumber, unit)
+            val value = v.replaceFirst(speedText, speed.toOsmString())
+            applySpeedLimitFormAnswer(k to value)
+        }
+        return
     }
 
     override fun onClickOk() {
@@ -100,12 +128,12 @@ class AddMaxSpeedForm : AbstractOsmQuestForm<MaxSpeedAnswer>() {
         }
     }
 
-    private fun applySpeedLimitFormAnswer() {
+    private fun applySpeedLimitFormAnswer(conditional: Pair<String, String>? = null) {
         val maxSpeedSign = maxSpeedAnswer.value as? MaxSpeedSign
         if (maxSpeedSign?.type == ZONE) {
             LAST_INPUT_SLOW_ZONE = maxSpeedSign.speed.value
         }
-        applyAnswer(maxSpeedAnswer.value!!)
+        applyAnswer(maxSpeedAnswer.value!! to conditional)
     }
 
     /* ----------------------------------------- No sign ---------------------------------------- */

@@ -1,7 +1,6 @@
 package de.westnordost.streetcomplete.quests.max_speed
 
 import android.os.Bundle
-import android.text.InputType
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import de.westnordost.streetcomplete.Prefs
@@ -20,16 +19,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.quests.max_speed.MaxSpeedSign.Type.*
 import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.data.meta.SpeedMeasurementUnit
 import de.westnordost.streetcomplete.databinding.ComposeViewBinding
 import de.westnordost.streetcomplete.osm.maxspeed.ROADS_WHERE_SLOW_ZONE_IS_LIKELY
 import de.westnordost.streetcomplete.osm.maxspeed.Speed
 import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
 import de.westnordost.streetcomplete.quests.AnswerItem
-import de.westnordost.streetcomplete.util.dialogs.showAddConditionalDialog
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.theme.extraLargeInput
 import de.westnordost.streetcomplete.ui.util.content
+import de.westnordost.streetcomplete.util.dialogs.AddConditionalDialog
 import org.jetbrains.compose.resources.stringResource
 
 class AddMaxSpeedForm : AbstractOsmQuestForm<Pair<MaxSpeedAnswer, Pair<String, String>?>>() {
@@ -38,6 +36,7 @@ class AddMaxSpeedForm : AbstractOsmQuestForm<Pair<MaxSpeedAnswer, Pair<String, S
     private val binding by contentViewBinding(ComposeViewBinding::bind)
 
     private var maxSpeedAnswer = mutableStateOf<MaxSpeedAnswer?>(null)
+    private var showConditionalDialog = mutableStateOf(false)
 
     override val otherAnswers: List<AnswerItem> get() = buildList {
         if (countryInfo.hasAdvisorySpeedLimitSign) {
@@ -63,6 +62,22 @@ class AddMaxSpeedForm : AbstractOsmQuestForm<Pair<MaxSpeedAnswer, Pair<String, S
                 },
                 initialZoneSpeedValue = LAST_INPUT_SLOW_ZONE,
             )
+            if (showConditionalDialog.value) {
+                AddConditionalDialog(
+                    { showConditionalDialog.value = false },
+                    listOf("maxspeed", "maxspeed:hgv", "maxspeed:psv", "maxspeed:bus"),
+                    null,
+                    true,
+                    countryInfo,
+                ) { k, v ->
+                    val speedText = v.substringBefore("@").trim()
+                    val speedNumber = speedText.toIntOrNull() ?: return@AddConditionalDialog
+                    val unit = (maxSpeedAnswer.value as? MaxSpeedSign)?.speed?.unit ?: return@AddConditionalDialog
+                    val speed = Speed(speedNumber, unit)
+                    val value = v.replaceFirst(speedText, speed.toOsmString())
+                    applySpeedLimitFormAnswer(k to value)
+                }
+            }
         } }
     }
 
@@ -75,19 +90,7 @@ class AddMaxSpeedForm : AbstractOsmQuestForm<Pair<MaxSpeedAnswer, Pair<String, S
                 .show()
             return
         }
-        showConditionalDialog()
-    }
-
-    private fun showConditionalDialog() {
-        showAddConditionalDialog(requireContext(), listOf("maxspeed", "maxspeed:hgv", "maxspeed:psv", "maxspeed:bus"), null, InputType.TYPE_CLASS_NUMBER) { k, v ->
-            val speedText = v.substringBefore("@").trim()
-            val speedNumber = speedText.toIntOrNull() ?: return@showAddConditionalDialog
-            val unit = (maxSpeedAnswer.value as? MaxSpeedSign)?.speed?.unit ?: return@showAddConditionalDialog
-            val speed = Speed(speedNumber, unit)
-            val value = v.replaceFirst(speedText, speed.toOsmString())
-            applySpeedLimitFormAnswer(k to value)
-        }
-        return
+        showConditionalDialog.value = true
     }
 
     override fun onClickOk() {

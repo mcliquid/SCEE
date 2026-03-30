@@ -11,6 +11,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,23 +63,27 @@ class AddMaxSpeedForm : AbstractOsmQuestForm<Pair<MaxSpeedAnswer, Pair<String, S
                 },
                 initialZoneSpeedValue = LAST_INPUT_SLOW_ZONE,
             )
-            if (showConditionalDialog.value) {
-                AddConditionalDialog(
-                    { showConditionalDialog.value = false },
-                    listOf("maxspeed", "maxspeed:hgv", "maxspeed:psv", "maxspeed:bus"),
-                    null,
-                    true,
-                    countryInfo,
-                ) { k, v ->
-                    val speedText = v.substringBefore("@").trim()
-                    val speedNumber = speedText.toIntOrNull() ?: return@AddConditionalDialog
-                    val unit = (maxSpeedAnswer.value as? MaxSpeedSign)?.speed?.unit ?: return@AddConditionalDialog
-                    val speed = Speed(speedNumber, unit)
-                    val value = v.replaceFirst(speedText, speed.toOsmString())
-                    applySpeedLimitFormAnswer(k to value)
-                }
-            }
         } }
+    }
+
+    @Composable
+    override fun DialogContainer() {
+        if (showConditionalDialog.value) {
+            AddConditionalDialog(
+                { showConditionalDialog.value = false },
+                listOf("maxspeed", "maxspeed:hgv", "maxspeed:psv", "maxspeed:bus"),
+                null,
+                true,
+                countryInfo,
+            ) { k, v ->
+                val speedText = v.substringBefore("@").trim()
+                val speedNumber = speedText.toIntOrNull() ?: return@AddConditionalDialog
+                val unit = (maxSpeedAnswer.value as? MaxSpeedSign)?.speed?.unit ?: return@AddConditionalDialog
+                val speed = Speed(speedNumber, unit)
+                val value = v.replaceFirst(speedText, speed.toOsmString())
+                applySpeedLimitFormAnswer(k to value)
+            }
+        }
     }
 
     private fun addConditional() {

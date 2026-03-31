@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.quests.max_speed.MaxSpeedSign.Type.*
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.databinding.ComposeViewBinding
+import de.westnordost.streetcomplete.osm.AddConditionalDialog
 import de.westnordost.streetcomplete.osm.maxspeed.ROADS_WHERE_SLOW_ZONE_IS_LIKELY
 import de.westnordost.streetcomplete.osm.maxspeed.Speed
 import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
@@ -28,7 +29,6 @@ import de.westnordost.streetcomplete.quests.AnswerItem
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.theme.extraLargeInput
 import de.westnordost.streetcomplete.ui.util.content
-import de.westnordost.streetcomplete.util.dialogs.AddConditionalDialog
 import org.jetbrains.compose.resources.stringResource
 
 class AddMaxSpeedForm : AbstractOsmQuestForm<Pair<MaxSpeedAnswer, Pair<String, String>?>>() {
@@ -68,6 +68,7 @@ class AddMaxSpeedForm : AbstractOsmQuestForm<Pair<MaxSpeedAnswer, Pair<String, S
 
     @Composable
     override fun DialogContainer() {
+        super.DialogContainer()
         if (showConditionalDialog.value) {
             AddConditionalDialog(
                 { showConditionalDialog.value = false },

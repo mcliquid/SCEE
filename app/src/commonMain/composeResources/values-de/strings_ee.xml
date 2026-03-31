@@ -76,7 +76,7 @@
     <string name="quest_settings_osmose_level_title">Wähle den Schweregrad des Problems zum Herunterladen und Anzeigen</string>
     <string name="quest_settings_eligible_highways">Lege die für diese Aufgabe berechtigten Straßen fest, durch Kommas getrennt</string>
     <string name="pref_read_log_title">Fehlerprotokoll</string>
-    <string name="pref_tile_source_message">Kachel-URL muss {x}, {y} und {z} enthalten</string>
+    <string name="pref_tile_source_message">Die URL für die Kachelquelle muss {x}, {y} und entweder {z} oder {zoom} enthalten. Die WMS-Quelle muss EPSG:3857 unterstützen und die URL muss entweder {bbox-epsg-3857} oder sowohl {bbox} als auch {proj} enthalten.</string>
     <string name="pref_recent_answers_first_min_lines_summary">Wenn das Formular mehr als %d Zeile(n) hat</string>
     <string name="pref_main_menu_grid">Alle Hauptmenüpunkte als Raster anzeigen</string>
     <string name="quest_settings_sidewalk_cycleway_distance_message">Lege den Mindestabstand zwischen den einzelnen Pfaden fest, bei Unterschreitung wird die Aufgabe nicht angezeigt</string>
@@ -336,7 +336,7 @@
     <string name="import_export_custom_overlays">Benutzerdefinierte Overlays</string>
     <string name="quest_roofColour_title">Welche Farbe hat dieses Gebäudedach\?</string>
     <string name="advanced_resurvey_hint_date">Format verwenden: YYYY-MM-DD</string>
-    <string name="pref_tile_source_title">Kachelquelle für Satelliten-/Luftbilder</string>
+    <string name="pref_tile_source_title">Quelle für Satelliten-/Luftbilder</string>
     <string name="quest_seating_pedestrian_zone">In einer Fußgängerzone</string>
     <string name="quest_seating_balcony">Auf einem Balkon (nicht im Erdgeschoss)</string>
     <string name="tag_editor_duplicate_key">Änderung des Zweitschlüssels %s ignorieren</string>
@@ -612,8 +612,8 @@
     <string name="pref_rotate_angle_threshold_title">Schwellenwert für die Rotationsgeste</string>
     <string name="quest_postOffice_title">Welche Art von Postamt ist das?</string>
     <string name="quest_postOffice_bureau">Vollständiges (offizielles) Postamt</string>
-    <string name="quest_postOffice_postAnnex">Postamt (in privater Hand, möglicherweise mit eingeschränktem Service)</string>
-    <string name="quest_postOffice_postPartner">Post-Service in Geschäften oder Einrichtungen (als Dienstleistung)</string>
+    <string name="quest_postOffice_postAnnex">Privat betriebene Poststelle (eingeschränkter Service)</string>
+    <string name="quest_postOffice_postPartner">Postschalter mit eingeschränktem Service (z. B. in einem Laden)</string>
     <string name="quest_buildingMaterial_title">Aus welchem Material ist die Fassade dieses Gebäudes gemacht?</string>
     <string name="quest_buildingPartMaterial_title">Aus welchem Material ist die Fassade dieses Gebäudeteils gemacht?</string>
     <string name="quest_material_cement_block">Betonstein</string>
@@ -648,4 +648,15 @@
     <string name="quest_bench_armrest_title">Hat diese Bank Armlehnen?</string>
     <string name="quest_onewayBicycle_title">Ist dieser Weg für Fahrräder nur in eine Richtung befahrbar? In welche Richtung?</string>
     <string name="quest_material_pebbledash">Kieselputz</string>
+    <string name="quest_postOffice_postPartner_hint">Auch wenn es als amenity=post_office gekennzeichnet ist, wird post_partner oft benutzt, um den genauen Standort eines Postschalters anzugeben.</string>
+    <string name="quest_toilets_disposal_title">Was für eine Art Toilettenentsorgung wird hier benutzt?</string>
+    <string name="quest_toilets_disposal_flush">Das Abwasser wird mit Wasser gespült</string>
+    <string name="quest_toilets_disposal_pit">Das Abwasser wird in einer Grube gesammelt</string>
+    <string name="quest_toilets_disposal_chemical">Das Abwasser wird in einem Chemietank gesammelt</string>
+    <string name="quest_evse_id_title">Wie lautet die EVSE-ID dieser Ladestation?</string>
+    <string name="quest_evse_id_add_more">Füge eine weitere EVSE-ID hinzu</string>
+    <string name="quest_evse_id_hint">z. B. DE*GCE*E1234567</string>
+    <string name="quest_pavingStonesMaterial_title">Aus welchem Material sind diese Pflastersteine?</string>
+    <string name="quest_fence_material_title">Aus welchem Material ist dieser Zaun?</string>
+    <string name="quest_material_wire">Draht</string>
 </resources>

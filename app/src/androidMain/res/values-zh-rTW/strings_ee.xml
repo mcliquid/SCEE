@@ -433,7 +433,6 @@
     <string name="quest_wheelchair_description_no_language">沒有指定的語言</string>
     <string name="quest_building_demolished">已經被毀壞(仍可見到殘骸)</string>
     <string name="quest_maxspeed_conditional">取決於…</string>
-    <string name="quest_maxheight_answer_noSign_question_unclear">不清楚</string>
     <string name="quest_crossing_marking_value_no">沒有</string>
     <string name="quest_parking_capacity_title">這邊可以停幾輛車？</string>
     <string name="quest_parking_capacity_hint">這包含了特殊停車位，例如無障礙停車位、孕婦停車位、充電停車位等等。如果沒有劃記停車位的話，請將此任務隱藏</string>

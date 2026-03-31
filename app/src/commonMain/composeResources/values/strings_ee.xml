@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- This ( app/src/main/res/values/strings.xml ) is the source file for the app's strings in en-US.
-     All other strings.xml are imported from POEditor crowd translation platform.
+<!-- This ( app/src/androidMain/res/values/strings.xml ) is the source file for the app's strings in en-US.
+     All other strings.xml are imported from Codeberg's Weblate crowd translation platform.
 
      The strings are sorted into categories to
      - avoid merge conflicts (people tend to append strings at the end of the file)
-     - better organize the strings to make it easier for translators (strings are presented in
-       POEditor in the same order as in this file)
+     - better organize the strings to make it easier for translators
      -->
 <resources>
 

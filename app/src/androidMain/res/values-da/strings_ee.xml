@@ -520,10 +520,6 @@
 \nEksempel:
 \n\"surface\" viser surface=asphalt i samme farve og surface=concrete i en anden farve
 \n\".*surface\" ligner, men viser også sidewalk:(left/right/both):surface=asphalt i én farve, og cycleway:(left/right/both):surface=asphalt i en anden farve</string>
-    <string name="quest_maxheight_answer_noSign_question_yes">Høje lastbiler kan køre igennem</string>
-    <string name="quest_maxheight_answer_noSign_question_no">Der er ikke plads til høje lastbiler</string>
-    <string name="quest_maxheight_answer_noSign_question_unclear">Uklart</string>
-    <string name="quest_maxheight_answer_noSign_question">Er der rigeligt med plads til, at selv de højeste lastbiler (mindst ca. 4,5 meter) kan køre igennem?</string>
     <string name="action_all_quests">Vis alle opgaver</string>
     <string name="default_disabled_msg_sacScale">Denne opgavetype er som standard deaktiveret, fordi Sac-skalaværdien for stier er meget subjektiv og kræver ekspertviden om det anvendte klassificeringssystem. Da der ikke findes en verdensomspændende skala for stiers sværhedsgrad, bruges SAC\'s skala for bjerg- og alpinvandring her.</string>
     <string name="quest_sacScale_six_description">Meget udsat. Vanskeligt, klippefyldt terræn. Gletsjere med stor risiko for glide.</string>

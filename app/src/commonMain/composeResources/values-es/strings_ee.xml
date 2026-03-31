@@ -591,4 +591,6 @@
     <string name="quest_sacScale_strolling_description">Sendero liso y llano, sin obstáculos, apto para todo tipo de calzado, cochecitos o muletas, y que no requiere habilidades de orientación.</string>
     <string name="file_provide">Seleccionar archivo</string>
     <string name="file_loading_error">Error al cargar el archivo</string>
+    <string name="pref_really_all_notes_title">"Mostrar todas las notas" significa TODAS</string>
+    <string name="pref_really_all_notes_summary">Cuando solicite mostrar todas las anotaciones, incluso aquellas que usted creó (o comentó), hágalo</string>
 </resources>

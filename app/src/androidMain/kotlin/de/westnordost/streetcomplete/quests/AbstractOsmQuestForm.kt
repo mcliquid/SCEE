@@ -57,7 +57,6 @@ import de.westnordost.streetcomplete.osm.toElement
 import de.westnordost.streetcomplete.osm.toPrefixedFeature
 import de.westnordost.streetcomplete.quests.shop_type.ShopGoneDialog
 import de.westnordost.streetcomplete.quests.show_poi.ShowFixme
-import de.westnordost.streetcomplete.util.AccessManagerDialog
 import de.westnordost.streetcomplete.quests.shop_type.ShopType
 import de.westnordost.streetcomplete.quests.shop_type.ShopTypeAnswer
 import de.westnordost.streetcomplete.util.accessKeys
@@ -120,6 +119,7 @@ abstract class AbstractOsmQuestForm<T> : AbstractQuestForm(), IsShowingQuestDeta
     open val buttonPanelAnswers = listOf<IAnswerItem>()
 
     private val showReplacePlaceDialog: MutableState<Boolean> = mutableStateOf(false)
+    private val showAccessManagerDialog: MutableState<Boolean> = mutableStateOf(false)
 
     interface Listener { // this is also used in AbstractOtherQuestForm for convenience
         /** The GPS position at which the user is displayed at */
@@ -185,6 +185,13 @@ abstract class AbstractOsmQuestForm<T> : AbstractQuestForm(), IsShowingQuestDeta
                 countryCode = countryOrSubdivisionCode,
 
             )
+        }
+        if (showAccessManagerDialog.value) {
+            de.westnordost.streetcomplete.osm.AccessManagerDialog(
+                onDismissRequest = { showAccessManagerDialog.value = false },
+                tags = element.tags,
+                countryInfo = countryInfo
+            ) { viewLifecycleScope.launch { solve(UpdateElementTagsAction(element, it.create()), true) } }
         }
     }
 
@@ -429,11 +436,7 @@ abstract class AbstractOsmQuestForm<T> : AbstractQuestForm(), IsShowingQuestDeta
         val title = if (element.tags.containsAnyKey(*accessKeys))
                 R.string.manage_access
             else R.string.add_access
-        return AnswerItem(title) {
-            AccessManagerDialog(requireContext(), element.tags) {
-                viewLifecycleScope.launch { solve(UpdateElementTagsAction(element, it.create()), true) }
-            }.show()
-        }
+        return AnswerItem(title) { showAccessManagerDialog.value = true }
     }
 
     private fun createConstructionAnswer(): AnswerItem? {

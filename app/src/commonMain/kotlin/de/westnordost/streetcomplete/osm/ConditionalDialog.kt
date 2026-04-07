@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
@@ -60,6 +62,7 @@ fun AddConditionalDialog(
     var widthGtLt by remember { mutableStateOf("<") }
     var hours by remember { mutableStateOf(HierarchicOpeningHours()) }
     val valueOptions = KeyboardOptions(keyboardType = if (numberOnly) KeyboardType.Number else KeyboardType.Text)
+    val scroll = rememberScrollState()
 
     LaunchedEffect(fullValue) {
         isValid = fullValue.text.matches(valueRegex) && fullValue.text.length < 255
@@ -82,13 +85,17 @@ fun AddConditionalDialog(
             }
         },
         content = {
-            Column(Modifier.padding(horizontal = 12.dp, vertical = 6.dp), Arrangement.spacedBy(6.dp)) {
+            Column(
+                Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    .verticalScroll(scroll),
+                Arrangement.spacedBy(6.dp)
+            ) {
                 // key dropdown
                 DropdownButton(
                     items = keys,
                     onSelectedItem = { key = it },
                     modifier = Modifier.fillMaxWidth(),
-                    selectedItem = keys.first(),
+                    selectedItem = key,
                     itemContent = { Text(it, Modifier.weight(1f)) }
                 )
                 // value dropdown or input field

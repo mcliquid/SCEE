@@ -1,8 +1,6 @@
 package de.westnordost.streetcomplete.quests
 
 import android.app.DatePickerDialog
-import android.content.res.Configuration
-import android.content.res.Resources
 import android.location.Location
 import android.os.Bundle
 import android.view.Menu
@@ -52,6 +50,8 @@ import de.westnordost.streetcomplete.osm.isPlace
 import de.westnordost.streetcomplete.osm.isPlaceOrDisusedPlace
 import de.westnordost.streetcomplete.osm.ALL_PATHS
 import de.westnordost.streetcomplete.osm.ALL_ROADS
+import de.westnordost.streetcomplete.osm.AccessManagerDialog
+import de.westnordost.streetcomplete.osm.accessKeys
 import de.westnordost.streetcomplete.quests.custom.CustomQuestList
 import de.westnordost.streetcomplete.osm.toElement
 import de.westnordost.streetcomplete.osm.toPrefixedFeature
@@ -59,7 +59,6 @@ import de.westnordost.streetcomplete.quests.shop_type.ShopGoneDialog
 import de.westnordost.streetcomplete.quests.show_poi.ShowFixme
 import de.westnordost.streetcomplete.quests.shop_type.ShopType
 import de.westnordost.streetcomplete.quests.shop_type.ShopTypeAnswer
-import de.westnordost.streetcomplete.util.accessKeys
 import de.westnordost.streetcomplete.util.setViewWithDefaultPadding
 import de.westnordost.streetcomplete.util.ktx.containsAnyKey
 import de.westnordost.streetcomplete.util.ktx.isArea
@@ -101,7 +100,6 @@ abstract class AbstractOsmQuestForm<T> : AbstractQuestForm(), IsShowingQuestDeta
     private val featureDictionaryLazy: Lazy<FeatureDictionary> by inject(named("FeatureDictionaryLazy"))
     private val mapDataWithEditsSource: MapDataWithEditsSource by inject()
     private val customQuestList: CustomQuestList by inject()
-    private val osmQuestController: OsmQuestController by inject()
     private val surveyChecker: SurveyChecker by inject()
 
     protected val featureDictionary: FeatureDictionary get() = featureDictionaryLazy.value
@@ -187,7 +185,7 @@ abstract class AbstractOsmQuestForm<T> : AbstractQuestForm(), IsShowingQuestDeta
             )
         }
         if (showAccessManagerDialog.value) {
-            de.westnordost.streetcomplete.osm.AccessManagerDialog(
+            AccessManagerDialog(
                 onDismissRequest = { showAccessManagerDialog.value = false },
                 tags = element.tags,
                 countryInfo = countryInfo
@@ -433,7 +431,7 @@ abstract class AbstractOsmQuestForm<T> : AbstractQuestForm(), IsShowingQuestDeta
 
     private fun createAccessManagerAnswer(): AnswerItem? {
         if (!"ways with highway ~ ${(ALL_ROADS + ALL_PATHS).joinToString("|")}".toElementFilterExpression().matches(element)) return null
-        val title = if (element.tags.containsAnyKey(*accessKeys))
+        val title = if (element.tags.containsAnyKey(*accessKeys.toTypedArray()))
                 R.string.manage_access
             else R.string.add_access
         return AnswerItem(title) { showAccessManagerDialog.value = true }

@@ -39,7 +39,7 @@ abstract class QuestSelectionViewModel : ViewModel() {
     abstract val filteredQuests: StateFlow<List<QuestSelection>>
     abstract val currentCountry: String?
     abstract val selectedEditTypePresetName: StateFlow<String?>
-    abstract var onlySceeQuests: Boolean
+    abstract val onlySceeQuests: MutableStateFlow<Boolean>
 
     abstract fun select(questType: QuestType, selected: Boolean)
     abstract fun order(questType: QuestType, toAfter: QuestType)
@@ -78,12 +78,7 @@ class QuestSelectionViewModelImpl(
         override fun onVisibilitiesChanged() { initQuests() }
     }
 
-    override var onlySceeQuests: Boolean = false
-        set(value) {
-            if (field == value) return
-            field = value
-            initQuests()
-        }
+    override val onlySceeQuests = MutableStateFlow(false)
 
     private val questTypeOrderListener = object : QuestTypeOrderSource.Listener {
         override fun onQuestTypeOrderAdded(item: QuestType, toAfter: QuestType) {
@@ -112,8 +107,8 @@ class QuestSelectionViewModelImpl(
     private val quests = MutableStateFlow<List<QuestSelection>>(emptyList())
 
     override val filteredQuests: StateFlow<List<QuestSelection>> =
-        combine(quests, searchText, questTitles) { quests, searchText, titles ->
-            filterQuests(quests, searchText, titles)
+        combine(quests, searchText, questTitles, onlySceeQuests) { quests, searchText, titles, onlySceeQuests ->
+            filterQuests(quests, searchText, titles, onlySceeQuests)
         }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val currentCountryCodes = countryBoundaries.value.getIds(prefs.mapPosition)
@@ -186,10 +181,14 @@ class QuestSelectionViewModelImpl(
         launch(IO) {
             val sortedQuestTypes = questTypeRegistry.toMutableList()
             questTypeOrderController.sort(sortedQuestTypes)
-            quests.value = sortedQuestTypes.mapNotNull {
-                if (onlySceeQuests && questTypeRegistry.getOrdinalOf(it)!! < ApplicationConstants.EE_QUEST_OFFSET) null
-                else QuestSelection(it, visibleEditTypeController.isVisible(it), enabledInCurrentCountry = isQuestEnabledInCurrentCountry(it), prefs)
-            }.toMutableList()
+            quests.value = sortedQuestTypes
+                .map { QuestSelection(
+                    questType = it,
+                    selected = visibleEditTypeController.isVisible(it),
+                    enabledInCurrentCountry = isQuestEnabledInCurrentCountry(it),
+                    prefs = prefs
+                ) }
+                .toMutableList()
         }
     }
 
@@ -206,12 +205,16 @@ class QuestSelectionViewModelImpl(
         quests: List<QuestSelection>,
         filter: String,
         titles: Map<String, String>,
+        onlySceeQuests: Boolean
     ): List<QuestSelection> {
+        val questsToUse = if (!onlySceeQuests) quests
+            else quests.filter { questTypeRegistry.getOrdinalOf(it.questType)!! >= ApplicationConstants.EE_QUEST_OFFSET }
+
         val words = filter.takeIf { it.isNotBlank() }?.trim()?.lowercase()?.split(' ') ?: emptyList()
         return if (words.isEmpty()) {
-            quests
+            questsToUse
         } else {
-            quests.filter { quest ->
+            questsToUse.filter { quest ->
                 titles[quest.questType.name]?.lowercase()?.containsAll(words) == true
             }
         }

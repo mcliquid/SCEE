@@ -14,7 +14,9 @@ import de.westnordost.streetcomplete.quests.bench_armrest.BenchArmrestAnswer.NO
 import de.westnordost.streetcomplete.quests.bench_armrest.BenchArmrestAnswer.PICNIC_TABLE
 import de.westnordost.streetcomplete.quests.bench_armrest.BenchArmrestAnswer.YES
 import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
 import de.westnordost.streetcomplete.resources.quest_bench_armrest_title
+import org.jetbrains.compose.resources.StringResource
 
 class AddBenchArmrest : OsmFilterQuestType<BenchArmrestAnswer>(), AndroidQuest {
 
@@ -31,6 +33,7 @@ class AddBenchArmrest : OsmFilterQuestType<BenchArmrestAnswer>(), AndroidQuest {
     override val wikiLink = "Tag:amenity=bench"
     override val icon = R.drawable.ic_quest_bench_armrest
     override val title = Res.string.quest_bench_armrest_title
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
     override val isDeleteElementEnabled = true
     override val achievements = listOf(PEDESTRIAN, OUTDOORS)
 

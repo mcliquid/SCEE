@@ -23,7 +23,9 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableFloatState
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.core.os.bundleOf
@@ -65,17 +67,18 @@ import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.databinding.FragmentOverlayBinding
 import de.westnordost.streetcomplete.osm.ALL_PATHS
 import de.westnordost.streetcomplete.osm.ALL_ROADS
+import de.westnordost.streetcomplete.osm.AccessManagerDialog
+import de.westnordost.streetcomplete.osm.accessKeys
 import de.westnordost.streetcomplete.overlays.custom.CustomOverlayForm
 import de.westnordost.streetcomplete.overlays.street_parking.LaneNarrowingTrafficCalmingForm
 import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsCloseableBottomSheet
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsMapOrientationAware
+import de.westnordost.streetcomplete.ui.theme.AppTheme
 import de.westnordost.streetcomplete.ui.theme.titleMedium
 import de.westnordost.streetcomplete.ui.util.content
-import de.westnordost.streetcomplete.util.AccessManagerDialog
 import de.westnordost.streetcomplete.util.FragmentViewBindingPropertyDelegate
 import de.westnordost.streetcomplete.util.getNameAndLocationLabel
-import de.westnordost.streetcomplete.util.accessKeys
 import de.westnordost.streetcomplete.util.ktx.containsAnyKey
 import de.westnordost.streetcomplete.util.ktx.isArea
 import de.westnordost.streetcomplete.util.ktx.isSplittable
@@ -177,6 +180,8 @@ abstract class AbstractOverlayForm :
     open val contentPadding = true
     open val otherAnswers = listOf<IAnswerItem>()
 
+    private val showAccessManagerDialog: MutableState<Boolean> = mutableStateOf(false)
+
     interface Listener {
         /** The GPS position at which the user is displayed at */
         val displayedMapLocation: Location?
@@ -262,6 +267,19 @@ abstract class AbstractOverlayForm :
                 onClickOk()
             }
         }
+        // todo: remove this and the composeViewDialogContainer if sth like DialogContainer is added to the overlay form
+        binding.composeViewDialogContainer.setContent { AppTheme {
+            if (showAccessManagerDialog.value) {
+                val element = element ?: return@AppTheme
+                AccessManagerDialog(
+                    onDismissRequest = { showAccessManagerDialog.value = false },
+                    tags = element.tags,
+                    countryInfo = countryInfo
+                ) { viewLifecycleScope.launch {
+                    solve(UpdateElementTagsAction(element, it.create()), geometry, true)
+                } }
+            }
+        } }
     }
 
     @Composable
@@ -494,14 +512,10 @@ abstract class AbstractOverlayForm :
     private fun createAccessManagerAnswer(): AnswerItem? {
         val element = element ?: return null
         if (!"ways with highway ~ ${(ALL_ROADS + ALL_PATHS).joinToString("|")}".toElementFilterExpression().matches(element)) return null
-        val title = if (element.tags.containsAnyKey(*accessKeys))
+        val title = if (element.tags.containsAnyKey(*accessKeys.toTypedArray()))
             R.string.manage_access
         else R.string.add_access
-        return AnswerItem(title) {
-            AccessManagerDialog(requireContext(), element.tags) {
-                viewLifecycleScope.launch { solve(UpdateElementTagsAction(element, it.create()), geometry, true) }
-            }.show()
-        }
+        return AnswerItem(title) { showAccessManagerDialog.value = true }
     }
 
     private fun createConstructionAnswer(): AnswerItem? {

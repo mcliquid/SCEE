@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.overlays.restriction
 
-import android.graphics.Color.parseColor
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.ColorUtils
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -16,12 +17,13 @@ import de.westnordost.streetcomplete.data.overlays.AndroidOverlay
 import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.overlays.OverlayColor
 import de.westnordost.streetcomplete.data.overlays.OverlayStyle
-import de.westnordost.streetcomplete.quests.max_weight.MaxWeightSign
+import de.westnordost.streetcomplete.quests.max_weight.MaxWeightType
 import de.westnordost.streetcomplete.quests.max_weight.osmKey
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.restriction_overlay_title
 import de.westnordost.streetcomplete.util.ktx.containsAnyKey
 import de.westnordost.streetcomplete.util.ktx.isArea
-import de.westnordost.streetcomplete.util.ktx.toHexColor
-/*
+
 class RestrictionOverlay : Overlay, AndroidOverlay {
     // show restriction icons? will need to add property for rotation / angle
     // but according to tangram docs, angle is a number or string, this would need a function...
@@ -44,13 +46,13 @@ class RestrictionOverlay : Overlay, AndroidOverlay {
             mapData.nodes.mapNotNull { node -> getNodeStyle(node)?.let { node to it } }
     }
 
-    override fun createForm(element: Element?): AbstractOverlayForm =
-        if (element is Way) RestrictionOverlayWayForm()
-        else RestrictionOverlayNodeForm() // node or null when inserting
+    override fun createForm(element: Element?): AbstractOverlayForm = RestrictionOverlayNodeForm()
+//        if (element is Way) RestrictionOverlayWayForm()
+//        else RestrictionOverlayNodeForm() // node or null when inserting
 
     override val changesetComment: String = "Specify traffic restrictions"
-    override val icon: Int = R.drawable.ic_overlay_restriction
-    override val title: Int = R.string.restriction_overlay_title
+    override val icon = R.drawable.ic_overlay_restriction
+    override val title = Res.string.restriction_overlay_title
     override val wikiLink: String = "Relation:restriction"
     override val isCreateNodeEnabled = true
 
@@ -58,7 +60,7 @@ class RestrictionOverlay : Overlay, AndroidOverlay {
     //  merge any 2 restrictions?
     //  always take a "first" one?
     //  sth else, like dashed way?
-    private fun getWayStyle(way: Way, restrictionsByWayMemberId: Map<Long, List<Relation>>): Style? {
+    private fun getWayStyle(way: Way, restrictionsByWayMemberId: Map<Long, List<Relation>>): OverlayStyle? {
         // don't allow selecting areas
         if (way.isArea()) return null
         val relations = restrictionsByWayMemberId[way.id]
@@ -66,9 +68,9 @@ class RestrictionOverlay : Overlay, AndroidOverlay {
             // no turn restriction, but maybe weight
 //            val color = if (way.tags.keys.filter { it.startsWith("max") }.any { key -> maxWeightKeys.any { key.startsWith(it) } })
             val color = if (way.tags.containsAnyKey(*maxWeightKeys))
-                    Color.TEAL
-                else Color.INVISIBLE
-            return PolylineStyle(StrokeStyle(color))
+                OverlayColor.Teal
+                else OverlayColor.Invisible
+            return OverlayStyle.Polyline(OverlayStyle.Stroke(color))
         }
 
         // merge colors if we have 2 relations on one way
@@ -77,40 +79,40 @@ class RestrictionOverlay : Overlay, AndroidOverlay {
             if (colors.first() == colors.last())
                 colors.first()
             else
-                ColorUtils.blendARGB(parseColor(colors.first()), parseColor(colors.last()), 0.5f).toHexColor()
+                Color(ColorUtils.blendARGB(colors.first().toArgb(), colors.last().toArgb(), 0.5f))
         } else
             relations.first().getColor(way.id)
-        return PolylineStyle(StrokeStyle(color))
+        return OverlayStyle.Polyline(OverlayStyle.Stroke(color))
     }
 
-    private fun getNodeStyle(node: Node): Style? {
+    private fun getNodeStyle(node: Node): OverlayStyle? {
         val highway = node.tags["highway"] ?: return null
         val icon = when (highway) {
             "stop" -> R.drawable.ic_restriction_stop
             "give_way" -> R.drawable.ic_restriction_give_way
             else -> return null
         }
-        return PointStyle(icon)
+        return OverlayStyle.Point(icon)
     }
 }
 
-private fun Relation.getColor(wayId: Long): String {
-    if (!isSupportedTurnRestriction()) return Color.BLACK
-    val role = members.firstOrNull { it.type == ElementType.WAY && it.ref == wayId }?.role ?: return Color.INVISIBLE
+private fun Relation.getColor(wayId: Long): Color {
+    if (!isSupportedTurnRestriction()) return OverlayColor.Black
+    val role = members.firstOrNull { it.type == ElementType.WAY && it.ref == wayId }?.role ?: return OverlayColor.Invisible
     return getColor(role, getRestrictionType()!!)
     //.replace("#", "#90") // make it transparent for at least some support of multiple relations on a single way
-    // nope, unfortunately we can't simply make it transparent here, because MapLibre doesn't understand colors with alpha channel
+    // nope, unfortunately we can't simply make it transparent here, because MapLibre doesn't understand colors with alpha channel (update: should work in a different format)
 }
 
-private fun getColor(role: String, restriction: String): String = when {
-    restriction.startsWith("no_") && role == "from" -> Color.ORANGE
+private fun getColor(role: String, restriction: String): Color = when {
+    restriction.startsWith("no_") && role == "from" -> OverlayColor.Orange
     restriction.startsWith("no_") && role == "to" -> darkerOrange
-    restriction.startsWith("only_") && role == "from" -> Color.GOLD
+    restriction.startsWith("only_") && role == "from" -> OverlayColor.Gold
     restriction.startsWith("only_") && role == "to" -> darkerGold
-    role == "via" -> Color.LIME
-    else -> Color.BLACK
+    role == "via" -> OverlayColor.Lime
+    else -> OverlayColor.Black
 }
-*/
+
 // support restrictions with 1 from way, 1 to way, 1 via node or 1+ via ways
 // and additionally, ways need to be connected (but that is more complicated, and not checked)
 // there are some more restrictions which are not supported currently, e.g. no_entry, stop, give_way
@@ -138,9 +140,8 @@ val turnRestrictionTypes = linkedSetOf(
     "only_left_turn",
     "only_straight_on",
 )
-/*
-private val maxWeightKeys = MaxWeightSign.entries.map { it.osmKey }.toTypedArray()
 
-private val darkerGold = ColorUtils.blendARGB(parseColor(Color.GOLD), parseColor(Color.BLACK), 0.75f).toHexColor()
-private val darkerOrange = ColorUtils.blendARGB(parseColor(Color.ORANGE), parseColor(Color.BLACK), 0.75f).toHexColor()
-*/
+private val maxWeightKeys = MaxWeightType.entries.map { it.osmKey }.toTypedArray()
+
+private val darkerGold = Color(ColorUtils.blendARGB(OverlayColor.Gold.toArgb(), OverlayColor.Black.toArgb(), 0.75f))
+private val darkerOrange = Color(ColorUtils.blendARGB(OverlayColor.Orange.toArgb(), OverlayColor.Black.toArgb(), 0.75f))

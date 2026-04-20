@@ -6,7 +6,7 @@ import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.ApplicationConstants.EE_QUEST_OFFSET
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.meta.CountryInfos
-import de.westnordost.streetcomplete.data.meta.getByLocation
+import de.westnordost.streetcomplete.data.meta.get
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
@@ -103,7 +103,9 @@ import de.westnordost.streetcomplete.quests.diet_type.AddVegan
 import de.westnordost.streetcomplete.quests.diet_type.AddVegetarian
 import de.westnordost.streetcomplete.quests.drinking_water.AddDrinkingWater
 import de.westnordost.streetcomplete.quests.drinking_water_type.AddDrinkingWaterType
+import de.westnordost.streetcomplete.quests.evse_id.AddEvseId
 import de.westnordost.streetcomplete.quests.existence.CheckExistence
+import de.westnordost.streetcomplete.quests.fence_material.AddFenceMaterial
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessBicycle
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessHgv
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessMotorVehicle
@@ -270,23 +272,20 @@ import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val questsModule = module {
-//    factory { NameSuggestionsSource(get()) }
     single { CustomQuestList(androidContext()) }
     single { OsmoseDao(get(), get()) }
 
     single {
+        val countryInfos = get<CountryInfos>()
+        val countryBoundariesLazy = get<Lazy<CountryBoundaries>>(named("CountryBoundariesLazy"))
+        val featureDictionaryLazy = get<Lazy<FeatureDictionary>>(named("FeatureDictionaryLazy"))
         questTypeRegistry(
             get(),
-            { location ->
-                val countryInfos = get<CountryInfos>()
-                val countryBoundaries = get<Lazy<CountryBoundaries>>(named("CountryBoundariesLazy")).value
-                countryInfos.getByLocation(countryBoundaries, location.longitude, location.latitude)
-            },
-            { element ->
-                get<Lazy<FeatureDictionary>>(named("FeatureDictionaryLazy")).value.getFeature(element)
-            },
+            { countryInfos.get(countryBoundariesLazy.value, it) },
+            { countryBoundariesLazy.value.getIds(it.longitude, it.latitude).firstOrNull() },
+            { featureDictionaryLazy.value.getFeature(it) },
             get(),
-            get(),
+            get()
         )
     }
 }
@@ -294,12 +293,14 @@ val questsModule = module {
 fun questTypeRegistry(
     arSupportChecker: ArSupportChecker,
     getCountryInfoByLocation: (LatLon) -> CountryInfo,
+    getCountryOrSubdivisionCode: (LatLon) -> String?,
     getFeature: (Element) -> Feature?,
     osmoseDao: OsmoseDao,
     customQuestList: CustomQuestList,
 ) = QuestTypeRegistry({ getQuestTypeList(
     arSupportChecker,
     getCountryInfoByLocation,
+    getCountryOrSubdivisionCode,
     getFeature,
     osmoseDao,
     customQuestList,
@@ -308,6 +309,7 @@ fun questTypeRegistry(
 fun getQuestTypeList(
     arSupportChecker: ArSupportChecker,
     getCountryInfoByLocation: (location: LatLon) -> CountryInfo,
+    getCountryOrSubdivisionCode: (LatLon) -> String?,
     getFeature: (Element) -> Feature?,
     osmoseDao: OsmoseDao,
     customQuestList: CustomQuestList,
@@ -649,7 +651,7 @@ fun getQuestTypeList(
 
     /* should best be after road surface because it excludes unpaved roads, also, need to search
      * for the sign which is one reason why it is disabled by default */
-    149 to AddMaxSpeed(),
+    149 to AddMaxSpeed(getCountryOrSubdivisionCode),
 
     // buildings
     150 to AddBuildingType(),
@@ -668,6 +670,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 49 to AddBuildingMaterial(),
     EE_QUEST_OFFSET + 24 to AddRoofColour(),
     EE_QUEST_OFFSET + 56 to AddRoofOrientation(),
+    EE_QUEST_OFFSET + 60 to AddFenceMaterial(),
     EE_QUEST_OFFSET + 1 to AddContactPhone(),
     EE_QUEST_OFFSET + 2 to AddContactWebsite(),
     EE_QUEST_OFFSET + 4 to AddCuisine(),
@@ -710,6 +713,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 57 to AddLampMount(),
     EE_QUEST_OFFSET + 58 to AddOnewayBicycle(),
     EE_QUEST_OFFSET + 62 to AddToiletsDisposal(),
+    EE_QUEST_OFFSET + 63 to AddEvseId(),
     EE_QUEST_OFFSET + 10 to OsmoseQuest(osmoseDao),
     EE_QUEST_OFFSET + 11 to CustomQuest(customQuestList),
     // POI quests

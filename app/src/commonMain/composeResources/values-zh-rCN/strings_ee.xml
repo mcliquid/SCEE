@@ -42,7 +42,7 @@
     <string name="quest_settings_osmose_level_title">选择要下载和显示的问题严重性级别</string>
     <string name="quest_settings_eligible_highways">设置符合本任务要求的公路类型，以英文逗号分隔</string>
     <string name="pref_read_log_title">日志阅读器</string>
-    <string name="pref_tile_source_message">瓦片 URL 必须包含 {x}、{y} 和 {z}</string>
+    <string name="pref_tile_source_message">瓦片源的 URL 必须包含 {x}、{y} 以及 {z} 或 {zoom}。WMS 源需要支持 EPSG:3857 且 URL 必须包含 {bbox-epsg-3857} 或同时包含 {bbox} 和 {proj}。</string>
     <string name="pref_3d_buildings_title">显示 3D 建筑</string>
     <string name="pref_recent_answers_first_min_lines_summary">如果表格超过 %d 行</string>
     <string name="pref_main_menu_grid">以网格形式显示所有主菜单项目</string>
@@ -101,7 +101,7 @@
     <string name="quest_osmose_remove_checked">移除</string>
     <string name="action_scee_quests">只显示 SCEE 任务</string>
     <string name="quest_order_normal">恢复到正常任务顺序</string>
-    <string name="quick_switch_map_background">切换空拍影像/地图背景</string>
+    <string name="quick_switch_map_background">切换航拍/地图背景</string>
     <string name="pref_advanced_resurvey_title">高级重新调查</string>
     <string name="pref_quest_settings_preset_title">单独预设任务设置</string>
     <string name="export_warning_db_version">警告：数据库版本未知，导入可能无法正常工作。请申请更新应用程序。</string>
@@ -239,7 +239,7 @@
     <string name="import_export_custom_overlays">自定覆盖层</string>
     <string name="quest_roofColour_title">这座建筑屋顶的整体颜色是？</string>
     <string name="advanced_resurvey_hint_date">使用格式：YYYY-MM-DD</string>
-    <string name="pref_tile_source_title">卫星/空中图像的瓦片来源</string>
+    <string name="pref_tile_source_title">卫星/航拍图像来源</string>
     <string name="quest_seating_pedestrian_zone">在步行区</string>
     <string name="quest_seating_balcony">在阳台上（不在一楼）</string>
     <string name="quest_monitor_permission_warning">附近的任务监测需要后台位置权限才能工作</string>
@@ -601,10 +601,10 @@
     <string name="fixme_for_object">另外一个人添加了一个 fixme：</string>
     <string name="pref_rotate_while_zooming_title">允许缩放时旋转</string>
     <string name="pref_rotate_angle_threshold_title">旋转手势的阈值</string>
-    <string name="quest_postOffice_title">这是什么类型的邮局？</string>
-    <string name="quest_postOffice_bureau">完整（官方）邮局</string>
-    <string name="quest_postOffice_postAnnex">邮局（私人拥有，可能服务受限）</string>
-    <string name="quest_postOffice_postPartner">商店或便利设施的邮政驿站（作为服务）</string>
+    <string name="quest_postOffice_title">这是哪种邮政服务？</string>
+    <string name="quest_postOffice_bureau">全方位服务（官方）邮局</string>
+    <string name="quest_postOffice_postAnnex">私人运营邮局（服务有限）</string>
+    <string name="quest_postOffice_postPartner">服务有限的邮政服务柜台（例如，位于商店内）</string>
     <string name="default_disabled_msg_roof">默认禁用此任务类型，因为从街道上通常不容易看到屋顶。这种任务类型也相当耗时。在大多数情况下，从家里的航拍照片绘制更容易，更高效。</string>
     <string name="quest_roofOrientation_title">屋脊的朝向是怎样的？</string>
     <string name="quest_roofOrientation_along">与建筑物的长边平行</string>
@@ -644,4 +644,15 @@
     <string name="quest_bench_armrest_title">这张长椅有扶手吗？</string>
     <string name="quest_onewayBicycle_title">这条自行车道是单行道吗？朝哪个方向？</string>
     <string name="quest_material_pebbledash">卵石灰浆</string>
+    <string name="quest_toilets_disposal_title">这里使用的是哪种厕所处理方式？</string>
+    <string name="quest_toilets_disposal_flush">排泄物用水冲走</string>
+    <string name="quest_toilets_disposal_pit">排泄物收集在粪坑中</string>
+    <string name="quest_toilets_disposal_chemical">排泄物收集在化学储罐中</string>
+    <string name="quest_pavingStonesMaterial_title">这些铺路石是什么材质的？</string>
+    <string name="quest_postOffice_postPartner_hint">即使地图标注为 amenity=post_office，通常也使用 post_partner 标注邮政服务柜台的确切位置。</string>
+    <string name="quest_evse_id_title">此充电站的 EVSE ID 是什么？</string>
+    <string name="quest_evse_id_add_more">添加另一个 EVSE ID</string>
+    <string name="quest_evse_id_hint">例如：DE*GCE*E1234567</string>
+    <string name="quest_fence_material_title">此围栏是什么材质的？</string>
+    <string name="quest_material_wire">金属丝</string>
 </resources>

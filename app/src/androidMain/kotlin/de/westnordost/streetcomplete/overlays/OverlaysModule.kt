@@ -7,7 +7,7 @@ import de.westnordost.osmfeatures.Feature
 import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.meta.CountryInfos
-import de.westnordost.streetcomplete.data.meta.getByLocation
+import de.westnordost.streetcomplete.data.meta.get
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.overlays.OverlayRegistry
@@ -17,7 +17,7 @@ import de.westnordost.streetcomplete.overlays.buildings.BuildingsOverlay
 import de.westnordost.streetcomplete.overlays.cycleway.CyclewayOverlay
 import de.westnordost.streetcomplete.overlays.mtb_scale.MtbScaleOverlay
 import de.westnordost.streetcomplete.overlays.places.PlacesOverlay
-//import de.westnordost.streetcomplete.overlays.restriction.RestrictionOverlay
+import de.westnordost.streetcomplete.overlays.restriction.RestrictionOverlay
 import de.westnordost.streetcomplete.overlays.sidewalk.SidewalkOverlay
 import de.westnordost.streetcomplete.overlays.street_parking.StreetParkingOverlay
 import de.westnordost.streetcomplete.overlays.surface.SurfaceOverlay
@@ -36,7 +36,7 @@ val overlaysModule = module {
             { location ->
                 val countryInfos = get<CountryInfos>()
                 val countryBoundaries = get<Lazy<CountryBoundaries>>(named("CountryBoundariesLazy")).value
-                countryInfos.getByLocation(countryBoundaries, location.longitude, location.latitude)
+                countryInfos.get(countryBoundaries, location)
             },
             { location ->
                 val countryBoundaries = get<Lazy<CountryBoundaries>>(named("CountryBoundariesLazy")).value
@@ -67,6 +67,6 @@ fun overlaysRegistry(
     8 to ThingsOverlay(getFeature),
     7 to BuildingsOverlay(),
     9 to MtbScaleOverlay(),
-//    (EE_QUEST_OFFSET + 1) to RestrictionOverlay(),
+    (EE_QUEST_OFFSET + 1) to RestrictionOverlay(),
     (EE_QUEST_OFFSET + 0) to CustomOverlay(prefs),
 ))

@@ -2,7 +2,6 @@ package de.westnordost.streetcomplete.overlays
 
 import android.app.DatePickerDialog
 import android.content.res.Configuration
-import android.content.res.Resources
 import android.graphics.PointF
 import android.location.Location
 import android.os.Bundle
@@ -15,8 +14,20 @@ import android.widget.PopupMenu
 import android.widget.RelativeLayout
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.LocalContentAlpha
+import androidx.compose.material.LocalTextStyle
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.MutableFloatState
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.core.os.bundleOf
 import androidx.core.view.doOnLayout
 import androidx.core.view.isGone
@@ -32,7 +43,7 @@ import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpressio
 import de.westnordost.streetcomplete.data.location.SurveyChecker
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.meta.CountryInfos
-import de.westnordost.streetcomplete.data.meta.getByLocation
+import de.westnordost.streetcomplete.data.meta.get
 import de.westnordost.streetcomplete.data.osm.edits.AddElementEditsController
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditAction
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditType
@@ -49,7 +60,6 @@ import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
-import de.westnordost.streetcomplete.data.osm.mapdata.key
 import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.overlays.OverlayRegistry
 import de.westnordost.streetcomplete.data.preferences.Preferences
@@ -57,16 +67,18 @@ import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.databinding.FragmentOverlayBinding
 import de.westnordost.streetcomplete.osm.ALL_PATHS
 import de.westnordost.streetcomplete.osm.ALL_ROADS
+import de.westnordost.streetcomplete.osm.AccessManagerDialog
+import de.westnordost.streetcomplete.osm.accessKeys
 import de.westnordost.streetcomplete.overlays.custom.CustomOverlayForm
 import de.westnordost.streetcomplete.overlays.street_parking.LaneNarrowingTrafficCalmingForm
 import de.westnordost.streetcomplete.quests.AbstractOsmQuestForm
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsCloseableBottomSheet
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsMapOrientationAware
-import de.westnordost.streetcomplete.util.AccessManagerDialog
+import de.westnordost.streetcomplete.ui.theme.AppTheme
+import de.westnordost.streetcomplete.ui.theme.titleMedium
+import de.westnordost.streetcomplete.ui.util.content
 import de.westnordost.streetcomplete.util.FragmentViewBindingPropertyDelegate
-import de.westnordost.streetcomplete.util.accessKeys
-import de.westnordost.streetcomplete.util.getNameAndLocationSpanned
-import de.westnordost.streetcomplete.util.dialogs.setViewWithDefaultPadding
+import de.westnordost.streetcomplete.util.getNameAndLocationLabel
 import de.westnordost.streetcomplete.util.ktx.containsAnyKey
 import de.westnordost.streetcomplete.util.ktx.isArea
 import de.westnordost.streetcomplete.util.ktx.isSplittable
@@ -80,6 +92,8 @@ import de.westnordost.streetcomplete.util.ktx.toast
 import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
 import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.util.math.getOrientationAtCenterLineInDegrees
+import de.westnordost.streetcomplete.util.nameAndLocationLabel
+import de.westnordost.streetcomplete.util.setViewWithDefaultPadding
 import de.westnordost.streetcomplete.view.CharSequenceText
 import de.westnordost.streetcomplete.view.ResText
 import de.westnordost.streetcomplete.view.RoundRectOutlineProvider
@@ -95,6 +109,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
 import kotlinx.datetime.toJavaLocalDate
 import kotlinx.serialization.json.Json
+import org.jetbrains.compose.resources.getSystemResourceEnvironment
 import org.koin.android.ext.android.inject
 import org.koin.core.qualifier.named
 import java.time.format.DateTimeFormatter
@@ -117,11 +132,7 @@ abstract class AbstractOverlayForm :
     private var _countryInfo: CountryInfo? = null // lazy but resettable because based on lateinit var
         get() {
             if (field == null) {
-                field = countryInfos.getByLocation(
-                    countryBoundaries.value,
-                    geometry.center.longitude,
-                    geometry.center.latitude,
-                )
+                field = countryInfos.get(countryBoundaries.value, geometry.center)
             }
             return field
         }
@@ -136,14 +147,6 @@ abstract class AbstractOverlayForm :
         val latLon = geometry.center
         return countryBoundaries.value.getIds(latLon.longitude, latLon.latitude).firstOrNull()
     }
-
-    private val englishResources: Resources
-        get() {
-            val conf = Configuration(resources.configuration)
-            conf.setLocale(Locale.ENGLISH)
-            val localizedContext = super.requireContext().createConfigurationContext(conf)
-            return localizedContext.resources
-        }
 
     // used to enable testing via ShowQuestFormsScreen! Found no better way to do this
     var addElementEditsController: AddElementEditsController = elementEditsController
@@ -172,6 +175,8 @@ abstract class AbstractOverlayForm :
     open val contentLayoutResId: Int? = null
     open val contentPadding = true
     open val otherAnswers = listOf<IAnswerItem>()
+
+    private val showAccessManagerDialog: MutableState<Boolean> = mutableStateOf(false)
 
     interface Listener {
         /** The GPS position at which the user is displayed at */
@@ -238,9 +243,14 @@ abstract class AbstractOverlayForm :
         )
         binding.speechbubbleContentContainer.clipToOutline = true
 
-        setTitleHintLabel(
-            element?.let { getNameAndLocationSpanned(it, resources, featureDictionary) }
-        )
+        binding.titleHint.content { Surface {
+            CompositionLocalProvider(
+                LocalTextStyle provides MaterialTheme.typography.titleMedium,
+                LocalContentAlpha provides ContentAlpha.medium
+            ) {
+                getSubtitle()?.let { Text(it) }
+            }
+        } }
         setObjNote(element?.tags?.get("note"), element?.tags?.get("fixme") ?: element?.tags?.get("FIXME"))
 
         binding.moreButton.setOnClickListener {
@@ -253,7 +263,24 @@ abstract class AbstractOverlayForm :
                 onClickOk()
             }
         }
+        // todo: remove this and the composeViewDialogContainer if sth like DialogContainer is added to the overlay form
+        binding.composeViewDialogContainer.setContent { AppTheme {
+            if (showAccessManagerDialog.value) {
+                val element = element ?: return@AppTheme
+                AccessManagerDialog(
+                    onDismissRequest = { showAccessManagerDialog.value = false },
+                    tags = element.tags,
+                    countryInfo = countryInfo
+                ) { viewLifecycleScope.launch {
+                    solve(UpdateElementTagsAction(element, it.create()), geometry, true)
+                } }
+            }
+        } }
     }
+
+    @Composable
+    protected open fun getSubtitle(): AnnotatedString? =
+        element?.let { nameAndLocationLabel(it, featureDictionary) }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -334,11 +361,6 @@ abstract class AbstractOverlayForm :
     }
 
     /* ------------------------------- Interface for subclasses  ------------------------------- */
-
-    protected fun setTitleHintLabel(text: CharSequence?) {
-        binding.titleHintLabel.text = text
-        binding.titleHintLabelContainer.isGone = text == null
-    }
 
     /** Inflate given layout resource id into the content view and return the inflated view */
     protected fun setContentView(resourceId: Int): View {
@@ -486,14 +508,10 @@ abstract class AbstractOverlayForm :
     private fun createAccessManagerAnswer(): AnswerItem? {
         val element = element ?: return null
         if (!"ways with highway ~ ${(ALL_ROADS + ALL_PATHS).joinToString("|")}".toElementFilterExpression().matches(element)) return null
-        val title = if (element.tags.containsAnyKey(*accessKeys))
+        val title = if (element.tags.containsAnyKey(*accessKeys.toTypedArray()))
             R.string.manage_access
         else R.string.add_access
-        return AnswerItem(title) {
-            AccessManagerDialog(requireContext(), element.tags) {
-                viewLifecycleScope.launch { solve(UpdateElementTagsAction(element, it.create()), geometry, true) }
-            }.show()
-        }
+        return AnswerItem(title) { showAccessManagerDialog.value = true }
     }
 
     private fun createConstructionAnswer(): AnswerItem? {
@@ -571,14 +589,17 @@ abstract class AbstractOverlayForm :
     }
 
     protected fun composeNote(element: Element) {
-        val overlayTitle = englishResources.getString(overlay.title)
-        val hintLabel = getNameAndLocationSpanned(element, englishResources, featureDictionary)
-        val leaveNoteContext = if (hintLabel.isNullOrBlank()) {
-            "In context of overlay \"$overlayTitle\""
-        } else {
-            "In context of overlay \"$overlayTitle\" – $hintLabel"
+        viewLifecycleScope.launch {
+            val resourceEnvironment = getSystemResourceEnvironment()
+            val overlayTitle = org.jetbrains.compose.resources.getString(resourceEnvironment, overlay.title)
+            val hintLabel = getNameAndLocationLabel(resourceEnvironment, LayoutDirection.Ltr, element, featureDictionary)
+            val leaveNoteContext = if (hintLabel.isNullOrBlank()) {
+                "In context of overlay \"$overlayTitle\""
+            } else {
+                "In context of overlay \"$overlayTitle\" – $hintLabel"
+            }
+            listener?.onComposeNote(overlay, element, geometry, leaveNoteContext)
         }
-        listener?.onComposeNote(overlay, element, geometry, leaveNoteContext)
     }
 
     /* -------------------------------------- Apply edit  -------------------------------------- */

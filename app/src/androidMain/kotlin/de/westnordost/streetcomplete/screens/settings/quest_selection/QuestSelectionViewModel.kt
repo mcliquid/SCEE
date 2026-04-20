@@ -19,7 +19,6 @@ import de.westnordost.streetcomplete.data.visiblequests.QuestTypeOrderController
 import de.westnordost.streetcomplete.data.visiblequests.QuestTypeOrderSource
 import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeController
 import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeSource
-import de.westnordost.streetcomplete.util.ResourceProvider
 import de.westnordost.streetcomplete.util.ktx.containsAll
 import de.westnordost.streetcomplete.util.ktx.containsAny
 import de.westnordost.streetcomplete.util.ktx.getIds
@@ -32,6 +31,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import org.jetbrains.compose.resources.getString
 
 @Stable
 abstract class QuestSelectionViewModel : ViewModel() {
@@ -39,7 +39,7 @@ abstract class QuestSelectionViewModel : ViewModel() {
     abstract val filteredQuests: StateFlow<List<QuestSelection>>
     abstract val currentCountry: String?
     abstract val selectedEditTypePresetName: StateFlow<String?>
-    abstract var onlySceeQuests: Boolean
+    abstract val onlySceeQuests: MutableStateFlow<Boolean>
 
     abstract fun select(questType: QuestType, selected: Boolean)
     abstract fun order(questType: QuestType, toAfter: QuestType)
@@ -50,7 +50,6 @@ abstract class QuestSelectionViewModel : ViewModel() {
 
 @Stable
 class QuestSelectionViewModelImpl(
-    private val resourceProvider: ResourceProvider,
     private val questTypeRegistry: QuestTypeRegistry,
     private val editTypePresetsSource: EditTypePresetsSource,
     private val visibleEditTypeController: VisibleEditTypeController,
@@ -79,12 +78,7 @@ class QuestSelectionViewModelImpl(
         override fun onVisibilitiesChanged() { initQuests() }
     }
 
-    override var onlySceeQuests: Boolean = false
-        set(value) {
-            if (field == value) return
-            field = value
-            initQuests()
-        }
+    override val onlySceeQuests = MutableStateFlow(false)
 
     private val questTypeOrderListener = object : QuestTypeOrderSource.Listener {
         override fun onQuestTypeOrderAdded(item: QuestType, toAfter: QuestType) {
@@ -113,8 +107,8 @@ class QuestSelectionViewModelImpl(
     private val quests = MutableStateFlow<List<QuestSelection>>(emptyList())
 
     override val filteredQuests: StateFlow<List<QuestSelection>> =
-        combine(quests, searchText, questTitles) { quests, searchText, titles ->
-            filterQuests(quests, searchText, titles)
+        combine(quests, searchText, questTitles, onlySceeQuests) { quests, searchText, titles, onlySceeQuests ->
+            filterQuests(quests, searchText, titles, onlySceeQuests)
         }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val currentCountryCodes = countryBoundaries.value.getIds(prefs.mapPosition)
@@ -144,8 +138,7 @@ class QuestSelectionViewModelImpl(
         // are not reloaded automatically since there is no listenable callback from the
         // system for when the language changes
         launch(Default) {
-            questTitles.value = questTypeRegistry
-                .associate { it.name to resourceProvider.getString(it.title) }
+            questTitles.value = questTypeRegistry.associate { it.name to getString(it.title) }
         }
     }
 
@@ -188,10 +181,14 @@ class QuestSelectionViewModelImpl(
         launch(IO) {
             val sortedQuestTypes = questTypeRegistry.toMutableList()
             questTypeOrderController.sort(sortedQuestTypes)
-            quests.value = sortedQuestTypes.mapNotNull {
-                if (onlySceeQuests && questTypeRegistry.getOrdinalOf(it)!! < ApplicationConstants.EE_QUEST_OFFSET) null
-                else QuestSelection(it, visibleEditTypeController.isVisible(it), enabledInCurrentCountry = isQuestEnabledInCurrentCountry(it), prefs)
-            }.toMutableList()
+            quests.value = sortedQuestTypes
+                .map { QuestSelection(
+                    questType = it,
+                    selected = visibleEditTypeController.isVisible(it),
+                    enabledInCurrentCountry = isQuestEnabledInCurrentCountry(it),
+                    prefs = prefs
+                ) }
+                .toMutableList()
         }
     }
 
@@ -208,12 +205,16 @@ class QuestSelectionViewModelImpl(
         quests: List<QuestSelection>,
         filter: String,
         titles: Map<String, String>,
+        onlySceeQuests: Boolean
     ): List<QuestSelection> {
+        val questsToUse = if (!onlySceeQuests) quests
+            else quests.filter { questTypeRegistry.getOrdinalOf(it.questType)!! >= ApplicationConstants.EE_QUEST_OFFSET }
+
         val words = filter.takeIf { it.isNotBlank() }?.trim()?.lowercase()?.split(' ') ?: emptyList()
         return if (words.isEmpty()) {
-            quests
+            questsToUse
         } else {
-            quests.filter { quest ->
+            questsToUse.filter { quest ->
                 titles[quest.questType.name]?.lowercase()?.containsAll(words) == true
             }
         }

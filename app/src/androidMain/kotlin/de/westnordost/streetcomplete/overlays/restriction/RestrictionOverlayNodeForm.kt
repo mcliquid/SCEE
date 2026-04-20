@@ -1,19 +1,72 @@
 package de.westnordost.streetcomplete.overlays.restriction
 
-/*
-// some stuff taken from LaneNarrowingTrafficCalmingForm
+import android.content.res.Configuration
+import android.os.Bundle
+import android.view.View
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.core.view.doOnLayout
+import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
+import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
+import de.westnordost.streetcomplete.data.osm.edits.create.createNodeAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
+import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
+import de.westnordost.streetcomplete.data.osm.mapdata.Node
+import de.westnordost.streetcomplete.data.osm.mapdata.Way
+import de.westnordost.streetcomplete.data.osm.mapdata.filter
+import de.westnordost.streetcomplete.databinding.ComposeViewBinding
+import de.westnordost.streetcomplete.osm.ALL_ROADS
+import de.westnordost.streetcomplete.osm.oneway.isNotOnewayForCyclists
+import de.westnordost.streetcomplete.osm.oneway.isOneway
+import de.westnordost.streetcomplete.overlays.AbstractOverlayForm
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.oneway_yes
+import de.westnordost.streetcomplete.resources.oneway_yes_reverse
+import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsMapOrientationAware
+import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsMapPositionAware
+import de.westnordost.streetcomplete.ui.common.DropdownButton
+import de.westnordost.streetcomplete.ui.common.item_select.ImageWithLabel
+import de.westnordost.streetcomplete.ui.ktx.selectionFrame
+import de.westnordost.streetcomplete.ui.util.ClipCirclePainter
+import de.westnordost.streetcomplete.ui.util.content
+import de.westnordost.streetcomplete.util.ktx.dpToPx
+import de.westnordost.streetcomplete.util.ktx.firstAndLast
+import de.westnordost.streetcomplete.util.math.PositionOnWay
+import de.westnordost.streetcomplete.util.math.PositionOnWaySegment
+import de.westnordost.streetcomplete.util.math.VertexOfWay
+import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
+import de.westnordost.streetcomplete.util.math.getPositionOnWays
+import de.westnordost.streetcomplete.util.math.initialBearingTo
+import org.koin.android.ext.android.inject
+
 class RestrictionOverlayNodeForm : AbstractOverlayForm(), IsMapPositionAware, IsMapOrientationAware {
 
     private val mapDataWithEditsSource: MapDataWithEditsSource by inject()
-    override val contentLayoutResId = R.layout.fragment_overlay_restriction_node
-    private val binding by contentViewBinding(FragmentOverlayRestrictionNodeBinding::bind)
-    private val items = listOf(
-        Item2(Type.GIVE_WAY, ResImage(R.drawable.ic_restriction_give_way), ResText(R.string.restriction_overlay_sign_give_way)),
-        Item2(Type.STOP, ResImage(R.drawable.ic_restriction_stop), ResText(R.string.restriction_overlay_sign_stop)),
-        Item2(Type.ALL_WAY_STOP, ResImage(R.drawable.ic_restriction_stop), ResText(R.string.restriction_overlay_sign_stop_all_way)),
-    )
-    private val selectableItems = items.filterNot { it.value == Type.ALL_WAY_STOP }
+    override val contentLayoutResId = R.layout.compose_view
+    private val binding by contentViewBinding(ComposeViewBinding::bind)
+    private val items = Type.entries
+    private val selectableItems = listOf(Type.GIVE_WAY, Type.STOP)
 
+    // state is separate for historic reasons
+    private val positionOnWayState: MutableState<PositionOnWay?> = mutableStateOf(null)
     private var positionOnWay: PositionOnWay? = null
         set(value) {
             field = value
@@ -24,6 +77,7 @@ class RestrictionOverlayNodeForm : AbstractOverlayForm(), IsMapPositionAware, Is
                 setMarkerVisibility(false)
                 setMarkerPosition(null)
             }
+            positionOnWayState.value = value
         }
     private var roads: Collection<Pair<Way, List<LatLon>>>? = null
     private val waysFilter = """
@@ -37,10 +91,12 @@ class RestrictionOverlayNodeForm : AbstractOverlayForm(), IsMapPositionAware, Is
             )
           )
     """.toElementFilterExpression()
-    private var mapRotation = 0.0
 
     private var data: MapDataWithGeometry? = null
-    private var direction: Direction? = null
+    private var direction: MutableState<Direction?> = mutableStateOf(null)
+
+    // state is separate for historic reasons
+    private var typeState: MutableState<Type?> = mutableStateOf(null)
     private var type: Type? = null
         set(value) {
             if (field == value) return
@@ -51,27 +107,74 @@ class RestrictionOverlayNodeForm : AbstractOverlayForm(), IsMapPositionAware, Is
                     else setMarkerIcon(R.drawable.ic_restriction_stop)
             }
             checkIsFormComplete()
-            updateForm()
+            typeState.value = field
         }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.selectedCellView.setOnClickListener {
-            ImageListPickerDialog(requireContext(), selectableItems) { item ->
-                type = item.value
-            }.show()
-        }
-        binding.selectTextView.setOnClickListener {
-            ImageListPickerDialog(requireContext(), selectableItems) { item ->
-                type = item.value
-            }.show()
-        }
-        binding.dropDownArrowImageView.setOnClickListener {
-            ImageListPickerDialog(requireContext(), selectableItems) { item ->
-                type = item.value
-            }.show()
-        }
+        binding.composeViewBase.content { Surface {
+            var shouldShowWayDirection by remember { mutableStateOf(shouldShowWayDirection()) }
+            LaunchedEffect(positionOnWayState.value) {
+                shouldShowWayDirection = shouldShowWayDirection()
+            }
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                // Sign selection
+                DropdownButton(
+                    items = selectableItems,
+                    onSelectedItem = { type = it },
+                    selectedItem = typeState.value,
+                    itemContent = {
+                        ImageWithLabel(
+                            painter = painterResource(it.image),
+                            label = stringResource(it.text)
+                        )
+                    }
+                )
+
+                if (typeState.value != Type.ALL_WAY_STOP && shouldShowWayDirection) {
+                    // direction chooser
+                    Text(stringResource(R.string.restriction_overlay_direction_text))
+                    Row {
+                        val yes = org.jetbrains.compose.resources.painterResource(Res.drawable.oneway_yes)
+                        val reverse = org.jetbrains.compose.resources.painterResource(Res.drawable.oneway_yes_reverse)
+                        Box(
+                            modifier = Modifier
+                                .selectionFrame(direction.value == Direction.FORWARD)
+                                .selectable(direction.value == Direction.FORWARD) {
+                                    direction.value = Direction.FORWARD
+                                    checkIsFormComplete()
+                                },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            ImageWithLabel(
+                                painter = remember(yes) { ClipCirclePainter(yes) },
+                                label = null,
+                                imageRotation = getWayRotation().toFloat() - mapRotation.floatValue,
+                            )
+                        }
+                        Box(
+                            modifier = Modifier
+                                .selectionFrame(direction.value == Direction.BACKWARD)
+                                .selectable(direction.value == Direction.BACKWARD) {
+                                    direction.value = Direction.BACKWARD
+                                    checkIsFormComplete()
+                                },
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            ImageWithLabel(
+                                painter = remember(reverse) { ClipCirclePainter(reverse) },
+                                label = null,
+                                imageRotation = getWayRotation().toFloat() - mapRotation.floatValue
+                            )
+                        }
+                    }
+                }
+            }
+        } }
+
+        checkIsFormComplete()
+
         if (savedInstanceState != null) onLoadInstanceState(savedInstanceState)
 
         if (element == null) {
@@ -84,8 +187,7 @@ class RestrictionOverlayNodeForm : AbstractOverlayForm(), IsMapPositionAware, Is
         } else {
             val td = getTypeAndDirection(element!!.tags)
             type = td.first
-            direction = td.second
-            updateForm()
+            direction.value = td.second
         }
     }
 
@@ -111,78 +213,21 @@ class RestrictionOverlayNodeForm : AbstractOverlayForm(), IsMapPositionAware, Is
         checkCurrentCursorPosition()
     }
 
-    private fun updateForm() {
-        // show correct icon
-        val item = items.firstOrNull { it.value == type }
-        if (item != null) {
-            binding.selectedCellView.isVisible = true
-            binding.selectedCellView.setImage(item.image)
-            binding.selectTextView.setText(item.title)
-        } else {
-            binding.selectedCellView.isGone = true
-        }
-        // and direction
-        if (type == Type.ALL_WAY_STOP) {
-            binding.directionText.isGone = true
-            binding.directionContainer.isGone = true
-        } else if (type != null) {
-            setDirectionImages()
-        }
-    }
-
-    private fun setDirectionImages() {
+    private fun shouldShowWayDirection(): Boolean {
         val element = element
         val pow = positionOnWay
+        if (pow is VertexOfWay && pow.wayIds.size > 1) return false
         val way = when {
             element != null -> mapDataWithEditsSource.getWaysForNode(element.id).firstOrNull { waysFilter.matches(it) }
             pow is VertexOfWay -> mapDataWithEditsSource.getWay(pow.wayIds.first())
             pow is PositionOnWaySegment -> mapDataWithEditsSource.getWay(pow.wayId)
             else -> null
         }
-        if (way?.tags?.let {
-                if (it["highway"] in ALL_ROADS)
-                    isOneway(it) && !isNotOnewayForCyclists(it, countryInfo.isLeftHandTraffic)
-                else // cycleways, though doesn't catch oneway = yes and oneway:bicycle = no
-                    isOneway(it) || it["oneway:bicycle"] in listOf("yes", "-1")
-        } != false) {
-            binding.directionText.isGone = true
-            binding.directionContainer.isGone = true
-            return
-        }
-        val wayRotation = getWayRotation()
-        binding.directionText.isVisible = true
-        binding.directionContainer.isVisible = true
-        binding.directionContainer.removeAllViews()
-        binding.directionContainer.addView(ImageView(requireContext()).apply {
-            // forward
-            val drawable = RotatedCircleDrawable(context.getDrawable(R.drawable.ic_oneway_yes)!!)
-            drawable.rotation = (mapRotation + wayRotation).toFloat()
-            setImageDrawable(drawable)
-            if (direction == Direction.FORWARD)
-                setColorFilter(ContextCompat.getColor(requireContext(), R.color.accent))
-            else colorFilter = null
-            setOnClickListener {
-                direction = Direction.FORWARD
-                binding.directionContainer.children.forEach { (it as ImageView).colorFilter = null }
-                setColorFilter(ContextCompat.getColor(requireContext(), R.color.accent))
-                checkIsFormComplete()
-            }
-        })
-        binding.directionContainer.addView(ImageView(requireContext()).apply {
-            // backward
-            val drawable = RotatedCircleDrawable(context.getDrawable(R.drawable.ic_oneway_yes_reverse)!!)
-            drawable.rotation = (mapRotation + wayRotation).toFloat()
-            setImageDrawable(drawable)
-            if (direction == Direction.BACKWARD)
-                setColorFilter(ContextCompat.getColor(requireContext(), R.color.accent))
-            else colorFilter = null
-            setOnClickListener {
-                direction = Direction.BACKWARD
-                binding.directionContainer.children.forEach { (it as ImageView).colorFilter = null }
-                setColorFilter(ContextCompat.getColor(requireContext(), R.color.accent))
-                checkIsFormComplete()
-            }
-        })
+        if (way == null) return false
+        return if (way.tags["highway"] in ALL_ROADS)
+            !isOneway(way.tags) || isNotOnewayForCyclists(way.tags, countryInfo.isLeftHandTraffic)
+        else // cycleways, though doesn't catch oneway = yes and oneway:bicycle = no
+            !isOneway(way.tags) && way.tags["oneway:bicycle"] !in listOf("yes", "-1")
     }
 
     private fun checkCurrentCursorPosition() {
@@ -223,12 +268,11 @@ class RestrictionOverlayNodeForm : AbstractOverlayForm(), IsMapPositionAware, Is
             else -> pos
         }
         checkIsFormComplete()
-        updateForm()
     }
 
     override fun hasChanges(): Boolean {
         val td = element?.let { getTypeAndDirection(it.tags) }
-        return td?.first != type || td?.second != direction
+        return td?.first != type || td?.second != direction.value
     }
 
     override fun isFormComplete(): Boolean = type != null && hasChanges() && (element != null || positionOnWay != null)
@@ -240,10 +284,10 @@ class RestrictionOverlayNodeForm : AbstractOverlayForm(), IsMapPositionAware, Is
         val type = type ?: return
         val editAction = if (element != null) {
             val tagChanges = StringMapChangesBuilder(element.tags)
-            applyTo(tagChanges, type, direction)
+            applyTo(tagChanges, type, direction.value)
             UpdateElementTagsAction(element, tagChanges.create())
         } else if (positionOnWay != null) {
-            createNodeAction(positionOnWay, mapDataWithEditsSource) { applyTo(it, type, direction) }
+            createNodeAction(positionOnWay, mapDataWithEditsSource) { applyTo(it, type, direction.value) }
         } else null
         if (editAction != null)
             applyEdit(editAction)
@@ -251,16 +295,12 @@ class RestrictionOverlayNodeForm : AbstractOverlayForm(), IsMapPositionAware, Is
 
     private fun onLoadInstanceState(inState: Bundle) {
         val selectedIndex = inState.getInt(SELECTED_INDEX)
-        type = if (selectedIndex != -1) items[selectedIndex].value else null
+        type = if (selectedIndex != -1) items[selectedIndex] else null
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt(SELECTED_INDEX, items.indexOfFirst { it.value == type })
-    }
-
-    override fun onMapOrientation(rotation: Double, tilt: Double) {
-        mapRotation = -rotation
+        outState.putInt(SELECTED_INDEX, items.indexOfFirst { it == type })
     }
 
     private fun getWayRotation(): Double {
@@ -316,12 +356,22 @@ private fun getTypeAndDirection(tags: Map<String, String>): Pair<Type?, Directio
         else -> null
     }
     val direction = when (type) {
-        Type.GIVE_WAY, Type.STOP -> tags["direction"]?.let { dir -> Direction.values().firstOrNull { it.osmValue == dir } }
+        Type.GIVE_WAY, Type.STOP -> tags["direction"]?.let { dir -> Direction.entries.firstOrNull { it.osmValue == dir } }
         else -> null
     }
     return type to direction
 }
 
 private enum class Type { GIVE_WAY, STOP, ALL_WAY_STOP }
+private val Type.text get() = when (this) {
+    Type.GIVE_WAY -> R.string.restriction_overlay_sign_give_way
+    Type.STOP -> R.string.restriction_overlay_sign_stop
+    Type.ALL_WAY_STOP -> R.string.restriction_overlay_sign_stop_all_way
+}
+private val Type.image get() = when (this) {
+    Type.GIVE_WAY -> R.drawable.ic_restriction_give_way
+    Type.STOP -> R.drawable.ic_restriction_stop
+    Type.ALL_WAY_STOP -> R.drawable.ic_restriction_stop
+}
+
 private enum class Direction(val osmValue: String) { FORWARD("forward"), BACKWARD("backward") }
-*/

@@ -37,6 +37,8 @@ import de.westnordost.streetcomplete.quests.AbstractQuestForm
 import de.westnordost.streetcomplete.quests.AnswerItem
 import de.westnordost.streetcomplete.quests.note_comments.NoteCommentItem
 import de.westnordost.streetcomplete.quests.note_comments.NoteForm
+import de.westnordost.streetcomplete.screens.main.bottom_sheet.AbstractCreateNoteFragment
+import de.westnordost.streetcomplete.ui.theme.defaultTextLinkStyles
 import de.westnordost.streetcomplete.ui.util.content
 import de.westnordost.streetcomplete.ui.util.rememberSerializable
 import de.westnordost.streetcomplete.util.image.loadImageBitmap
@@ -50,6 +52,7 @@ import kotlinx.io.files.Path
 import org.koin.android.ext.android.inject
 import org.koin.core.qualifier.named
 import kotlin.collections.orEmpty
+import java.io.File
 
 class NoteDiscussionForm : AbstractQuestForm(), TakePhotoFragment.Listener {
     final override val contentLayoutResId = R.layout.compose_view
@@ -134,16 +137,8 @@ class NoteDiscussionForm : AbstractQuestForm(), TakePhotoFragment.Listener {
     }
 
     @Composable
-    override fun ContentBeforeSpeechbubbleContent() {
-        val textLinkStyles = TextLinkStyles(
-            style = SpanStyle(
-                color = MaterialTheme.colors.primary,
-                textDecoration = TextDecoration.Underline
-            ),
-            focusedStyle = SpanStyle(
-                color = MaterialTheme.colors.secondary,
-            )
-        )
+    override fun ContentBeforeSpeechBubbleContent() {
+        val textLinkStyles = MaterialTheme.typography.defaultTextLinkStyles()
         ProvideTextStyle(MaterialTheme.typography.body2) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),

@@ -1,4 +1,4 @@
-package de.westnordost.streetcomplete.screens.main.bottom_sheet
+package de.westnordost.streetcomplete.screens.main.bottom_sheet.move_node
 
 import android.content.res.Configuration
 import android.graphics.PointF
@@ -7,6 +7,11 @@ import android.view.View
 import android.view.animation.AnimationUtils
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AlertDialog
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toPointF
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -29,13 +34,12 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.databinding.FragmentMoveNodeBinding
 import de.westnordost.streetcomplete.overlays.IsShowingElement
-import de.westnordost.streetcomplete.screens.measure.MeasureDisplayUnit
-import de.westnordost.streetcomplete.screens.measure.MeasureDisplayUnitFeetInch
-import de.westnordost.streetcomplete.screens.measure.MeasureDisplayUnitMeter
+import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsCloseableBottomSheet
+import de.westnordost.streetcomplete.screens.main.bottom_sheet.IsMapPositionAware
+import de.westnordost.streetcomplete.ui.common.FloatingOkButton
+import de.westnordost.streetcomplete.ui.util.content
 import de.westnordost.streetcomplete.util.ktx.awaitLayout
 import de.westnordost.streetcomplete.util.ktx.getLocationInWindow
-import de.westnordost.streetcomplete.util.ktx.popIn
-import de.westnordost.streetcomplete.util.ktx.popOut
 import de.westnordost.streetcomplete.util.ktx.setMargins
 import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
 import de.westnordost.streetcomplete.util.math.distanceTo
@@ -71,6 +75,9 @@ class MoveNodeFragment :
 
     private lateinit var arrowDrawable: ArrowDrawable
     private val initialMap = prefs.getString(Prefs.THEME_BACKGROUND, "MAP")
+    private val backgroundText = mutableStateOf("")
+
+    private val distance = mutableFloatStateOf(0f)
 
     private val hasChanges get() = getMarkerPosition() != node.position
 
@@ -103,10 +110,7 @@ class MoveNodeFragment :
         binding.arrowView.setImageDrawable(arrowDrawable)
         arrowDrawable.setTint(requireContext().resources.getColor(R.color.accent))
 
-        binding.okButton.setOnClickListener { onClickOk() }
-        binding.cancelButton.setOnClickListener { activity?.onBackPressed() }
         binding.pin.pinIconView.setImageResource(editType.icon)
-        binding.mapButton.setOnClickListener { toggleBackground() }
         updateMapButtonText()
 
         val cornerRadius = resources.getDimension(R.dimen.speech_bubble_rounded_corner_radius)
@@ -118,6 +122,24 @@ class MoveNodeFragment :
         if (savedInstanceState == null) {
             binding.speechbubbleContentContainer.startAnimation(
                 AnimationUtils.loadAnimation(context, R.anim.inflate_answer_bubble)
+            )
+        }
+
+        binding.composeView.content {
+            MoveNodeForm(
+                distance = distance.floatValue,
+                displayUnit = displayUnit,
+                onClickCancel = { activity?.onBackPressed() },
+                onClickBackground = { toggleBackground() },
+                backgroundText = backgroundText.value
+            )
+        }
+
+        binding.okButtonComposeView.content {
+            FloatingOkButton(
+                visible = distance.floatValue.toDouble() in minMoveDistance..MAX_MOVE_DISTANCE,
+                onClick = { onClickOk() },
+                modifier = Modifier.padding(8.dp),
             )
         }
 
@@ -146,7 +168,7 @@ class MoveNodeFragment :
     private fun updateMapButtonText() {
         val isMap = prefs.getString(Prefs.THEME_BACKGROUND, "MAP") == "MAP"
         val textId = if (isMap) R.string.background_type_aerial_esri else R.string.background_type_map
-        binding.mapButton.setText(textId)
+        backgroundText.value = context?.getString(textId) ?: ""
     }
 
     private fun restoreBackground() {
@@ -166,7 +188,6 @@ class MoveNodeFragment :
 
     private fun onClickOk() {
         val position = getMarkerPosition() ?: return
-        if (!checkIsDistanceOkAndUpdateText(position)) return
         restoreBackground()
         viewLifecycleScope.launch {
             moveNodeTo(position)
@@ -187,34 +208,12 @@ class MoveNodeFragment :
     @UiThread override fun onMapMoved(position: LatLon) {
         updateArrowDrawable()
 
-        if (checkIsDistanceOkAndUpdateText(position)) {
-            binding.okButton.popIn()
-        } else {
-            binding.okButton.popOut()
-        }
+        distance.floatValue = position.distanceTo(node.position).toFloat()
     }
 
     private fun updateArrowDrawable() {
         arrowDrawable.startPoint = listener?.getScreenPositionAt(node.position)
         arrowDrawable.endPoint = getMarkerScreenPosition()
-    }
-
-    private fun checkIsDistanceOkAndUpdateText(position: LatLon): Boolean {
-        val moveDistance = position.distanceTo(node.position)
-        return when {
-            moveDistance < minMoveDistance -> {
-                binding.titleLabel.setText(R.string.node_moved_not_far_enough)
-                false
-            }
-            moveDistance > MAX_MOVE_DISTANCE -> {
-                binding.titleLabel.setText(R.string.node_moved_too_far)
-                false
-            }
-            else -> {
-                binding.titleLabel.text = resources.getString(R.string.node_moved, displayUnit.format(moveDistance.toFloat()))
-                true
-            }
-        }
     }
 
     @UiThread override fun onClickClose(onConfirmed: () -> Unit) {
@@ -249,14 +248,3 @@ class MoveNodeFragment :
         }
     }
 }
-
-// Require a minimum distance because the map is not perfectly precise, it may be hard to tell
-// whether something really is misplaced without good aerial imagery.
-// Also, POIs are objects with a certain extent, so as long as the node is within this extent, it's
-// fine, there is little value of putting the point at exactly the center point of the POI
-private const val MIN_MOVE_DISTANCE = 0.1
-// Move node functionality is meant for fixing slightly misplaced elements. If something moved far
-// away, it is reasonable to assume there are more substantial changes required, also to nearby
-// elements. Additionally, the default radius for highlighted elements is 30 m, so moving outside
-// should not be allowed.
-private const val MAX_MOVE_DISTANCE = 5000.0

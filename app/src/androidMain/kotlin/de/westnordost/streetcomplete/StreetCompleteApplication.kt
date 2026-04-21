@@ -258,7 +258,8 @@ class StreetCompleteApplication : Application() {
 
     private fun getMemString(): String {
         val memInfo = MemoryInfo()
-        getSystemService<ActivityManager>()?.getMemoryInfo(memInfo)
+        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        activityManager.getMemoryInfo(memInfo)
         return "${memInfo.availMem / 0x100000L} MB of ${memInfo.totalMem / 0x100000L} available, mem low: ${memInfo.lowMemory}, mem low threshold: ${memInfo.threshold / 0x100000L} MB"
     }
 

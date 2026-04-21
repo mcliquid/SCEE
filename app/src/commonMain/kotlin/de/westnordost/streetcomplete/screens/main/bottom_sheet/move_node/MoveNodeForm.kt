@@ -1,6 +1,8 @@
 package de.westnordost.streetcomplete.screens.main.bottom_sheet.move_node
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.ContentAlpha
@@ -12,10 +14,8 @@ import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.resources.*
-import de.westnordost.streetcomplete.ui.common.ButtonBar
 import de.westnordost.streetcomplete.ui.theme.titleLarge
 import org.jetbrains.compose.resources.stringResource
 
@@ -47,8 +47,10 @@ fun MoveNodeForm(
             text = when {
                 distance < MIN_MOVE_DISTANCE ->
                     stringResource(Res.string.node_moved_not_far_enough)
+
                 distance > MAX_MOVE_DISTANCE ->
                     stringResource(Res.string.node_moved_too_far)
+
                 else ->
                     stringResource(Res.string.node_moved, displayUnit.format(distance))
             },
@@ -66,7 +68,10 @@ fun MoveNodeForm(
         Divider()
 
         // button panel
-        ButtonBar {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
             TextButton(onClick = onClickCancel) {
                 Text(stringResource(Res.string.cancel))
             }
@@ -75,3 +80,4 @@ fun MoveNodeForm(
             }
         }
     }
+}

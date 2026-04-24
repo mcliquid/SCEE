@@ -63,7 +63,6 @@
     <string name="pref_interval_summary">%d secondi</string>
     <string name="quest_settings_sidewalk_distance_button">Distanza</string>
     <string name="quest_trail_visibility_excellent">Eccellente</string>
-    <string name="quest_artwork_title">Che tipo di opera d\'arte è?</string>
     <string name="quest_mapSize_title">Che area è coperta da questa mappa?</string>
     <string name="quest_buildingType_stable">Stalla</string>
     <string name="time_limited_from">Da</string>

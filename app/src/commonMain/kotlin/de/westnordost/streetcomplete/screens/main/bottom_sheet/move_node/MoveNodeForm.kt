@@ -47,17 +47,14 @@ fun MoveNodeForm(
             text = when {
                 distance < MIN_MOVE_DISTANCE ->
                     stringResource(Res.string.node_moved_not_far_enough)
-
                 distance > MAX_MOVE_DISTANCE ->
                     stringResource(Res.string.node_moved_too_far)
-
                 else ->
                     stringResource(Res.string.node_moved, displayUnit.format(distance))
             },
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-
         CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
             Text(
                 text = stringResource(Res.string.move_node_description),
@@ -68,16 +65,9 @@ fun MoveNodeForm(
         Divider()
 
         // button panel
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End
-        ) {
-            TextButton(onClick = onClickCancel) {
-                Text(stringResource(Res.string.cancel))
-            }
-            TextButton(onClick = onClickBackground) {
-                Text(backgroundText)
-            }
+        Column(Modifier.fillMaxWidth()) {
+            TextButton(onClickCancel) { Text(stringResource(Res.string.cancel)) }
+            TextButton(onClickBackground) { Text(backgroundText) }
         }
     }
 }

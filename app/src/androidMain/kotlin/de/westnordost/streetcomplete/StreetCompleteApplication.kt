@@ -4,10 +4,9 @@ import android.app.ActivityManager
 import android.app.ActivityManager.MemoryInfo
 import android.app.Application
 import android.content.ComponentCallbacks2
-import android.content.Context
-import android.net.ConnectivityManager
 import android.os.LocaleList
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.getSystemService
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequest
 import androidx.work.WorkManager
@@ -180,11 +179,6 @@ class StreetCompleteApplication : Application() {
 
         crashReportExceptionHandler.install()
 
-        applicationScope.launch {
-            preloader.preload()
-            editHistoryController.deleteSyncedOlderThan(nowAsEpochMilliseconds() - ApplicationConstants.MAX_UNDO_HISTORY_AGE)
-        }
-
         feedsUpdater.updateNow()
 
         enqueuePeriodicCleanupWork()
@@ -258,8 +252,7 @@ class StreetCompleteApplication : Application() {
 
     private fun getMemString(): String {
         val memInfo = MemoryInfo()
-        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        activityManager.getMemoryInfo(memInfo)
+        getSystemService<ActivityManager>()?.getMemoryInfo(memInfo)
         return "${memInfo.availMem / 0x100000L} MB of ${memInfo.totalMem / 0x100000L} available, mem low: ${memInfo.lowMemory}, mem low threshold: ${memInfo.threshold / 0x100000L} MB"
     }
 

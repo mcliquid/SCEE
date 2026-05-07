@@ -278,6 +278,7 @@ private val IS_THING_EXPRESSION by lazy {
         "waterway" to listOf(
             "fuel",                  // iD-Preset: waterway/fuel
             "sanitary_dump_station",  // iD-Preset: waterway/sanitary_dump_station
+            "milestone",
             "boatyard",
             "dock",
             "water_point",

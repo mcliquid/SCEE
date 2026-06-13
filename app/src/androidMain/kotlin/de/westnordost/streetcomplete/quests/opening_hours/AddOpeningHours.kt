@@ -164,6 +164,7 @@ mapOf(
             )
         )
         and access !~ private|no
+        and street_vendor != yes
         and opening_hours:signed != no
     """) }
     // name filter is there to ensure that place name quest triggers first, so that object is identified if possible

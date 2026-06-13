@@ -105,9 +105,9 @@ private val NAME_PLACES = mapOf(
         "animal_boarding", "animal_shelter", "animal_breeding",                             // animals
         "coworking_space",                                                                  // work
 
-                // name & opening hours
-                "boat_rental", "vehicle_inspection", "motorcycle_rental", "crematorium",
-                "public_bath",
+        // name & opening hours
+        "boat_rental", "vehicle_inspection", "motorcycle_rental", "crematorium",
+        "public_bath",
 
         // name & wheelchair
         "theatre",                                        // culture

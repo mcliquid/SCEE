@@ -34,7 +34,6 @@
     <string name="quest_material_concrete">混凝土</string>
     <string name="quest_material_stone">石頭</string>
     <string name="quest_material_brick">磚塊</string>
-    <string name="quest_artwork_title">這是什麼類型的藝術品？</string>
     <string name="pref_way_direction_summary">在開啟任務時，於突出顯示的線條上顯示箭頭。此功能例如在新增單行道時非常有用。</string>
     <string name="import_export_settings">其他的應用程式設定</string>
     <string name="pref_show_nearby_quests_title">顯示附近的任務</string>
@@ -276,7 +275,6 @@
     <string name="quest_settings_building_levels_mandatory_roof">在大多數國家/地區要求輸入屋頂層數（預設）</string>
     <string name="quest_settings_building_levels_optional_roof">允許在任何地方省略屋頂層數</string>
     <string name="quest_settings_highlight_changes_button">突顯變更</string>
-    <string name="quest_order_normal">恢復正常任務順序</string>
     <string name="level_filter">層級篩選器</string>
     <string name="level_filter_title">選擇要檢查的鍵值</string>
     <string name="level_filter_hint">留空以顯示未標記的項目</string>

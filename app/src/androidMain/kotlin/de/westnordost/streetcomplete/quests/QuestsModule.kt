@@ -1,6 +1,6 @@
 package de.westnordost.streetcomplete.quests
 
-import de.westnordost.countryboundaries.CountryBoundaries
+import de.westnordost.streetcomplete.util.countryboundaries.CountryBoundaries
 import de.westnordost.osmfeatures.Feature
 import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.ApplicationConstants.EE_QUEST_OFFSET
@@ -37,6 +37,7 @@ import de.westnordost.streetcomplete.quests.barrier_type.AddBarrierType
 import de.westnordost.streetcomplete.quests.barrier_type.AddStileType
 import de.westnordost.streetcomplete.quests.bbq_fuel.AddBbqFuel
 import de.westnordost.streetcomplete.quests.bench_armrest.AddBenchArmrest
+import de.westnordost.streetcomplete.quests.service_times.AddServiceTimes
 import de.westnordost.streetcomplete.quests.bench_backrest.AddBenchBackrest
 import de.westnordost.streetcomplete.quests.bench_material.AddBenchMaterial
 import de.westnordost.streetcomplete.quests.bicycle_repair_station.AddBicycleRepairStationServices
@@ -135,6 +136,7 @@ import de.westnordost.streetcomplete.quests.incline_direction.AddStepsIncline
 import de.westnordost.streetcomplete.quests.internet_access.AddInternetAccess
 import de.westnordost.streetcomplete.quests.is_sidepath.AddIsSidepath
 import de.westnordost.streetcomplete.quests.kerb_height.AddKerbHeight
+import de.westnordost.streetcomplete.quests.kerb_type.AddKerbType
 import de.westnordost.streetcomplete.quests.lamp_type.AddLampType
 import de.westnordost.streetcomplete.quests.lamp_mount.AddLampMount
 import de.westnordost.streetcomplete.quests.lane_markings.AddLaneMarkings
@@ -160,6 +162,7 @@ import de.westnordost.streetcomplete.quests.oneway.AddOnewayBicycle
 import de.westnordost.streetcomplete.quests.opening_hours.AddOpeningHours
 import de.westnordost.streetcomplete.quests.opening_hours_signed.CheckOpeningHoursSigned
 import de.westnordost.streetcomplete.quests.orchard_produce.AddOrchardProduce
+import de.westnordost.streetcomplete.quests.orchard_type.AddOrchardType
 import de.westnordost.streetcomplete.quests.osmose.OsmoseDao
 import de.westnordost.streetcomplete.quests.osmose.OsmoseQuest
 import de.westnordost.streetcomplete.quests.parcel_locker_brand.AddParcelLockerBrand
@@ -285,7 +288,7 @@ val questsModule = module {
         questTypeRegistry(
             get(),
             { countryInfos.get(countryBoundariesLazy.value, it) },
-            { countryBoundariesLazy.value.getIds(it.longitude, it.latitude).firstOrNull() },
+            { countryBoundariesLazy.value.getIds(it).firstOrNull() },
             { featureDictionaryLazy.value.getFeature(it) },
             get(),
             get()
@@ -437,9 +440,11 @@ fun getQuestTypeList(
     163 to AddCrossingMarkings(),
     41 to AddTactilePavingCrosswalk(),
     159 to AddCrossingKerbHeight(),
-    42 to AddTrafficSignalsSound(), // Sound needs to be done as or after you're crossing
+    44 to AddTrafficSignalsVibration(), // should be asked before question for sound, see #6890
     43 to AddTrafficSignalsButton(),
-    44 to AddTrafficSignalsVibration(),
+    42 to AddTrafficSignalsSound(), // Sound needs to be done as or after you're crossing
+
+
 
     /* ↓ 2.solvable when right in front of it ----------------------------------------------- */
     45 to AddInformationToTourism(), // OSM Carto
@@ -703,6 +708,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 37 to AddMapType(),
     EE_QUEST_OFFSET + 38 to AddMapSize(),
     EE_QUEST_OFFSET + 34 to AddBarrierHeight(arSupportChecker),
+    EE_QUEST_OFFSET + 67 to AddKerbType(),
     EE_QUEST_OFFSET + 40 to AddPisteLit(),
     EE_QUEST_OFFSET + 35 to AddPisteRef(),
     EE_QUEST_OFFSET + 36 to AddPisteDifficulty(),
@@ -720,6 +726,8 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 201 to AddIsSidepath(),
     EE_QUEST_OFFSET + 62 to AddToiletsDisposal(),
     EE_QUEST_OFFSET + 63 to AddEvseId(),
+    EE_QUEST_OFFSET + 66 to AddServiceTimes(),
+    EE_QUEST_OFFSET + 64 to AddOrchardType(), // need to look around the orchard to tell apart meadow orchard and plantation
     EE_QUEST_OFFSET + 10 to OsmoseQuest(osmoseDao),
     EE_QUEST_OFFSET + 11 to CustomQuest(customQuestList),
     // POI quests

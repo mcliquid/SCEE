@@ -88,7 +88,6 @@
     <string name="pref_dynamic_quest_creation_summary">Les missions es creen en carregar l'àrea actual. És una mica lent, però aplica immediatament canvis en la configuració de missions.</string>
     <string name="pref_quest_monitor_title">Notificar sobre missions properes</string>
     <string name="quest_order_reverse">Regirar ordre de missions</string>
-    <string name="quest_order_normal">Tornar a l'ordre de missions normal</string>
     <string name="level_filter">Filtre de nivell</string>
     <string name="level_filter_title">Esculli claus per comprovar</string>
     <string name="level_filter_message">Escrigui un valor de nivell, o un filtre usant &gt; i &lt;. Usi * per seleccionar tots els elements que continguin un valor de nivell autoritzat</string>
@@ -140,7 +139,7 @@
     <string name="pref_manual_download_cache_summary">Si ho desactives, les dades no es tornaran a descarregar en fer una descarrega manual a no ser que siguin més antigues de 12 hores</string>
     <string name="pref_quest_monitor_summary">Supervisa l'ubicació quan l'app està en segon pla, excepte si has sortit de l'aplicació prement el botó d'endarrere</string>
     <string name="quest_settings_osmose_level_title">Selecciona els nivells de gravetat dels problemes per descarregar i mostrar</string>
-    <string name="pref_search_more_languages_summary">La funció de cerca mostrarà resultats en tots els idiomes de tun sistema i en l'idioma local</string>
+    <string name="pref_search_more_languages_summary">La funció de cerca mostrarà resultats en tots els idiomes de tun sistema i en l\'idioma local</string>
     <string name="quest_monitor_search_radius_text">Estableix el radi de cerca de missions. Tingui en compte que es podrien trobar missions que estiguin lleugerament fora del radi especificat. Ubicacions amb menor precisió que aquest valor seran ignorades.</string>
     <string name="pref_show_next_quest_summary">Mostrar més missions pel mateix element just després de resoldre'n una missió</string>
     <string name="pref_recent_answers_first_min_lines">Moure les respostes recents al capdavant dol llista</string>
@@ -424,7 +423,6 @@
     <string name="quest_valves_dunlop">DV/NV: Dunlop / Woods</string>
     <string name="quest_valves_schrader">AV: Schrader / Vàlvula de cotxe</string>
     <string name="quest_valves_regina">RV: Regina / Vàlvula d'estil italià</string>
-    <string name="quest_artwork_title">Quina classe d'obra d'art és aquesta?</string>
     <string name="quest_trail_visibility_title">Quina és la visibilitat del sender d'aquest camí?</string>
     <string name="quest_sacScale_four">T4 - Senderisme alpí</string>
     <string name="quest_sacScale_four_description">Terreny ja força expòs, incloent-hi pendents costeruts d'herba, vessants de talús, camps de neu fàcils i/o travesseres per glaceres sense neu.</string>

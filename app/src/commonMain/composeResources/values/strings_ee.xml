@@ -101,7 +101,7 @@
     <string name="show_nearby_quests_even_hidden">Show all types and hidden quests</string>
     <string name="show_nearby_quests_distance">Show quests within this distance (limited to 10 meters)</string>
     <string name="pref_search_more_languages_title">Search features in more languages</string>
-    <string name="pref_search_more_languages_summary">Feature search shows results in all system and local language</string>
+    <string name="pref_search_more_languages_summary">Feature search shows results in all system and local languages</string>
     <string name="pref_overlay_quick_selector_title">Show overlay quick selector</string>
     <string name="pref_create_node_show_keyboard_title">Automatically show keyboard when adding a node</string>
     <string name="pref_main_menu_switch_presets_title">Switch preset button in main menu</string>
@@ -219,7 +219,6 @@
 
     <!-- quick settings -->
     <string name="quest_order_reverse">Reverse quest order</string>
-    <string name="quest_order_normal">Back to normal quest order</string>
     <string name="level_filter">Level filter</string>
     <string name="level_filter_title">Choose keys to check</string>
     <string name="level_filter_message">Enter level value, or filter using &gt; and &lt;. Use * to match all elements containing an allowed level key</string>
@@ -330,6 +329,10 @@
 
     <!-- sauna availability quest -->
     <string name="quest_saunaAvailability_title">Is there a sauna here?</string>
+
+    <!-- service times quest -->
+    <string name="quest_service_times_title">When is religious service performed here?</string>
+    <string name="quest_service_times_resurvey_title">Are the religious service times here still correct?</string>
 
     <!-- swimming pool availability quest -->
     <string name="quest_swimmingPoolAvailability_title">Is there a swimming pool here?</string>
@@ -538,6 +541,7 @@
     <string name="quest_destination_all_lanes_button">All\nlanes</string>
     <string name="quest_footway_width_title">How wide is the foot path here?</string>
     <string name="quest_barrier_height_title">How tall is this barrier?</string>
+    <string name="quest_kerb_type_title">What type of kerb is this?</string>
 
     <!-- additional strings for quests available in StreetComplete -->
     <string name="quest_bicycle_parking_type_saddleholder">Saddle holder</string>
@@ -806,4 +810,11 @@ Out of the box SCEE is configured to behave very similar to StreetComplete.</str
     <string name="quest_fence_material_title">What material is this fence made of?</string>
     <string name="quest_material_wire">Wire</string>
 
+
+<!-- orchard type -->
+    <string name="quest_orchard_type_title">What type of orchard is this?</string>
+    <string name="quest_orchard_type_meadow_orchard">Meadow orchard</string>
+    <string name="quest_orchard_type_plantation">Plantation</string>
+    <string name="quest_orchard_type_meadow_orchard_description">Large trees, wide spacing</string>
+    <string name="quest_orchard_type_plantation_description">Spindle trees, narrow spacing (usually commercial)</string>
 </resources>

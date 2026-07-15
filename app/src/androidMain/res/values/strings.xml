@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="manifest_action_settings">Settings</string>
+    <string name="manifest_action_about2">About</string>
+    <string name="manifest_user_profile">My Profile</string>
+</resources>

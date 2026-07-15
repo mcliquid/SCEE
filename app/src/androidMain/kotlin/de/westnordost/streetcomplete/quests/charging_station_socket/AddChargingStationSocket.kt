@@ -8,12 +8,12 @@ import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.quest.AndroidQuest
-import de.westnordost.streetcomplete.data.quest.NoCountriesExcept
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.util.math.contains
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.quest_charging_station_socket_title
+import de.westnordost.streetcomplete.util.countryboundaries.NoCountriesExcept
 
 class AddChargingStationSocket :
     OsmElementQuestType<Map<SocketType, Int>>,
@@ -29,9 +29,9 @@ class AddChargingStationSocket :
     }
 
     override val enabledInCountries = NoCountriesExcept(
-        "AT","BE","BG","HR","CY","CZ","DE","DK","EE","ES","FI","FR","GB",
-        "GR","HU","IE","IS","IT","LI","LT","LU","LV","MT","NL","NO",
-        "PL","PT","RO","SE","SI","SK"
+        "AT", "BE", "BG", "HR", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GB",
+        "GR", "HU", "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MT", "NL", "NO",
+        "PL", "PT", "RO", "SE", "SI", "SK"
     )
 
     override val changesetComment = "Specify charging station sockets"

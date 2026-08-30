@@ -231,7 +231,7 @@ class MainViewModelImpl(
             visibleEditTypeSource.isVisible(it)
                 && eeAllowed // expert mode on, or SC overlay
                 && it.javaClass.simpleName != "CustomOverlay" // custom overlay added separately
-        } + getFakeCustomOverlays(prefs, ApplicationConstants.context.resources)
+        } + getFakeCustomOverlays(prefs)
 
     override val selectedOverlay: StateFlow<Overlay?> = callbackFlow {
         send(selectedOverlayController.selectedOverlay)
@@ -449,7 +449,7 @@ class MainViewModelImpl(
         syncedEdits + unsyncedEdits
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, 0)
 
-    override val locationState = MutableStateFlow(LocationState.ENABLED)
+    override val locationState: MutableStateFlow<LocationState?> = MutableStateFlow(LocationState.ENABLED)
     override val mapCamera = MutableStateFlow<CameraPosition?>(null)
     override val metersPerDp = MutableStateFlow(0.0)
     override val displayedPosition = MutableStateFlow<Offset?>(null)
@@ -466,11 +466,9 @@ class MainViewModelImpl(
         val listener = prefs.onShowQuickSettingsChanged { trySend(it) }
         awaitClose { listener.deactivate() }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, prefs.showQuickSettings)
-    override val showingBottomSheet = MutableStateFlow(false)
     override val showOverlaySelector = callbackFlow {
-        send(prefs.showOverlaySelector && !showingBottomSheet.value)
-        showingBottomSheet.collect { trySend(prefs.showOverlaySelector && !showingBottomSheet.value) }
-        val listener = prefs.onShowOverlaySelectorChanged { trySend(it && !showingBottomSheet.value) }
+        send(prefs.showOverlaySelector)
+        val listener = prefs.onShowOverlaySelectorChanged { trySend(it) }
         awaitClose { listener.deactivate() }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, prefs.showOverlaySelector)
     override val reverseQuestOrder = MutableStateFlow(false)

@@ -49,7 +49,7 @@
     <string name="pref_main_menu_grid">Zobrazit všechny prvky hlavního menu jako mřížku</string>
     <string name="pref_show_next_quest_summary">Zobrazit další úkoly pro stejný prvek hned po vyřešení</string>
     <string name="pref_hide_button_title">Zobrazit tlačítko na skrytí</string>
-    <string name="pref_recent_answers_first_min_lines_summary">Pokud má formulář více než %d řádků</string>
+    <string name="pref_recent_answers_first_min_lines_summary">Pokud má formulář více než %1$d řádků</string>
     <string name="show_nearby_quests_visible">Zobrazit pouze zapnuté úkoly</string>
     <string name="show_nearby_quests_all_types">Zobrazit všechny úkoly</string>
     <string name="show_nearby_quests_even_hidden">Zobrazit všechny, i skryté úkoly</string>
@@ -62,7 +62,7 @@
     <string name="pref_screen_quests">Úkoly</string>
     <string name="pref_delete_old_data_after">Smazat data starší než</string>
     <string name="pref_delete_old_data_after_message">Smazat stažené OSM data pokud jsou starší než tolik dní</string>
-    <string name="pref_delete_old_data_after_summary">%d dní</string>
+    <string name="pref_delete_old_data_after_summary">%1$d dní</string>
     <string name="pref_tile_source_message">URL adresa musí obsahovat {x}, {y} a {z}</string>
     <string name="pref_tile_source_hide_labels">Skrýt popisky</string>
     <string name="pref_tree_custom_quest_summary">Zobrazte si zprávu při zapínání úkolu pro více informací</string>
@@ -185,14 +185,14 @@
     <string name="quest_parking_capacity_disabled_title">Kolik je zde míst pro osoby se zdravotním postižením?</string>
     <string name="quest_parking_capacity_disabled_answer_yes">Jsou zde, ale není jasný počet</string>
     <string name="quest_parking_orientation_title">Jakým směrem zde auta parkují?</string>
-    <string name="custom_overlay_delete">Opravdu smazat %s?</string>
-    <string name="restriction_overlay_exceptions">Výjimky: %s</string>
-    <string name="restriction_overlay_only_for">Pouze pro: %s</string>
+    <string name="custom_overlay_delete">Opravdu smazat %1$s?</string>
+    <string name="restriction_overlay_exceptions">Výjimky: %1$s</string>
+    <string name="restriction_overlay_only_for">Pouze pro: %1$s</string>
     <string name="restriction_overlay_remove_conditional_restrictions">Odstranit podmíněné</string>
     <string name="restriction_overlay_sign_give_way">Dej přednost v jízdě</string>
     <string name="restriction_overlay_sign_stop">Stop</string>
     <string name="hide_button">Skrýt</string>
-    <string name="tag_editor_last_edited">Naposledy upraveno: %s</string>
+    <string name="tag_editor_last_edited">Naposledy upraveno: %1$s</string>
     <string name="create_custom_quest_button">Vytvořit vlastní úkol</string>
     <string name="create_custom_quest_title_message">Uveďte zprávu co se má zobrazit</string>
     <string name="general_warning">Upozornění</string>
@@ -204,7 +204,6 @@
     <string name="access_time_limit">Čas</string>
     <string name="quest_buildingType_barn">Stodola</string>
     <string name="pref_hide_notes_message">Zadejte uživatelské jména nebo ID která budou ignorována</string>
-    <string name="pref_hide_keyboard_title">Skrýt klávesnici před vytvářením poznámky</string>
     <string name="pref_way_direction">Zobrazovat u cest jejich směr</string>
     <string name="pref_gpx_track_loading_error">Nepodařilo se načíst GPX soubor</string>
     <string name="pref_screen_ui">Uživatelské rozhraní</string>
@@ -212,7 +211,7 @@
     <string name="pref_disable_navigation_mode_summary">Vypne režim který nakloní a automaticky otáčí s mapou</string>
     <string name="import_presets_overlays_replace">Nahradit</string>
     <string name="import_export_settings">Ostatní nastavení aplikace</string>
-    <string name="quest_custom_quest_add_node_text">Můžete přidat uzel/bod (node) s: %s</string>
+    <string name="quest_custom_quest_add_node_text">Můžete přidat uzel/bod (node) s: %1$s</string>
     <string name="quest_guidepost_sports_nordic_walking">Severská chůze</string>
     <string name="quest_guidepost_sports_title">Pro jaký sport je tento rozcestník určen?</string>
     <string name="import_presets_overlays_message">Přidat importované, nebo nahradit existující? Pokud vyberete nahradit, všechny momentálně existující budou odstraněny.</string>
@@ -279,7 +278,6 @@
     <string name="quest_service_building_monitoring_station">Pozorovací stanice</string>
     <string name="quest_service_building_other">Jiná servisní budova</string>
     <string name="quest_seating_terrace">Na terase (nezastřešené, NE na nádvoří)</string>
-    <string name="pref_hide_keyboard_summary">Skryje klávesnici než je poznámka doopravdy vytvořena (umožní ověření pozice)</string>
     <string name="quest_monitor_net">Aktivně se dožadovat pozice získané na bázi připojení k síti?</string>
     <string name="quest_monitor_active_request">Aktivní dožadování se pozice zvýší využití baterky.</string>
     <string name="pref_hide_overlay_quests">Skrýt úkoly specifické pro překryvnou vrstvu</string>

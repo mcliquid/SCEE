@@ -3,10 +3,10 @@ plugins {
     // in each subproject's classloader
     id("org.jetbrains.kotlin.multiplatform") version "2.4.0" apply false
     id("org.jetbrains.kotlin.plugin.compose") version "2.4.0"  apply false
-    id("com.android.application") version "8.13.2" apply false
-    id("com.android.library") version "8.13.2" apply false
-    id("org.jetbrains.compose") version "1.11.1" apply false
-    id("org.jetbrains.kotlinx.atomicfu") version "0.33.0" apply false
+    id("com.android.application") version "9.1.1" apply false
+    id("com.android.library") version "9.1.1" apply false
+    id("com.android.kotlin.multiplatform.library") version "9.1.1" apply false
+    id("org.jetbrains.compose") version "1.12.0" apply false
 }
 
 tasks.register<QLeverCountValueByCountryTask>("updateAtmOperators") {
@@ -49,10 +49,10 @@ tasks.register<GenerateQuestListTask>("generateQuestList") {
     group = "streetcomplete"
     targetFile = "$projectDir/quest-list.csv"
     projectDirectory = projectDir
-    questsDirectory = projectDir.resolve("app/src/androidMain/kotlin/de/westnordost/streetcomplete/quests/")
+    questsDirectory = projectDir.resolve("app/src/commonMain/kotlin/de/westnordost/streetcomplete/quests/")
     iconsDirectory = projectDir.resolve("res/graphics/quest/")
-    noteQuestFile = projectDir.resolve("app/src/androidMain/kotlin/de/westnordost/streetcomplete/quests/note_discussion/OsmNoteQuestType.kt")
-    questTypesRegistryFile = projectDir.resolve("app/src/androidMain/kotlin/de/westnordost/streetcomplete/quests/QuestTypesRegistry.kt")
+    noteQuestFile = projectDir.resolve("app/src/commonMain/kotlin/de/westnordost/streetcomplete/quests/note_comments/OsmNoteQuestType.kt")
+    questTypesRegistryFile = projectDir.resolve("app/src/commonMain/kotlin/de/westnordost/streetcomplete/quests/QuestTypesRegistry.kt")
     stringsFile = projectDir.resolve("app/src/commonMain/composeResources/values/strings.xml")
 }
 
@@ -70,6 +70,7 @@ tasks.register("updateStreetCompleteData") {
         "app:updateNsiPresets",
         "app:updateTranslations",
         "app:updateTranslationCompleteness",
+        "app:updateIosTranslations",
         "app:updateMapStyle",
         "app:updateChangelog",
         "app:generateMetadataByCountry",

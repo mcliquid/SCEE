@@ -1,6 +1,5 @@
 package de.westnordost.streetcomplete
 
-import android.content.Context
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitWayAction
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
@@ -138,7 +137,7 @@ object ApplicationConstants {
      */
     const val USE_TEST_API = false
 
-    var DEBUG = false // not really a constant, but does not depend on debug build vs not any more, so we fake it
+    const val MAX_OSM_TAG_VALUE_LENGTH = 255
 
-    lateinit var context: Context
+    var DEBUG = false // not really a constant, but does not depend on debug build vs not any more, so we fake it
 }

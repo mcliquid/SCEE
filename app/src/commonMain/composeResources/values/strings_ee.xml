@@ -40,8 +40,6 @@
     <string name="pref_show_gpx_button_title">Show GPX note button</string>
     <string name="pref_show_gpx_button_summary">Contrary to OSM notes, adding a GPX note will not hide any quest at the affected location</string>
     <string name="pref_swap_gpx_note_button">Swap OSM and GPX note buttons</string>
-    <string name="pref_hide_keyboard_title">Hide keyboard before creating note</string>
-    <string name="pref_hide_keyboard_summary">Hides the keyboard when open before the note is actually created (to allow re-view of position)</string>
     <string name="pref_really_all_notes_title">“Show all notes“ means ALL notes</string>
     <string name="pref_really_all_notes_summary">When requesting to show all notes, show even notes created (or commented on) by yourself</string>
     <string name="pref_save_gpx">Get GPX notes and attached photos and tracks</string>
@@ -91,7 +89,7 @@
     <string name="pref_hide_button_title">Show hide button</string>
     <string name="pref_hide_button_summary">Click hides quest temporarily, long click hides permanently</string>
     <string name="pref_recent_answers_first_min_lines">Move recent answers to front</string>
-    <string name="pref_recent_answers_first_min_lines_summary">If form has more than %d line(s)</string>
+    <string name="pref_recent_answers_first_min_lines_summary">If form has more than %1$d line(s)</string>
     <string name="pref_recent_answers_first_min_lines_message">Move recent answers to front if the quest answer form has more than this many lines of images</string>
     <string name="pref_show_nearby_quests_title">Show nearby quests</string>
     <string name="pref_show_nearby_quests_summary">Allows switching nearby quests when a quest form is shown</string>
@@ -130,7 +128,7 @@
     <string name="export_warning_db_version">Warning: database version unknown, import may not work. Please ask for the app to be updated.</string>
     <string name="pref_delete_old_data_after">Delete old data after</string>
     <string name="pref_delete_old_data_after_message">Remove downloaded OSM data if older than this many days</string>
-    <string name="pref_delete_old_data_after_summary">%d days</string>
+    <string name="pref_delete_old_data_after_summary">%1$d days</string>
     <string name="pref_trees_title">Load tree quest file</string>
     <string name="pref_custom_title">Load custom quest file</string>
     <string name="tree_custom_quest_import_export_message">Get currently used file or provide a new one? Check the corresponding quest enable message for details.</string>
@@ -175,9 +173,8 @@
     <!-- other settings -->
     <string name="theme_dark_contrast">Dark (increased contrast)</string>
     <string name="resurvey_intervals_even_less_often">Ask even less often</string>
-    <string name="pref_gps_interval_title">GPS location update interval</string>
-    <string name="pref_network_interval_title">Network location update interval</string>
-    <string name="pref_interval_summary">%d seconds</string>
+    <string name="pref_location_interval_title">Location update interval</string>
+    <string name="pref_interval_summary">%1$d seconds</string>
     <string name="pref_interval_message">Update interval in seconds</string>
     <string name="action_scee_quests">Show only SCEE quests</string>
     <string name="action_all_quests">Show all quests</string>
@@ -251,7 +248,7 @@
     <string name="quest_custom_quest_message">Use for checking specific pre-defined elements or locations. You can also specify tags and add a node with them. To use it, load a file in the main settings menu, containing either `type,id,message` (e.g. NODE,1234,check position) or `latitude,longitude,message`. For adding nodes, put the tags in the message after 'addNode', e.g. addNode amenity=restaurant,wheelchair=no,diet:vegetarian=yes</string>
     <string name="quest_custom_quest_remove">Remove from list</string>
     <string name="quest_custom_quest_add_node">Add node</string>
-    <string name="quest_custom_quest_add_node_text">You can add a node with: %s</string>
+    <string name="quest_custom_quest_add_node_text">You can add a node with: %1$s</string>
 
     <!--barrier locked -->
     <string name="quest_barrier_locked_title">Is this barrier (usually) locked?</string>
@@ -696,6 +693,8 @@
     <string name="quest_evse_id_title">What is the EVSE ID of this charging station?</string>
     <string name="quest_evse_id_add_more">Add another EVSE ID</string>
     <string name="quest_evse_id_hint">e.g. DE*GCE*E1234567</string>
+    <string name="quest_evse_id_scan_more">Scan another EVSE ID</string>
+    <string name="quest_evse_id_scan_unknown_value">QR code not recognized. Please open an issue and attach an image of the QR code so we can add support.</string>
 
     <!-- new overlays -->
 
@@ -713,19 +712,19 @@
     <string name="custom_overlay_dash_filter_hint">Dashed element filter</string>
     <string name="custom_overlay_color_info">Coloring details</string>
     <string name="custom_overlay_filter_info">Filtering details</string>
-    <string name="custom_overlay_delete">Really delete %s?</string>
+    <string name="custom_overlay_delete">Really delete %1$s?</string>
     <!-- custom_overlay_add_button should be short, so the button can be displayed in same line with the cancel button -->
     <string name="custom_overlay_add_button">New custom</string>
 
     <!-- restriction overlay -->
     <string name="restriction_overlay_title">Traffic restrictions</string>
-    <string name="restriction_overlay_exceptions">Exceptions: %s</string>
-    <string name="restriction_overlay_only_for">Only for: %s</string>
+    <string name="restriction_overlay_exceptions">Exceptions: %1$s</string>
+    <string name="restriction_overlay_only_for">Only for: %1$s</string>
     <string name="restriction_overlay_remove_conditional_restrictions">Remove conditional</string>
     <string name="restriction_overlay_signed_switch">There is a sign or road marking</string>
     <string name="restriction_overlay_show_details">Show relation details</string>
     <string name="restriction_overlay_relation_incomplete">Restriction relation is incomplete, download of surrounding area required</string>
-    <string name="restriction_overlay_relation_unsupported">Unsupported relation type:\n%s</string>
+    <string name="restriction_overlay_relation_unsupported">Unsupported relation type:\n%1$s</string>
     <string name="restriction_overlay_select_way">Click the next way on the map. It needs an end node in common with the current way. Split if necessary.</string>
     <string name="restriction_overlay_other_restrictions">Other restrictions on this way:</string>
     <string name="restriction_overlay_direction_text">Applies to travel direction:</string>
@@ -736,8 +735,8 @@
 
     <!-- other -->
     <string name="hide_button">Hide</string>
-    <string name="tag_editor_last_edited">Last edited: %s</string>
-    <string name="tag_editor_duplicate_key">Ignoring change of duplicate key "%s</string>
+    <string name="tag_editor_last_edited">Last edited: %1$s</string>
+    <string name="tag_editor_duplicate_key">Ignoring change of duplicate key "%1$s</string>
     <string name="tutorial_info_fork_message"><b>SCEE</b>\n\n
 This is a modified version of StreetComplete. It is intended for experienced users with advanced knowledge about OSM. It gives you more control, but also more <i>responsibility</i>.\n
 This especially applies to the possibility of editing raw tags and deleting nodes, but also for modification of element selection for quests.
@@ -749,7 +748,7 @@ Out of the box SCEE is configured to behave very similar to StreetComplete.</str
     <string name="create_poi">Add POI</string>
     <string name="insert_node">Insert node into way</string>
     <string name="insert_node_select_way">Select a position on a way</string>
-    <string name="quest_monitor_found">%d quests nearby, closest:</string>
+    <string name="quest_monitor_found">%1$d quests nearby, closest:</string>
     <string name="quest_monitor_channel_name">Nearby Quest Monitor</string>
     <string name="quest_monitor_channel_name_found">Nearby Quest Found</string>
     <string name="quest_monitor_running">Monitoring location</string>
@@ -757,10 +756,10 @@ Out of the box SCEE is configured to behave very similar to StreetComplete.</str
     <string name="create_custom_quest_button">Create custom quest</string>
     <string name="create_custom_quest_title_message">Enter message to be shown</string>
     <string name="general_warning">Warning</string>
-    <string name="move_node_with_geometry">Moving this node will modify geometry of following ways or multipolygon relations: %s.\n
+    <string name="move_node_with_geometry">Moving this node will modify geometry of following ways or multipolygon relations: %1$s.\n
         Be aware that any changes will not be immediately visible on the background map.
     </string>
-    <string name="move_node_of_other_relation">This node is part of following non-multipolygon relations: %s</string>
+    <string name="move_node_of_other_relation">This node is part of following non-multipolygon relations: %1$s</string>
     <string name="dialog_button_understood">Understood</string>
     <string name="move_node_message_external_source_addition">Note that the position of this quest may not move with the node.</string>
     <string name="close_note_checkbox">Close note (only do this if you actually solve the note!)</string>
@@ -779,6 +778,7 @@ Out of the box SCEE is configured to behave very similar to StreetComplete.</str
     <!-- actually there are still SC translations available, as only the main string has been removed from SC. -->
     <string name="close">Close</string>
     <string name="fixme_for_object">Another person added a fixme:</string>
+    <string name="no_qr_code_handler">No QR code scanner found. Install a compatible app like Binary Eye and try again.</string>
     <string name="quest_roofOrientation_along">Parallel to the building’s longer side</string>
     <string name="quest_roofOrientation_across">Parallel to the building’s shorter side</string>
     <string name="quest_roofOrientation_title">How is the roof ridge oriented?</string>

@@ -54,11 +54,14 @@ class Preferences(val prefs: ObservableSettings) {
     fun getString(key: String, default: String) = prefs.getString(key, default)
     fun putString(key: String, value: String) = prefs.putString(key, value)
     fun getLong(key: String, default: Long) = prefs.getLong(key, default)
+    fun putLong(key: String, value: Long) = prefs.putLong(key, value)
     fun getInt(key: String, default: Int) = prefs.getInt(key, default)
     fun putInt(key: String, value: Int) = prefs.putInt(key, value)
     fun getFloat(key: String, default: Float) = prefs.getFloat(key, default)
+    fun putFloat(key: String, value: Float) = prefs.putFloat(key, value)
     fun remove(key: String) = prefs.remove(key)
     fun contains(key: String) = prefs.contains(key)
+    val all: Map<String, *> get() = Prefs.sharedPreferences.all
 
     var expertMode: Boolean by prefs.boolean(Prefs.EXPERT_MODE, false)
     var showQuickSettings: Boolean by prefs.boolean(Prefs.QUICK_SETTINGS, false)
@@ -196,7 +199,6 @@ class Preferences(val prefs: ObservableSettings) {
         prefs.addStringOrNullListener(WEEKLY_OSM_LAST_NOTIFIED_PUB_DATE) { callback() }
 
     // quest & overlay UI
-    var preferredLanguageForNames: String? by prefs.nullableString(PREFERRED_LANGUAGE_FOR_NAMES)
     var selectedEditTypePreset: Long by prefs.long(SELECTED_EDIT_TYPE_PRESET, 0L)
     var selectedOverlayName: String? by prefs.nullableString(SELECTED_OVERLAY)
 
@@ -224,6 +226,19 @@ class Preferences(val prefs: ObservableSettings) {
 
     fun <T> setLastPicked(serializer: KSerializer<List<T>>, key: String, values: List<T>) {
         prefs.putString(LAST_PICKED_PREFIX + key, Json.encodeToString(serializer, values))
+    }
+
+    var preferredLanguageForNames: String? by prefs.nullableString(PREFERRED_LANGUAGE_FOR_NAMES)
+
+    fun getLanguagesWithPreferredFirst(languages: List<String>): List<String> {
+        val languages = languages.distinct().toMutableList()
+        val preferredLanguageTag = preferredLanguageForNames
+        if (preferredLanguageTag != null) {
+            if (languages.remove(preferredLanguageTag)) {
+                languages.add(0, preferredLanguageTag)
+            }
+        }
+        return languages
     }
 
     // profile & statistics screen UI

@@ -37,7 +37,7 @@
     <string name="pref_caps_word_name_input">名前入力時に各単語の最初の文字を大文字にする</string>
     <string name="pref_hide_button_summary">クリックでクエストを一時的に非表示にし、長いクリックで完全に非表示にします</string>
     <string name="pref_recent_answers_first_min_lines">前方に最近の回答を移動</string>
-    <string name="pref_recent_answers_first_min_lines_summary">枠に %d 個以上ある場合</string>
+    <string name="pref_recent_answers_first_min_lines_summary">枠に %1$d 個以上ある場合</string>
     <string name="pref_show_nearby_quests_title">付近のクエストを表示</string>
     <string name="pref_show_nearby_quests_summary">クエスト枠表示中に付近のクエストに切り替えることができます</string>
     <string name="show_nearby_quests_disable">付近のクエストを表示しない</string>
@@ -62,7 +62,7 @@
     <string name="import_error_db_version">取り込みエラー: 未知の版</string>
     <string name="pref_delete_old_data_after">後に古いデータを削除する</string>
     <string name="pref_delete_old_data_after_message">ダウンロードしてからこの日数が経過したOSMデータを削除します</string>
-    <string name="pref_delete_old_data_after_summary">%d 日</string>
+    <string name="pref_delete_old_data_after_summary">%1$d 日</string>
     <string name="import_export_hidden_quests">非表示のクエスト</string>
     <string name="pref_overlay_quick_selector_title">オーバーレイの敏速な選択器を表示</string>
     <string name="import_export_custom_overlays">任意オーバーレイ</string>
@@ -95,9 +95,8 @@
     <string name="quest_monitor_gps">活発にGPS位置情報を要求しますか?</string>
     <string name="quest_monitor_net">活発にネットワーク位置情報を要求しますか?</string>
     <string name="pref_quest_monitor_download">必要に応じてデータをダウンロードしますか?　これは転送量と電池を激しく消費する可能性があり、電池を節約するためにAndroidによって使用できなくなる状態にされる可能性があります。</string>
-    <string name="pref_gps_interval_title">GPS位置情報を更新する間隔</string>
-    <string name="pref_network_interval_title">ネットワーク位置情報を更新する間隔</string>
-    <string name="pref_interval_summary">%d 秒</string>
+    <string name="pref_location_interval_title">GPS位置情報を更新する間隔</string>
+    <string name="pref_interval_summary">%1$d 秒</string>
     <string name="pref_interval_message">更新間隔を秒単位で</string>
     <string name="quest_settings_reset">リセット</string>
     <string name="quest_settings_eligible_highways">このクエストの対象となる道路を、カンマで区切って設定します</string>
@@ -118,7 +117,7 @@
     <string name="quest_custom_quest_title">任意クエスト:</string>
     <string name="quest_custom_quest_remove">一覧から削除</string>
     <string name="quest_custom_quest_add_node">ノードを追加</string>
-    <string name="quest_custom_quest_add_node_text">次のタグを付けてノードを追加できます: %s</string>
+    <string name="quest_custom_quest_add_node_text">次のタグを付けてノードを追加できます: %1$s</string>
     <string name="quest_benchMaterial_title">これは何の素材で作られていますか?</string>
     <string name="quest_material_wood">木材</string>
     <string name="quest_material_metal">金属</string>
@@ -186,12 +185,10 @@
     <string name="quest_shelter_type_field_shelter">動物（たとえば馬）向けの避難設備</string>
     <string name="pref_category_mods">SCEE設定</string>
     <string name="pref_way_direction_summary">クエストを開くときに、強調された線の上に矢印を表示します。例えば、一方通行を追加するときに役立ちます。</string>
-    <string name="pref_hide_keyboard_title">メモ作成前にキーボードを非表示</string>
     <string name="pref_hide_button_title">非表示ボタンを表示</string>
     <string name="pref_select_first_edit_summary">敏速に元に戻せますが、表示範囲は自動的に動きます</string>
     <string name="pref_create_custom_quest_summary">…メモを残す代わりに。これは、地図上に表示される端末内に保存されたメモとして使用でます。任意クエストを有効にする必要があります。</string>
     <string name="pref_gpx_track_download">GPX経路が存在する領域をダウンロード</string>
-    <string name="pref_hide_keyboard_summary">(位置の確認を可能にするため、)実際に作成されたメモを開く前にキーボードを非表示にする</string>
     <string name="pref_recent_answers_first_min_lines_message">クエスト回答枠にこの数以上の画像がある場合、最近の回答を前方に移動します</string>
     <string name="pref_show_quick_settings_title">クイック設定ボタンを表示</string>
     <string name="pref_search_more_languages_summary">地物検索は全てのシステムと地域の言語で表示されます</string>
@@ -320,8 +317,8 @@
     <string name="quest_parking_capacity_disabled_title">ここでは(身体)障者専用の駐車スペースに何台駐車できますか?</string>
     <string name="quest_parking_capacity_disabled_answer_yes">存在するが、数は不明</string>
     <string name="quest_parking_orientation_title">自動車はどの向きで駐車できますか?</string>
-    <string name="tag_editor_last_edited">最終編集: %s</string>
-    <string name="tag_editor_duplicate_key">重複キー %s の変更を無視</string>
+    <string name="tag_editor_last_edited">最終編集: %1$s</string>
+    <string name="tag_editor_duplicate_key">重複キー %1$s の変更を無視</string>
     <string name="fork_about_title_repository">SCEE企画本元</string>
     <string name="enqueue_download">現在の検索が完了した後に開始</string>
     <string name="create_poi">POIを追加</string>
@@ -331,9 +328,9 @@
     <string name="create_custom_quest_title_message">表示されるメッセージを入力</string>
     <string name="general_warning">警告</string>
     <string name="dialog_button_understood">了解</string>
-    <string name="move_node_with_geometry">このノードの移動は、従属するウェイの配置やマルチポリゴンのリレーションを変化させます: %s。
+    <string name="move_node_with_geometry">このノードの移動は、従属するウェイの配置やマルチポリゴンのリレーションを変化させます: %1$s。
 \n いかなる変更も、背景の地図上で即座に視認可能にならないことを心得てください。</string>
-    <string name="move_node_of_other_relation">このノードは、非マルチポリゴンのリレーションに従属する部分です: %s</string>
+    <string name="move_node_of_other_relation">このノードは、非マルチポリゴンのリレーションに従属する部分です: %1$s</string>
     <string name="close_note_checkbox">メモを閉じる(メモが確実に解決する場合に、これを行ってください!)</string>
     <string name="closed_note_action_title">あなたはそれを閉じました</string>
     <string name="quest_trail_visibility_good_description">道や次の印は見失うことが少ないですが、ときどき探す必要があることもあります。地図持参が推奨され、基本的な方向感覚が必要です。</string>
@@ -412,18 +409,18 @@
     <string name="custom_overlay_highlight_missing">欠落データを強調表示</string>
     <string name="custom_overlay_color_info">色付け詳細</string>
     <string name="custom_overlay_filter_info">抽出詳細</string>
-    <string name="custom_overlay_delete">本当に %s を削除しますか?</string>
+    <string name="custom_overlay_delete">本当に %1$s を削除しますか?</string>
     <string name="custom_overlay_add_button">新規任意オーバーレイ</string>
-    <string name="restriction_overlay_exceptions">除外: %s</string>
-    <string name="restriction_overlay_only_for">指定: %s</string>
+    <string name="restriction_overlay_exceptions">除外: %1$s</string>
+    <string name="restriction_overlay_only_for">指定: %1$s</string>
     <string name="restriction_overlay_show_details">リレーションの詳細を表示</string>
     <string name="restriction_overlay_relation_unsupported">非対応のリレーションの種別:
-\n%s</string>
+\n%1$s</string>
     <string name="quest_monitor_channel_name">付近のクエスト監視器</string>
     <string name="quest_monitor_channel_name_found">付近のクエストが見つかりました</string>
     <string name="quest_monitor_running">場所を監視中</string>
     <string name="quest_monitor_error">権限が問題な可能性があり、監視を開始できませんでした</string>
-    <string name="quest_monitor_found">%d 件のクエストが近くにあります。最寄り:</string>
+    <string name="quest_monitor_found">%1$d 件のクエストが近くにあります。最寄り:</string>
     <string name="add_access">利用制限を追加…</string>
     <string name="access_manager_message">利用制限タグを選択してください。タグは示された利用制限のみであり、可能ならば、全般的な「利用制限」タグの使用を避けてください</string>
     <string name="manage_access">利用制限情報を管理…</string>

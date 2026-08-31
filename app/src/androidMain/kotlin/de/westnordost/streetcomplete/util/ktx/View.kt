@@ -2,6 +2,9 @@ package de.westnordost.streetcomplete.util.ktx
 
 import android.graphics.Point
 import android.view.View
+import androidx.core.view.doOnPreDraw
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 suspend fun View.awaitPreDraw() = suspendCancellableCoroutine { cont ->
     val listener = doOnPreDraw { cont.resume(Unit) }

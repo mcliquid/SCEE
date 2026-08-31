@@ -1,20 +1,19 @@
 package de.westnordost.streetcomplete.quests.is_sidepath
 
-import de.westnordost.streetcomplete.R
+import androidx.compose.runtime.Composable
+import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
+import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
-import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.osm.Tags
-import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
 import de.westnordost.streetcomplete.quests.getPrefixedFullElementSelectionPref
-import androidx.compose.runtime.Composable
-import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.*
 
-class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer>, AndroidQuest {
+class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer> {
 
     private val elementFilter = """
         ways with
@@ -48,7 +47,7 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer>, AndroidQuest {
 
     override val changesetComment = "Specify whether a path is a sidepath of a road"
     override val wikiLink = "Key:is_sidepath"
-    override val icon = R.drawable.ic_quest_poi_bicycle
+    override val icon = Res.drawable.ic_quest_poi_bicycle
     override val hint = Res.string.quest_is_sidepath_hint
     override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
     override val title = Res.string.quest_is_sidepath_title
@@ -59,7 +58,7 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer>, AndroidQuest {
         FullElementSelectionDialog(
             prefs,
             getPrefixedFullElementSelectionPref(prefs),
-            R.string.quest_settings_element_selection,
+            Res.string.quest_settings_element_selection,
             elementFilter,
             onDismissRequest
         )
@@ -73,7 +72,18 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer>, AndroidQuest {
     override fun isApplicableTo(element: Element): Boolean? =
         if (filter.matches(element)) null else false
 
-    override fun createForm() = AddIsSidepathForm()
+    @Composable
+    override fun Form(
+        on: (QuestAction<IsSidepathAnswer>) -> Unit,
+        element: Element,
+        geometry: ElementGeometry,
+        countryInfo: CountryInfo
+    ) {
+        AddIsSidepathForm(
+            on = on,
+            element = element,
+        )
+    }
 
     override fun applyAnswerTo(
         answer: IsSidepathAnswer,

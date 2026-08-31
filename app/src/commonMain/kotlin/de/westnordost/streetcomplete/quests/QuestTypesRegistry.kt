@@ -112,7 +112,7 @@ import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessBicycle
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessHgv
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessMotorVehicle
 import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessPedestrian
-import de.westnordost.streetcomplete.quests.ferry.AddFerryToll
+//import de.westnordost.streetcomplete.quests.ferry.AddFerryToll
 import de.westnordost.streetcomplete.quests.fire_hydrant.AddFireHydrantType
 import de.westnordost.streetcomplete.quests.fire_hydrant_diameter.AddFireHydrantDiameter
 import de.westnordost.streetcomplete.quests.fire_hydrant_position.AddFireHydrantPosition
@@ -536,7 +536,7 @@ fun getQuestTypeList(
     // ferry: usually visible from looking at the boat, but not always...
     101 to AddFerryAccessPedestrian(),
     102 to AddFerryAccessMotorVehicle(),
-    195 to AddFerryToll(),
+    //195 to AddFerryToll(),
     196 to AddFerryAccessBicycle(),
     197 to AddFerryAccessHgv(),
 

@@ -1,23 +1,22 @@
 package de.westnordost.streetcomplete.quests.charging_station_socket
 
-import de.westnordost.streetcomplete.R
+import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
+import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
-import de.westnordost.streetcomplete.data.quest.AndroidQuest
+import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
 import de.westnordost.streetcomplete.osm.Tags
-import de.westnordost.streetcomplete.util.math.contains
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.quest_charging_station_socket_title
 import de.westnordost.streetcomplete.util.countryboundaries.NoCountriesExcept
+import de.westnordost.streetcomplete.util.math.contains
+import de.westnordost.streetcomplete.resources.*
 
 class AddChargingStationSocket :
-    OsmElementQuestType<Map<SocketType, Int>>,
-    AndroidQuest {
+    OsmElementQuestType<Map<SocketType, Int>> {
 
     private val filter by lazy {
         """
@@ -36,22 +35,32 @@ class AddChargingStationSocket :
 
     override val changesetComment = "Specify charging station sockets"
     override val wikiLink = "Key:socket"
-    override val icon = R.drawable.quest_charger_socket
+    override val icon = Res.drawable.quest_charger_socket
     override val title = Res.string.quest_charging_station_socket_title
     override val achievements = listOf(CAR)
 
-    override fun createForm() = AddChargingStationSocketForm()
+    @Composable
+    override fun Form(
+        on: (QuestAction<Map<SocketType, Int>>) -> Unit,
+        element: Element,
+        geometry: ElementGeometry,
+        countryInfo: CountryInfo
+    ) {
+        AddChargingStationSocketForm(on)
+    }
 
-    override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> {
-        return mapData
+    override fun getApplicableElements(
+        mapData: MapDataWithGeometry
+    ): Iterable<Element> =
+        mapData
             .filter { element -> filter.matches(element) }
             .filter { element -> isApplicableTo(element, mapData) }
             .asIterable()
-    }
 
     override fun isApplicableTo(element: Element): Boolean? {
-        // This variant must exist because OsmElementQuestType requires it.
-        // But we delegate real logic to the overloaded version.
+        if (!filter.matches(element)) return false
+
+        // Further checks require surrounding map data.
         return null
     }
 
@@ -67,7 +76,6 @@ class AddChargingStationSocket :
 
         // Skip charging_station areas that contain charge_points
         if (element is Way) {
-
             val geometry = mapData.getGeometry(element.type, element.id)
                 ?: return true
 
@@ -75,11 +83,12 @@ class AddChargingStationSocket :
 
             val hasChargePointsInside = mapData
                 .filter { it.tags["man_made"] == "charge_point" }
-                .any { cp ->
-                    val cpGeometry = mapData.getGeometry(cp.type, cp.id)
-                        ?: return@any false
+                .any { chargePoint ->
+                    val chargePointGeometry =
+                        mapData.getGeometry(chargePoint.type, chargePoint.id)
+                            ?: return@any false
 
-                    bounds.contains(cpGeometry.center)
+                    bounds.contains(chargePointGeometry.center)
                 }
 
             if (hasChargePointsInside) return false
@@ -101,7 +110,6 @@ class AddChargingStationSocket :
         geometry: ElementGeometry,
         timestampEdited: Long
     ) {
-
         // Cleanup deprecated keys
         tags.keys
             .filter { isDeprecatedSocketKey(it) }
@@ -120,8 +128,9 @@ class AddChargingStationSocket :
         }
 
         // type2/type2_cable=no logic
-        if (answer.containsKey(SocketType.TYPE2)
-            && !answer.containsKey(SocketType.TYPE2_CABLE)
+        if (
+            answer.containsKey(SocketType.TYPE2) &&
+            !answer.containsKey(SocketType.TYPE2_CABLE)
         ) {
             tags["socket:type2_cable"] = "no"
         }

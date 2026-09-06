@@ -461,6 +461,7 @@ class MainActivity :
                     }
                 }
             } else {
+                viewModel.nearbyQuests.value = emptyList()
                 clearHighlighting()
                 unfreezeMap()
                 mapFragment?.endFocus()
@@ -1038,10 +1039,7 @@ class MainActivity :
     }
 
     private fun showOtherQuests(quest: Quest): List<Marker> {
-        if (prefs.getInt(Prefs.SHOW_NEARBY_QUESTS, 0) == 0) {
-            viewModel.nearbyQuests.value = emptyList()
-            return emptyList()
-        }
+        if (prefs.getInt(Prefs.SHOW_NEARBY_QUESTS, 0) == 0) return emptyList()
 
         // Quests should be grouped by element key, so non-OsmQuests need some kind of fake key
         fun Quest.thatKey() = if (this is OsmQuest) ElementKey(elementType, elementId)
@@ -1052,10 +1050,7 @@ class MainActivity :
         val quests = visibleQuestsSource.getNearbyQuests(quest, prefs.getFloat(Prefs.SHOW_NEARBY_QUESTS_DISTANCE, 0.0f).toDouble() + 0.01)
             .filterNot { it == quest || it.type.dotColor != null } // ignore current quest and poi dots
             .sortedBy { it.thatKey() != quest.thatKey() }
-        if (quests.isEmpty()) {
-            viewModel.nearbyQuests.value = emptyList()
-            return emptyList()
-        }
+        if (quests.isEmpty()) return emptyList()
 
         val questsAndColorByElement = mutableMapOf<ElementKey, Pair<Int, MutableList<Quest>>>()
         val colors = arrayOf(Color.GREEN, Color.YELLOW, Color.CYAN, Color.MAGENTA, Color.BLUE, ColorUtils.blendARGB(Color.RED, Color.YELLOW, 0.5f))

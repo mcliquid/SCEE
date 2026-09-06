@@ -49,6 +49,7 @@ import de.westnordost.streetcomplete.util.ktx.toLatLon
 import de.westnordost.streetcomplete.util.ktx.toLocation
 import de.westnordost.streetcomplete.util.ktx.toast
 import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
+import de.westnordost.streetcomplete.util.logs.Log
 import io.github.vinceglb.filekit.readString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -73,6 +74,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 import kotlin.math.PI
 import java.io.File
+import kotlin.time.Duration.Companion.minutes
 
 /** This is the map shown in the main view. It manages a map that shows the quest pins, quest
  *  geometry, overlays, tracks, location... */
@@ -195,6 +197,7 @@ class MainMapFragment : MapFragment() {
         if (savedInstanceState != null) {
             val position: PositionWithAccuracy? =
                 savedInstanceState.getString(DISPLAYED_POSITION)?.let { Json.decodeFromString(it) }
+            Log.i("test", "create with loc")
             displayedLocation = position?.let { Location(it, timestamp = TimeSource.Monotonic.markNow()) }
             isRecordingTracks = savedInstanceState.getBoolean(TRACKS_IS_RECORDING)
             tracks = Json.decodeFromString(savedInstanceState.getString(TRACKS)!!)
@@ -298,6 +301,7 @@ class MainMapFragment : MapFragment() {
         loadGpxTrack()
         loadCustomGeometry()
 
+        Log.i("test", "setup location ${displayedLocation?.position}")
         locationMapComponent?.targetPositionWithAccuracy = displayedLocation?.position
 
         val positionsLists = tracks.map { track -> track.map { it.position } }
@@ -378,6 +382,7 @@ class MainMapFragment : MapFragment() {
         when (locationEvent) {
             is LocationEvent.Fix -> {
                 val location = locationEvent.location
+                if (location.timestamp.elapsedNow() > 10.minutes) return // on startup we move to the last known position, which is usually useless and incredibly annoying
                 displayedLocation = location
                 surveyChecker.addRecentLocation(location.toLocation())
                 locationMapComponent?.targetPositionWithAccuracy = location.position

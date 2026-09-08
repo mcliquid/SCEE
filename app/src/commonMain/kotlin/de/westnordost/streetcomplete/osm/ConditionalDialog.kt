@@ -153,7 +153,7 @@ fun AddConditionalDialog(
                     timeMode = TimeMode.Spans,
                     countryInfo = countryInfo,
                     addButtonContent = { Text(stringResource(R.string.quest_fee_add_times)) },
-                    locale = countryInfo.userPreferredLocale,
+                    countryLocale = countryInfo.userPreferredLocale,
                     userLocale = Locale.current,
                 )
                 Divider()

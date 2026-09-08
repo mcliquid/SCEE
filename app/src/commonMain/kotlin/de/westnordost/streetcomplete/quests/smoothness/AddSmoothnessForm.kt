@@ -34,12 +34,13 @@ fun AddSmoothnessForm(
     element: Element,
 ) {
     val surfaceTag = element.tags["surface"]
-    val items = remember(element) { Smoothness.entries.filter { it.getImage(surfaceTag) != null } }
+    val items = remember(surfaceTag) { smoothnessAnswersForSurface(surfaceTag) }
     val prefs: Preferences = koinInject()
 
     var showObstacleHint by remember { mutableStateOf(false) }
     var confirmSurface by remember { mutableStateOf<Surface?>(null) }
     val titleExtra = if (prefs.expertMode && surfaceTag != null) " ($surfaceTag)" else ""
+    val knownSurface = parseSurface(surfaceTag)?.takeIf { it != Surface.UNSUPPORTED }
 
     ItemSelectQuestForm(
         on = {
@@ -50,11 +51,12 @@ fun AddSmoothnessForm(
         },
         items = items,
         itemContent = { item ->
+            val illustrationSurface = item.getIllustrationSurface(surfaceTag)
             Box {
                 ImageWithDescription(
-                    painter = item.getImage(surfaceTag)?.let { painterResource(it) },
+                    painter = item.getImage(illustrationSurface)?.let { painterResource(it) },
                     title = stringResource(item.title),
-                    description = item.getDescription(surfaceTag)?.let { stringResource(it) }
+                    description = item.getDescription(illustrationSurface)?.let { stringResource(it) }
                 )
                 Image(
                     painter = painterResource(item.icon),
@@ -69,8 +71,12 @@ fun AddSmoothnessForm(
             else Res.string.quest_smoothness_road_title
         ) + titleExtra,
         otherAnswers = { listOfNotNull(
-            AnswerItem(stringResource(Res.string.quest_smoothness_wrong_surface)) {
-                confirmSurface = surfaceTag?.let { parseSurface(it) }
+            if (knownSurface != null) {
+                AnswerItem(stringResource(Res.string.quest_smoothness_wrong_surface)) {
+                    confirmSurface = knownSurface
+                }
+            } else {
+                null
             },
             if (element.couldBeSteps()) {
                 AnswerItem(stringResource(Res.string.quest_generic_answer_is_actually_steps)) {

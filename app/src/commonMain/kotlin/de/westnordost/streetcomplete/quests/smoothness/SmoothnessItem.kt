@@ -39,6 +39,22 @@ val Smoothness.title: StringResource get() = when (this) {
     IMPASSABLE ->    Res.string.quest_smoothness_title_impassable
 }
 
+/**
+ * Surface tag used to pick smoothness photos and descriptions.
+ *
+ * SCEE asks smoothness for more surfaces than StreetComplete. Surfaces without dedicated photos
+ * reuse generic asphalt (excellent/good) and gravel (worse) illustrations.
+ */
+fun Smoothness.getIllustrationSurface(surface: String?): String =
+    if (surface in SURFACES_FOR_SMOOTHNESS) surface!!
+    else when (this) {
+        EXCELLENT, GOOD -> "asphalt"
+        else -> "gravel"
+    }
+
+fun smoothnessAnswersForSurface(surface: String?): List<Smoothness> =
+    Smoothness.entries.filter { it.getImage(it.getIllustrationSurface(surface)) != null }
+
 fun Smoothness.getDescription(surface: String?): StringResource? = when (surface) {
     "asphalt", "concrete", "concrete:plates" -> pavedDescription
     "sett" -> settDescription

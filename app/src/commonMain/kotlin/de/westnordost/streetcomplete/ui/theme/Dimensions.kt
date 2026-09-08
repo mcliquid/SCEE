@@ -10,7 +10,10 @@ object Dimensions {
 
     val speechBubbleCornerRadius: Dp get() = 16.dp
 
-    val QuestFormPeekHeight = 400.dp
+    /** Collapsed quest form height as a fraction of the window, so list answers start well above
+     *  the bottom of the screen on both compact and tall devices. */
+    fun getQuestFormPeekHeight(windowInfo: WindowInfo): Dp =
+        windowInfo.containerDpSize.height * 0.62f
 
     fun getMaxQuestFormWidth(windowInfo: WindowInfo): Dp =
         if (windowInfo.isLandscape) {

@@ -10,6 +10,7 @@ import de.westnordost.streetcomplete.quests.answerAppliedTo
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
 import de.westnordost.streetcomplete.testutils.mockPrefs
 import de.westnordost.streetcomplete.testutils.node
+import dev.mokkery.answering.calls
 import dev.mokkery.answering.returns
 import dev.mokkery.every
 import dev.mokkery.matcher.any
@@ -19,6 +20,25 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class AddCrossingMarkingsTest {
+
+    @Test fun `default filter is applicable to crossings without crossing tag`() {
+        val questType = questType(extended = false)
+        val crossing = node(tags = mapOf("highway" to "crossing"))
+        val mapData = TestMapDataWithGeometry(listOf(crossing))
+        assertEquals(1, questType.getApplicableElements(mapData).toList().size)
+        assertNull(questType.isApplicableTo(crossing))
+    }
+
+    @Test fun `default filter is not applicable to marked crossings`() {
+        val questType = questType(extended = false)
+        val crossing = node(tags = mapOf(
+            "highway" to "crossing",
+            "crossing" to "marked"
+        ))
+        val mapData = TestMapDataWithGeometry(listOf(crossing))
+        assertEquals(0, questType.getApplicableElements(mapData).toList().size)
+        assertEquals(false, questType.isApplicableTo(crossing))
+    }
 
     @Test fun `default filter is not applicable to unmarked crossings`() {
         val questType = questType(extended = false)
@@ -42,6 +62,14 @@ class AddCrossingMarkingsTest {
         assertEquals(false, questType.isApplicableTo(crossing))
     }
 
+    @Test fun `extended filter is applicable to crossings without crossing tag`() {
+        val questType = questType(extended = true)
+        val crossing = node(tags = mapOf("highway" to "crossing"))
+        val mapData = TestMapDataWithGeometry(listOf(crossing))
+        assertEquals(1, questType.getApplicableElements(mapData).toList().size)
+        assertNull(questType.isApplicableTo(crossing))
+    }
+
     @Test fun `extended filter is applicable to marked crossings without marking type`() {
         val questType = questType(extended = true)
         val crossing = node(tags = mapOf(
@@ -51,6 +79,19 @@ class AddCrossingMarkingsTest {
         val mapData = TestMapDataWithGeometry(listOf(crossing))
         assertEquals(1, questType.getApplicableElements(mapData).toList().size)
         assertNull(questType.isApplicableTo(crossing))
+    }
+
+    @Test fun `enabling extended setting applies to already constructed quest type`() {
+        var extended = false
+        val questType = questType { extended }
+        val marked = node(tags = mapOf(
+            "highway" to "crossing",
+            "crossing" to "marked"
+        ))
+
+        assertEquals(false, questType.isApplicableTo(marked))
+        extended = true
+        assertNull(questType.isApplicableTo(marked))
     }
 
     @Test fun `apply no markings answer`() {
@@ -114,11 +155,14 @@ class AddCrossingMarkingsTest {
     }
 }
 
-private fun questType(extended: Boolean = false): AddCrossingMarkings {
+private fun questType(extended: Boolean = false): AddCrossingMarkings =
+    questType { extended }
+
+private fun questType(extended: () -> Boolean): AddCrossingMarkings {
     val settings: ObservableSettings = mock()
     every { settings.getBoolean(any(), true) } returns true
     every { settings.getBoolean(any(), false) } returns false
-    every { settings.getBoolean("qs_AddCrossingMarkings_extended", false) } returns extended
+    every { settings.getBoolean("qs_AddCrossingMarkings_extended", false) } calls { extended() }
     Prefs.sharedPreferences = mockPrefs()
     Prefs.preferences = Preferences(settings)
     return AddCrossingMarkings()

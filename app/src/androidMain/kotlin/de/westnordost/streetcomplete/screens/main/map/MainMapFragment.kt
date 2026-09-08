@@ -503,7 +503,11 @@ class MainMapFragment : MapFragment() {
     }
 
     fun hideOverlay() {
-        styleableOverlayMapComponent?.setVisible(false)
+        setOverlayVisible(false)
+    }
+
+    fun setOverlayVisible(visible: Boolean) {
+        styleableOverlayMapComponent?.setVisible(visible)
     }
 
     fun highlightGeometry(geometry: ElementGeometry) {

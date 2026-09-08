@@ -60,6 +60,7 @@ fun MainBottomSheet(
     mapPosition: LatLon,
     mapMetersPerDp: Double,
     onSetMapMarkers: (Iterable<Marker>) -> Unit,
+    onSetOverlayVisible: (Boolean) -> Unit = {},
     getOffset: (position: LatLon) -> Offset?,
     lastMapClick: MapClick?,
     modifier: Modifier = Modifier
@@ -238,6 +239,7 @@ fun MainBottomSheet(
                 mapPosition = mapPosition,
                 mapMetersPerDp = mapMetersPerDp,
                 onSetMapMarkers = onSetMapMarkers,
+                onSetOverlayVisible = onSetOverlayVisible,
                 getOffset = getOffset,
                 lastMapClick = lastMapClick,
                 modifier = modifier,

@@ -32,7 +32,7 @@ fun QuestAnswerContent(
                         .fillMaxWidth()
                         .padding(contentPadding)
                         .clipToBounds(),
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.TopCenter,
                     content = content
                 )
             }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -13,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -36,8 +38,10 @@ fun ImageWithDescription(
             Image(
                 painter = painter,
                 contentDescription = null,
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .conditional(imageSize != null) { size(imageSize!!) }
+                    .conditional(imageSize == null) { sizeIn(maxWidth = 160.dp, maxHeight = 112.dp) }
                     .clip(MaterialTheme.shapes.medium)
             )
         }

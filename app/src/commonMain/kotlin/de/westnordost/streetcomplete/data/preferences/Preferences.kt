@@ -11,6 +11,7 @@ import com.russhwolf.settings.nullableString
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.messages.Message
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
+import de.westnordost.streetcomplete.util.Mockable
 import de.westnordost.streetcomplete.util.ktx.putStringOrNull
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.KSerializer
@@ -18,6 +19,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import kotlin.reflect.KClass
 
+@Mockable
 class Preferences(val prefs: ObservableSettings) {
     // application settings
     var language: String? by prefs.nullableString(LANGUAGE_SELECT)
@@ -52,11 +54,14 @@ class Preferences(val prefs: ObservableSettings) {
     fun getString(key: String, default: String) = prefs.getString(key, default)
     fun putString(key: String, value: String) = prefs.putString(key, value)
     fun getLong(key: String, default: Long) = prefs.getLong(key, default)
+    fun putLong(key: String, value: Long) = prefs.putLong(key, value)
     fun getInt(key: String, default: Int) = prefs.getInt(key, default)
     fun putInt(key: String, value: Int) = prefs.putInt(key, value)
     fun getFloat(key: String, default: Float) = prefs.getFloat(key, default)
+    fun putFloat(key: String, value: Float) = prefs.putFloat(key, value)
     fun remove(key: String) = prefs.remove(key)
     fun contains(key: String) = prefs.contains(key)
+    val all: Map<String, *> get() = Prefs.sharedPreferences.all
 
     var expertMode: Boolean by prefs.boolean(Prefs.EXPERT_MODE, false)
     var showQuickSettings: Boolean by prefs.boolean(Prefs.QUICK_SETTINGS, false)
@@ -102,18 +107,11 @@ class Preferences(val prefs: ObservableSettings) {
     var userUnreadMessages: Int by prefs.int(OSM_UNREAD_MESSAGES, 0)
 
     var oAuth2AccessToken: String? by prefs.nullableString(OAUTH2_ACCESS_TOKEN)
-    val hasOAuth1AccessToken: Boolean get() = prefs.hasKey(OAUTH1_ACCESS_TOKEN)
 
     fun clearUserData() {
         prefs.remove(OSM_USER_ID)
         prefs.remove(OSM_USER_NAME)
         prefs.remove(OSM_UNREAD_MESSAGES)
-    }
-
-    fun removeOAuth1Data() {
-        prefs.remove(OAUTH1_ACCESS_TOKEN)
-        prefs.remove(OAUTH1_ACCESS_TOKEN_SECRET)
-        prefs.remove(OSM_LOGGED_IN_AFTER_OAUTH_FUCKUP)
     }
 
     // map state
@@ -131,8 +129,6 @@ class Preferences(val prefs: ObservableSettings) {
     var mapZoom: Double by prefs.double(MAP_ZOOM, 0.0)
     var mapIsFollowing: Boolean by prefs.boolean(MAP_FOLLOWING, true)
     var mapIsNavigationMode: Boolean by prefs.boolean(MAP_NAVIGATION_MODE, false)
-
-    var clearedTangramCache: Boolean by prefs.boolean(CLEARED_TANGRAM_CACHE, false)
 
     // application version
     var lastChangelogVersion: String? by prefs.nullableString(LAST_VERSION)
@@ -191,7 +187,6 @@ class Preferences(val prefs: ObservableSettings) {
         prefs.addStringOrNullListener(WEEKLY_OSM_LAST_NOTIFIED_PUB_DATE) { callback() }
 
     // quest & overlay UI
-    var preferredLanguageForNames: String? by prefs.nullableString(PREFERRED_LANGUAGE_FOR_NAMES)
     var selectedEditTypePreset: Long by prefs.long(SELECTED_EDIT_TYPE_PRESET, 0L)
     var selectedOverlayName: String? by prefs.nullableString(SELECTED_OVERLAY)
 
@@ -202,10 +197,6 @@ class Preferences(val prefs: ObservableSettings) {
         prefs.addLongListener(SELECTED_EDIT_TYPE_PRESET, 0L, callback)
 
     var lastEditTime: Long by prefs.long(LAST_EDIT_TIME, 0L)
-
-    inline fun <reified T> getLastPicked(key: String): List<T> = getLastPicked(serializer(), key)
-    inline fun <reified T> setLastPicked(key: String, values: List<T>) = setLastPicked(serializer(), key, values)
-    inline fun <reified T> addLastPicked(key: String, value: T) = addLastPicked(serializer(), key, value)
 
     fun <T> getLastPicked(serializer: KSerializer<List<T>>, key: String): List<T> =
         try {
@@ -223,6 +214,19 @@ class Preferences(val prefs: ObservableSettings) {
 
     fun <T> setLastPicked(serializer: KSerializer<List<T>>, key: String, values: List<T>) {
         prefs.putString(LAST_PICKED_PREFIX + key, Json.encodeToString(serializer, values))
+    }
+
+    var preferredLanguageForNames: String? by prefs.nullableString(PREFERRED_LANGUAGE_FOR_NAMES)
+
+    fun getLanguagesWithPreferredFirst(languages: List<String>): List<String> {
+        val languages = languages.distinct().toMutableList()
+        val preferredLanguageTag = preferredLanguageForNames
+        if (preferredLanguageTag != null) {
+            if (languages.remove(preferredLanguageTag)) {
+                languages.add(0, preferredLanguageTag)
+            }
+        }
+        return languages
     }
 
     // profile & statistics screen UI
@@ -268,11 +272,6 @@ class Preferences(val prefs: ObservableSettings) {
         private const val OSM_UNREAD_MESSAGES = "osm.unread_messages"
         const val OAUTH2_ACCESS_TOKEN = "oauth2.accessToken"
 
-        // old keys login keys
-        private const val OAUTH1_ACCESS_TOKEN = "oauth.accessToken"
-        private const val OAUTH1_ACCESS_TOKEN_SECRET = "oauth.accessTokenSecret"
-        private const val OSM_LOGGED_IN_AFTER_OAUTH_FUCKUP = "osm.logged_in_after_oauth_fuckup"
-
         // team mode
         private const val TEAM_MODE_INDEX_IN_TEAM = "team_mode.index_in_team"
         private const val TEAM_MODE_TEAM_SIZE = "team_mode.team_size"
@@ -303,9 +302,6 @@ class Preferences(val prefs: ObservableSettings) {
         private const val MAP_FOLLOWING = "map.following"
         private const val MAP_NAVIGATION_MODE = "map.navigation_mode"
 
-        // clean-up after upgrade
-        private const val CLEARED_TANGRAM_CACHE = "cleared_tangram_cache"
-
         // quest & overlays
         private const val PREFERRED_LANGUAGE_FOR_NAMES = "preferredLanguageForNames"
         const val SELECTED_EDIT_TYPE_PRESET = "selectedQuestsPreset"
@@ -323,3 +319,12 @@ class Preferences(val prefs: ObservableSettings) {
         private const val STATISTICS_SYNCED_ONCE = "statistics_synced_once"
     }
 }
+
+inline fun <reified T> Preferences.getLastPicked(key: String): List<T> =
+    getLastPicked(serializer(), key)
+
+inline fun <reified T> Preferences.setLastPicked(key: String, values: List<T>) =
+    setLastPicked(serializer(), key, values)
+
+inline fun <reified T> Preferences.addLastPicked(key: String, value: T) =
+    addLastPicked(serializer(), key, value)

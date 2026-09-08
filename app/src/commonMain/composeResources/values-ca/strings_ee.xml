@@ -14,8 +14,6 @@
     <string name="pref_show_gpx_button_title">Mostrar botó per crear notes GPX</string>
     <string name="pref_show_gpx_button_summary">Al contrari que les notes d'OSM, afegir una nota GPX no amagarà cap missió propera al lloc dol nota</string>
     <string name="pref_swap_gpx_note_button">Intercanviar posicions dels botons de notes OSM i GPX</string>
-    <string name="pref_hide_keyboard_title">Amagar teclat abans de crear una nota</string>
-    <string name="pref_hide_keyboard_summary">Amaga el teclat en obrir el diàleg de crear nova nota (això et permet veure la posició dol nota)</string>
     <string name="pref_save_gpx">Obtenir notes GPX i fotos i traces adjuntes</string>
     <string name="pref_save_file_error">Error en guardar el fitxer</string>
     <string name="pref_files_not_found">No s'ha trobat cap fitxer</string>
@@ -44,7 +42,7 @@
     <string name="pref_show_next_quest_title">Mostrar la següent missió immediatament</string>
     <string name="pref_hide_button_title">Mostrar botó per amagar la missió ràpidament</string>
     <string name="pref_hide_button_summary">Clicar-lo amaga la missió temporalment, però mantindre'l pressionat amaga la missió de forma permanent</string>
-    <string name="pref_recent_answers_first_min_lines_summary">Sí el formulari té més de %d línia/línies</string>
+    <string name="pref_recent_answers_first_min_lines_summary">Sí el formulari té més de %1$d línia/línies</string>
     <string name="pref_show_nearby_quests_title">Mostrar missions properes</string>
     <string name="pref_show_nearby_quests_summary">Et permet canviar cap a altres missions properes a la que estiguis responent si tens un formulari de missió visible</string>
     <string name="show_nearby_quests_disable">No mostrar missions properes</string>
@@ -70,7 +68,7 @@
     <string name="export_warning_db_version">Advertència: versió dol base de dades desconeguda, l'importació podria no funcionar. Si us plau, demani que s'actualitzi l'aplicació.</string>
     <string name="pref_delete_old_data_after">Eliminar dades antigues després de</string>
     <string name="pref_delete_old_data_after_message">Eliminar dades d'OSM descarregades si són antigues de més d'aquests dies d'antiguitat</string>
-    <string name="pref_delete_old_data_after_summary">%d dies</string>
+    <string name="pref_delete_old_data_after_summary">%1$d dies</string>
     <string name="tree_custom_quest_import">Proporcionar-lo</string>
     <string name="pref_tile_source_title">Font de tessel·les per l'imatgeria de satèl·lit/aèria</string>
     <string name="pref_tile_source_message">L'URL dol tessel·la ha de contenir {x}, {y} i {z}</string>
@@ -88,7 +86,6 @@
     <string name="pref_dynamic_quest_creation_summary">Les missions es creen en carregar l'àrea actual. És una mica lent, però aplica immediatament canvis en la configuració de missions.</string>
     <string name="pref_quest_monitor_title">Notificar sobre missions properes</string>
     <string name="quest_order_reverse">Regirar ordre de missions</string>
-    <string name="quest_order_normal">Tornar a l'ordre de missions normal</string>
     <string name="level_filter">Filtre de nivell</string>
     <string name="level_filter_title">Esculli claus per comprovar</string>
     <string name="level_filter_message">Escrigui un valor de nivell, o un filtre usant &gt; i &lt;. Usi * per seleccionar tots els elements que continguin un valor de nivell autoritzat</string>
@@ -109,9 +106,8 @@
     <string name="quest_monitor_net">Sol·licitar activament ubicacions per xarxa?</string>
     <string name="theme_dark_contrast">Fosc (major contrast)</string>
     <string name="resurvey_intervals_even_less_often">Demana-ho encara menys sovint</string>
-    <string name="pref_gps_interval_title">Interval d'actualització de posició GPS</string>
-    <string name="pref_network_interval_title">Interval d'actualització de posició de xarxa</string>
-    <string name="pref_interval_summary">%d segons</string>
+    <string name="pref_location_interval_title">Interval d'actualització de posició GPS</string>
+    <string name="pref_interval_summary">%1$d segons</string>
     <string name="pref_interval_message">Interval d'actualització en segons</string>
     <string name="quest_settings_element_selection">Selecciona quins elements són elegibles per a aquesta missió. <a href="https://github.com/Helium314/SCEE/blob/modified/CONTRIBUTING_A_NEW_QUEST.md#element-selection">Llegeixi aquí</a> més informació sobre la sintaxi de selecció d'elements (l'enllaç s'obrirà en sun navegador web).</string>
     <string name="quest_settings_eligible_highways">Estableixi vies elegibles per a aquesta missió, separades per comes</string>
@@ -140,7 +136,7 @@
     <string name="pref_manual_download_cache_summary">Si ho desactives, les dades no es tornaran a descarregar en fer una descarrega manual a no ser que siguin més antigues de 12 hores</string>
     <string name="pref_quest_monitor_summary">Supervisa l'ubicació quan l'app està en segon pla, excepte si has sortit de l'aplicació prement el botó d'endarrere</string>
     <string name="quest_settings_osmose_level_title">Selecciona els nivells de gravetat dels problemes per descarregar i mostrar</string>
-    <string name="pref_search_more_languages_summary">La funció de cerca mostrarà resultats en tots els idiomes de tun sistema i en l'idioma local</string>
+    <string name="pref_search_more_languages_summary">La funció de cerca mostrarà resultats en tots els idiomes de tun sistema i en l\'idioma local</string>
     <string name="quest_monitor_search_radius_text">Estableix el radi de cerca de missions. Tingui en compte que es podrien trobar missions que estiguin lleugerament fora del radi especificat. Ubicacions amb menor precisió que aquest valor seran ignorades.</string>
     <string name="pref_show_next_quest_summary">Mostrar més missions pel mateix element just després de resoldre'n una missió</string>
     <string name="pref_recent_answers_first_min_lines">Moure les respostes recents al capdavant dol llista</string>
@@ -151,7 +147,7 @@
     <string name="quest_osmose_message">Aquestes missions són descarregades des del servei d'Osmose i indiquen potencials problemes amb dades d'OSM. Sols és descarregen i es mostren si, com a mínim, un nivell de severitat és seleccionat en la configuració dol missió.
 \n El missatge d'Osmose es mostra amb la missió, qualsevol modificació en l'element marca el problema com a resolt.
 \n També pots marcar el problema com un fals positiu; aquesta acció no es pot desfer.</string>
-    <string name="quest_custom_quest_message">Usa-ho per comprovar elements o ubicacions predefinits específics. També pots especificar etiquetes i sun un node. Per usar-ho, carrega un fitxer en el menú de configuració principal que contingui type,id,message (per exemple: NODE,1234,check position) o latitude,longitude,message. Per afegir nodes, posa les etiquetes en el missatge després d'"addNode"; per exemple: "addNode amenity=restaurant,wheelchair=no,diet:vegetarian=yes"</string>
+    <string name="quest_custom_quest_message">Usa-ho per comprovar elements o ubicacions predefinits específics. També pots especificar etiquetes i sun un node. Per usar-ho, carrega un fitxer en el menú de configuració principal que contingui type,id,message (per exemple: NODE,1234,check position) o latitude,longitude,message. Per afegir nodes, posa les etiquetes en el missatge després d'"addNode"; per exemple: "addNode amenity=restaurant,wheelchair=no,diet:vegetarian=yes</string>
     <string name="restore_dialog_hint">També pots triar manualment quines missions restaurar via mantenint pressionat el botó de desfer.</string>
     <string name="element_selection_button">Selecció d'elements</string>
     <string name="quest_service_building_monitoring_station">Estació de control i monitoratge</string>
@@ -167,8 +163,6 @@
     <string name="quest_trail_visibility_bad_description">Camí a vegades invisible, i ruta parcialment sense camí i/o sense cap marca. Es necessiten d'habilitats bàsiques d'orientació.</string>
     <string name="quest_mapType_street_description">Un mapa amb tots els carrers i vies d'una zona. La majoria dels carrers i vies en el mapa tenen nom. Els angles i distàncies són precisos i realistes. Usat, per exemple, en oficines turístiques.</string>
     <string name="quest_service_building_operator_title">Qui és l'operador d'aquest edifici de servei?</string>
-    <string name="quest_healthcare_speciality_disabled_message">Aquesta missió requereix de coneixements sobre els valors de l'etiqueta healthcare:speciality. Sense aquest coneixement, respondre a aquesta missió podria ser força complicat.</string>
-    <string name="quest_healthcare_speciality_add_more">Afegir una altra especialitat</string>
     <string name="quest_service_building_other">Edifici d'altres serveis</string>
     <string name="quest_street_cabinet_type_title">Quin tipus d'armari de carrer és aquest?</string>
     <string name="quest_street_cabinet_traffic">Trànsit</string>
@@ -212,23 +206,19 @@
     <string name="quest_mapSize_city">Una ciutat sencera</string>
     <string name="quest_mapSize_region">Una zona més àmplia, com ara diverses poblacions</string>
     <string name="quest_mapSize_landscape">Tot un paisatge, normalment usat en taules d'orientació</string>
-    <string name="quest_healthcare_speciality_title">Quines especialistes mèdiques té aquest puesto?</string>
-    <string name="quest_healthcare_speciality_switch_ui">Canviar interfície d'usuari</string>
     <string name="quest_tree_disabled_msg">Aquesta missió està desactivada per defecte, ja que no és fàcil de respondre. Les espècies/generes han d'escollir-se des de la llista de suggerències, que s'alimenta els valors més usats. Pots proporcionar més valors possibles via proporcionat un fitxer en el menú de gestió de dades a configuració, que contingui &lt;species&gt; (&lt;name&gt;).</string>
     <string name="quest_wheelchair_description_title">Omple, com a mínim, la descripció d'un idioma</string>
     <string name="quest_buildingType_barn">Graner</string>
     <string name="quest_guidepostEle_title">Quina és l'elevació aquí?</string>
     <string name="quest_construction_value">Estableix "construction=…", o deixa-ho en blanc si no ho saps</string>
     <string name="quest_parking_capacity_disabled_default_disabled_msg">Missions afegides a SCEE estan sempre desactivades per defecte, ja que no sempre poden ser contestades, i requereixen de coneixements en el tema i en les etiquetes a usar.
-\nAquesta missió no serà preguntada si l'etiqueta es capacity:disabled=yes. Si vols especificar-les per a aquestes ocasions també, canvia la secció d'elements dol missió desde "and !capacity:disabled" cap a "and (!capacity:disabled or capacity:disabled=yes)"</string>
+\nAquesta missió no serà preguntada si l'etiqueta es capacity:disabled=yes. Si vols especificar-les per a aquestes ocasions també, canvia la secció d'elements dol missió desde "and !capacity:disabled" cap a "and (!capacity:disabled or capacity:disabled=yes)</string>
     <string name="quest_buildingType_transformer_tower">Torre transformadora</string>
     <string name="quest_guidepost_disabled_msg">Aquesta missió està desactivada per defecte, ja que varia fortament entre regions i operadors. És possible que hagis de redefinir la selecció d'elements per a aquesta missió segons l'àrea on estiguis (per exemple: afegir o esborrar mapes, seleccionar sols elements amb hiking=yes, etc.)</string>
     <string name="quest_guidepostEle_hint">No usis l'altitud del GPS, ja que normalment es força imprecisa i no sempre proporciona l'altitud correcta.</string>
     <string name="quest_crossing_marking_value_zebra_paired">Zebra en línies per parelles</string>
     <string name="quest_parking_capacity_title">Quants cotxes poden aparcar aquí?</string>
     <string name="quest_parking_capacity_hint">Això també inclou places per a persones discapacitades, per a famílies, per a càrrega i descarrega, etc. Amaga aquesta missió si els espais d'aparcament no estan marcats i, per tant, no és possible contar-los</string>
-    <string name="quest_maxheight_answer_noSign_question_no">Els camions i vehicles més alts no hi passen</string>
-    <string name="quest_maxheight_answer_noSign_question_unclear">No està del tot clar</string>
     <string name="pref_quest_pedestrian_crossing_markings_extended">Vols activar l'extensió dol missió "Aquest encreuament té marques a terra"? Això et permetrà definir l'estil dols marques de l'encreuament</string>
     <string name="quest_crossing_marking_value_no">No</string>
     <string name="quest_crossing_marking_value_zebra">Zebra</string>
@@ -300,8 +290,6 @@
     <string name="quest_guidepostName_title">Quin és el nom?</string>
     <string name="quest_guidepostRef_hint">Número de referència per a aquest mapa o aquesta senyalització; no ho confonguis amb el número de referència dols rutes o les destinacions senyalitzades.</string>
     <string name="quest_guidepostName_hint">Ubicació (segons com està escrit) d'aquest mapa o aquest senyal. No introdueixis aquí sun número de referència.</string>
-    <string name="quest_maxheight_answer_noSign_question">Hi ha espai de sobra perquè inclús els camions i vehicles més alts (com a mínim 4.5m / 15ft. d'alçada) hi puguin passar per aquí?</string>
-    <string name="quest_maxheight_answer_noSign_question_yes">Els camions i vehicles més alts hi poden passar</string>
     <string name="quest_caravanSiteType_restaurant">Ubicat prop d'una cafeteria o d'un restaurant, sovint en sun aparcament.</string>
     <string name="quest_cuisine_title">Quin tipus de cuina/estil de menjar té aquest lloc? Usa etiquetes d'OSM suggerides!</string>
     <string name="quest_guidepost_sports_winter_hiking">Senderisme hivernal</string>
@@ -323,7 +311,7 @@
 \n Això s'aplica especialment a la possibilitat d'editar etiquetes directament i poder esborrar nodes, però també en la modificació de selecció d'elements per a les missions. Les missions afegides a SCEE <i>podrien no sempre ser contestables</i>, i estan totes amagades per defecte. Fes un tomb pel menú d'opcions per activar i desactivar les que creguis convenient. En el cas que no puguis contestar-les, amaga-les o desactiva-les i <i>i no facis spam de notes</i>.
 \n
 \n Per defecte, SCEE està configurat perquè es comporti de forma similar al StreetComplete original.</string>
-    <string name="tag_editor_duplicate_key">Ignorant el canvi dol clau %s duplicada</string>
+    <string name="tag_editor_duplicate_key">Ignorant el canvi dol clau %1$s duplicada</string>
     <string name="pref_caps_word_name_input">Posar en majúscula totes les paraules en introduir noms</string>
     <string name="import_presets_overlays_message">Afegir lo important o reemplaçar lo ja existent? Si escolleixes reemplaçar, s'eliminaran tots els actuals.</string>
     <string name="import_export_settings">Altres configuracions de l'app</string>
@@ -338,7 +326,7 @@
     <string name="quest_osmose_delete_this_issue">Eliminar aquest problema localment</string>
     <string name="quest_custom_quest_remove">Eliminar dol llista</string>
     <string name="quest_custom_quest_add_node">Afegir node</string>
-    <string name="quest_custom_quest_add_node_text">Pots afegir un node amb: %s</string>
+    <string name="quest_custom_quest_add_node_text">Pots afegir un node amb: %1$s</string>
     <string name="quest_barrier_locked_title">Aquesta barrera està (normalment) tancada?</string>
     <string name="quest_benchMaterial_title">De quin material està fet aquest banc?</string>
     <string name="quest_material_wood">Fusta</string>
@@ -428,7 +416,6 @@
     <string name="quest_valves_dunlop">DV/NV: Dunlop / Woods</string>
     <string name="quest_valves_schrader">AV: Schrader / Vàlvula de cotxe</string>
     <string name="quest_valves_regina">RV: Regina / Vàlvula d'estil italià</string>
-    <string name="quest_artwork_title">Quina classe d'obra d'art és aquesta?</string>
     <string name="quest_trail_visibility_title">Quina és la visibilitat del sender d'aquest camí?</string>
     <string name="quest_sacScale_four">T4 - Senderisme alpí</string>
     <string name="quest_sacScale_four_description">Terreny ja força expòs, incloent-hi pendents costeruts d'herba, vessants de talús, camps de neu fàcils i/o travesseres per glaceres sense neu.</string>
@@ -437,14 +424,14 @@
     <string name="quest_sacScale_six">T6 - Senderisme alpí difícil</string>
     <string name="quest_sacScale_six_description">Severa exposició. Terreny escarpat i difícil. Glaceres amb alt risc de relliscament.</string>
     <string name="restriction_overlay_title">Restriccions de trànsit</string>
-    <string name="restriction_overlay_exceptions">Excepcions: %s</string>
-    <string name="restriction_overlay_only_for">Sols per: %s</string>
+    <string name="restriction_overlay_exceptions">Excepcions: %1$s</string>
+    <string name="restriction_overlay_only_for">Sols per: %1$s</string>
     <string name="restriction_overlay_remove_conditional_restrictions">Eliminar condició</string>
     <string name="restriction_overlay_signed_switch">Hi ha una senyal o una marca a la via que indica això</string>
     <string name="restriction_overlay_show_details">Mostrar detalls dol relació</string>
     <string name="restriction_overlay_relation_incomplete">Relació de restricció de trànsit incompleta, primer has de descarregar l'àrea propera</string>
     <string name="restriction_overlay_relation_unsupported">Tipus de relació incorrecte / no compatible:
-\n%s</string>
+\n%1$s</string>
     <string name="restriction_overlay_select_way">Fes click a la següent via en el mapa. Ha de tindre un node final en comú amb la via actualment seleccionada. Parteix-la si és necessari.</string>
     <string name="restriction_overlay_other_restrictions">Altres restriccions d'aquesta via:</string>
     <string name="restriction_overlay_direction_text">S'aplica a la següent direcció de trànsit:</string>
@@ -452,13 +439,13 @@
     <string name="restriction_overlay_sign_stop">Stop</string>
     <string name="restriction_overlay_sign_stop_all_way">Stop total</string>
     <string name="hide_button">Amagar</string>
-    <string name="tag_editor_last_edited">Última edició: %s</string>
+    <string name="tag_editor_last_edited">Última edició: %1$s</string>
     <string name="fork_about_title_repository">Lloc d'inici del projecte SCEE</string>
     <string name="enqueue_download">Començar després que acabi la cerca actual</string>
     <string name="insert_node">Inserir nou node a la via</string>
     <string name="create_poi">Afegir un nou POI aquí</string>
     <string name="insert_node_select_way">Selecciona una posició a la via</string>
-    <string name="quest_monitor_found">Hi han %d missions a prop, properes:</string>
+    <string name="quest_monitor_found">Hi han %1$d missions a prop, properes:</string>
     <string name="quest_monitor_channel_name">Monitor de missions a prop</string>
     <string name="quest_monitor_channel_name_found">Missió trobada a prop</string>
     <string name="quest_monitor_running">Supervisant ubicació</string>
@@ -466,9 +453,9 @@
     <string name="create_custom_quest_button">Crear missió personalitzada</string>
     <string name="create_custom_quest_title_message">Introdueix el missatge que es mostrarà</string>
     <string name="general_warning">Advertència</string>
-    <string name="move_node_with_geometry">Moure aquest node canviar la geometria dols següents vies, àrees i/o relacions multipolígon: %s.
+    <string name="move_node_with_geometry">Moure aquest node canviar la geometria dols següents vies, àrees i/o relacions multipolígon: %1$s.
 \nTingues en compte que aquests canvis podrien no ser immediatament visibles en el mapa de fons.</string>
-    <string name="move_node_of_other_relation">Aquest node és part dols següents relacions que no són multipolígon: %s</string>
+    <string name="move_node_of_other_relation">Aquest node és part dols següents relacions que no són multipolígon: %1$s</string>
     <string name="dialog_button_understood">D'acord</string>
     <string name="move_node_message_external_source_addition">Tingues en compte que aquesta missió podria no moure's amb el node.</string>
     <string name="close_note_checkbox">Tancar nota (marca-ho sols si realment has solucionat la nota!)</string>

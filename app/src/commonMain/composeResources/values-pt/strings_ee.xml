@@ -9,7 +9,6 @@
     <string name="pref_save_gpx">Obter notas GPX e fotografias e trajetos anexados</string>
     <string name="pref_save_photos_title">Guardar fotografias utilizadas para notas</string>
     <string name="pref_hide_notes_hint">Utilizar vírgulas para separar nomes de utilizador ou IDs</string>
-    <string name="pref_hide_keyboard_summary">Oculta o teclado quando aberto antes de a nota ser efetivamente criada (para permitir uma nova visualização da posição)</string>
     <string name="pref_category_mods">Definições do SCEE</string>
     <string name="pref_create_custom_quest_summary">...como alternativa a deixar uma nota. Isto pode ser usado como uma nota armazenada localmente e visível no mapa. Nota que terás de ativar as missões personalizadas.</string>
     <string name="pref_files_not_found">Nenhum ficheiro encontrado</string>
@@ -26,7 +25,6 @@
 \n Por favor, habilite esta configuração apenas se você tiver experiência com OSM fora do StreetComplete e entender o que está fazendo. </string>
     <string name="pref_expert_mode_title">Modo de especialista</string>
     <string name="pref_expert_mode_summary">Ativar capacidades avançadas de edição</string>
-    <string name="pref_hide_keyboard_title">Ocultar o teclado antes de criar uma nota</string>
     <string name="pref_screen_notes">Notas</string>
     <string name="pref_read_log_save">Guardar o registo completo em ficheiro</string>
     <string name="pref_show_gpx_button_summary">Ao contrário das notas do OSM, adicionar um GPX não irá esconder nenhuma missão no local afetado</string>
@@ -54,7 +52,6 @@
     <string name="pref_quest_monitor_title">Notificar de missões em redor</string>
     <string name="quest_settings_max_steps_length">Número máximo de degraus em metros para mostrar esta missão</string>
     <string name="quest_order_reverse">Reverter ordem das missões</string>
-    <string name="quest_order_normal">Restaurar ordem normal das missões</string>
     <string name="quick_switch_preset">Alterar conjunto de missões</string>
     <string name="quest_service_building_type_industrial_substation">Subestação elétrica industrial</string>
     <string name="quest_service_building_type_minor_substation_description">Uma pequena subestação no nível mais baixo de transformação na rede de distribuição</string>
@@ -109,7 +106,7 @@
     <string name="quest_utility_sewerage">Saneamento</string>
     <string name="quest_utility_power">Eletricidade</string>
     <string name="import_export_custom_overlays_select">Selecionar camadas para exportar</string>
-    <string name="pref_delete_old_data_after_summary">%d dias</string>
+    <string name="pref_delete_old_data_after_summary">%1$d dias</string>
     <string name="import_error">Erro ao importar</string>
     <string name="import_error_db_version">Erro ao importar: versão desconhecida</string>
     <string name="export_warning_db_version">Aviso: Versão da base de dados desconhecida, a importação pode falhar. Por favor peça para a aplicação ser atualizada.</string>
@@ -128,7 +125,7 @@
     <string name="pref_auto_download_summary">Transferir dados automaticamente da área em redor</string>
     <string name="pref_screen_quests">Missões</string>
     <string name="quest_service_building_type_substation_description">Subestações que relacionam-se principalmente com redes de distribuição regionais</string>
-    <string name="quest_parking_capacity_disabled_default_disabled_msg">As missões adicionadas pelo SCEE estão sempre desativadas por predefinição, pois nem sempre são simples de responder, e podem requerer conhecimento do tópico e das etiquetas associadas.\nEsta missão não irá aparecer se capacity:disabled=yes estiver definido. Se também queres especificar estes lugares, altera a seleção de elementos de "and !capacity:disabled" para "and (!capacity:disabled or capacity:disabled=yes)"</string>
+    <string name="quest_parking_capacity_disabled_default_disabled_msg">As missões adicionadas pelo SCEE estão sempre desativadas por predefinição, pois nem sempre são simples de responder, e podem requerer conhecimento do tópico e das etiquetas associadas.\nEsta missão não irá aparecer se capacity:disabled=yes estiver definido. Se também queres especificar estes lugares, altera a seleção de elementos de "and !capacity:disabled" para "and (!capacity:disabled or capacity:disabled=yes)</string>
     <string name="quest_service_building_type_title">Que tipo de edifício de serviço é este?</string>
     <string name="pref_overlay_quick_selector_title">Mostrar seletor rápido de camadas</string>
     <string name="quest_buildingColour_title">Qual é a cor geral deste edifício?</string>
@@ -144,7 +141,7 @@
     <string name="quick_switch_map_background">Alternar entre vista do mapa / aérea</string>
     <string name="pref_way_direction">Mostrar direção dos caminhos</string>
     <string name="pref_gpx_track_download">Transferir área delimitada pelo caminho GPX</string>
-    <string name="pref_recent_answers_first_min_lines_summary">Caso o formulário tenha mais do que %d linha(s)</string>
+    <string name="pref_recent_answers_first_min_lines_summary">Caso o formulário tenha mais do que %1$d linha(s)</string>
     <string name="pref_recent_answers_first_min_lines_message">Move respostas recentes para cima se o formulário de resposta da missão contém mais do que as linhas indicadas de imagens</string>
     <string name="quest_material_concrete">Cimento</string>
     <string name="quest_swimmingPoolAvailability_title">Existe aqui uma piscina?</string>
@@ -154,17 +151,12 @@
     <string name="quest_mapType_street_description">Um mapa com todas as ruas ou caminhos duma dada área. As ruas têm geralmente o nome indicado. Os seus ângulos, distâncias, etc. são precisos. Usado, por exemplo, em pontos de turismo.</string>
     <string name="quest_mapSize_city">Uma cidade inteira</string>
     <string name="quest_mapSize_landscape">Uma paisagem inteira, geralmente utilizado em toposcópios</string>
-    <string name="quest_healthcare_speciality_disabled_message">Esta missão requer conhecimento das etiquetas de healthcare:speciality. Sem esse conhecimento, esta missão pode ser muito difícil de responder.</string>
     <string name="default_disabled_msg_ee">As missões adicionadas pelo SCEE estão sempre desativadas por predefinição, pois nem sempre são simples de responder, e podem requerer conhecimento do tópico e das etiquetas associadas.</string>
     <string name="quest_benchMaterial_title">De que material é feito este banco?</string>
     <string name="quest_material_wood">Madeira</string>
     <string name="quest_material_metal">Metal</string>
     <string name="quest_material_plastic">Plástico</string>
-    <string name="quest_artwork_title">Que tipo de obra de arte é esta?</string>
     <string name="quest_mapSize_region">Uma área maior com, por exemplo, múltiplas aldeias</string>
-    <string name="quest_healthcare_speciality_title">Que especialidades médicas são oferecidas neste local?</string>
-    <string name="quest_healthcare_speciality_switch_ui">Alterar interface</string>
-    <string name="quest_healthcare_speciality_add_more">Adicionar outra especialidade</string>
     <string name="quest_private">É privado</string>
     <string name="quest_building_demolished">Foi demolido (com escombros visíveis)</string>
     <string name="quest_parking_capacity_hint">Inclui espaços especiais como para pessoas com deficiência, famílias, para carregamento, etc. Oculta a missão se os lugares não estão marcados e por isso não são contáveis</string>
@@ -173,12 +165,8 @@
     <string name="quest_parking_capacity_disabled_answer_yes">Existem, mas não é claro quantos são</string>
     <string name="restriction_overlay_signed_switch">Existe um sinal ou marca na estrada</string>
     <string name="restriction_overlay_title">Restrições de tráfego</string>
-    <string name="restriction_overlay_exceptions">Exceções: %s</string>
-    <string name="restriction_overlay_only_for">Apenas para: %s</string>
-    <string name="quest_maxheight_answer_noSign_question_yes">Camiões altos conseguem passar</string>
-    <string name="quest_maxheight_answer_noSign_question">Existe espaço suficiente para os camiões mais altos (pelo menos 4.5 metros / 15 pés) passarem?</string>
-    <string name="quest_maxheight_answer_noSign_question_no">Camiões altos não cabem</string>
-    <string name="quest_maxheight_answer_noSign_question_unclear">Não é claro</string>
+    <string name="restriction_overlay_exceptions">Exceções: %1$s</string>
+    <string name="restriction_overlay_only_for">Apenas para: %1$s</string>
     <string name="restriction_overlay_direction_text">Aplica-se à seguinte direção de viagem:</string>
     <string name="quest_parking_capacity_title">Quantos carros podem estacionar aqui?</string>
     <string name="restriction_overlay_sign_give_way">Cedência de prioridade</string>

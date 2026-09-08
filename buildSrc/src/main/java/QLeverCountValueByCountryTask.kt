@@ -5,12 +5,14 @@ import kotlinx.io.asSource
 import kotlinx.io.buffered
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import java.io.File
 import java.io.FileInputStream
 import java.io.FileWriter
 import java.io.StringWriter
 import java.net.HttpURLConnection
-import java.net.URL
+import java.net.URI
 import java.net.URLEncoder
 
 /** Counts the occurrence of values for a given key for a certain tag combination by country and
@@ -21,7 +23,7 @@ import java.net.URLEncoder
  *  ( https://taginfo.openstreetmap.org/keys/operator#values ) */
 open class QLeverCountValueByCountryTask : DefaultTask() {
 
-    @get:Input lateinit var targetFile: String
+    @get:OutputFile lateinit var targetFile: File
     @get:Input lateinit var osmTag: String
     @get:Input lateinit var sparqlQueryPart: String
     @get:Input var minCount: Int = 1
@@ -95,7 +97,7 @@ open class QLeverCountValueByCountryTask : DefaultTask() {
     }
 
     private fun queryQLeverTsv(query: String): List<String> {
-        val url = URL("https://qlever.dev/api/osm-planet?query=${URLEncoder.encode(query, "UTF-8")}&action=tsv_export")
+        val url = URI("https://qlever.dev/api/osm-planet?query=${URLEncoder.encode(query, "UTF-8")}&action=tsv_export").toURL()
         val connection = url.openConnection() as HttpURLConnection
         try {
             connection.setRequestProperty("User-Agent", "StreetComplete")

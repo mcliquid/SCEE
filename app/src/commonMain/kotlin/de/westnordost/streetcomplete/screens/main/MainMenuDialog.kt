@@ -19,6 +19,10 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,8 +30,10 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.action_about2
 import de.westnordost.streetcomplete.resources.action_download
@@ -48,14 +54,13 @@ import de.westnordost.streetcomplete.data.presets.EditTypePresetsController
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.screens.main.controls.NotificationBox
 import de.westnordost.streetcomplete.screens.main.teammode.TeamModeColorCircle
-import de.westnordost.streetcomplete.util.showProfileSelectionDialog
 import org.koin.compose.koinInject
 import de.westnordost.streetcomplete.ui.common.DownloadIcon
 import de.westnordost.streetcomplete.ui.common.TeamModeIcon
 import de.westnordost.streetcomplete.ui.common.UploadIcon
+import de.westnordost.streetcomplete.util.ProfileSelectionDialog
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun MainMenuDialog(
@@ -77,8 +82,7 @@ fun MainMenuDialog(
     contentColor: Color = contentColorFor(backgroundColor),
 ) {
     val prefs: Preferences = koinInject()
-    val editTypePresetsController: EditTypePresetsController = koinInject()
-    val ctx = LocalContext.current
+    var showProfileSelectionDialog by remember { mutableStateOf(false) }
     Dialog(onDismissRequest = onDismissRequest) {
         Surface(
             modifier = modifier,
@@ -107,7 +111,7 @@ fun MainMenuDialog(
                         BigMenuButton(
                             onClick = { onDismissRequest(); onClickAbout() },
                             icon = { Icon(painterResource(Res.drawable.ic_info_outline_48), null) },
-                            text = stringResource(Res.string.action_about2) + " SCEE",
+                            text = stringResource(Res.string.action_about2, ApplicationConstants.NAME) + " SCEE",
                         )
                     }
                     Divider()
@@ -151,7 +155,7 @@ fun MainMenuDialog(
                     }
                     if (prefs.getBoolean(Prefs.MAIN_MENU_SWITCH_PRESETS, false))
                         CompactMenuButton(
-                            onClick = { onDismissRequest(); showProfileSelectionDialog(ctx, editTypePresetsController, prefs) },
+                            onClick = { showProfileSelectionDialog = true },
                             icon = { },
                             text = stringResource(R.string.quick_switch_preset)
                         )
@@ -175,7 +179,7 @@ fun MainMenuDialog(
                         BigMenuButton(
                             onClick = { onDismissRequest(); onClickAbout() },
                             icon = { Icon(painterResource(Res.drawable.ic_info_outline_48), null) },
-                            text = stringResource(Res.string.action_about2) + " SCEE",
+                            text = stringResource(Res.string.action_about2, ApplicationConstants.NAME) + " SCEE",
                         )
                         BigMenuButton(
                             onClick = { onDismissRequest(); onClickDownload() },
@@ -216,7 +220,7 @@ fun MainMenuDialog(
                         }
                         if (prefs.getBoolean(Prefs.MAIN_MENU_SWITCH_PRESETS, false))
                             BigMenuButton(
-                                onClick = { onDismissRequest(); showProfileSelectionDialog(ctx, editTypePresetsController, prefs) },
+                                onClick = { showProfileSelectionDialog = true },
                                 icon = { },
                                 text = stringResource(Res.string.quick_switch_preset)
                             )
@@ -225,6 +229,8 @@ fun MainMenuDialog(
             }
         }
     }
+    if (showProfileSelectionDialog)
+        ProfileSelectionDialog { onDismissRequest(); showProfileSelectionDialog = false }
 }
 
 @Composable

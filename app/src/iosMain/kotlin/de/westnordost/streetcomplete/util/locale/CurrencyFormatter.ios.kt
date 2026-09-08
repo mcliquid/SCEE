@@ -1,7 +1,7 @@
 package de.westnordost.streetcomplete.util.locale
 
 import androidx.compose.ui.text.intl.Locale
-import platform.Foundation.NSLocaleCurrencyCode
+import de.westnordost.streetcomplete.util.ktx.toNSLocale
 import platform.Foundation.NSNumber
 import platform.Foundation.NSNumberFormatter
 import platform.Foundation.NSNumberFormatterCurrencyStyle
@@ -9,7 +9,7 @@ import platform.Foundation.NSNumberFormatterCurrencyStyle
 actual class CurrencyFormatter actual constructor(locale: Locale?) {
 
     private val formatter = NSNumberFormatter().also {
-        if (locale != null) it.locale = locale.platformLocale
+        if (locale != null) it.locale = locale.toNSLocale()
         it.numberStyle = NSNumberFormatterCurrencyStyle
     }
 

@@ -5,20 +5,25 @@ import de.westnordost.streetcomplete.osm.maxspeed.COUNTRY_SUBDIVISIONS_WITH_OWN_
 import de.westnordost.streetcomplete.osm.maxspeed.ROADS_THAT_THAT_MAY_BE_CONVERTED_TO_LIVING_STREET
 import de.westnordost.streetcomplete.osm.maxspeed.Speed
 import de.westnordost.streetcomplete.quests.max_speed.MaxSpeedSign.Type.*
-import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.*
+import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.util.ktx.toYesNo
+import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 
+@Serializable
 sealed interface MaxSpeedAnswer {
     fun isComplete(): Boolean
 
+    @Serializable
     data object IsLivingStreet : MaxSpeedAnswer {
-        override fun isComplete()  = true
+        override fun isComplete() = true
     }
+    @Serializable
     data object NoSign : MaxSpeedAnswer {
-        override fun isComplete()  = true
+        override fun isComplete() = true
     }
+    @Serializable
     data class NoSignWithRoadType(val roadType: RoadType?) : MaxSpeedAnswer {
         override fun isComplete() = roadType != null
     }
@@ -26,8 +31,20 @@ sealed interface MaxSpeedAnswer {
 // grouped the three different maxspeed sign types like this instead of each their own data classes
 // because other than design of the sign, they all need the same input: integer number input plus
 // maybe a unit selector
+@Serializable
 data class MaxSpeedSign(val speed: Speed, val type: Type) : MaxSpeedAnswer {
     override fun isComplete() = speed.isComplete()
+
+    fun isUnusualSpeed(): Boolean {
+        val isDividableByFive =  (speed.value ?: 0) % 5 == 0
+        val kmh = speed.toKilometersPerHour()
+        return when (type) {
+            NORMAL, ADVISORY ->
+                kmh > 140 || kmh > 20 && !isDividableByFive || kmh < 5
+            ZONE ->
+                kmh > 40 || kmh > 20 && !isDividableByFive || kmh < 5
+        }
+    }
 
     enum class Type { NORMAL, ADVISORY, ZONE }
 }

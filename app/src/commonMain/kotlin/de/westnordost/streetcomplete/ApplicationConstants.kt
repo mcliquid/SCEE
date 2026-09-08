@@ -9,7 +9,6 @@ object ApplicationConstants {
     val USER_AGENT = NAME + " " + BuildConfig.VERSION_NAME
     const val QUESTTYPE_TAG_KEY = "StreetComplete:quest_type" // use original SC here, so statistics are counted
 
-    const val OLD_DATABASE_NAME = "streetcomplete.db"
     const val DATABASE_NAME = "streetcomplete_v2.db"
 
     const val MAX_DOWNLOADABLE_AREA_IN_SQKM = 12.0
@@ -136,6 +135,8 @@ object ApplicationConstants {
     (test data needs to be created there).
      */
     const val USE_TEST_API = false
+
+    const val MAX_OSM_TAG_VALUE_LENGTH = 255
 
     var DEBUG = false // not really a constant, but does not depend on debug build vs not any more, so we fake it
 }

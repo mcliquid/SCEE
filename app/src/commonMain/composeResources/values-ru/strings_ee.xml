@@ -14,7 +14,6 @@
     <string name="pref_show_gpx_button_title">Показывать кнопку Заметка с GPX</string>
     <string name="pref_show_gpx_button_summary">В отличие от заметок OSM, добавление GPX не будет прятать квесты в указанном месте</string>
     <string name="pref_swap_gpx_note_button">Поменять кнопки заметки OSM и с GPX</string>
-    <string name="pref_hide_keyboard_title">Скрыть клавиатуру до создания заметки</string>
     <string name="pref_save_gpx">Запросить заметки с GPX и приложенные фото и треки</string>
     <string name="pref_save_file_error">Ошибка при сохранении файла</string>
     <string name="pref_files_not_found">Файлов не найдено</string>
@@ -56,24 +55,23 @@
     <string name="pref_screen_data_management">Управление данными</string>
     <string name="pref_dynamic_quest_creation_summary">Квесты формируются при загрузке отображаемой области. Не быстро, зато сразу же отражаются изменения настроек квестов.</string>
     <string name="pref_dynamic_quest_creation_title">Формировать квесты динамически</string>
-    <string name="pref_network_interval_title">Частота замера положения по сетям связи</string>
-    <string name="pref_interval_summary">%d секунд(-ы)</string>
+    <string name="pref_interval_summary">%1$d секунд(-ы)</string>
     <string name="pref_interval_message">Частота замера в секундах</string>
     <string name="quest_settings_osmose_level_high">Высокая</string>
     <string name="element_selection_button">Отбор элементов</string>
     <string name="quest_settings_resurvey_all_opening_hours_no">По умолчанию</string>
     <string name="quest_benchMaterial_title">Из чего это сделано\?</string>
-    <string name="quest_custom_quest_add_node_text">Можете добавить точку с тегами: %s</string>
+    <string name="quest_custom_quest_add_node_text">Можете добавить точку с тегами: %1$s</string>
     <string name="custom_overlay_color_hint">Всё будет одноцветным, если не заполнить</string>
     <string name="insert_node">Поместите точку на линии</string>
     <string name="fork_about_title_repository">Страница проекта SCEE</string>
-    <string name="tag_editor_duplicate_key">Пропущено изменение дубликата параметра %s</string>
+    <string name="tag_editor_duplicate_key">Пропущено изменение дубликата параметра %1$s</string>
     <string name="time_limited_to">До</string>
     <string name="time_limited_from">С</string>
     <string name="manage_access">Управление ограничениями доступа…</string>
     <string name="move_node_message_external_source_addition">Имейте в виду, что положение этого квеста может не измениться вслед за смещением точки.</string>
-    <string name="move_node_of_other_relation">Эта точка является частью этих многополигональных отношений: %s</string>
-    <string name="move_node_with_geometry">Перемещение этой точки изменит очертания следующих линий и многополигональных отношений: %s.
+    <string name="move_node_of_other_relation">Эта точка является частью этих многополигональных отношений: %1$s</string>
+    <string name="move_node_with_geometry">Перемещение этой точки изменит очертания следующих линий и многополигональных отношений: %1$s.
 \n Имейте в виду, что изменения не сразу отразятся на фоновой карте.</string>
     <string name="custom_overlay_add_button">Новое своё</string>
     <string name="general_warning">Внимание</string>
@@ -88,13 +86,13 @@
     <string name="access_weight_limit">Вес</string>
     <string name="access_length_limit">Длина</string>
     <string name="quest_monitor_channel_name">Отслеживание квестов неподалёку</string>
-    <string name="quest_monitor_found">Поблизости квестов: %d, ближайший:</string>
+    <string name="quest_monitor_found">Поблизости квестов: %1$d, ближайший:</string>
     <string name="access_time_limit">Время</string>
     <string name="access_width_limit">Ширина</string>
     <string name="access_manager_button_add_conditional">Добавить условие</string>
     <string name="access_manager_button_add">Добавить</string>
     <string name="add_access">Добавить ограничение доступа…</string>
-    <string name="custom_overlay_delete">Действительно удалить %s\?</string>
+    <string name="custom_overlay_delete">Действительно удалить %1$s\?</string>
     <string name="custom_overlay_filter_info">Настройка фильтра</string>
     <string name="pref_overlay_quick_selector_title">Показать быстрый переключатель наложений</string>
     <string name="pref_auto_download_title">Автоматическое скачивание</string>
@@ -116,7 +114,7 @@
     <string name="export_warning_db_version">Внимание: версия базы данных неизвестна, импорт может не удаться. Попросите обновить приложение.</string>
     <string name="pref_delete_old_data_after">Удалять старые данные через</string>
     <string name="pref_delete_old_data_after_message">Удалять скачанные данные OSM, старше, чем столько дней</string>
-    <string name="pref_delete_old_data_after_summary">%d дня(-ей)</string>
+    <string name="pref_delete_old_data_after_summary">%1$d дня(-ей)</string>
     <string name="pref_tile_source_title">Источник космоснимков</string>
     <string name="pref_trees_title">Загрузить файл дерева квестов</string>
     <string name="tree_custom_quest_import">Передать</string>
@@ -134,7 +132,7 @@
     <string name="pref_quest_settings_preset_title">Настройки квестов для предустановок</string>
     <string name="theme_dark_contrast">Тёмная (контрастная)</string>
     <string name="resurvey_intervals_even_less_often">Спрашивать ещё реже</string>
-    <string name="pref_gps_interval_title">Частота замера положения по GPS</string>
+    <string name="pref_location_interval_title">Частота замера положения по GPS</string>
     <string name="action_scee_quests">Показывать только квесты SCEE</string>
     <string name="quest_settings_reset">Сброс</string>
     <string name="pref_tree_custom_quest_summary">Подробности в сообщении при включении квеста</string>
@@ -196,7 +194,6 @@
     <string name="quest_service_building_type_pump">Насосная станция (НС)</string>
     <string name="quest_seating_pedestrian_zone">В пешеходной зоне</string>
     <string name="quest_cuisine_add_more">Добавить другую кухню</string>
-    <string name="quest_healthcare_speciality_disabled_message">Этот квест требет знаний о тегах healthcare:speciality. В противном случае, правильно ответить на данный квест крайне сложно.</string>
     <string name="quest_tree_genus_title">К какому роду или виду относится это дерево\?</string>
     <string name="default_disabled_msg_ee">Квесты добавленные для SCEE всегда отключены по умолчанию, поскольку на них не всегда можно ответить и они требуют знаний как тематики, так и тегов.</string>
     <string name="quest_railwayPlatformRef_title">Какой номер у этого пути\?</string>
@@ -213,7 +210,7 @@
     <string name="insert_node_select_way">Укажите место на линии</string>
     <string name="custom_overlay_title">Собственное наложение</string>
     <string name="hide_button">Скрыть</string>
-    <string name="tag_editor_last_edited">Последняя правка: %s</string>
+    <string name="tag_editor_last_edited">Последняя правка: %1$s</string>
     <string name="quest_buildingType_transformer_tower">Трансформаторная башня</string>
     <string name="quest_crossing_type_zebra">Зебра</string>
     <string name="quest_crossing_type_signals_controlled_zebra">Светофоры и зебра</string>
@@ -239,12 +236,11 @@
 \n
 \n Хотя другие редакторы позволяют больше, не осторожность может привести к порче данных, невозможной в StreetComplete. Имейте в виду, что включая режим эксперта Вы несёте существенно больше ответственности за свои правки.
 \n Включайте данный режим только при наличии опыта работы с OSM помимо StreetComplete и, если Вы понимаете что делаете. </string>
-    <string name="pref_hide_keyboard_summary">Скрывает клавиатуру до момента создания заметки (для проверки положения)</string>
     <string name="pref_create_custom_quest_summary">…вместо размещения заметки. Будет полезно в качестве хранимой на устройстве отметки на карте. Для этого необходимо включить собственные квесты.</string>
     <string name="pref_save_photos_summary">Хранить полные версии фотографий, снятых для заметок, сохраняя данные EXIF</string>
     <string name="pref_quest_geometries_title">Показывать геометрию квеста</string>
     <string name="pref_offset_fix_summary">Сдвиг нужен, чтобы скрывать белые точки значками квестов</string>
-    <string name="pref_recent_answers_first_min_lines_summary">Если в форме более %d линий</string>
+    <string name="pref_recent_answers_first_min_lines_summary">Если в форме более %1$d линий</string>
     <string name="pref_recent_answers_first_min_lines_message">Передвигать недавние варианты в начало, когда форма ответа для квеста содержит строк с картинками больше, чем</string>
     <string name="show_nearby_quests_even_hidden">Показывать квесты всех типов, включая скрытые</string>
     <string name="pref_search_more_languages_summary">Поиск объектов покажет результаты как на местном, так и на языке, заданном в системе</string>
@@ -264,7 +260,6 @@
     <string name="pref_quest_monitor_download">Подгружать данные по необходимости\? Значительно повысит расход трафика и заряда, и может не работать из-за политик энергосбережения в Android.</string>
     <string name="quest_settings_element_selection">Укажите подходящие для этого квеста элементы. <a href="https://github.com/Helium314/SCEE/blob/modified/CONTRIBUTING_A_NEW_QUEST.md#element-selection"> Нажмите</a>, чтобы открыть сведения о правилах выбора элементов в браузере.</string>
     <string name="quest_settings_osmose_level_title">Выберите степень критичности для скачивания и показа</string>
-    <string name="quest_order_normal">Нормальный порядок квестов</string>
     <string name="quest_osmose_message">Эти квесты скачиваются из сервиса Osmose и указывают на возможные проблемы в данных OSM. Скачивание происходит если в настройках квеста выбрана хотя бы одна из степеней важности.
 \n Квест покажет сообщение из Osmose, любое изменение помечает проблему как решённую.
 \n Также можно сообщить об излишнем обнаружении проблемы; эта операция не обратима.</string>
@@ -285,7 +280,6 @@
     <string name="quest_seating_parklet">Вдоль бордюра или на месте парковки</string>
     <string name="quest_settings_level_title">Показать этот квест для:</string>
     <string name="level_filter_title">Выберите ключи для проверки</string>
-    <string name="quest_healthcare_speciality_title">Какие медицинские специальности есть в этом месте\?</string>
     <string name="level_filter_message">Введите число этажей или выражения &gt; и &lt;. Используйте * для выбора всех элементов, содержащих допустимый ключ level</string>
     <string name="quest_settings_eligible_highways">Укажите дороги, подходящие для этого квеста, через запятую</string>
     <string name="quest_traffic_stuff_raised">Это возвышенный переход</string>
@@ -299,8 +293,6 @@
     <string name="quest_osmose_settings_items">Править чёрный список</string>
     <string name="quest_osmose_use_app_language">Загружать проблемы на языке приложения</string>
     <string name="quest_settings_level_default">Магазины и подобное в торговых центрах (по умолчанию)</string>
-    <string name="quest_artwork_title">Что это за произведение\?</string>
-    <string name="quest_healthcare_speciality_add_more">Добавить еще одну специальность</string>
     <string name="quest_buildingType_cowshed">Коровник</string>
     <string name="quest_buildingType_sty">Свинарник</string>
     <string name="quest_buildingType_sports_hall">Спортивный зал</string>
@@ -322,14 +314,13 @@
     <string name="quest_roofColour_title">Какой цвет является основным для крыши этого здания\?</string>
     <string name="quest_buildingType_presbytery">Пресвитерий</string>
     <string name="quest_buildingType_stable">Конюшня</string>
-    <string name="quest_healthcare_speciality_switch_ui">Переключить интерфейс</string>
     <string name="quest_destination_title">Какие направления указаны для этой дороги\?</string>
     <string name="quest_destination_add_more">Добавить направление</string>
     <string name="quest_destination_all_lanes_button">Все
 \nполосы</string>
     <string name="custom_overlay_filter_message">Нажмите на ссылку, чтобы открыть сведения о правилах выбора элементов в браузере. Имейте в виду, что на отбор элементов по дате может влиять настройка частоты повторного обследования. \nГалочки заменяют собой такие части кода как "nodes, ways with".</string>
     <string name="quest_surface_value_stepping_stones">Камни для перехода</string>
-    <string name="restriction_overlay_exceptions">Исключения: %s</string>
+    <string name="restriction_overlay_exceptions">Исключения: %1$s</string>
     <string name="restriction_overlay_remove_conditional_restrictions">Убрать условия</string>
     <string name="restriction_overlay_relation_incomplete">Отношение ограничения неполно, требуется загрузка области вокруг</string>
     <string name="restriction_overlay_other_restrictions">Прочие ограничения для этой линии:</string>
@@ -337,9 +328,9 @@
     <string name="restriction_overlay_title">Ограничения поворотов</string>
     <string name="restriction_overlay_signed_switch">Есть знак или дорожная разметка</string>
     <string name="restriction_overlay_relation_unsupported">Неподдерживаемый тип ограничения:
-\n%s</string>
+\n%1$s</string>
     <string name="restriction_overlay_select_way">Коснитесь следующей линии на карте. Она должна иметь общую крайнюю точку с текущей линией. Делите линии по необходимости.</string>
-    <string name="access_manager_message">Выберите метки ограничения доступа. Отмечайте только предписанное знаками, по возможности, не применяйте общую метку "access"</string>
+    <string name="access_manager_message">Выберите метки ограничения доступа. Отмечайте только предписанное знаками, по возможности, не применяйте общую метку "access</string>
     <string name="level_filter">Фильтр этажности</string>
     <string name="level_filter_enable">Включить фильтр этажности</string>
     <string name="quest_osmose_hide_type">Пропускать такие проблемы…</string>
@@ -354,7 +345,7 @@
     <string name="pref_hide_overlay_quests">Прятать квесты, связанные с наложением</string>
     <string name="quest_buildingColour_title">Какой цвет преобладает в окраске этого здания\?</string>
     <string name="outside_downloaded_area_warning">Это место за пределами подгруженной зоны. Продолжить\?</string>
-    <string name="restriction_overlay_only_for">Только для: %s</string>
+    <string name="restriction_overlay_only_for">Только для: %1$s</string>
     <string name="quest_buildingPartColour_title">Какой цвет преобладает в окраске этой части здания\?</string>
     <string name="custom_overlay_color_message">Выберите ключ(и) для окраски. Допускаются регулярные выражения и подстановка тегов определяющих цвет. Цвет подбирается на основании ключа и значения всех искомых ключей. Когда искомый ключ содержит :left/right/both, он будет использован для окраски соответствующих сторон линии, а не её середины. Если искомого нет, всегда окрашивается красным, указывая на неполны данные. Знание регулярных выражений будет крайне полезным.
 \nЕсли выражение не является регулярным, припишите '!' перед значением выделяемым при правке тегов.
@@ -538,7 +529,7 @@
     <string name="quest_caravanSiteType_lake">Озеро - место расположена прямо на озере.</string>
     <string name="default_disabled_msg_roof">Этот тип задания по умолчанию отключен, поскольку крыши зачастую с улицы не видны. Кроме того, этот тип квестов также довольно трудоёмкий, и в большинстве случаев проще и эффективнее использовать космоснимки.</string>
     <string name="quest_viaFerrataScale_title">Какая категория сложности этой виа ферраты?</string>
-    <string name="quest_viaFerrataScale_zero">"Категория 0 -  нет"</string>
+    <string name="quest_viaFerrataScale_zero">Категория 0 -  нет</string>
     <string name="quest_viaFerrataScale_zero_description">Сложность низкая; рельеф варьируется от ровного до крутого с открытыми участками. Безопасность обеспечивается тросами, цепями или короткими лестницами. Преодолевается пешком без требований к физической форме. Скорее всего комплект для виа ферраты не потребуется.</string>
     <string name="quest_viaFerrataScale_one">Категория 1/K1/A - очень простая</string>
     <string name="quest_viaFerrataScale_one_description">Хорошие естественные или железные ступени, высеченные лестницы, короткие закреплённые лестницы. Открытые проходы оборудованы тросами, цепями или веревками в качестве поручней. Опытные альпинисты могут отказаться от использования усов самостраховки.</string>
@@ -569,10 +560,6 @@
     <string name="quest_guidepostRef_hint">Справочный номер этой карты или указателя, а не справочный номер обозначенных маршрутов.</string>
     <string name="quest_guidepostName_hint">Подпись с названием этой карты или указателя. Не вводите здесь справочный номер.</string>
     <string name="quest_guidepost_disabled_msg">этот квест по умолчанию отключен, потому что надписи сильно различаются в зависимости от региона и обслуживающей организации. Возможно, вам потребуется уточнить элементы применительно к вашему региону (например, добавить или удалить карты, выбрать только элементы с hiking=yes и т. д.)</string>
-    <string name="quest_maxheight_answer_noSign_question">Достаточно ли места для проезда даже самых высоких грузовиков (≥4,5 метров / 15 футов)?</string>
-    <string name="quest_maxheight_answer_noSign_question_yes">Высокие грузовики могут проехать</string>
-    <string name="quest_maxheight_answer_noSign_question_no">Высокие грузовики не проедут</string>
-    <string name="quest_maxheight_answer_noSign_question_unclear">Неясно</string>
     <string name="pref_quest_pedestrian_crossing_markings_extended">Расширение «Есть ли на этом переходе разметка?» позволяет определить стиль разметки перехода</string>
     <string name="quest_crossing_marking_value_no">Нет</string>
     <string name="quest_crossing_marking_value_ladder_skewed">Лестница перекошена</string>

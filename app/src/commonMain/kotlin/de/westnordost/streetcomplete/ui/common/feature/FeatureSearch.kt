@@ -59,7 +59,6 @@ fun FeatureSearch(
     filterFn: (Feature) -> Boolean = { true },
     codesOfDefaultFeatures: List<String> = emptyList(),
 ) {
-    val state = rememberLazyListState()
 
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) {
@@ -75,7 +74,7 @@ fun FeatureSearch(
                 languages = languages,
                 country = countryCode
             )
-        }
+        }.filter(filterFn)
     }
     val features = remember(search, featureDictionary, languages, countryCode, geometryType, filterFn, defaultFeatures) {
         if (search.isNotEmpty()) {
@@ -85,7 +84,9 @@ fun FeatureSearch(
                 country = countryCode,
                 geometry = geometryType,
             ).filter(filterFn).take(50).toList()
-        } else defaultFeatures
+        } else {
+            defaultFeatures
+        }
     }
 
     Column(
@@ -96,7 +97,7 @@ fun FeatureSearch(
             onValueChange = { search = it },
             modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
             placeholder = {
-                Text(stringResource(Res.string.quest_shop_gone_replaced_answer_hint))
+                Text(stringResource(Res.string.quest_shop_gone_replaced_answer_hint2))
             },
             leadingIcon = { SearchIcon() },
             trailingIcon = {
@@ -172,7 +173,7 @@ private fun FeaturesColumn(
                     featureDictionary = featureDictionary,
                     countryCode = countryCode,
                     searchText = searchText,
-                    iconSize = 22.5.dp
+                    iconSize = 22.5.dp // preset icons are 15x15 px, so this is 1.5x
                 )
             }
         }

@@ -2,10 +2,7 @@ package de.westnordost.streetcomplete.ui.common.feature
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.Text
@@ -19,7 +16,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.text.style.Hyphens
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.Dp
@@ -29,7 +25,6 @@ import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.feature.buildAnnotatedName
 import de.westnordost.streetcomplete.util.locale.getLanguagesForFeatureDictionary
-import org.jetbrains.compose.resources.painterResource
 
 /** Displays an OSM [feature] in the region specified by the given [countryCode].
  *
@@ -43,7 +38,7 @@ fun FeatureItem(
     countryCode: String?,
     modifier: Modifier = Modifier,
     searchText: String? = null,
-    iconSize: Dp = 30.dp
+    iconSize: Dp = 45.dp // preset icons are 15x15, so this is 3x
 ) {
     val color = LocalContentColor.current
     val languages = remember { getLanguagesForFeatureDictionary() }
@@ -53,9 +48,11 @@ fun FeatureItem(
             languages = languages,
             country = countryCode
         )
-    } else null
+    } else {
+        null
+    }
 
-    val annotatedName = remember(searchText, color) {
+    val annotatedName = remember(feature, searchText, color) {
         feature.buildAnnotatedName(searchText = searchText, color = color)
     }
     // brand features first have their name, then in second line the name of the parend feature

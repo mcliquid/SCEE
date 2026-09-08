@@ -1,64 +1,132 @@
 package de.westnordost.streetcomplete
 
+import android.content.Context
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.SharedPreferencesSettings
-import de.westnordost.streetcomplete.data.AndroidDatabase
+import de.westnordost.osmfeatures.FeatureDictionary
+import de.westnordost.osmfeatures.create
+import de.westnordost.streetcomplete.data.AndroidPeriodicCleaner
 import de.westnordost.streetcomplete.data.CleanerWorker
 import de.westnordost.streetcomplete.data.Database
-import de.westnordost.streetcomplete.data.StreetCompleteSQLiteOpenHelper
-import de.westnordost.streetcomplete.data.connection.InternetConnectionState
+import de.westnordost.streetcomplete.data.DatabaseImpl
+import de.westnordost.streetcomplete.data.PeriodicCleaner
+import de.westnordost.streetcomplete.data.StreetCompleteDatabaseConfigurator
+import de.westnordost.streetcomplete.data.connection.ActiveNetworkConnection
+import de.westnordost.streetcomplete.data.connection.AndroidActiveNetworkConnection
+import de.westnordost.streetcomplete.data.download.AndroidDownloadController
 import de.westnordost.streetcomplete.data.download.DownloadController
-import de.westnordost.streetcomplete.data.download.DownloadControllerAndroid
 import de.westnordost.streetcomplete.data.download.DownloadWorker
+import de.westnordost.streetcomplete.data.initialize
 import de.westnordost.streetcomplete.data.maptiles.MapTilesDownloader
 import de.westnordost.streetcomplete.data.maptiles.MapTilesDownloaderAndroid
+import de.westnordost.streetcomplete.data.osm.edits.upload.changesets.AndroidChangesetAutoCloser
 import de.westnordost.streetcomplete.data.osm.edits.upload.changesets.ChangesetAutoCloser
-import de.westnordost.streetcomplete.data.osm.edits.upload.changesets.ChangesetAutoCloserAndroid
 import de.westnordost.streetcomplete.data.osm.edits.upload.changesets.ChangesetAutoCloserWorker
+import de.westnordost.streetcomplete.data.upload.AndroidUploadController
 import de.westnordost.streetcomplete.data.upload.UploadController
-import de.westnordost.streetcomplete.data.upload.UploadControllerAndroid
 import de.westnordost.streetcomplete.data.upload.UploadWorker
+import de.westnordost.streetcomplete.screens.about.AndroidAppStoreInfo
+import de.westnordost.streetcomplete.screens.about.AppStoreInfo
+import de.westnordost.streetcomplete.screens.main.AndroidEmailAppLauncher
+import de.westnordost.streetcomplete.screens.main.AndroidMapAppLauncher
+import de.westnordost.streetcomplete.screens.main.EmailAppLauncher
+import de.westnordost.streetcomplete.screens.main.MapAppLauncher
+import de.westnordost.streetcomplete.ui.util.measure.AndroidArSupportChecker
+import de.westnordost.streetcomplete.ui.util.measure.ArSupportChecker
+import de.westnordost.streetcomplete.util.error_reporting.CrashReportHolder
+import de.westnordost.streetcomplete.util.error_reporting.CrashReportsUncaughtExceptionHandler
+import de.westnordost.streetcomplete.util.sound.AndroidSoundEffectPlayer
+import de.westnordost.streetcomplete.util.sound.SoundEffectPlayer
+import kotlinx.io.asSource
+import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.dsl.worker
 import org.koin.core.qualifier.named
 import org.koin.dsl.module
+import org.koin.dsl.onClose
+import org.maplibre.compose.location.AndroidLocationProvider
+import org.maplibre.compose.location.AndroidSystemSettingsLauncher
+import org.maplibre.compose.location.LocationProvider
+import org.maplibre.compose.location.SystemSettingsLauncher
+
+private const val COMPOSE_FILES_DIR = "composeResources/de.westnordost.streetcomplete.resources/files"
 
 val androidModule = module {
-    // Database on Android
 
-    single<Database> {
-        val sqLite = StreetCompleteSQLiteOpenHelper(get(), ApplicationConstants.DATABASE_NAME)
-        AndroidDatabase(sqLite.writableDatabase)
+    // metadata
+
+    single<de.westnordost.countryboundaries.CountryBoundaries> {
+        val source = androidContext().assets.open(COMPOSE_FILES_DIR + "/boundaries.ser").asSource().buffered()
+        de.westnordost.countryboundaries.CountryBoundaries.deserializeFrom(source)
     }
 
-    // Workmanager-based on Android
-
-    single<UploadController> { UploadControllerAndroid(androidContext()) }
-    worker { UploadWorker(get(), androidContext(), get()) }
-
-    single<DownloadController> { DownloadControllerAndroid(androidContext()) }
-    worker { DownloadWorker(get(), androidContext(), get()) }
-
-    factory<ChangesetAutoCloser> { ChangesetAutoCloserAndroid(androidContext()) }
-    worker { ChangesetAutoCloserWorker(get(), androidContext(), get()) }
-
-    worker { CleanerWorker(get(), get(), get()) }
-
-    factory<MapTilesDownloader> { MapTilesDownloaderAndroid(androidContext()) }
-
-    factory<InternetConnectionState> { InternetConnectionState(androidContext()) }
-
-    // Cache dir
-
-    factory(named("AvatarsCacheDirectory")) {
-        Path(
-            androidContext().cacheDir.path,
-            ApplicationConstants.AVATARS_CACHE_DIRECTORY
+    single<FeatureDictionary> {
+        FeatureDictionary.create(
+            assetManager = androidContext().assets,
+            presetsBasePath = COMPOSE_FILES_DIR + "/osmfeatures/default",
+            brandPresetsBasePath = COMPOSE_FILES_DIR + "/osmfeatures/brands"
         )
     }
 
-    // Settings
+    // error reporting
+
+    single { CrashReportsUncaughtExceptionHandler(androidContext(), get(), "crashreport.txt") }
+    single<CrashReportHolder> { get<CrashReportsUncaughtExceptionHandler>() }
+
+    // database
+
+    single<Database> {
+        val databaseFilePath = get<Context>().getDatabasePath(ApplicationConstants.DATABASE_NAME).path
+        val databaseConnection = BundledSQLiteDriver().open(databaseFilePath)
+        DatabaseImpl(databaseConnection).apply { initialize(StreetCompleteDatabaseConfigurator) }
+    } onClose { it?.close() }
+
+    // avatars cache dir
+
+    factory(named("AvatarsCacheDirectory")) {
+        Path(androidContext().cacheDir.path, ApplicationConstants.AVATARS_CACHE_DIRECTORY)
+    }
+
+    // app store info
+
+    single<AppStoreInfo> { AndroidAppStoreInfo(get()) }
+
+    // AR
+
+    factory<ArSupportChecker> { AndroidArSupportChecker(get()) }
+
+    // location
+
+    factory<LocationProvider> { AndroidLocationProvider(get()) }
+    factory<SystemSettingsLauncher> { AndroidSystemSettingsLauncher(get()) }
+
+    // settings
 
     single<ObservableSettings> { SharedPreferencesSettings.Factory(androidContext()).create() }
+
+    // sound
+
+    single<SoundEffectPlayer> { AndroidSoundEffectPlayer(androidContext(), COMPOSE_FILES_DIR) }
+
+    // connection availability
+
+    factory<ActiveNetworkConnection> { AndroidActiveNetworkConnection(androidContext()) }
+
+    // background jobs
+
+    single<UploadController> { AndroidUploadController(androidContext()) }
+    worker { UploadWorker(get(), androidContext(), get()) }
+
+    single<DownloadController> { AndroidDownloadController(androidContext()) }
+    worker { DownloadWorker(get(), androidContext(), get()) }
+
+    factory<ChangesetAutoCloser> { AndroidChangesetAutoCloser(androidContext()) }
+    worker { ChangesetAutoCloserWorker(get(), androidContext(), get()) }
+
+    factory<PeriodicCleaner> { AndroidPeriodicCleaner(androidContext()) }
+    worker { CleanerWorker(get(), get(), get()) }
+
+    factory<MapTilesDownloader> { MapTilesDownloaderAndroid(androidContext()) }
 }

@@ -17,10 +17,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.compose.ui.tooling.preview.Preview
 
 // TODO Compose:
 //  AlertDialog does not support scrollable content (yet) https://issuetracker.google.com/issues/217151230
@@ -38,7 +38,7 @@ fun ScrollableAlertDialog(
     modifier: Modifier = Modifier,
     title: (@Composable () -> Unit)? = null,
     content: (@Composable ColumnScope.() -> Unit)? = null,
-    buttons: (@Composable FlowRowScope.() -> Unit)? = null,
+    buttonRow: (@Composable FlowRowScope.() -> Unit)? = null,
     shape: Shape = MaterialTheme.shapes.medium,
     backgroundColor: Color = MaterialTheme.colors.surface,
     contentColor: Color = contentColorFor(backgroundColor),
@@ -54,7 +54,7 @@ fun ScrollableAlertDialog(
             content = content?.let { {
                 Column(Modifier.weight(1f, fill = false)) { content() }
             } },
-            buttons = buttons,
+            buttonRow = buttonRow,
             shape = shape,
             backgroundColor = backgroundColor,
             contentColor = contentColor
@@ -84,7 +84,7 @@ Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie co
                     .verticalScroll(scrollState)
             )
         },
-        buttons = {
+        buttonRow = {
             TextButton(onClick = {}) { Text("Cancel") }
             TextButton(onClick = {}) { Text("OK") }
         },

@@ -178,9 +178,11 @@ link_mapy_tactile.png          fair use          used while linking and promotin
 link_osmlab.png                fair use          used while linking and promoting this project
 link_sunders.png               fair use          used while linking and promoting this project
 link_figuregrounder.png        fair use          used while linking and promoting this project
+link_gomap.svg                 ISC               https://github.com/bryceco/GoMap/blob/master/src/AppIcon.svg
 link_indoorequal.png           fair use          used while linking and promoting this project
 link_myosmatic.png             fair use          used while linking and promoting this project
 link_opnvkarte.png             fair use          used while linking and promoting this project
+link_terraink.xml              fair use          used while linking and promoting this project
 link_thenandnow.png            fair use          used while linking and promoting this project
 link_openstreetbrowser.png     fair use          used while linking and promoting this project
 link_photon.png                fair use          used while linking and promoting this project
@@ -332,6 +334,7 @@ surface_fine_gravel.jpg        CC0               https://commons.wikimedia.org/w
 surface_grass.jpg              CC-BY-SA 2.0      https://commons.wikimedia.org/wiki/File:Footpath_through_the_long_grass_near_Southorpe_Bottom_(geograph_4621359).jpg (Richard Humphrey)
 surface_grass_paver.jpg        Public Domain     https://commons.wikimedia.org/wiki/File:Rasenpflasterstein_1.jpg (Immanuel Giel)
 surface_gravel.jpg             CC-BY 3.0         https://commons.wikimedia.org/wiki/File:Gravel_at_the_top_of_Vidova_gora,_island_of_Bra%C4%8D,_Croatia.jpg (Ante Perkovic)
+surface_laterite.jpg           CC0               https://commons.wikimedia.org/wiki/File:Dry_laterite_road_with_blocky_desiccation_cracking_between_wheel_tracks.jpg
 surface_mud.jpg                CC-BY-SA 3.0      https://commons.wikimedia.org/wiki/File:Dirt_road,_Ond%C5%99ejovsko_(4).jpg (Pavel Ševela [sevela.p])
 surface_metal.jpg              Public Domain     https://commons.wikimedia.org/wiki/File:Metal_steel_surface.jpg (Titus Tscharntke)
 surface_paved.jpg              CC0               https://www.goodfreephotos.com/united-states/indiana/hoosier-hill/hooiser-hill-road-near-the-top-indiana.jpg.php
@@ -386,7 +389,7 @@ tactile_paving3.jpg            CC-BY 2.0         https://commons.wikimedia.org/w
 
 tourism_information_board.jpg  CC-BY-SA 4.0      https://commons.wikimedia.org/wiki/File:Avon_Valley_Nature_Reserve_Information_Board.jpg (Richard Avery)
 tourism_information_guidepo... CC-BY-SA 4.0      https://commons.wikimedia.org/wiki/File:Swiss_Hiking_Network_-_Guidepost_-_Tannmattegg.jpg (Gubaer)
-tourism_information_map.jpg    CC0               https://commons.wikimedia.org/wiki/File:Myrstigen_track_information_board.jpg (W.carter)
+tourism_information_map.jpg    CC-BY-SA 4.0      https://commons.wikimedia.org/wiki/File:Wanderkarte_Ebelsbacher_Runden_beim_Schloss_Gleisenau.jpg (Stephan van Helden)
 tourism_information_office.jpg CC-BY-SA 4.0      https://commons.wikimedia.org/wiki/File:Tourist_information_shop,_Delft_(2018).jpg (Donald Trung)
 tourism_information_termina... CC-BY 4.0         https://wiki.openstreetmap.org/wiki/File:Uh%C5%99%C3%ADn%C4%9Bves,_Nov%C3%A9_n%C3%A1m%C4%9Bst%C3%AD,_informa%C4%8Dn%C3%AD_stojan.jpg (ŠJů)
 
@@ -422,7 +425,6 @@ vibrating_button_illustrati... CC-BY 4.0         Tobias Zwick
 vibrating_button_i... (MCC234) CC0               CJ Malone
 vibrating_button_i... (MCC505) CC0               https://commons.wikimedia.org/wiki/File:An_Australian_pedestrian_crossing_button.jpg (James Cridland)
 
-ic_quest_tree.xml              Public Domain     https://commons.wikimedia.org/wiki/File:Broccoli-tree.svg (Dvortygirl)
 ic_quest_website.xml           Public Domain     https://commons.wikimedia.org/wiki/File:Web_(89510)_-_The_Noun_Project.svg
 
 crossing_type_signals_zebra... CC BY-SA 4.0      https://commons.wikimedia.org/wiki/File:Passage_pi%C3%A9ton_Cours_Lafayette_%C3%A0_Lyon_trottoir_oppos%C3%A9,_d%C3%A9but_du_Square_J%C3%A9r%C3%B4me_B%C3%A9rerd.jpg (Benoît Prieur)

@@ -1,12 +1,12 @@
 package de.westnordost.streetcomplete.quests.max_speed
 
 import de.westnordost.streetcomplete.data.meta.SpeedMeasurementUnit.*
-import de.westnordost.streetcomplete.quests.max_speed.MaxSpeedSign.Type.*
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryChange
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryModify
 import de.westnordost.streetcomplete.osm.maxspeed.Speed
+import de.westnordost.streetcomplete.quests.max_speed.MaxSpeedSign.Type.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -117,7 +117,7 @@ class MaxSpeedAnswerTest {
         )
     }
 
-    @Test fun `use subdivision (only) in regions where it matters`() {
+    @Test fun `use subdivision in regions where it matters`() {
         assertEquals(
             setOf(StringMapEntryAdd("maxspeed:type", "BE-VLG:urban")),
             MaxSpeedAnswer.NoSignWithRoadType(RoadType.URBAN).appliedTo(mapOf(), "BE-VLG")

@@ -19,12 +19,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.Button
-import androidx.compose.material.Checkbox
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.LocalContentColor
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideTextStyle
+import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -223,7 +223,7 @@ private fun BoxScope.WeeklyOsmNewspaperContent(
             }
         }
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(
+            Switch(
                 checked = dontShowAgain,
                 onCheckedChange = {
                     dontShowAgain = it
@@ -231,7 +231,7 @@ private fun BoxScope.WeeklyOsmNewspaperContent(
                 },
             )
             Text(
-                text = stringResource(Res.string.dialog_dont_notify_again),
+                text = stringResource(Res.string.dialog_dont_notify_again2),
                 style = MaterialTheme.typography.body1
             )
         }

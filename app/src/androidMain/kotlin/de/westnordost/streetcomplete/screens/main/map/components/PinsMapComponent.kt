@@ -4,7 +4,6 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.res.Configuration
 import androidx.annotation.UiThread
-import androidx.core.graphics.Insets
 import com.google.gson.JsonObject
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
@@ -12,6 +11,7 @@ import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.preferences.Theme
 import de.westnordost.streetcomplete.screens.main.map.createPinBitmap
 import de.westnordost.streetcomplete.screens.main.map.maplibre.MapImages
+import de.westnordost.streetcomplete.screens.main.map.maplibre.Padding
 import de.westnordost.streetcomplete.screens.main.map.maplibre.clear
 import de.westnordost.streetcomplete.screens.main.map.maplibre.getEnclosingCamera
 import de.westnordost.streetcomplete.screens.main.map.maplibre.isArea
@@ -145,7 +145,7 @@ class PinsMapComponent(
                 circleStrokeColor("#aaaaaa"),
                 circleRadius(5f),
                 circleStrokeWidth(1f),
-                circleTranslate(arrayOf(0f, if (prefs.prefs.getBoolean(Prefs.OFFSET_FIX, false)) 0f else -8f)), // so that it hides behind the pin
+                circleTranslate(arrayOf(0f, if (prefs.getBoolean(Prefs.OFFSET_FIX, false)) 0f else -8f)), // so that it hides behind the pin
                 circleTranslateAnchor(Property.CIRCLE_TRANSLATE_ANCHOR_VIEWPORT),
             ),
         CircleLayer("pin-quest-dot-layer", DOT_SOURCE)
@@ -235,7 +235,7 @@ class PinsMapComponent(
             ?.mapNotNull { (it.geometry() as? Point)?.toLatLon() }
             ?.enclosingBoundingBox()
             ?: return
-        val targetPos = map.getEnclosingCamera(bbox, Insets.NONE) ?: return
+        val targetPos = map.getEnclosingCamera(bbox, Padding(0.0, 0.0, 0.0, 0.0)) ?: return
 
         // don't zoom in fully: leave some space to show the full pins, and limit max zoom
         val targetZoom = min(targetPos.zoom - 0.25, 19.0)

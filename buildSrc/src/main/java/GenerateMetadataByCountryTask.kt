@@ -3,11 +3,12 @@ import com.esotericsoftware.yamlbeans.YamlReader
 import com.esotericsoftware.yamlbeans.YamlWriter
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.io.StringWriter
-import java.net.URL
+import java.net.URI
 
 /** generate [country code].yml files from [property].yml files, for example
  *  popularSports.yml:
@@ -19,13 +20,11 @@ import java.net.URL
  *  popularSports: [soccer, tennis]  */
 open class GenerateMetadataByCountryTask : DefaultTask() {
 
-    @get:Input lateinit var sourceDir: String
-    @get:Input lateinit var targetDir: String
+    @get:InputDirectory lateinit var sourceDir: File
+    @get:OutputDirectory lateinit var targetDir: File
 
     @TaskAction fun run() {
-        val sourceDir = File(sourceDir)
-        val targetDir = File(targetDir)
-        val githubDirectoryListingUrl = URL("https://api.github.com/repos/streetcomplete/countrymetadata/contents/data")
+        val githubDirectoryListingUri = URI("https://api.github.com/repos/streetcomplete/countrymetadata/contents/data")
 
         // create / clear target directory
         targetDir.mkdirs()
@@ -33,7 +32,7 @@ open class GenerateMetadataByCountryTask : DefaultTask() {
 
         // source data: map of property -> country code -> value
         val metadataByProperty =
-            fetchCountryMetadata(githubDirectoryListingUrl) + readLocalCountryMetadata(sourceDir)
+            fetchCountryMetadata(githubDirectoryListingUri) + readLocalCountryMetadata()
 
         // target data: map of country code -> property -> value
         val metadataByCountry: MutableMap<String, MutableMap<String, Any>> = mutableMapOf()
@@ -69,7 +68,7 @@ open class GenerateMetadataByCountryTask : DefaultTask() {
     }
 
     /** Read country metadata. Returns map of file name -> contents */
-    private fun readLocalCountryMetadata(sourceDir: File): Map<String, Map<String, Any>> =
+    private fun readLocalCountryMetadata(): Map<String, Map<String, Any>> =
         sourceDir.listFiles().orEmpty()
             .filter { it.isFile && it.name.endsWith(".yml") }
             .associate { it.name.withoutExtension to YamlReader(it.readText()).read() as Map<String, Any> }
@@ -77,11 +76,11 @@ open class GenerateMetadataByCountryTask : DefaultTask() {
     private val json = Json { ignoreUnknownKeys = true }
 
     /** Fetch country metadata. Returns map of file name -> contents */
-    private fun fetchCountryMetadata(sourceGithubDirectoryUrl: URL): Map<String, Map<String, Any>> =
-        json.decodeFromString<List<GithubDirectoryListingItem>>(sourceGithubDirectoryUrl.readText())
+    private fun fetchCountryMetadata(sourceGithubDirectoryUri: URI): Map<String, Map<String, Any>> =
+        json.decodeFromString<List<GithubDirectoryListingItem>>(sourceGithubDirectoryUri.toURL().readText())
             .filter { it.type == "file" && it.name.endsWith(".yml") }
             .associate {
-                val response = URL(it.download_url).readText()
+                val response = URI(it.download_url).toURL().readText()
                 it.name.withoutExtension to YamlReader(response).read() as Map<String, Any>
             }
 }

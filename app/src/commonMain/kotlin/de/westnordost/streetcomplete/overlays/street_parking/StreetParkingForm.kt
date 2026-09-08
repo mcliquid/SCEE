@@ -1,7 +1,6 @@
 package de.westnordost.streetcomplete.overlays.street_parking
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -65,7 +64,6 @@ import org.jetbrains.compose.resources.stringResource
                 parking?.floatingIcon?.let { painterResource(it) }
             },
             lastPicked = lastPicked,
-            lastPickedContentPadding = PaddingValues(start = 48.dp, end = 56.dp),
         )
 
         if (width != null) {

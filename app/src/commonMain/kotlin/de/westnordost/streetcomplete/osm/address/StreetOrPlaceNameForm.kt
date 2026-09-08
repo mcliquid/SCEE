@@ -11,12 +11,14 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.paint
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
+import de.westnordost.streetcomplete.ApplicationConstants.MAX_OSM_TAG_VALUE_LENGTH
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.ButtonStyle
 import de.westnordost.streetcomplete.ui.common.DropdownButton
@@ -103,16 +105,19 @@ private fun NameInput(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier,
-        placeholder = if (!suggestion.isNullOrEmpty()) { {
-            BasicText(
+        placeholder = if (!suggestion.isNullOrEmpty()) {
+            { BasicText(
                 text = suggestion,
                 style = textStyle.copy(color = textStyle.color.copy(alpha = 0.2f)),
                 // so that the text aligns center, just like the actual text
                 modifier = Modifier.fillMaxWidth(),
                 maxLines = 1,
                 autoSize = TextAutoSize.StepBased(maxFontSize = textStyle.fontSize)
-            )
-        } } else null,
+            ) }
+        } else {
+            null
+        },
         textStyle = textStyle,
+        isError = value.length > MAX_OSM_TAG_VALUE_LENGTH,
     )
 }

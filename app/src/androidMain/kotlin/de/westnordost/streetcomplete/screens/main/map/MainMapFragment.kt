@@ -1,16 +1,16 @@
 package de.westnordost.streetcomplete.screens.main.map
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.PointF
-import android.hardware.SensorManager
-import android.location.Location
 import android.os.Bundle
+import android.widget.Toast
 import androidx.annotation.DrawableRes
-import androidx.annotation.UiThread
 import androidx.core.content.getSystemService
-import androidx.core.graphics.Insets
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesSource
 import de.westnordost.streetcomplete.data.edithistory.EditHistorySource
 import de.westnordost.streetcomplete.data.edithistory.EditKey
@@ -38,20 +38,22 @@ import de.westnordost.streetcomplete.screens.main.map.components.StyleableOverla
 import de.westnordost.streetcomplete.screens.main.map.components.TracksMapComponent
 import de.westnordost.streetcomplete.screens.main.map.maplibre.CameraPosition
 import de.westnordost.streetcomplete.screens.main.map.maplibre.MapImages
+import de.westnordost.streetcomplete.screens.main.map.maplibre.Padding
 import de.westnordost.streetcomplete.screens.main.map.maplibre.camera
 import de.westnordost.streetcomplete.screens.main.map.maplibre.toLatLon
-import de.westnordost.streetcomplete.screens.settings.loadCustomGeometryText
+import de.westnordost.streetcomplete.screens.settings.customGeometryFile
 import de.westnordost.streetcomplete.screens.settings.loadGpxTrackPoints
-import de.westnordost.streetcomplete.util.ktx.currentDisplay
+import de.westnordost.streetcomplete.ui.common.quest.Marker
 import de.westnordost.streetcomplete.util.ktx.dpToPx
-import de.westnordost.streetcomplete.util.ktx.isLocationAvailable
 import de.westnordost.streetcomplete.util.ktx.toLatLon
 import de.westnordost.streetcomplete.util.ktx.toLocation
+import de.westnordost.streetcomplete.util.ktx.toast
 import de.westnordost.streetcomplete.util.ktx.viewLifecycleScope
-import de.westnordost.streetcomplete.util.location.FineLocationManager
-import de.westnordost.streetcomplete.util.location.LocationAvailabilityReceiver
+import de.westnordost.streetcomplete.util.logs.Log
+import io.github.vinceglb.filekit.readString
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import org.koin.android.ext.android.inject
 import org.maplibre.android.geometry.LatLng
@@ -59,11 +61,24 @@ import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.layers.Property
 import org.maplibre.android.style.layers.PropertyFactory.visibility
+import org.maplibre.compose.location.AndroidOrientationProvider
+import org.maplibre.compose.location.Location
+import org.maplibre.compose.location.LocationEvent
+import org.maplibre.compose.location.Orientation
+import org.maplibre.compose.location.OrientationProvider
+import org.maplibre.compose.location.PositionWithAccuracy
+import org.maplibre.spatialk.units.Bearing
+import org.maplibre.spatialk.units.DMS
+import org.maplibre.spatialk.units.International
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeSource
 import kotlin.math.PI
+import java.io.File
+import kotlin.time.Duration.Companion.minutes
 
 /** This is the map shown in the main view. It manages a map that shows the quest pins, quest
  *  geometry, overlays, tracks, location... */
-class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
+class MainMapFragment : MapFragment() {
 
     private val questTypeOrderSource: QuestTypeOrderSource by inject()
     private val questTypeRegistry: QuestTypeRegistry by inject()
@@ -72,13 +87,11 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
     private val mapDataSource: MapDataWithEditsSource by inject()
     private val selectedOverlaySource: SelectedOverlaySource by inject()
     private val downloadedTilesSource: DownloadedTilesSource by inject()
-    private val levelFilter: LevelFilter by inject()
-    private val locationAvailabilityReceiver: LocationAvailabilityReceiver by inject()
     private val surveyChecker: SurveyChecker by inject()
     private val prefs: Preferences by inject()
+    private val levelFilter: LevelFilter by inject()
 
-    private lateinit var compass: Compass
-    private lateinit var locationManager: FineLocationManager
+    private lateinit var orientationProvider: OrientationProvider
 
     private var mapImages: MapImages? = null
     private var geometryMarkersMapComponent: GeometryMarkersMapComponent? = null
@@ -165,28 +178,30 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        compass = Compass(
-            context.getSystemService<SensorManager>()!!,
-            context.currentDisplay,
-            this::onCompassRotationChanged
+        orientationProvider = AndroidOrientationProvider(
+            context = context,
+            updateInterval = 33.milliseconds,
+            coroutineScope = lifecycleScope
         )
-        lifecycle.addObserver(compass)
-        locationManager = FineLocationManager(context, this::onLocationChanged)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                orientationProvider.orientation.collect { orientation ->
+                    onCompassRotationChanged(orientation)
+                }
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState != null) {
-            displayedLocation = savedInstanceState.getParcelable(DISPLAYED_LOCATION)
+            val position: PositionWithAccuracy? =
+                savedInstanceState.getString(DISPLAYED_POSITION)?.let { Json.decodeFromString(it) }
+            Log.i("test", "create with loc")
+            displayedLocation = position?.let { Location(it, timestamp = TimeSource.Monotonic.markNow()) }
             isRecordingTracks = savedInstanceState.getBoolean(TRACKS_IS_RECORDING)
             tracks = Json.decodeFromString(savedInstanceState.getString(TRACKS)!!)
         }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        locationAvailabilityReceiver.addListener(::onLocationAvailabilityChanged)
-        onLocationAvailabilityChanged(requireContext().isLocationAvailable)
     }
 
     override suspend fun onMapStyleLoaded(map: MapLibreMap, style: Style) {
@@ -213,7 +228,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         viewLifecycleOwner.lifecycle.addObserver(tracksMapComponent!!)
 
         pinsMapComponent = PinsMapComponent(context, context.contentResolver, map, mapImages!!, prefs, ::onClickPin)
-        geometryMapComponent = FocusGeometryMapComponent(context.contentResolver, map, prefs.prefs)
+        geometryMapComponent = FocusGeometryMapComponent(context.contentResolver, map, prefs)
         viewLifecycleOwner.lifecycle.addObserver(geometryMapComponent!!)
 
         styleableOverlayMapComponent = StyleableOverlayMapComponent(context, map, mapImages!!, fingerRadius, ::onClickElement)
@@ -267,7 +282,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         restoreMapState()
         centerCurrentPositionIfFollowing()
 
-        questPinsManager = QuestPinsManager(map, pinsMapComponent!!, questTypeOrderSource, questTypeRegistry, visibleQuestsSource, prefs.prefs, mapDataSource, selectedOverlaySource)
+        questPinsManager = QuestPinsManager(map, pinsMapComponent!!, questTypeOrderSource, questTypeRegistry, visibleQuestsSource, prefs, mapDataSource, selectedOverlaySource)
         questPinsManager!!.isVisible = pinMode == PinMode.QUESTS
         viewLifecycleOwner.lifecycle.addObserver(questPinsManager!!)
 
@@ -278,7 +293,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         styleableOverlayManager = StyleableOverlayManager(map, styleableOverlayMapComponent!!, mapDataSource, selectedOverlaySource, levelFilter)
         viewLifecycleOwner.lifecycle.addObserver(styleableOverlayManager!!)
 
-        downloadedAreaManager = DownloadedAreaManager(downloadedAreaMapComponent!!, downloadedTilesSource, prefs.prefs)
+        downloadedAreaManager = DownloadedAreaManager(downloadedAreaMapComponent!!, downloadedTilesSource, prefs)
         viewLifecycleOwner.lifecycle.addObserver(downloadedAreaManager!!)
 
         onSelectedOverlayChanged()
@@ -286,7 +301,8 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         loadGpxTrack()
         loadCustomGeometry()
 
-        locationMapComponent?.targetLocation = displayedLocation
+        Log.i("test", "setup location ${displayedLocation?.position}")
+        locationMapComponent?.targetPositionWithAccuracy = displayedLocation?.position
 
         val positionsLists = tracks.map { track -> track.map { it.position } }
         tracksMapComponent?.setTracks(positionsLists, isRecordingTracks)
@@ -294,14 +310,12 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
 
     override fun onStop() {
         super.onStop()
-        locationAvailabilityReceiver.removeListener(::onLocationAvailabilityChanged)
         saveMapState()
-        stopPositionTracking()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putParcelable(DISPLAYED_LOCATION, displayedLocation)
+        outState.putString(DISPLAYED_POSITION, Json.encodeToString(displayedLocation?.position))
         // the amount of data one can put into a bundle is limited, let's cut off at 1000 points
         outState.putString(TRACKS, Json.encodeToString(tracks.takeLastNested(1000)))
         outState.putBoolean(TRACKS_IS_RECORDING, isRecordingTracks)
@@ -315,13 +329,13 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
     //endregion
     fun loadGpxTrack() {
         val gpxPoints = if (prefs.getBoolean(Prefs.SHOW_GPX_TRACK, false))
-            loadGpxTrackPoints(requireContext()) ?: emptyList()
+            loadGpxTrackPoints({ requireContext().toast(R.string.pref_gpx_track_loading_error,  Toast.LENGTH_LONG) }) ?: emptyList()
         else emptyList()
         tracksMapComponent?.setGpxTrack(gpxPoints)
     }
 
     fun loadCustomGeometry() {
-        val text = context?.let { loadCustomGeometryText(it) }
+        val text = runCatching { runBlocking { customGeometryFile.readString() } }.getOrNull()
         if (text == null || !prefs.getBoolean(Prefs.SHOW_CUSTOM_GEOMETRY, false)) customGeometryMapComponent?.clear()
         else customGeometryMapComponent?.set(text)
     }
@@ -355,27 +369,36 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         return true
     }
 
-    @SuppressLint("MissingPermission")
-    private fun onLocationAvailabilityChanged(isAvailable: Boolean) {
-        if (!isAvailable) {
-            displayedLocation = null
-            locationMapComponent?.targetLocation = null
-        } else {
-            locationManager.getCurrentLocation()
+    private fun onCompassRotationChanged(orientation: Orientation?) {
+        val rotation = orientation
+            ?.orientation
+            ?.value
+            ?.clockwiseRotationTo(Bearing.North)
+            ?.toDouble(DMS.Degrees)
+        locationMapComponent?.targetRotation = rotation?.let { rotation - (map?.camera?.rotation ?: 0.0) }?.toFloat()
+    }
+
+    fun onLocationEvent(locationEvent: LocationEvent) {
+        when (locationEvent) {
+            is LocationEvent.Fix -> {
+                val location = locationEvent.location
+                if (location.timestamp.elapsedNow() > 10.minutes) return // on startup we move to the last known position, which is usually useless and incredibly annoying
+                displayedLocation = location
+                surveyChecker.addRecentLocation(location.toLocation())
+                locationMapComponent?.targetPositionWithAccuracy = location.position
+                addTrackLocation(location)
+                centerCurrentPositionIfFollowing()
+            }
+            is LocationEvent.Unavailable -> {
+                locationMapComponent?.targetPositionWithAccuracy = null
+                displayedLocation = null
+                isNavigationMode = false
+
+                tracks = ArrayList()
+                tracks.add(ArrayList())
+                tracksMapComponent?.clear()
+            }
         }
-    }
-
-    private fun onCompassRotationChanged(rot: Float, tilt: Float) {
-        locationMapComponent?.rotation = (rot * 180 / PI) - (map?.camera?.rotation ?: 0.0)
-    }
-
-    private fun onLocationChanged(location: Location) {
-        displayedLocation = location
-        surveyChecker.addRecentLocation(location.toLocation())
-        locationMapComponent?.targetLocation = location
-        addTrackLocation(location)
-        compass.setLocation(location)
-        centerCurrentPositionIfFollowing()
         listener?.onDisplayedLocationDidChange()
     }
 
@@ -424,17 +447,23 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
 
     private fun addTrackLocation(location: Location) {
         // ignore if too imprecise
-        if (location.accuracy > MIN_TRACK_ACCURACY) return
+        val accuracy = location.position.accuracy?.toFloat(International.Meters)
+        if (accuracy != null && accuracy > MIN_TRACK_ACCURACY) return
         val lastLocation = tracks.last().lastOrNull()
 
         // create new track if last position too old
         if (lastLocation != null && !isRecordingTracks) {
-            if ((displayedLocation?.time ?: 0) - lastLocation.time > MAX_TIME_BETWEEN_LOCATIONS) {
+            if ((displayedLocation?.timestamp?.elapsedNow()?.inWholeMilliseconds ?: 0) - lastLocation.time > MAX_TIME_BETWEEN_LOCATIONS) {
                 tracks.add(ArrayList())
                 tracksMapComponent?.startNewTrack(false)
             }
         }
-        val trackpoint = Trackpoint(location.toLatLon(), location.time, location.accuracy, location.altitude.toFloat())
+        val trackpoint = Trackpoint(
+            position = location.position.value.toLatLon(),
+            time = location.timestamp.elapsedNow().inWholeMilliseconds,
+            accuracy = accuracy ?: 0f,
+            elevation = location.position.value.altitude?.toFloat() ?: 0f
+        )
 
         tracks.last().add(trackpoint)
         // in rare cases, onLocationChanged may already be called before the view has been created
@@ -449,8 +478,8 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
     //region Control focusing on and highlighting edit / quest / element
 
     /** Focus the view on the given geometry */
-    fun startFocus(geometry: ElementGeometry, insets: Insets) {
-        geometryMapComponent?.beginFocusGeometry(geometry, insets)
+    fun startFocus(geometry: ElementGeometry, padding: Padding?) {
+        geometryMapComponent?.beginFocusGeometry(geometry, padding)
     }
 
     /** End the focussing but do not return to position before focussing */
@@ -498,9 +527,9 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         selectedPinsMapComponent?.clear()
     }
 
-    override fun putMarkersForCurrentHighlighting(markers: Iterable<Marker>) {
+    fun setMarkersForCurrentHighlighting(markers: Iterable<Marker>) {
         viewLifecycleScope.launch(Dispatchers.Default) {
-            geometryMarkersMapComponent?.putAll(markers)
+            geometryMarkersMapComponent?.setAll(markers)
         }
     }
 
@@ -508,44 +537,14 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
         questPinsManager?.setQuestOrder(reverse)
     }
 
-    @UiThread override fun deleteMarkerForCurrentHighlighting(geometry: ElementGeometry) {
-        geometryMarkersMapComponent?.delete(geometry)
-    }
-
-    @UiThread override fun clearMarkersForCurrentHighlighting() {
-        geometryMarkersMapComponent?.clear()
-    }
-
     //endregion
 
     //region Control position tracking
-
-    @SuppressLint("MissingPermission")
-    fun startPositionTracking() {
-        locationMapComponent?.isVisible = true
-        locationManager.requestUpdates(prefs.prefs.getInt(Prefs.GPS_INTERVAL, 0) * 1000L, prefs.prefs.getInt(Prefs.NETWORK_INTERVAL, 5) * 1000L, 1f)
-    }
-
-    fun stopPositionTracking() {
-        locationMapComponent?.isVisible = false
-        locationManager.removeUpdates()
-    }
-
-    fun clearPositionTracking() {
-        stopPositionTracking()
-        displayedLocation = null
-        isNavigationMode = false
-
-        tracks = ArrayList()
-        tracks.add(ArrayList())
-        tracksMapComponent?.clear()
-    }
 
     fun startPositionTrackRecording() {
         isRecordingTracks = true
         _recordedTracks.clear()
         tracks.add(ArrayList())
-        locationMapComponent?.isVisible = true
         tracksMapComponent?.startNewTrack(true)
     }
 
@@ -558,7 +557,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
     }
 
     private fun centerCurrentPosition() {
-        val displayedPosition = displayedLocation?.toLatLon() ?: return
+        val displayedPosition = displayedLocation?.position?.value?.let { it.toLatLon() } ?: return
 
         updateCameraPosition(600) {
             if (isNavigationMode) {
@@ -617,7 +616,7 @@ class MainMapFragment : MapFragment(), ShowsGeometryMarkers {
     //endregion
 
     companion object {
-        private const val DISPLAYED_LOCATION = "displayed_location"
+        private const val DISPLAYED_POSITION = "displayed_position"
         private const val TRACKS = "tracks"
         private const val TRACKS_IS_RECORDING = "tracks_is_recording"
 

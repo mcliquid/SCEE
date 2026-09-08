@@ -21,7 +21,6 @@ import de.westnordost.osm_opening_hours.model.MonthsOrDateSelector
 import de.westnordost.osm_opening_hours.model.SingleMonth
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.util.locale.DateTimeTextSymbolStyle
-import org.jetbrains.compose.resources.stringResource
 
 /** A text that shows a list of localized months. E.g. Apr-Aug, Dec */
 @Composable
@@ -62,9 +61,7 @@ private fun getMonthsString(
     locale: Locale,
     layoutDirection: LayoutDirection,
 ): String {
-    if (months.isEmpty()) {
-        return "(" + stringResource(Res.string.quest_openingHours_unspecified_range) + ")"
-    }
+    if (months.isEmpty()) return ""
     val style = DateTimeTextSymbolStyle.Short
 
     return months
@@ -83,8 +80,8 @@ private fun MonthsOrDateSelector.toLocalizedString(
     style: DateTimeTextSymbolStyle = DateTimeTextSymbolStyle.Short,
     layoutDirection: LayoutDirection = Ltr,
     locale: Locale? = null,
-): String {
-    return when (this) {
+): String =
+    when (this) {
         is MonthRange -> {
             if (year != null) throw UnsupportedOperationException()
             localizedRange(
@@ -101,4 +98,3 @@ private fun MonthsOrDateSelector.toLocalizedString(
         // any date not supported
         else -> throw UnsupportedOperationException()
     }
-}

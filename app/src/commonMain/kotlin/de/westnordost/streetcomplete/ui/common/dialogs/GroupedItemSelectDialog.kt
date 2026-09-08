@@ -26,7 +26,7 @@ import org.jetbrains.compose.resources.stringResource
 /** Grouped item select dialog, somewhat similar to ItemSelectDialog only that we have a have a
  *  grouping of values. */
 @Composable
-fun <I, G: Group<I>> GroupedItemSelectDialog(
+fun <I, G : Group<I>> GroupedItemSelectDialog(
     onDismissRequest: () -> Unit,
     groups: List<G>,
     onSelected: (item: I) -> Unit,
@@ -66,7 +66,7 @@ fun <I, G: Group<I>> GroupedItemSelectDialog(
                     .verticalScroll(scrollState)
             )
         },
-        buttons = {
+        buttonRow = {
             TextButton(onClick = onDismissRequest) {
                 Text(stringResource(Res.string.cancel))
             }

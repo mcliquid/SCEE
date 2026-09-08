@@ -1,5 +1,5 @@
 # Do not edit. Data is from res/country/metadata and https://github.com/streetcomplete/countrymetadata
-atmOperators: [ANZ, Commonwealth Bank, RediATM, NAB, Bendigo Bank, BankSA, Bank SA, Westpac]
-chargingStationOperators: [Chargefox, Jolt, Tesla, NRMA, Evie Networks, 'Tesla, Inc.']
+atmOperators: [ANZ, Commonwealth Bank, NAB, RediATM, Bendigo Bank, BankSA, Bank SA, Westpac, Armaguard]
+chargingStationOperators: [Chargefox, Tesla, Jolt, NRMA, Evie Networks, 'Tesla, Inc.']
 defaultSpeedLimitHasUrbanOrRural: true
 parcelLockerBrand: [Australia Post]

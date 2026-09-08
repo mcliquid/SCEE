@@ -14,13 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.dialogs.InfoDialog
 import de.westnordost.streetcomplete.ui.theme.titleLarge
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
 fun DonationsDialog(
@@ -40,7 +40,7 @@ fun DonationsDialog(
 }
 
 @Composable
-fun DonationsGooglePlayDialog(onDismissRequest: () -> Unit) {
+fun AltDonationsDialog(onDismissRequest: () -> Unit) {
     InfoDialog(
         onDismissRequest = onDismissRequest,
         text = { Text(stringResource(Res.string.about_description_donate_google_play3)) }
@@ -109,6 +109,6 @@ private fun DonationsDialogPreview() {
 
 @Preview
 @Composable
-private fun DonationsGooglePlayDialogPreview() {
-    DonationsGooglePlayDialog({})
+private fun AltDonationsDialogPreview() {
+    AltDonationsDialog({})
 }

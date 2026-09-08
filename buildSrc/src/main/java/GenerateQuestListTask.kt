@@ -1,13 +1,13 @@
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Console
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import java.io.File
-import java.net.URL
+import java.net.URI
 
 const val wikiRowSpan2 = " rowspan=\"2\" |"
 const val noteQuestName = "OsmNoteQuest"
@@ -27,12 +27,12 @@ const val noteQuestPackageName = "note_discussion"
  *    (note that the "Default Priority" column may be different from the wiki)
  */
 open class GenerateQuestListTask : DefaultTask() {
-    @get:Input lateinit var targetFile: String
-    @get:InputDirectory lateinit var projectDirectory: File
+    @get:OutputFile lateinit var targetFile: File
+    @get:Console lateinit var projectDirectory: File
     @get:InputDirectory lateinit var questsDirectory: File
     @get:InputDirectory lateinit var iconsDirectory: File
     @get:InputFile lateinit var noteQuestFile: File
-    @get:InputFile lateinit var questsModuleFile: File
+    @get:InputFile lateinit var questTypesRegistryFile: File
     @get:InputFile lateinit var stringsFile: File
 
     private lateinit var wikiQuests: List<WikiQuest>
@@ -41,8 +41,8 @@ open class GenerateQuestListTask : DefaultTask() {
     fun run() {
         wikiQuests = parseWikiTable(getWikiTableContent())
 
-        val questFileContent = questsModuleFile.readText()
-        val questNameRegex = Regex("^ {4}\\d+ to ([A-Z][a-zA-Z0-9_])+\\(\\)", RegexOption.MULTILINE)
+        val questFileContent = questTypesRegistryFile.readText()
+        val questNameRegex = Regex("^ {4}\\d+ to ([A-Z][a-zA-Z0-9_]*)\\(", RegexOption.MULTILINE)
         val questNames =
             listOf(noteQuestName) + questNameRegex.findAll(questFileContent).map { it.groupValues[1] }
 
@@ -104,7 +104,7 @@ open class GenerateQuestListTask : DefaultTask() {
     }
 
     private fun getQuestTitleStringNames(questName: String, questFileContent: String): List<String> {
-        val regex = Regex("(?<=R\\.string\\.)quest_\\w+")
+        val regex = Regex("(?<=Res\\.string\\.)quest_\\w+")
         val stringResourceNames = regex.findAll(questFileContent).toList().map { it.value }
 
         if (stringResourceNames.isEmpty()) {
@@ -137,7 +137,7 @@ open class GenerateQuestListTask : DefaultTask() {
     }
 
     private fun getQuestIcon(questName: String, questFileContent: String): File {
-        val regex = Regex("(?<=override val icon = R\\.drawable\\.quest_)\\w+")
+        val regex = Regex("(?<=override val icon = Res\\.drawable\\.quest_)\\w+")
         val iconName = regex.find(questFileContent)?.value
             ?: throw Error("Could not find the icon reference for quest $questName")
 
@@ -154,7 +154,7 @@ open class GenerateQuestListTask : DefaultTask() {
         val page = "StreetComplete/Quests"
         val section = 1 // "Released quest types" section
 
-        val apiUrl = URL("https://wiki.openstreetmap.org/w/api.php?action=parse&format=json&prop=wikitext&formatversion=2&page=$page&section=$section")
+        val apiUrl = URI("https://wiki.openstreetmap.org/w/api.php?action=parse&format=json&prop=wikitext&formatversion=2&page=$page&section=$section").toURL()
 
         val jsonString = apiUrl.openStream().bufferedReader().use { it.readText() }
 
@@ -208,7 +208,7 @@ open class GenerateQuestListTask : DefaultTask() {
             listOf(",,,,,") +
             existingRepoQuests.map { it.getCsvString(projectDirectory) }
 
-        File(targetFile).writeText(csvLines.joinToString("\n"))
+        targetFile.writeText(csvLines.joinToString("\n"))
     }
 }
 

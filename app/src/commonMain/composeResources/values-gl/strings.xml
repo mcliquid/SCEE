@@ -109,7 +109,6 @@ Porén, antes de subir as túas mudanzas, a aplicación comproba, mediante un &l
     <string name="quest_surface_value_sett">Lastra de pedra natural</string>
     <string name="quest_surface_value_wood">Madeira</string>
     <string name="quest_sidewalk_title">Esta rúa ten beirarrúa?</string>
-    <string name="quest_maxspeed_answer_noSign_info_urbanOrRural">Onde está a rúa?</string>
     <string name="quest_address_title">Cal é o número da porta deste edificio?</string>
     <string name="store_listing_short_description">Aplicación de cartografado para o OpenStreetMap</string>
     <string name="store_listing_full_description">Axuda a mellora-lo OpenStreetMap co StreetComplete!
@@ -117,7 +116,6 @@ Porén, antes de subir as túas mudanzas, a aplicación comproba, mediante un &l
 Esta aplicación procura información incompleta na túa veciñanza e amósaa en forma de tarefas nun mapa. Resolve cada unha visitando o lugar in situ e respondendo unha sinxela pregunta para así actualizar o mapa.
 
 A información engadida inclúese de xeito directo no OpenStreetMap no teu nome sen a necesidade de ningún outro editor.</string>
-    <string name="quest_name_answer_noName">Non ten nome…</string>
     <string name="quest_name_answer_noName_confirmation_title">Estás na certeza de que non ten nome?</string>
     <string name="quest_name_noName_confirmation_positive">Si, non ten nome</string>
     <string name="quest_openingHours_add_times">Engadir horarios da apertura</string>
@@ -176,9 +174,6 @@ A información engadida inclúese de xeito directo no OpenStreetMap no teu nome 
     <string name="quest_maxspeed_answer_noSign_confirmation">Miraches nas dúas beiras da rúa?
 Se non hai sinais ó longo de toda a rúa á que pertence o treito escollido, empregaranse os límites da velocidade xenéricos.</string>
     <string name="quest_maxspeed_answer_noSign_confirmation_positive">Mireino, non hai sinais</string>
-    <string name="quest_maxspeed_answer_noSign_urbanOrRural_description">As vías urbanas teñen unha velocidade xenérica inferior ás interurbanas.</string>
-    <string name="quest_maxspeed_answer_noSign_urbanOk">Área urbana</string>
-    <string name="quest_maxspeed_answer_noSign_ruralOk">Área interurbana</string>
     <string name="quest_maxspeed_answer_noSign_info_zone">Se hai un sinal coma este na rúa principal, non atoparás outros sinais dentro da zona porque o límite da velocidade sinalizado aí aplícase a toda a zona.</string>
     <string name="quest_sport_softball">Sóftbol</string>
     <string name="quest_sport_racquet">Raqueta</string>
@@ -197,11 +192,6 @@ Se non hai sinais ó longo de toda a rúa á que pertence o treito escollido, em
     <string name="underground_recycling_container">Contedor subterráneo</string>
     <string name="quest_streetName_answer_cantType">Non podo escribi-los símbolos que aparecen na sinal</string>
     <string name="quest_streetName_cantType_title">Non tes a lingua axeitada do teclado?</string>
-    <string name="quest_streetName_cantType_open_settings">Abrir axustes</string>
-    <string name="quest_streetName_cantType_open_store">Ir á tenda de aplicacións</string>
-    <string name="quest_streetName_cantType_description">Se empregas o teclado por defecto é posíbel que poidas muda-la distribución do teclado para a lingua que precisas nos seus axustes de entrada, bótalle unha ollada.
-
-Se iso non é posíbel, podes descarregar outro teclado na tenda de aplicacións. Algúns dos teclados que permiten multitude de idiomas son «Google Gboard», «SwiftKey» ou «Multiling O».</string>
     <string name="quest_streetName_menuItem_nolanguage">(sen concretar)</string>
     <string name="quest_fireHydrant_type_title">Que tipo de boca de incendios é?</string>
     <string name="quest_fireHydrant_type_pillar">Piar</string>
@@ -212,7 +202,6 @@ Se iso non é posíbel, podes descarregar outro teclado na tenda de aplicacións
     <string name="credits_contributors_title">Colaboradores do código</string>
     <string name="credits_author_title">Autor e mantedor</string>
     <string name="quest_maxspeed_answer_living_street">É unha rúa residencial</string>
-    <string name="quest_maxspeed_answer_living_street_confirmation_title">Entón hai un sinal como este?</string>
     <string name="quest_orchard_produce_title">Que é o que se cultiva aquí?</string>
     <string name="produce_grapes">Uvas</string>
     <string name="produce_agaves">Pitas ou agaves</string>
@@ -284,7 +273,6 @@ Se iso non é posíbel, podes descarregar outro teclado na tenda de aplicacións
     <string name="quest_buildingLevels_levelsLabel2">andares (sen conta-lo tellado)</string>
     <string name="quest_buildingLevels_answer_multipleLevels">É distinto para cada parte do edificio</string>
     <string name="quest_buildingLevels_answer_description">Nese caso limítate a poñe-lo número de andares da parte máis alta do edificio.</string>
-    <string name="quest_maxspeed_answer_noSign_singleOrDualCarriageway_description">Esta estrada ten calzadas separadas por algunha barreira física ou por unha zona verde? O límite de velocidade xenérico é distinto dependendo de se é o caso ou non.</string>
     <string name="about_category_feedback">Suxestións</string>
     <string name="quest_leave_new_note_photo">Anexar imaxe</string>
     <string name="quest_leave_new_note_photo_delete_title">Desexas elimina-la imaxe?</string>
@@ -449,7 +437,6 @@ Se iso non é posíbel, podes descarregar outro teclado na tenda de aplicacións
     <string name="quest_openingHours_no_sign">Non hai letreiro coas horas de apertura</string>
     <string name="quest_buildingType_sports_centre">Complexo deportivo</string>
     <string name="quest_buildingType_toilets">Servizos</string>
-    <string name="quest_maxspeed_sign_question">Que define o límite de velocidade?</string>
     <string name="quest_segregated_title">De que xeito están dispostos aquí a senda peonil e maila senda ciclista?</string>
     <string name="dialog_tutorial_upload">Para subi-las mudanzas de xeito manual, emprega o botón na barra das ferramentas semellante a este.</string>
     <string name="quest_segregated_separated">Separado un doutro</string>
@@ -487,7 +474,6 @@ Se iso non é posíbel, podes descarregar outro teclado na tenda de aplicacións
     <string name="theme_dark">Escuro</string>
     <string name="theme_system_default">Tema do sistema</string>
     <string name="action_open_location">Abrir localización noutra aplicación</string>
-    <string name="map_application_missing">Ningunha outra aplicación de mapas instalada</string>
     <string name="label_housenumber">número de edificio</string>
     <string name="quest_busStopShelter_covered">Toda a paraxe está cuberta</string>
     <string name="quest_ferry_pedestrian_title">Esta liña de ferri pode transportar persoas?</string>
@@ -502,7 +488,6 @@ Se iso non é posíbel, podes descarregar outro teclado na tenda de aplicacións
     <string name="quest_generic_answer_differs_along_the_way">Difire ó longo do camiño…</string>
     <string name="quest_split_way_description">Se a vía ten distintos atributos en diferentes treitos, o primeiro paso é dividir a vía. Despois diso podes responder a tarefa para cada treito dividido.
 Queres dividila agora?</string>
-    <string name="quest_split_way_tutorial">Preme na vía para dividila no punto ou puntos onde a resposta difire. Podes achegar o mapa para tentar ser o máis preciso posíbel.</string>
     <string name="quest_split_way_too_imprecise">Por favor achega máis</string>
     <string name="quest_split_way_many_splits_confirmation_description">Estas son divisións dabondo. Sempre pode dividirse a vía aínda máis despois.</string>
     <string name="quest_footwayPartSurface_title">Cal é a superficie da senda peonil aquí?</string>
@@ -686,7 +671,6 @@ logros</string>
     <string name="at_housenumber">número de edificio %1$s</string>
     <string name="quest_openingHours_add_off_days">Engadir días pechados</string>
     <string name="quest_openingHours_off_day">Día pechado</string>
-    <string name="quest_openingHours_unspecified_range">Sen especificar</string>
     <string name="quest_cycleway_resurvey_title">A infraestrutura ciclista segue sendo esta?</string>
     <string name="pref_title_resurvey_intervals">Frecuencia de revisión</string>
     <string name="resurvey_intervals_less_often">Menos a miúdo</string>
@@ -762,15 +746,9 @@ Se hai carrís reservados para buses, deixa unha nota no seu lugar.</string>
     <string name="quest_shop_gone_title">Que hai aquí agora no seu lugar?</string>
     <string name="quest_shop_gone_vacant_answer">Comercio baleiro…</string>
     <string name="quest_shop_gone_replaced_answer">Un…</string>
-    <string name="quest_shop_gone_replaced_answer_hint">Escribe o tipo de lugar aquí</string>
-    <string name="quest_shop_vacant_type_title">Este comercio estivo baleiro. Que hai aquí agora?</string>
     <string name="default_disabled_msg_go_inside_regional_warning">Este tipo de tarefa está desactivada de xeito predeterminado porque non é útil nalgunhas rexións e é probábel que teñas que entrar no lugar para poder responder a unha tarefa deste tipo.</string>
     <string name="quest_dietType_explanation_kosher">Os produtos kosher teñen que prepararse dacordo coas regras especiais do xudaísmo, e as axencias de certificación kashrut deben marcar os produtos en cumprimento.</string>
     <string name="quest_cycleway_answer_no_bicycle_infrastructure">Non hai carril bici de ningún tipo</string>
-    <string name="quest_cycleway_answer_no_bicycle_infrastructure_explanation">Coma sempre, toca un lado da ilustración, selecciona unha resposta axeitada e fai o mesmo co outro lado.
-
-Ten en conta tódalas opcións dispoñíbeis: algúns casos non son obvios, como por exemplo unha estrada dun só sentido que permite aos ciclistas ir en ambas direccións!</string>
-    <string name="quest_cycleway_answer_no_bicycle_infrastructure_title">Seleccionar que non hai carril bici</string>
     <string name="quest_construction_completed_at_known_date">Estará rematado na data…</string>
     <string name="quest_construction_completion_date_title">Cando estará completo?</string>
     <string name="quest_surface_value_clay">Arxila</string>
@@ -869,7 +847,9 @@ Os datos actualízanse após %1$s días e os datos non utilizados elimínanse de
     <string name="quest_bollard_type_foldable2">Pregable (con ou sen chave)</string>
     <string name="no_search_results">Non atopa nada</string>
     <string name="quest_selection_hint_title">Demasiadas tarefas?</string>
-    <string name="quest_selection_hint_message">A colaboración debería ser divertida! Se sintes que hai demasiadas tarefas sempre podes configurar nos axustes que tipo de cuestións que che plantexamos e a súa orde.</string>
+    <string name="quest_selection_hint_message">A colaboración debería ser divertida!
+
+Se sintes que hai demasiadas tarefas sempre podes configurar nos axustes que tipo de cuestións que che plantexamos e a súa orde.</string>
     <string name="quest_presets_preset_add">Engadir preaxuste</string>
     <string name="quest_presets_preset_name">Nome do preaxuste</string>
     <string name="quest_presets_default_name">Por defecto</string>
@@ -996,8 +976,6 @@ Senón tamén podes deixar unha nota (acompañada dunha foto).</string>
     <string name="quest_bicycle_parking_type_handlebarholder">Soporte de manillar</string>
     <string name="quest_bicycle_parking_access_title2">Quen pode aparcar unha bici aquí? Pode ser de pago ou de balde.</string>
     <string name="quest_playground_access_title2">Quen pode usar este parque infantil?</string>
-    <string name="quest_sidewalk_answer_none_title">Seleccionar que non hai beirarrúas</string>
-    <string name="quest_side_select_interface_explanation">Toca nunha beira e escolle a opción correspondente. Fai o mesmo para a outra beira se está presente.</string>
     <string name="ar_measure">Medir</string>
     <string name="ar_core_tracking_error_too_steep_angle">Ángulo demasiado agudo, retrocede un pouco</string>
     <string name="default_disabled_msg_no_ar">Necesitas unha cinta métrica para resolver esta tarefa, xa que a medición coa cámara non é compatible con este dispositivo.</string>
@@ -1199,8 +1177,6 @@ Queres facelo agora?</string>
     <string name="quest_placeName_no_name_answer">Non hai ningunha sinal co nome…</string>
     <string name="quest_road_width_unusualInput_confirmation_description">Esta anchura non parece estar ben. Recorda que debería ser desde unha beirarrúa ata a outra, incluíndo os aparcamentos na rúa, carrís bici, etc.</string>
     <string name="overlay_cycleway">Carrís bici</string>
-    <string name="bicycle_boulevard_is_a">É unha %1$s</string>
-    <string name="bicycle_boulevard_is_not_a">Non é unha %1$s</string>
     <string name="bicycle_boulevard">Ciclorrúa</string>
     <string name="separate_cycleway_no_or_allowed">Senda peonil, non hai ningunha sinalización explícita sobre as bicicletas (estará permitido ou non dependendo da lexislación)</string>
     <string name="separate_cycleway_non_segregated">Camiño explicitamente de uso compartido</string>
@@ -1451,7 +1427,6 @@ Un andar conta como andar do tellado se as súas fiestras están no tellado. Pol
     <string name="quest_charging_station_bicycles_title">Pódense cargar tamén bicicletas aquí?</string>
     <string name="quest_charging_station_bicycles_hint">Os adaptadores do cargador de bicicletas conéctanse aos enchufes habituais nas casas.</string>
     <string name="quest_tower_access_title">Quen pode acceder a esta estación? Podería ser gratuíta ou de pago.</string>
-    <string name="quest_charging_station_bicycles_answer_only">É só para bicicletas</string>
     <string name="quest_recycling_type_pet_bottles">Botellas PET</string>
     <string name="quest_maxweight_add_sign">Engadir sinal</string>
     <string name="quest_maxweight_remove_sign">Retirar sinal</string>

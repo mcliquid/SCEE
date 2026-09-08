@@ -23,6 +23,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.ui.common.TextField2
 import de.westnordost.streetcomplete.ui.common.TextFieldStyle
@@ -30,7 +31,6 @@ import de.westnordost.streetcomplete.ui.common.colors
 import de.westnordost.streetcomplete.ui.common.getContentPadding
 import de.westnordost.streetcomplete.ui.common.shape
 import de.westnordost.streetcomplete.util.locale.NumberFormatter
-import androidx.compose.ui.tooling.preview.Preview
 import kotlin.math.absoluteValue
 
 /**
@@ -46,6 +46,7 @@ fun DecimalInput(
     maxIntegerDigits: Int = Int.MAX_VALUE,
     maxFractionDigits: Int = Int.MAX_VALUE,
     isUnsigned: Boolean = false,
+    locale: Locale = Locale.current,
     style: TextFieldStyle = TextFieldStyle.Filled,
     enabled: Boolean = true,
     readOnly: Boolean = false,
@@ -63,12 +64,13 @@ fun DecimalInput(
     colors: TextFieldColors = style.colors,
     contentPadding: PaddingValues = style.getContentPadding(label != null),
 ) {
-    val locale = Locale.current
+    val acceptedDecimalSeparators = remember { setOf('.', ',', '٫') }
     val formatter = remember(locale, maxIntegerDigits, maxFractionDigits) {
         NumberFormatter(
             locale = locale,
             maxIntegerDigits = maxIntegerDigits,
-            maxFractionDigits = maxFractionDigits
+            maxFractionDigits = maxFractionDigits,
+            useGrouping = false
         )
     }
     // number value as text
@@ -99,6 +101,11 @@ fun DecimalInput(
     TextField2(
         value = textFieldValueState,
         onValueChange = { newTextFieldValueState ->
+            // replace all decimal separators to the localized decimal separator
+            val newTextFieldValueState = newTextFieldValueState.copy(
+                text = newTextFieldValueState.text.replace(acceptedDecimalSeparators, formatter.decimalSeparator)
+            )
+
             // cleared input -> value now null
             if (newTextFieldValueState.text.isEmpty() && lastValue != null) {
                 textFieldValueState = newTextFieldValueState
@@ -143,6 +150,9 @@ fun DecimalInput(
     )
 }
 
+private fun String.replace(chars: Set<Char>, replacement: Char): String =
+    map { if (it in chars) replacement else it }.joinToString("")
+
 /** Checks if string has at most one decimal separator, otherwise only consists of digits and has
  *  at most the given number of digits */
 private fun String.isOnlyDecimalDigits(
@@ -160,15 +170,13 @@ private fun String.isOnlyDecimalDigits(
             if (i != 0) return false
             // not allowed if unsigned
             if (isUnsigned) return false
-        }
-        else if (char.isDigit()) {
+        } else if (char.isDigit()) {
             if (hasSeparator) fractionDigits++
             else integerDigits++
 
             if (integerDigits > maxIntegerDigits) return false
             if (fractionDigits > maxFractionDigits) return false
-        }
-        else if (char == decimalSeparator) {
+        } else if (char == decimalSeparator) {
             // several decimal separators not allowed, e.g. 12.3.4
             if (hasSeparator) return false
 

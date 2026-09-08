@@ -6,14 +6,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -21,9 +16,13 @@ import org.jetbrains.compose.resources.stringResource
 /** Floating OK (check) button with animated pop-in/pop-out*/
 @Composable
 fun FloatingOkButton(
-    visible: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    visible: Boolean = true,
+    enabled: Boolean = true,
+    content: @Composable () -> Unit = {
+        Icon(painterResource(Res.drawable.ic_check_32), stringResource(Res.string.ok))
+    }
 ) {
     AnimatedVisibility(
         visible = visible,
@@ -33,15 +32,8 @@ fun FloatingOkButton(
     ) {
         FloatingActionButton(
             onClick = onClick,
-            shape = CircleShape,
-            backgroundColor = MaterialTheme.colors.secondary,
-            modifier = Modifier.size(72.dp),
-        ) {
-            Icon(
-                painter = painterResource(Res.drawable.ic_check_48),
-                contentDescription = stringResource(Res.string.ok),
-                tint = MaterialTheme.colors.onSecondary,
-            )
-        }
+            enabled = enabled,
+            content = content
+        )
     }
 }

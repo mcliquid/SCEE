@@ -28,6 +28,7 @@ import org.jetbrains.compose.resources.stringResource
     mapRotation: Float,
     mapTilt: Float,
     isLeftHandTraffic: Boolean,
+    countryCode: String?,
     modifier: Modifier = Modifier,
     lastPicked: List<Sides<Surface>> = emptyList(),
     hasSidewalkLeft: Boolean = true,
@@ -62,7 +63,9 @@ import org.jetbrains.compose.resources.stringResource
             if (hasSidewalk) {
                 surface?.icon?.let { ClipCirclePainter(painterResource(it)) }
                     ?: painterResource(Res.drawable.floating_question)
-            } else null
+            } else {
+                null
+            }
         },
         lastPicked = lastPicked,
         isLeftSideEnabled = hasSidewalkLeft,
@@ -73,7 +76,7 @@ import org.jetbrains.compose.resources.stringResource
         SimpleItemSelectDialog(
             onDismissRequest = { showPickerForSide = null },
             columns = SimpleGridCells.Fixed(3),
-            items = Surface.selectableValuesForWays,
+            items = Surface.getSelectableValuesForWays(countryCode),
             onSelected = { surface ->
                 onValueChanged(when (side) {
                     Side.LEFT -> value.copy(left = surface)

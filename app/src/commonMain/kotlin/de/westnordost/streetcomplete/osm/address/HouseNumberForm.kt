@@ -1,8 +1,6 @@
 package de.westnordost.streetcomplete.osm.address
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.ProvideTextStyle
@@ -30,7 +28,6 @@ fun HouseNumberForm(
                 onValueChange = { onValueChange(HouseNumber(it, value.unit)) },
                 modifier = modifier.weight(1f).widthIn(max = 256.dp),
                 suggestion = suggestion?.houseNumber,
-                label = ""
             )
             if (prefs.expertMode)
                 HouseNumberInput(

@@ -30,9 +30,8 @@ fun DateSelectDialog(
     modifier: Modifier = Modifier,
     title: (@Composable () -> Unit)? = null,
     years: IntRange = (initialDate.year - 10)..(initialDate.year + 10),
-    locale: Locale = Locale.current,
-    dismissOnSelect: Boolean = true,
     locale: Locale? = null,
+    dismissOnSelect: Boolean = true,
 ) {
     val dateFormatElements = remember(locale) { DateFormatElements.of(locale) }
     val datePickerState = rememberDatePickerState(

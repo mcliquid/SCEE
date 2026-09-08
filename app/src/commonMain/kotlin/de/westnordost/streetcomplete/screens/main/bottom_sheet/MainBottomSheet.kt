@@ -166,6 +166,7 @@ fun MainBottomSheet(
                             elementEditType = shownBottomSheet.quest.type,
                             geometry = shownBottomSheet.quest.geometry,
                             elementEditAction = action,
+                            key = shownBottomSheet.quest.key,
                         )
                         onSolved(shownBottomSheet.quest.type.icon, shownBottomSheet.quest.position)
                         onDismiss()

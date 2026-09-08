@@ -54,7 +54,7 @@ fun OsmoseForm(on: (ExternalAction) -> Unit, quest: ExternalSourceQuest) {
         val element = mapDataSource.get(elementToEdit!!.type, elementToEdit!!.id)
         if (element == null) elementToEdit = null
         else EditTagsForm(
-            { on(EditElement(UpdateElementTagsAction(element, it))); osmoseDao.setDone(issue.uuid) },
+            { on(EditElement(UpdateElementTagsAction(element, it))); osmoseDao.setDone(issue.uuid); on(Action.TempHideQuest) },
             { elementToEdit = null },
             element
         )

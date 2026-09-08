@@ -66,6 +66,7 @@ abstract class MainBottomSheetViewModel : ViewModel() {
         geometry: ElementGeometry,
         elementEditAction: ElementEditAction,
         hasExtra: Boolean = false,
+        key: QuestKey? = null,
     )
     abstract fun commentNote(
         note: Note,
@@ -157,11 +158,12 @@ class MainBottomSheetViewModelImpl(
         geometry: ElementGeometry,
         elementEditAction: ElementEditAction,
         hasExtra: Boolean,
+        key: QuestKey?,
     ) {
         launch(Dispatchers.IO) {
             val isNearUserLocation = surveyChecker.checkIsSurvey(geometry)
             val source = if (hasExtra) "survey,extra" else "survey"
-            elementEditsController.add(elementEditType, geometry, source, elementEditAction, isNearUserLocation, (shownBottomSheet.value as? ShownBottomSheet.ExternalSourceQuest)?.quest?.key)
+            elementEditsController.add(elementEditType, geometry, source, elementEditAction, isNearUserLocation, key)
             if (elementEditType !is OsmElementQuestType<*> || !prefs.getBoolean(Prefs.SHOW_NEXT_QUEST_IMMEDIATELY, false))
                 return@launch
             val quest = visibleQuestsSource.getAll(geometry.center.enclosingBoundingBox(0.5))

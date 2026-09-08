@@ -54,12 +54,14 @@ class AddGuidepostName : OsmFilterQuestType<GuidepostNameAnswer>() {
                 listOf(AnswerItem(stringResource(Res.string.quest_placeName_no_name_answer)) { confirmNoName = true })
             }
         )
-        AreYouSureDialog(
-            onDismissRequest = { confirmNoName = false },
-            onConfirmed = { on(Answer(NoVisibleGuidepostName)) },
-            titleText = stringResource(Res.string.quest_name_answer_noName_confirmation_title),
-            confirmButtonText = stringResource(Res.string.quest_name_noName_confirmation_positive),
-        )
+        if (confirmNoName) {
+            AreYouSureDialog(
+                onDismissRequest = { confirmNoName = false },
+                onConfirmed = { on(Answer(NoVisibleGuidepostName)) },
+                titleText = stringResource(Res.string.quest_name_answer_noName_confirmation_title),
+                confirmButtonText = stringResource(Res.string.quest_name_noName_confirmation_positive),
+            )
+        }
     }
 
     override fun applyAnswerTo(answer: GuidepostNameAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {

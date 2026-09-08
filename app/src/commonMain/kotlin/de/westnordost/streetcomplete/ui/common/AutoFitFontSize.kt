@@ -6,7 +6,6 @@ import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.ProvideTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.ui.ktx.calculateTextMaxFontSize
 
 /** Make the font size for any child composables scale to fit the given size. Usually you want to
@@ -16,7 +15,7 @@ fun AutoFitFontSize(
     value: String,
     modifier: Modifier = Modifier,
     maxLines: Int = 1,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues = PaddingValues.Zero,
     content: @Composable () -> Unit,
 ) {
     val textStyle = LocalTextStyle.current

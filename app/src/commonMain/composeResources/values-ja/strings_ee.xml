@@ -37,7 +37,7 @@
     <string name="pref_caps_word_name_input">名前入力時に各単語の最初の文字を大文字にする</string>
     <string name="pref_hide_button_summary">クリックでクエストを一時的に非表示にし、長いクリックで完全に非表示にします</string>
     <string name="pref_recent_answers_first_min_lines">前方に最近の回答を移動</string>
-    <string name="pref_recent_answers_first_min_lines_summary">枠に %d 個以上ある場合</string>
+    <string name="pref_recent_answers_first_min_lines_summary">枠に %1$d 個以上ある場合</string>
     <string name="pref_show_nearby_quests_title">付近のクエストを表示</string>
     <string name="pref_show_nearby_quests_summary">クエスト枠表示中に付近のクエストに切り替えることができます</string>
     <string name="show_nearby_quests_disable">付近のクエストを表示しない</string>
@@ -62,7 +62,7 @@
     <string name="import_error_db_version">取り込みエラー: 未知の版</string>
     <string name="pref_delete_old_data_after">後に古いデータを削除する</string>
     <string name="pref_delete_old_data_after_message">ダウンロードしてからこの日数が経過したOSMデータを削除します</string>
-    <string name="pref_delete_old_data_after_summary">%d 日</string>
+    <string name="pref_delete_old_data_after_summary">%1$d 日</string>
     <string name="import_export_hidden_quests">非表示のクエスト</string>
     <string name="pref_overlay_quick_selector_title">オーバーレイの敏速な選択器を表示</string>
     <string name="import_export_custom_overlays">任意オーバーレイ</string>
@@ -95,9 +95,8 @@
     <string name="quest_monitor_gps">活発にGPS位置情報を要求しますか?</string>
     <string name="quest_monitor_net">活発にネットワーク位置情報を要求しますか?</string>
     <string name="pref_quest_monitor_download">必要に応じてデータをダウンロードしますか?　これは転送量と電池を激しく消費する可能性があり、電池を節約するためにAndroidによって使用できなくなる状態にされる可能性があります。</string>
-    <string name="pref_gps_interval_title">GPS位置情報を更新する間隔</string>
-    <string name="pref_network_interval_title">ネットワーク位置情報を更新する間隔</string>
-    <string name="pref_interval_summary">%d 秒</string>
+    <string name="pref_location_interval_title">GPS位置情報を更新する間隔</string>
+    <string name="pref_interval_summary">%1$d 秒</string>
     <string name="pref_interval_message">更新間隔を秒単位で</string>
     <string name="quest_settings_reset">リセット</string>
     <string name="quest_settings_eligible_highways">このクエストの対象となる道路を、カンマで区切って設定します</string>
@@ -118,7 +117,7 @@
     <string name="quest_custom_quest_title">任意クエスト:</string>
     <string name="quest_custom_quest_remove">一覧から削除</string>
     <string name="quest_custom_quest_add_node">ノードを追加</string>
-    <string name="quest_custom_quest_add_node_text">次のタグを付けてノードを追加できます: %s</string>
+    <string name="quest_custom_quest_add_node_text">次のタグを付けてノードを追加できます: %1$s</string>
     <string name="quest_benchMaterial_title">これは何の素材で作られていますか?</string>
     <string name="quest_material_wood">木材</string>
     <string name="quest_material_metal">金属</string>
@@ -186,12 +185,10 @@
     <string name="quest_shelter_type_field_shelter">動物（たとえば馬）向けの避難設備</string>
     <string name="pref_category_mods">SCEE設定</string>
     <string name="pref_way_direction_summary">クエストを開くときに、強調された線の上に矢印を表示します。例えば、一方通行を追加するときに役立ちます。</string>
-    <string name="pref_hide_keyboard_title">メモ作成前にキーボードを非表示</string>
     <string name="pref_hide_button_title">非表示ボタンを表示</string>
     <string name="pref_select_first_edit_summary">敏速に元に戻せますが、表示範囲は自動的に動きます</string>
     <string name="pref_create_custom_quest_summary">…メモを残す代わりに。これは、地図上に表示される端末内に保存されたメモとして使用でます。任意クエストを有効にする必要があります。</string>
     <string name="pref_gpx_track_download">GPX経路が存在する領域をダウンロード</string>
-    <string name="pref_hide_keyboard_summary">(位置の確認を可能にするため、)実際に作成されたメモを開く前にキーボードを非表示にする</string>
     <string name="pref_recent_answers_first_min_lines_message">クエスト回答枠にこの数以上の画像がある場合、最近の回答を前方に移動します</string>
     <string name="pref_show_quick_settings_title">クイック設定ボタンを表示</string>
     <string name="pref_search_more_languages_summary">地物検索は全てのシステムと地域の言語で表示されます</string>
@@ -251,10 +248,6 @@
     <string name="quest_settings_level_title">このクエストを表示する対象:</string>
     <string name="quest_settings_level_default">ショッピングモール内の店舗および類似の施設(初期設定)</string>
     <string name="quest_settings_level_more">複数階建ての建物内部の医師や多量のノード</string>
-    <string name="quest_generic_surface_message">メモを必要とせずに一般的な地表の回答を許可しますか?</string>
-    <string name="quest_generic_surface_button">一般的な地表を回答</string>
-    <string name="quest_generic_surface_yes">メモなしで許可</string>
-    <string name="quest_generic_surface_no">メモ付きのみ(初期設定)</string>
     <string name="quest_settings_resurvey_all_opening_hours_title">全ての営業時間を再調査</string>
     <string name="quest_settings_resurvey_all_opening_hours_message">SCEEが理解していない値も含めて、全ての営業時間を再調査しますか?　タグエディタを使用して正しい値を入力する必要がある可能性があります。</string>
     <string name="quest_settings_resurvey_all_opening_hours_yes">全て</string>
@@ -262,16 +255,12 @@
     <string name="quest_settings_building_levels_mandatory_roof">ほとんどの国では屋根の階数を入力する必要があります(初期設定)</string>
     <string name="quest_settings_building_levels_optional_roof">どこでも、屋根の階数の省略を許可します</string>
     <string name="quest_settings_highlight_changes_button">変更を強調表示</string>
-    <string name="quest_settings_leaf_type_single_tree_message">一本の木の葉の種別についても尋ねますか?</string>
-    <string name="quest_settings_leaf_type_single_tree_yes">はい</string>
     <string name="quest_order_reverse">クエストを逆順にする</string>
-    <string name="quest_order_normal">クエストを通常の順に戻す</string>
     <string name="quest_osmose_false_positive">誤検知を報告</string>
     <string name="quest_osmose_use_app_language_information">これは、副題によって無視される項目に干渉します</string>
     <string name="quest_osmose_hide_type">同じ問題を無視…</string>
     <string name="quest_custom_quest_osmose_not_found">項目が削除され、クエストが削除されています</string>
     <string name="quest_barrier_locked_title">この障害物は(通常)鍵が掛けられていますか?</string>
-    <string name="quest_settings_leaf_type_single_tree_no">ウェイと範囲のみ</string>
     <string name="quest_utility_telecom">電気通信</string>
     <string name="quest_shelter_type_gazebo">西洋風東屋/ガゼボ</string>
     <string name="quest_shelter_type_rock_shelter">岩の避難所</string>
@@ -302,8 +291,6 @@
     <string name="quest_mapSize_site">例えば公園や動物園のような、特定の所在地や場所</string>
     <string name="quest_contact_website">この場所のウェブサイトは何ですか?</string>
     <string name="quest_cuisine_add_more">他の料理を追加</string>
-    <string name="quest_healthcare_speciality_add_more">他の専門家を追加</string>
-    <string name="quest_healthcare_speciality_title">この場所にはどのようなヘルスケアの専門家がいますか?</string>
     <string name="quest_tree_genus_title">この樹木の属または種は何ですか?</string>
     <string name="quest_tree_error">識別できません。樹木の属、種または英名の入力を試してください。不可能ならば、メモを残すことを検討してください。</string>
     <string name="default_disabled_msg_ee">SCEE内に追加されたクエストは、初期設定では常に無効になっています。これは、それらが常に回答可能であるとは限らず、トピックやタグ付けに関する知識を必要とする場合があるためです。</string>
@@ -328,8 +315,8 @@
     <string name="quest_parking_capacity_disabled_title">ここでは(身体)障者専用の駐車スペースに何台駐車できますか?</string>
     <string name="quest_parking_capacity_disabled_answer_yes">存在するが、数は不明</string>
     <string name="quest_parking_orientation_title">自動車はどの向きで駐車できますか?</string>
-    <string name="tag_editor_last_edited">最終編集: %s</string>
-    <string name="tag_editor_duplicate_key">重複キー %s の変更を無視</string>
+    <string name="tag_editor_last_edited">最終編集: %1$s</string>
+    <string name="tag_editor_duplicate_key">重複キー %1$s の変更を無視</string>
     <string name="fork_about_title_repository">SCEE企画本元</string>
     <string name="enqueue_download">現在の検索が完了した後に開始</string>
     <string name="create_poi">POIを追加</string>
@@ -339,9 +326,9 @@
     <string name="create_custom_quest_title_message">表示されるメッセージを入力</string>
     <string name="general_warning">警告</string>
     <string name="dialog_button_understood">了解</string>
-    <string name="move_node_with_geometry">このノードの移動は、従属するウェイの配置やマルチポリゴンのリレーションを変化させます: %s。
+    <string name="move_node_with_geometry">このノードの移動は、従属するウェイの配置やマルチポリゴンのリレーションを変化させます: %1$s。
 \n いかなる変更も、背景の地図上で即座に視認可能にならないことを心得てください。</string>
-    <string name="move_node_of_other_relation">このノードは、非マルチポリゴンのリレーションに従属する部分です: %s</string>
+    <string name="move_node_of_other_relation">このノードは、非マルチポリゴンのリレーションに従属する部分です: %1$s</string>
     <string name="close_note_checkbox">メモを閉じる(メモが確実に解決する場合に、これを行ってください!)</string>
     <string name="closed_note_action_title">あなたはそれを閉じました</string>
     <string name="quest_trail_visibility_good_description">道や次の印は見失うことが少ないですが、ときどき探す必要があることもあります。地図持参が推奨され、基本的な方向感覚が必要です。</string>
@@ -353,7 +340,6 @@
     <string name="quest_cuisine_title">この場所にはどんな料理がありますか?　提案されたOSMタグを使用してください!</string>
     <string name="quest_guidepostEle_title">ここの標高はいくつですか?</string>
     <string name="quest_guidepostEle_hint">GPSの高さは通常、不正確すぎて正しい高度照会システムで提供されないため、使用しないでください。</string>
-    <string name="quest_healthcare_speciality_disabled_message">このクエストは healthcare:speciality タグについての知識が必要です。この知識をご存知でない場合は、クエストは酷く難題になる可能性があります。</string>
     <string name="default_disabled_msg_trail_visibility">トレイル(ハイキング道)の見つけやすさの評価は非常に主観的であり、使用される等級付け体系の専門知識を必要とするため、初期設定ではこのクエスト種別は無効化されています。</string>
     <string name="quest_guidepostName_hint">この地図または道標やガイドポストの記された(場所)の名前です。ここには参照番号を入力しないでください。</string>
     <string name="quest_tree_disabled_msg">回答が容易ではないため、初期設定ではこのクエストは無効化されています。種と属は、最もよく使用される値から取得される提案から選択する必要があります。検索可能な名前を持つ種の独自の一覧から候補を提供するには、 &lt;species&gt; (&lt;name&gt;) を含むファイルをデータ管理設定メニュー内に提供します。</string>
@@ -387,29 +373,16 @@
     <string name="quest_service_building_railway_wash">鉄道洗車場</string>
     <string name="quest_service_building_railway_wash_description">列車を洗浄する施設がある建物です(日本では大抵、鉄道車両基地の一部)</string>
     <string name="quest_street_cabinet_waste">廃棄物</string>
-    <string name="quest_artwork_title">これは何の種類の芸術作品ですか?</string>
     <string name="quest_street_cabinet_traffic">交通</string>
     <string name="quest_street_cabinet_traffic_control">交通制御</string>
     <string name="quest_street_cabinet_traffic_monitoring">交通監視</string>
     <string name="quest_street_cabinet_transport_management">(公共)交通機関管理</string>
     <string name="quest_street_cabinet_television">テレビ</string>
-    <string name="quest_artwork_sculpture">オブジェ/(像ではない)彫刻</string>
-    <string name="quest_artwork_statue">(胸像ではない)彫像・塑像</string>
-    <string name="quest_artwork_mural">壁画</string>
-    <string name="quest_artwork_graffiti">グラフィティ/エアロゾールアート</string>
-    <string name="quest_artwork_installation">場所や空間全体を作品として体験させる芸術</string>
-    <string name="quest_artwork_bust">胸像</string>
-    <string name="quest_artwork_stone">巨石</string>
-    <string name="quest_artwork_painting">絵画</string>
-    <string name="quest_artwork_mosaic">モザイク</string>
-    <string name="quest_artwork_relief">浮き彫り/レリーフ</string>
-    <string name="quest_artwork_land_art">ランド・アート/アースワーク</string>
     <string name="quest_brewery_title">ここではどんなブランドのビールが提供されますか?</string>
     <string name="quest_brewery_add_more">他の醸造所を追加</string>
     <string name="quest_brewery_is_various">ここでは多種のビールのブランドが提供されます</string>
     <string name="quest_brewery_is_not_available">ここではビールは販売されていません</string>
     <string name="quest_service_building_operator_title">仕事用のこの建物の管理者は誰ですか?</string>
-    <string name="quest_healthcare_speciality_switch_ui">インターフェースを切り替え</string>
     <string name="quest_railwayPlatformRef_title">ここの線路番号は何ですか?</string>
     <string name="quest_destination_title">この道の標識はどの行き先を示していますか?</string>
     <string name="quest_destination_add_more">他の行き先を追加</string>
@@ -424,10 +397,6 @@
     <string name="quest_building_demolished">破壊または取り壊された(輪郭線は見えている)</string>
     <string name="quest_private">非公開です</string>
     <string name="quest_name_brand">ブランド名があります…</string>
-    <string name="quest_maxheight_answer_noSign_question">この場所には高いトラック(少なくとも4.5メートル / 15フィート)が通る余裕がありますか?</string>
-    <string name="quest_maxheight_answer_noSign_question_yes">大型トラックが通れる</string>
-    <string name="quest_maxheight_answer_noSign_question_no">大型トラックは大きさが合わない</string>
-    <string name="quest_maxheight_answer_noSign_question_unclear">不明瞭</string>
     <string name="quest_generalRef_disabled_msg">これは、地域または管理者によって何を示すか大きく異なるため、初期設定では無効化されています。当該領域で要素選択から抽出してください(例: 街灯を除去、地図を追加、 hiking=yes が付いている道標だけ選択、など。)</string>
     <string name="quest_generalRef_hint">参照番号またはコード</string>
     <string name="custom_overlay_title">任意オーバーレイ</string>
@@ -436,18 +405,18 @@
     <string name="custom_overlay_highlight_missing">欠落データを強調表示</string>
     <string name="custom_overlay_color_info">色付け詳細</string>
     <string name="custom_overlay_filter_info">抽出詳細</string>
-    <string name="custom_overlay_delete">本当に %s を削除しますか?</string>
+    <string name="custom_overlay_delete">本当に %1$s を削除しますか?</string>
     <string name="custom_overlay_add_button">新規任意オーバーレイ</string>
-    <string name="restriction_overlay_exceptions">除外: %s</string>
-    <string name="restriction_overlay_only_for">指定: %s</string>
+    <string name="restriction_overlay_exceptions">除外: %1$s</string>
+    <string name="restriction_overlay_only_for">指定: %1$s</string>
     <string name="restriction_overlay_show_details">リレーションの詳細を表示</string>
     <string name="restriction_overlay_relation_unsupported">非対応のリレーションの種別:
-\n%s</string>
+\n%1$s</string>
     <string name="quest_monitor_channel_name">付近のクエスト監視器</string>
     <string name="quest_monitor_channel_name_found">付近のクエストが見つかりました</string>
     <string name="quest_monitor_running">場所を監視中</string>
     <string name="quest_monitor_error">権限が問題な可能性があり、監視を開始できませんでした</string>
-    <string name="quest_monitor_found">%d 件のクエストが近くにあります。最寄り:</string>
+    <string name="quest_monitor_found">%1$d 件のクエストが近くにあります。最寄り:</string>
     <string name="add_access">利用制限を追加…</string>
     <string name="access_manager_message">利用制限タグを選択してください。タグは示された利用制限のみであり、可能ならば、全般的な「利用制限」タグの使用を避けてください</string>
     <string name="manage_access">利用制限情報を管理…</string>

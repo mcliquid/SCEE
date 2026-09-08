@@ -15,11 +15,12 @@ import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.ui.common.ZoomInIcon
 import de.westnordost.streetcomplete.ui.common.ZoomOutIcon
-import androidx.compose.ui.tooling.preview.Preview
 import de.westnordost.streetcomplete.ui.ktx.pxToDp
+import de.westnordost.streetcomplete.ui.theme.divider
 
 /** Combined control for zooming in and out */
 @Composable
@@ -39,7 +40,7 @@ fun ZoomButtons(
         shape = CircleShape,
         color = colors.backgroundColor(enabled).value,
         contentColor = colors.contentColor(enabled).value,
-        border = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+        border = BorderStroke(1.dp, MaterialTheme.colors.divider),
         elevation = 4.dp
     ) {
         Column(Modifier

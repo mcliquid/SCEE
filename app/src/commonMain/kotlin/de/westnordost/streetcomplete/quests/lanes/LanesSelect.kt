@@ -32,19 +32,7 @@ import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.min
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.car1
-import de.westnordost.streetcomplete.resources.car1a
-import de.westnordost.streetcomplete.resources.car1b
-import de.westnordost.streetcomplete.resources.car2
-import de.westnordost.streetcomplete.resources.car2a
-import de.westnordost.streetcomplete.resources.car2b
-import de.westnordost.streetcomplete.resources.car3
-import de.westnordost.streetcomplete.resources.car3a
-import de.westnordost.streetcomplete.resources.car4
-import de.westnordost.streetcomplete.resources.car5
-import de.westnordost.streetcomplete.resources.car_nyan
-import de.westnordost.streetcomplete.resources.street_side_unknown
+import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.util.ktx.isApril1st
 import kotlinx.coroutines.isActive
 import org.jetbrains.compose.resources.painterResource
@@ -431,13 +419,12 @@ private data class Car(
 private fun createCar(
     carPainters: List<Painter>,
     progress: Float,
-): Car {
-    return Car(
+): Car =
+    Car(
         painter = carPainters[Random.nextInt(carPainters.size)],
         progress = progress,
         speed = CAR_SPEED * (1f + CAR_SPEED_VARIATION * Random.nextFloat())
     )
-}
 
 private fun LineStyle.getPathEffect(lineWidth: Float): PathEffect? = when (this) {
     LineStyle.CONTINUOUS -> null

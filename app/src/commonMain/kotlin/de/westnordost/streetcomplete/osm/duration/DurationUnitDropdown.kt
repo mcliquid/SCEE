@@ -3,10 +3,7 @@ package de.westnordost.streetcomplete.osm.duration
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.unit_days
-import de.westnordost.streetcomplete.resources.unit_hours
-import de.westnordost.streetcomplete.resources.unit_minutes
+import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.ButtonStyle
 import de.westnordost.streetcomplete.ui.common.DropdownButton
 import org.jetbrains.compose.resources.StringResource
@@ -17,7 +14,8 @@ import org.jetbrains.compose.resources.stringResource
 fun DurationUnitDropdown(
     selectedDuration: DurationUnit,
     onSelectedDuration: (DurationUnit) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    alwaysSingular: Boolean = false,
 ) {
     DropdownButton(
         items = DurationUnit.entries,
@@ -25,12 +23,11 @@ fun DurationUnitDropdown(
         modifier = modifier,
         selectedItem = selectedDuration,
         style = ButtonStyle.Outlined,
-        itemContent = { Text(stringResource(it.text)) }
+        itemContent = { Text(stringResource(it.getText(alwaysSingular))) }
     )
 }
-
-private val DurationUnit.text: StringResource get() = when (this) {
-    DurationUnit.MINUTES -> Res.string.unit_minutes
-    DurationUnit.HOURS -> Res.string.unit_hours
-    DurationUnit.DAYS -> Res.string.unit_days
+private fun DurationUnit.getText(useSingular: Boolean): StringResource = when (this) {
+    DurationUnit.MINUTES -> if (useSingular) Res.string.unit_minute else Res.string.unit_minutes
+    DurationUnit.HOURS -> if (useSingular) Res.string.unit_hour else Res.string.unit_hours
+    DurationUnit.DAYS -> if (useSingular) Res.string.unit_day else Res.string.unit_days
 }

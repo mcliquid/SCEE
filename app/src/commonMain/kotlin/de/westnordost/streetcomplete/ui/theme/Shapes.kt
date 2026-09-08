@@ -6,6 +6,6 @@ import androidx.compose.ui.unit.dp
 
 val Shapes = Shapes(
     // theme is more speech-bubbly than default
-    medium = RoundedCornerShape(10.dp),
-    large = RoundedCornerShape(10.dp)
+    medium = RoundedCornerShape(12.dp),
+    large = RoundedCornerShape(12.dp)
 )

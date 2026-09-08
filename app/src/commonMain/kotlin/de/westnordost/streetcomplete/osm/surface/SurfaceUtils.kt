@@ -42,7 +42,7 @@ val FULLY_PAVED_SURFACES = setOf(
 
 private val SOFT_NATURAL_SURFACES = setOf(
     // earthy
-    "earth", "dirt", "soil", "grass", "sand", "mud",
+    "earth", "dirt", "soil", "grass", "sand", "mud", "laterite",
     // other
     "snow",
 )
@@ -69,7 +69,7 @@ val INVALID_SURFACES_FOR_TRACKTYPES = mapOf(
     "grade1" to SOFT_NATURAL_SURFACES, // could be compacted, as long as it is "solid"
     // "mostly solid" can mean a lot of things, including natural surfaces that happen to be quite solid
     // Allowing any surface for grade2 tracktype is a compromise from #6611
-    //"grade2" to SOFT_NATURAL_SURFACES,
+    // "grade2" to SOFT_NATURAL_SURFACES,
     "grade3" to FULLY_PAVED_SURFACES,
     "grade4" to FULLY_PAVED_SURFACES,
     "grade5" to FULLY_PAVED_SURFACES,
@@ -112,6 +112,10 @@ fun getKeysAssociatedWithSurface(prefix: String = ""): Set<String> =
         "${prefix}paving_stones:pattern",
         "${prefix}paving_stones:length",
         "${prefix}paving_stones:width",
+        "${prefix}paving_stones:material",
+        "${prefix}paving_stones:colour",
+        "${prefix}paving_stones:orientation",
+        "${prefix}paving_stones:direction",
     ) +
         getLastCheckDateKeys("${prefix}surface") +
         getLastCheckDateKeys("${prefix}smoothness")

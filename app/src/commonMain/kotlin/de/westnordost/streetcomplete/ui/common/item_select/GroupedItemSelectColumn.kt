@@ -14,14 +14,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.ic_arrow_drop_down_24
+import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.ktx.selectionFrame
 import org.jetbrains.compose.resources.painterResource
 
 /** List of grouped items where one item can be selected */
 @Composable
-fun <I, G: Group<I>> GroupedItemSelectColumn(
+fun <I, G : Group<I>> GroupedItemSelectColumn(
     groups: List<G>,
     topItems: List<I>,
     selectedGroup: G?,

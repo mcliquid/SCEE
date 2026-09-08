@@ -14,9 +14,7 @@
     <string name="pref_show_gpx_button_title">Prikaži gumb za GPX opombe</string>
     <string name="pref_show_gpx_button_summary">Za razliko od OSM opomb, dodajanje GPX opombe ne bo skrilo nobenih ciljev na tej lokaciji</string>
     <string name="pref_swap_gpx_note_button">Zamenjaj gumbe za OSM in GPX opombe</string>
-    <string name="pref_hide_keyboard_title">Skrij tipkovnico pred ustvarjanjem opombe</string>
-    <string name="pref_hide_keyboard_summary">Skrije tipkovnico, kadar je ta odprta, preden je opomba dejansko ustvarjena (za ponovni pregled lokacije)</string>
-    <string name="pref_really_all_notes_title">"Prikaži vse opombe" pomeni VSE opombe</string>
+    <string name="pref_really_all_notes_title">Prikaži vse opombe" pomeni VSE opombe</string>
     <string name="pref_really_all_notes_summary">Ko zahtevate prikaz vseh opomb, prikaži tudi opombe, ki ste jih ustvarili sami (ali pa ste na njih pustili komentar)</string>
     <string name="pref_save_gpx">Pridobi GPX opombe in pripete fotografije in poti</string>
     <string name="pref_save_file_error">Napaka pri shranjevanju datoteke</string>
@@ -41,7 +39,7 @@
     <string name="pref_gpx_track_enable">Prikaži GPX sled</string>
     <string name="pref_gpx_track_download">Prenesi območje, ki ga pokriva GPX sled</string>
     <string name="pref_custom_geometry_title">Prikaži lastnosti zemljevida iz GeoJson datoteke</string>
-    <string name="pref_custom_geometry_info">Če želite prikazato besedilo, mora biti v lastnosti "ime"</string>
+    <string name="pref_custom_geometry_info">Če želite prikazato besedilo, mora biti v lastnosti "ime</string>
     <string name="file_provide">Izberite datoteko</string>
     <string name="file_loading_error">Napaka pri nalaganju datoteke</string>
     <string name="pref_screen_ui">UI</string>
@@ -59,7 +57,7 @@
     <string name="pref_hide_button_title">Prikaži gumb za skritje</string>
     <string name="pref_hide_button_summary">Kratek klik skrije cilj začasno, dolg klik skrije cilj za vedno</string>
     <string name="pref_recent_answers_first_min_lines">Premakni nedavne odgovore na začetek</string>
-    <string name="pref_recent_answers_first_min_lines_summary">Če ima vnos več kot %d vrstic</string>
+    <string name="pref_recent_answers_first_min_lines_summary">Če ima vnos več kot %1$d vrstic</string>
     <string name="pref_recent_answers_first_min_lines_message">Prestavi najkasnejše odgovore na vrh, če ima vprašalnik za odgovor več kot toliko vrstic slik</string>
     <string name="pref_show_nearby_quests_title">Prikaži bližnje cilje</string>
     <string name="pref_show_nearby_quests_summary">Dovoli preklapljanje med bližnjimi cilji med tem ko je vprašalnik odprt</string>
@@ -99,7 +97,7 @@
     <string name="pref_dynamic_quest_creation_summary">Cilji so ustvarjeni ko je območje naloženo. Nekoliko počasno, ampak nemudoma upošteva spremenjene nastavitve ciljev.</string>
     <string name="quest_settings_per_preset_rescan">Potrebno je ponovno preverjanje ciljev, da se ustrezno upoštevajo vse spremenjene nastavitve.</string>
     <string name="pref_quest_monitor_title">Obvesti me o bližnjih ciljih</string>
-    <string name="pref_quest_monitor_summary">Spremlja lokacijo ko je aplikacija v ozadju, razen če je bila postavljena v ozadje z gumbom "nazaj"</string>
+    <string name="pref_quest_monitor_summary">Spremlja lokacijo ko je aplikacija v ozadju, razen če je bila postavljena v ozadje z gumbom "nazaj</string>
     <string name="quest_monitor_permission_warning">Dovoljenje za uporabo lokacije v ozadju je potrebno da obveščanje o bližnjih ciljih deluje</string>
     <string name="quest_monitor_search_radius_text">Nastavi razdaljo za iskanje bližnjih ciljev. Lahko najde tudi malo bolj oddaljene cilje. Lokacije z negotovostjo večjo od te vrednosti so prezrte.</string>
     <string name="quest_monitor_gps">Aktivno zahtevaj GPS lokacijo?</string>
@@ -109,8 +107,7 @@
     <string name="pref_hide_overlay_quests">Skrij cilje, specifične za vrhnji sloj</string>
     <string name="theme_dark_contrast">Temni način (povečan kontrast)</string>
     <string name="resurvey_intervals_even_less_often">Vprašaj še redkeje</string>
-    <string name="pref_gps_interval_title">Interval posodabljanja GPS lokacije</string>
-    <string name="pref_network_interval_title">Interval posodabljanja omrežne lokacije</string>
-    <string name="pref_interval_summary">%d sekund</string>
+    <string name="pref_location_interval_title">Interval posodabljanja GPS lokacije</string>
+    <string name="pref_interval_summary">%1$d sekund</string>
     <string name="pref_interval_message">Interval posodabljanja v sekundah</string>
 </resources>

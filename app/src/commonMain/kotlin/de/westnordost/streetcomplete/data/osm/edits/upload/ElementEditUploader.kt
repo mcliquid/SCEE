@@ -10,22 +10,27 @@ import de.westnordost.streetcomplete.data.osm.mapdata.ElementIdUpdate
 import de.westnordost.streetcomplete.data.osm.mapdata.ChangesetTooLargeException
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataApiClient
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataChanges
-import de.westnordost.streetcomplete.data.osm.mapdata.MapDataController
+import de.westnordost.streetcomplete.data.osm.mapdata.MapDataSource
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataUpdates
-import de.westnordost.streetcomplete.data.osm.mapdata.Way
+import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.osm.mapdata.RemoteMapDataRepository
+import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.user.UserLoginController
 import de.westnordost.streetcomplete.util.ktx.copy
+import de.westnordost.streetcomplete.util.Mockable
 
+@Mockable
 class ElementEditUploader(
     private val changesetManager: OpenChangesetsManager,
     private val mapDataApi: MapDataApiClient,
-    private val mapDataController: MapDataController
+    private val mapDataSource: MapDataSource
 ) {
 
     /** Apply the given change to the given element and upload it
      *
      *  @throws ConflictException if element has been changed server-side in an incompatible way
+     *  @throws IllegalArgumentException if element edit produces invalid data (e.g. if
+     *          key or value of any OSM tag is too long)
      */
     suspend fun upload(edit: ElementEdit, getIdProvider: () -> ElementIdProvider): MapDataUpdates {
         // certain edit types don't allow building changes on top of cached map data
@@ -39,7 +44,7 @@ class ElementEditUploader(
         } else {
             // we first try to apply the changes onto the element cached locally, then upload...
             try {
-                val localChanges = edit.action.createUpdates(mapDataController, getIdProvider())
+                val localChanges = edit.action.createUpdates(mapDataSource, getIdProvider())
                 try {
                     uploadChanges(edit, localChanges, false)
                 }
@@ -71,7 +76,7 @@ class ElementEditUploader(
         // remote in an incompatible way. So, we don't catch the exception but exit
         val remoteChanges = edit.action.createUpdates(RemoteMapDataRepository(mapDataApi), getIdProvider())
 
-        return try {
+        val updates = try {
             uploadChanges(edit, remoteChanges, false)
         }
         // probably changeset was closed -> try again once with new changeset
@@ -82,6 +87,14 @@ class ElementEditUploader(
         catch (e: ChangesetTooLargeException) {
             uploadChanges(edit, remoteChanges, true)
         }
+
+        // We need to backfill any updates of ways which include nodes that we don't have in the
+        // local database already with these nodes from remote. Otherwise, when new nodes have been
+        // added to the updated way, we'd end up with incomplete ways.
+        // We only need to do that in this method because when just uploading local changes without
+        // conflict, there can't be any new elements referenced by the updated way except those we
+        // added ourselves and thus already know.
+        return backfillMapDataUpdates(updates)
     }
 
     private suspend fun uploadChanges(
@@ -97,10 +110,37 @@ class ElementEditUploader(
         return mapDataApi.uploadChanges(changesetId, changes, ApplicationConstants::ignoreRelation)
     }
 
+    /** Ensures that all nodes of all updated ways in [updates] are either already present in the
+     *  local database or otherwise then also included in the result. */
+    private suspend fun backfillMapDataUpdates(updates: MapDataUpdates): MapDataUpdates {
+        val nodeIdsOfUpdatedWays = updates.updated
+            .filterIsInstance<Way>()
+            .flatMapTo(HashSet()) { it.nodeIds }
+
+        val idsOfUpdatedNodes =
+            updates.updated.filterIsInstance<Node>().mapTo(HashSet()) { it.id } +
+            updates.idUpdates.map { it.newElementId }
+
+        val nodeIdsThatMustBePresentInLocalData = nodeIdsOfUpdatedWays - idsOfUpdatedNodes
+
+        val presentNodeIds = mapDataSource
+            .getNodes(nodeIdsThatMustBePresentInLocalData)
+            .mapTo(HashSet()) { it.id }
+
+        val nodesThatMustBeFetchedFromRemote = nodeIdsThatMustBePresentInLocalData - presentNodeIds
+
+        return if (nodesThatMustBeFetchedFromRemote.isNotEmpty()) {
+            val nodes = nodesThatMustBeFetchedFromRemote.mapNotNull { mapDataApi.getNode(it) }
+            updates.copy(updated = updates.updated + nodes)
+        } else {
+            updates
+        }
+    }
+
     // fake upload in debug mode: create pseudo-random new (positive!) ids that are unlikely to clash with real ids
     // useful for testing upload
     private fun fakeUpload(edit: ElementEdit, getIdProvider: () -> ElementIdProvider): MapDataUpdates {
-        val localChanges = edit.action.createUpdates(mapDataController, getIdProvider())
+        val localChanges = edit.action.createUpdates(mapDataSource, getIdProvider())
         val creationsByNewId = localChanges.creations.associateBy { Long.MAX_VALUE - Int.MAX_VALUE + it.hashCode() }
         val updates = MapDataUpdates(
             updated = (localChanges.modifications + creationsByNewId.map { it.value.copy(id = it.key) })

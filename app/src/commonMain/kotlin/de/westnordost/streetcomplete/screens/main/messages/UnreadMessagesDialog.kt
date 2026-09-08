@@ -26,20 +26,15 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.ic_open_in_browser_24
-import de.westnordost.streetcomplete.resources.mail_back
-import de.westnordost.streetcomplete.resources.mail_front
-import de.westnordost.streetcomplete.resources.unread_messages_button
-import de.westnordost.streetcomplete.resources.unread_messages_message
+import de.westnordost.streetcomplete.resources.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import kotlin.math.abs
 
 /** Dialog that shows a message that the user has X unread messages in his OSM inbox */
@@ -56,8 +51,6 @@ fun UnreadMessagesDialog(
     val content = remember { Animatable(0f) }
 
     LaunchedEffect(unreadMessageCount) {
-        // TODO soundFx.play(R.raw.sliding_envelope) - should be provided via composition locals
-        //      but that only becomes convenient if there are not entry points to compose all over the place
         envelope.animateTo(0f, tween(600))
         delay(150)
         launch { envelopeOpen.animateTo(1f, tween(300)) }
@@ -102,6 +95,7 @@ fun UnreadMessagesDialog(
         }
     }
 }
+
 @Composable
 private fun Envelope(
     opening: Float,
@@ -114,7 +108,9 @@ private fun Envelope(
     ) {
         Image(painterResource(Res.drawable.mail_back), null)
         if (opening > 0.5f) Image(openMailPainter(progress = opening), null)
-        content()
+        Box(Modifier.align(Alignment.BottomCenter).padding(bottom = 112.dp)) {
+            content()
+        }
         Image(painterResource(Res.drawable.mail_front), null)
         if (opening <= 0.5f) Image(openMailPainter(progress = opening), null)
     }

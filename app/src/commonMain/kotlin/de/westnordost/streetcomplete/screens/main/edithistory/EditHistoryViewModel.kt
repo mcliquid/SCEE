@@ -3,7 +3,6 @@ package de.westnordost.streetcomplete.screens.main.edithistory
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.edithistory.Edit
 import de.westnordost.streetcomplete.data.edithistory.EditHistoryController
@@ -30,8 +29,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDateTime
+import kotlin.time.Instant
 
 @Stable
 abstract class EditHistoryViewModel : ViewModel() {
@@ -44,8 +43,6 @@ abstract class EditHistoryViewModel : ViewModel() {
     abstract fun select(editKey: EditKey?)
     abstract fun undo(editKey: EditKey)
     abstract fun updateEdits()
-
-    abstract val featureDictionaryLazy: Lazy<FeatureDictionary>
 
     /* edit sidebar */
     // TODO could maybe be just a boolean in the composable when there's no communication between
@@ -65,7 +62,6 @@ data class EditItem(
 class EditHistoryViewModelImpl(
     private val mapDataSource: MapDataWithEditsSource,
     private val editHistoryController: EditHistoryController,
-    override val featureDictionaryLazy: Lazy<FeatureDictionary>,
     private val prefs: Preferences,
 ) : EditHistoryViewModel() {
 
@@ -178,7 +174,7 @@ class EditHistoryViewModelImpl(
             val sameDate = editDateTime.date == editAboveDateTime?.date
             val sameTime =
                 editDateTime.time.hour == editAboveDateTime?.time?.hour &&
-                editDateTime.time.minute == editAboveDateTime?.time?.minute
+                    editDateTime.time.minute == editAboveDateTime?.time?.minute
             editAboveDateTime = editDateTime
 
             EditItem(

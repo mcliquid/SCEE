@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.data.osm.edits
 
+import de.westnordost.streetcomplete.data.ConflictException
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataChanges
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataRepository
@@ -18,8 +19,11 @@ interface ElementEditAction {
     val elementKeys: List<ElementKey>
 
     /** Using the given map data repository (if necessary) and the id provider (if this action
-     * creates new elements), this function should return all updated elements this action produces
-     * when applied to the given element or throw a ElementConflictException
+     *  creates new elements), this function should return all updated elements this action produces
+     *  when applied to the given element.
+     *  @throws ConflictException when a conflict occured when trying to apply the changes
+     *  @throws IllegalArgumentException if any of the created changes contain invalid data (e.g. if
+     *          key or value of any OSM tag is too long)
      */
     fun createUpdates(
         mapDataRepository: MapDataRepository,

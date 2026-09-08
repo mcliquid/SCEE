@@ -5,8 +5,6 @@
     <string name="pref_hide_notes_title">Sembunyikan catatan dari pengguna tertentu</string>
     <string name="pref_show_gpx_button_title">Tampilkan tombol catatan GPX</string>
     <string name="pref_swap_gpx_note_button">Tukar tombol catatan OSM dan GPX</string>
-    <string name="pref_hide_keyboard_title">Sembunyikan keyboard sebelum membuat catatan</string>
-    <string name="pref_hide_keyboard_summary">Sembunyikan keyboard saat membuka sebelum catatan benar-benar dibuat (agar posisi dapat dilihat kembali)</string>
     <string name="pref_category_mods">Pengaturan SCEE</string>
     <string name="pref_hide_notes_message">Masukkan nama pengguna atau ID yang hendak diabaikan</string>
     <string name="pref_show_gpx_button_summary">Berlawanan dengan catatan OSM, menambahkan catatan GPX tidak akan menyembunyikan pencarian apa pun di lokasi yang terpengaruh</string>
@@ -18,7 +16,7 @@
     <string name="import_export_hidden_quests">Pencarian tersembunyi</string>
     <string name="pref_hide_button_summary">Klik menyembunyikan pencarian untuk sementara, klik lama menyembunyikan secara permanen</string>
     <string name="pref_main_menu_grid">Tampilkan semua item menu utama sebagai kisi</string>
-    <string name="pref_recent_answers_first_min_lines_summary">Jika formulir memiliki lebih dari %d baris</string>
+    <string name="pref_recent_answers_first_min_lines_summary">Jika formulir memiliki lebih dari %1$d baris</string>
     <string name="pref_save_gpx">Dapatkan catatan GPX dan foto serta trek yang dilampirkan</string>
     <string name="pref_files_not_found">Tidak ada file yang ditemukan</string>
     <string name="pref_gpx_track_provide">Pilih file GPX</string>
@@ -69,7 +67,7 @@
     <string name="pref_update_local_statistics">Perbarui statistik pada unggahan</string>
     <string name="import_presets_overlays_replace">Ganti</string>
     <string name="import_error">Kesalahan impor</string>
-    <string name="pref_delete_old_data_after_summary">%d hari</string>
+    <string name="pref_delete_old_data_after_summary">%1$d hari</string>
     <string name="pref_read_log_title">Pembaca log</string>
     <string name="pref_save_photos_title">Simpan foto yang digunakan untuk catatan</string>
     <string name="pref_get_photos_title">Dapatkan foto ukuran penuh</string>

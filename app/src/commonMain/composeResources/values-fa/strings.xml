@@ -58,7 +58,6 @@
     <string name="about_title_privacy_statement">بیانیهٔ حریم شخصی</string>
     <string name="quest_openingHours_public_holidays">تعطیلات رسمی</string>
     <string name="quest_openingHours_public_holidays_short">تعطیلات رسمی</string>
-    <string name="quest_openingHours_open_end">پایان کار</string>
     <string name="quest_openingHours_answer_247">همیشه باز</string>
     <string name="quest_openingHours_answer_seasonal_opening_hours">ماهیانه یا فصلی …</string>
     <string name="quest_openingHours_answer_no_regular_opening_hours">زمان کاری منظمی ندارد…</string>
@@ -110,7 +109,6 @@
     <string name="quest_surface_value_sett">سنگفرش ناهموار</string>
     <string name="quest_surface_value_wood">چوب</string>
     <string name="quest_sidewalk_title">آیا این خیابان پیاده‌رو دارد؟</string>
-    <string name="quest_maxspeed_answer_noSign_info_urbanOrRural">این خیابان کجاست؟</string>
     <string name="quest_address_title">شماره این ساختمان چیست؟</string>
     <string name="store_listing_short_description">برنامه نقشه‌کش نقشه متن باز OSM</string>
     <string name="store_listing_full_description">نقشه متن باز OSM را با کمک StreetComplete بهبود دهید!
@@ -118,7 +116,6 @@
 این برنامه نواقص نقشه را در اطراف شما پیدا می‌کند و آن‌ها را در قالب جُستارهایی روی نقشه نشان می‌دهد. هر یک از این جُستارها را با رفتن به محل و پاسخ‌دادن به یک سوال ساده حل نمایید تا نقشه را روزآمد کنید.
 
 اطلاعاتی که وارد می‌کنید به طور مستقیم بدون نیاز به استفاده از ویرایشگر دیگر در نقشه متن باز OSM اضافه می‌شود.</string>
-    <string name="quest_name_answer_noName">نامی ندارد...</string>
     <string name="quest_name_answer_noName_confirmation_title">واقعا نامی ندارد؟</string>
     <string name="quest_name_noName_confirmation_positive">بله، بدون نام است</string>
     <string name="quest_openingHours_add_times">افزودن زمان ساعات کار</string>
@@ -174,11 +171,9 @@
     <string name="dialog_session_dont_show_again">تا پایان این نشست دیگر نپرس</string>
     <string name="quest_maxspeed_unusualInput_confirmation_description">به نظر می‌رسد این محدودیت سرعت درست نباشد.</string>
     <string name="quest_maxspeed_answer_noSign_confirmation_title">آیا مطمئن هستید که هیچ محدودیتی در علائم نیامده است؟</string>
-    <string name="quest_maxspeed_answer_noSign_confirmation">آیا هر انتهای خیابان را بررسی کردید؟ اگر در کل خیابان علامتی برای بخش انتخاب‌شده وجود ندارد، محدودیت سرعت پیشفرض اعمال می‌شود.</string>
+    <string name="quest_maxspeed_answer_noSign_confirmation">آیا هر انتهای خیابان را بررسی کردید؟
+ اگر در کل خیابان علامتی برای بخش انتخاب‌شده وجود ندارد، محدودیت سرعت پیشفرض اعمال می‌شود.</string>
     <string name="quest_maxspeed_answer_noSign_confirmation_positive">بله، بدون علائم</string>
-    <string name="quest_maxspeed_answer_noSign_urbanOrRural_description">محدودیت سرعت پیشفرض راه‌های شهری نسبت به راه‌های روستایی عدد کمتری می‌باشد.</string>
-    <string name="quest_maxspeed_answer_noSign_urbanOk">شهری</string>
-    <string name="quest_maxspeed_answer_noSign_ruralOk">روستایی</string>
     <string name="quest_maxspeed_answer_noSign_info_zone">اگر علامتی مانند این در تقاطع خیابان اصلی وجود دارد، علائم جداگانه‌ای در این محدوده پیدا نخواهید کرد زیرا محدودیت سرعت ذکرشده در آنجا به کل محدوده اعمال می‌شود.</string>
     <string name="quest_sport_softball">سافتبال</string>
     <string name="quest_sport_racquet">راکت‌بال</string>
@@ -197,11 +192,6 @@
     <string name="underground_recycling_container">مخزن زیرزمینی</string>
     <string name="quest_streetName_answer_cantType">نویسه‌های روی علامت را نمی‌توانم بنویسم</string>
     <string name="quest_streetName_cantType_title">نداشتن چیدمان صفحه‌کلید؟</string>
-    <string name="quest_streetName_cantType_open_settings">بازکردن تنظیمات</string>
-    <string name="quest_streetName_cantType_open_store">بازکردن فروشگاه</string>
-    <string name="quest_streetName_cantType_description">اگر از صفحه‌کلید پیشفرض استفاده می‌کنید، می‌توانید چیدمان صفحه‌کلید را برای زبان موردنیاز خود در تنظیمات روش ورودی فعال نمایید.
-
-در غیر این صورت، می‌توانید برنامٔ صفحه‌کلید دیگری را از فروشگاه نصب کنید. صفحه‌کلیدهای محبوب که بسیاری از زبان‌ها را پشتیبانی می‌کنند عبارتند از Google Gboard،‏ SwiftKey Keyboard و Multiling O Keyboard.</string>
     <string name="quest_streetName_menuItem_nolanguage">(نامشخص)</string>
     <string name="quest_fireHydrant_type_title">نوع این وسیله اطفاء حریق (شیر آتش‌نشانی) چیست؟</string>
     <string name="quest_fireHydrant_type_pillar">شیر خیابانی</string>
@@ -212,7 +202,6 @@
     <string name="credits_contributors_title">مشارکت‌کنندگان در بخش کدنویسی</string>
     <string name="credits_author_title">سازنده و نگهدارنده</string>
     <string name="quest_maxspeed_answer_living_street">این یک خیابان محل سکونت است</string>
-    <string name="quest_maxspeed_answer_living_street_confirmation_title">پس، علامتی مانند این وجود دارد؟</string>
     <string name="quest_orchard_produce_title">چه چیزی در اینجا به عمل می‌آید؟</string>
     <string name="produce_grapes">انگور</string>
     <string name="produce_agaves">آگاو</string>
@@ -284,7 +273,6 @@
     <string name="quest_buildingLevels_levelsLabel2">طبقات (بدون شمارش پشت‌بام)</string>
     <string name="quest_buildingLevels_answer_multipleLevels">متفاوت در هر بخش ساختمان</string>
     <string name="quest_buildingLevels_answer_description">در این حالت، مقدارهای بلندترین قسمت از ساختمان را وارد نمایید</string>
-    <string name="quest_maxspeed_answer_noSign_singleOrDualCarriageway_description">آیا جهت‌های مخالف این راه با مانع فیزیکی یا فضای سبز مجزا شده است؟ محدودیت سرعت پیشفرض به این مسئله بستگی دارد.</string>
     <string name="about_category_feedback">بازخورد</string>
     <string name="quest_leave_new_note_photo">پیوست کردن تصویر</string>
     <string name="quest_leave_new_note_photo_delete_title">آیا می‌خواهید این تصویر را حذف کنید؟</string>
@@ -315,7 +303,6 @@
     <string name="quest_housenumber_conscription_number">شماره اداری (پلاک خانه)</string>
     <string name="quest_housenumber_street_number_optional">شماره جهت‌یابی (اختیاری)</string>
     <string name="quest_cycleway_answer_contraflow_cycleway">مسیر رفت و برگشت دوچرخه سواری مجزا است…</string>
-    <string name="quest_openingHours_emptyAnswer">آنچه را که روی علائم نگاشته شده درج کنید. اگر علائمی وجود ندارد، ساعت کاری را از داخل بپرسید.</string>
     <string name="quest_cycleway_value_none_but_no_oneway">هیچ‌کدام، اما دوچرخه‌سواران می‌توانند از جاده در هر دو جهت استفاده کنند</string>
     <string name="quest_wheelchairAccess_description_toilets">اگر سرویس‌بهداشتی برای صندلی چرخدار قابل دسترسی است، علائمی مانند این شاید نصب شده باشد.
 تا اندازه‌ای یعنی صندلی چرخدار می‌تواند وارد سرویس بهداشتی شود و از آن استفاده کند، اما دست‌نرده ندارد یا دست‌شویی مناسب‌سازی نشده است.</string>
@@ -450,7 +437,6 @@
     <string name="quest_openingHours_no_sign">بدون تابلوی ساعت کاری</string>
     <string name="quest_buildingType_sports_centre">ورزشگاه (مرکز ورزشی)</string>
     <string name="quest_buildingType_toilets">سرویس‌بهداشتی</string>
-    <string name="quest_maxspeed_sign_question">محدودیت سرعت چگونه مشخص شده است؟</string>
     <string name="quest_segregated_title">اینجا مسیر پیاده و مسیر دوچرخه چگونه ساخته شده است؟</string>
     <string name="dialog_tutorial_upload">برای بارگذاری تغییرات به صورت دستی، از دکمه‌ای که در نوار ابزار مشابه این است استفاده کنید.</string>
     <string name="quest_segregated_separated">جدا از یکدیگر</string>
@@ -465,7 +451,6 @@
     <string name="privacy_html_image_upload2">&lt;p&gt;تصاویری که به یادداشت اضافه می‌نمایید روی سرور ما بارگذاری می‌شوند و چند روز بعد از حل‌شدن یادداشت حذف می‌شوند. فرادادهٔ آن‌ها قبل از بارگذاری حذف می‌شود.&lt;/p&gt;</string>
     <string name="action_deselect_all">بدون انتخاب</string>
     <string name="quest_buildingType_retail_description">شامل ساختمان‌هایی برای رستوران‌ها، کافه‌ها، فروشگاه‌ها…</string>
-    <string name="quest_openingHours_timeSelect_next">بعدی</string>
     <string name="quest_tracktype_title">استحکام سطح این مسیر چگونه است؟</string>
     <string name="quest_tracktype_grade1">سخت</string>
     <string name="quest_tracktype_grade4">اغلب نرم</string>
@@ -489,9 +474,7 @@
     <string name="theme_dark">تیره</string>
     <string name="theme_system_default">پیشفرض سیستم</string>
     <string name="action_open_location">مکان را در برنامه دیگری باز نمایید</string>
-    <string name="map_application_missing">برنامه نقشه دیگری نصب نگردیده‌است</string>
     <string name="label_housenumber">شماره خانه</string>
-    <string name="label_blocknumber">شماره مجتمع</string>
     <string name="quest_busStopShelter_covered">سراسر ایستگاه سرپوشیده است</string>
     <string name="quest_ferry_pedestrian_title">آیا این مسیر دریایی برای حمل‌ونقل پیاده‌ها استفاده می‌شود؟</string>
     <string name="quest_ferry_motor_vehicle_title">آیا این مسیر دریایی برای حمل‌ونقل خودروها استفاده می‌شود؟</string>
@@ -504,7 +487,6 @@
     <string name="quest_cyclewayPartSurface_title">سطح مسیر دوچرخه‌سواری از چه جنسی است؟</string>
     <string name="quest_generic_answer_differs_along_the_way">متفاوت در طول مسیر...</string>
     <string name="quest_split_way_description">اگر در طول راه فرق می‌کند، اولین گام تقسیم راه است. پس از آن می‌توان برای هر قسمت به‌طور جداگانه پاسخ جُستار را ارائه نمود.  اکنون تقسیم می‌کنید؟</string>
-    <string name="quest_split_way_tutorial">روی مسیر ضربه بزنید تا از نقطه‌ای (هایی) که پاسخ فرق دارد، آن مسیر را تقسیم کنید. بزرگنمایی کنید و تا حد ممکن دقیق باشید.</string>
     <string name="quest_split_way_too_imprecise">لطفاً بزرگنمایی کنید</string>
     <string name="quest_split_way_many_splits_confirmation_description">راه به چند بخش تقسیم شد. همیشه می‌توانید راه را بیشتر تقسیم کنید.</string>
     <string name="quest_footwayPartSurface_title">سطح این پیاده‌رو از چه جنسی است؟</string>
@@ -685,7 +667,6 @@
     <string name="at_housenumber">شماره خانه %1$s:</string>
     <string name="quest_openingHours_add_off_days">افزودن روزهای حراج</string>
     <string name="quest_openingHours_off_day">روز حراج</string>
-    <string name="quest_openingHours_unspecified_range">مشخص نشده</string>
     <string name="quest_cycleway_resurvey_title">آیا اینجا هنوز خط دوچرخه‌سواری وجود دارد؟</string>
     <string name="pref_title_resurvey_intervals">فواصل تکرار بررسی</string>
     <string name="resurvey_intervals_less_often">کمتر بپرسید</string>
@@ -762,14 +743,9 @@
     <string name="quest_shop_gone_title">چه چیز دیگری اینجاست؟</string>
     <string name="quest_shop_gone_vacant_answer">خالی است</string>
     <string name="quest_shop_gone_replaced_answer">یک…</string>
-    <string name="quest_shop_gone_replaced_answer_hint">نوع مکان اینجا را وارد کنید</string>
-    <string name="quest_shop_vacant_type_title">این فروشگاه متروکه است. اکنون چه عارضه‌ای اینجاست؟</string>
     <string name="default_disabled_msg_go_inside_regional_warning">این نوع جُستار به صورت پیشفرض غیرفعال است زیرا در برخی مناطق مفید نیست و احتمالاً مجبور خواهید بود که وارد مکان شوید تا به جُستاری از این نوع پاسخ دهید.</string>
     <string name="quest_dietType_explanation_kosher">محصولات کوشر مطابق با قوانین خاص تهیه می‌شود و مراکز صدور گواهینامه کوشر، محصولات را مطابق با آن نشانه‌گذاری می‌کنند.</string>
     <string name="quest_cycleway_answer_no_bicycle_infrastructure">اصلاً مسیر دوچرخه‌سواری وجود ندارد</string>
-    <string name="quest_cycleway_answer_no_bicycle_infrastructure_explanation">طبق معمول، روی یک سمت تصویر ضربه بزنید، یک پاسخ مناسب را انتخاب نمایید و همین روش را برای سمت دیگر انجام دهید.
-به همه گزینه‌های موجود توجه داشته باشید: بعضی موارد واضح نیستند، مانند جاده یک طرفه ای که دوچرخه‌سواران می‌توانند در هر دو جهت حرکت کنند!</string>
-    <string name="quest_cycleway_answer_no_bicycle_infrastructure_title">انتخاب اینکه، هیچ مسیر دوچرخه‌ای وجود ندارد</string>
     <string name="quest_construction_completed_at_known_date">تمام می‌شود در تاریخ …</string>
     <string name="quest_construction_completion_date_title">چه زمانی کامل خواهد شد؟</string>
     <string name="quest_surface_value_clay">خاکی</string>
@@ -870,7 +846,9 @@
     <string name="quest_bollard_type_foldable2">تاشو (با یا بدون کلید)</string>
     <string name="no_search_results">موردی پیدا نشد</string>
     <string name="quest_selection_hint_title">جُستار‌های حل نشده زیاد است؟</string>
-    <string name="quest_selection_hint_message">مشارکت در درجه اول باید سرگرم کننده باشد! اگر از تعداد جُستارها غافلگیر شده‌اید، همیشه می‌توانید در تنظیمات مشخص کنید که کدام جُستارها و به چه ترتیب برای شما نمایش داده شوند.</string>
+    <string name="quest_selection_hint_message">مشارکت در درجه اول باید سرگرم کننده باشد!
+
+اگر از تعداد جُستارها غافلگیر شده‌اید، همیشه می‌توانید در تنظیمات مشخص کنید که کدام جُستارها و به چه ترتیب برای شما نمایش داده شوند.</string>
     <string name="quest_presets_preset_add">افزودن پیش‌تنظیم</string>
     <string name="quest_presets_preset_name">نام پیش‌تنظیم</string>
     <string name="quest_presets_default_name">پیشفرض</string>
@@ -997,9 +975,6 @@
     <string name="quest_bicycle_parking_type_handlebarholder">نگهدارنده</string>
     <string name="quest_bicycle_parking_access_title2">چه کسی اجازه دارد اینجا دوچرخه پارک کند؟ پارکینگ ممکن است رایگان یا پولی باشد.</string>
     <string name="quest_playground_access_title2">چه کسانی مجاز به استفاده از این زمین بازی هستند؟</string>
-    <string name="quest_sidewalk_answer_none_title">انتخاب‌کردن اینکه پیاده روها وجود ندارد</string>
-    <string name="quest_side_select_interface_explanation">روی هر طرف ضربه بزنید و وضعیت آن طرف را انتخاب کنید.
-در صورت وجود همین کار را برای طرف دیگر انجام دهید.</string>
     <string name="ar_measure">اندازه‌گیری</string>
     <string name="ar_core_tracking_error_too_steep_angle">زاویه حاده، کمی فاصله بگیرید</string>
     <string name="default_disabled_msg_no_ar">برای حل این چالش به یک متر نواری نیاز دارید زیرا اندازه‌گیری با دوربین در این دستگاه پشتیبانی نمی‌شود.</string>
@@ -1135,10 +1110,6 @@
     <string name="quest_camp_drinking_water_title">آیا اینجا آب آشامیدنی رایگان در اختیار چادرنشینان قرار می‌گیرد؟</string>
     <string name="quest_camp_shower_title">آیا اینجا حمام دارد؟</string>
     <string name="quest_camp_power_supply_title">آیا راهی وجود دارد که مشتریان گوشی همراه، رایانه و... خود را اینجا شارژ کنند؟</string>
-    <string name="quest_camp_type_title">چه کسی می‌تواند اینجا چادر بزند؟</string>
-    <string name="quest_camp_type_tents_and_caravans">هم چادرها و هم خانه‌های متحرک، یدک‌‌کش‌های مسافرتی و…</string>
-    <string name="quest_camp_type_caravans_only">فقط کاوران‌ها، خانه‌های متحرک، یدک‌کش‌های مسافرتی و…</string>
-    <string name="quest_camp_type_tents_only">فقط چادر</string>
     <string name="quest_camp_type_backcountry">چادر زنی در خارج شهر (بدون امکانات)</string>
     <string name="quest_fireHydrant_diameter_unusualInput_confirmation_description2">به نظر می‌رسد این قطر درست نباشد، معمولاً اندازهٔ آن بین %1$d و %2$d است.</string>
     <string name="street_parking_street_width">پهنای‌ خیابان: %1$s</string>
@@ -1205,8 +1176,6 @@
     <string name="quest_placeName_no_name_answer">هیچ تابلویی وجود ندارد</string>
     <string name="quest_road_width_unusualInput_confirmation_description">این عرض غیر قابل قبول به نظر می‌رسد. خاطر یاد داشته باشید، عرض مذکور از جدول تا جدول باشد، شامل پارکینگ در خیابان، خطوط دوچرخه و غیره.</string>
     <string name="overlay_cycleway">مسیرهای دوچرخه‌سواری</string>
-    <string name="bicycle_boulevard_is_a">این یک %1$s است</string>
-    <string name="bicycle_boulevard_is_not_a">این %1$s نیست</string>
     <string name="bicycle_boulevard">بلوار دوچرخه</string>
     <string name="separate_cycleway_no_or_allowed">برای دوچرخه سواری مشخص نشده است (دوچرخه سواری ممکن است همچنان مجاز باشد)</string>
     <string name="separate_cycleway_non_segregated">مسیر با استفاده مشترک</string>
@@ -1229,9 +1198,6 @@
     <string name="street_parking_staggered_half_on_kerb">اغلب به صورت متناوب در دو طرف خیابان</string>
     <string name="quest_traffic_signals_sound_description">نکته: مراقب بلندگوها باشید. تمام هشدارهای صوتی را نمی‌توان از طریق یک دکمه فعال کرد.</string>
     <string name="quest_presets_duplicate">رونوشت برداشتن</string>
-    <string name="label_block">بلوک</string>
-    <string name="quest_address_answer_block">در داخل یک بلوک است...</string>
-    <string name="quest_address_answer_no_block">در یک بلوک نیست...</string>
     <string name="quest_surface_value_mud">خاک سخت</string>
     <string name="quest_wheelchairAccessPat_noToilet">اینجا سرویس بهداشتی نیست</string>
     <string name="unknown_surface_title">نوع دیگری از سطح</string>
@@ -1341,8 +1307,7 @@
     <string name="quest_accessible_for_pedestrians_allowed">مجاز است.</string>
     <string name="quest_buildingLevels_hint">برای ساختمان‌های شیب‌دار، شمارش سطح از سطح زمین پایین‌ترین سمت شروع می‌شود.
 
-یک سطح زمانی که پنجره‌های آن در پشت بام باشد به عنوان سطح مسقف محسوب می‌شود. پس از آن، سقف‌هایی با سطح سقف صفر لزوماً مسطح نیستند، فقط برای کل سطح به اندازه کافی بلند نیستند.
-␣␣␣␣</string>
+یک سطح زمانی که پنجره‌های آن در پشت بام باشد به عنوان سطح مسقف محسوب می‌شود. پس از آن، سقف‌هایی با سطح سقف صفر لزوماً مسطح نیستند، فقط برای کل سطح به اندازه کافی بلند نیستند.</string>
     <string name="quest_parcel_locker_brand">مارک این بسته‌بندی چیست؟</string>
     <string name="quest_powerPolesMaterial_is_terminal">خط برق به ساختمان متصل است</string>
     <string name="quest_cycleway_value_sidewalk_ok">هیچ‌کدام، اما تابلو اجازه دوچرخه‌سواری در پیاده‌رو را می‌دهد</string>
@@ -1466,8 +1431,76 @@
     <string name="quest_charging_station_bicycles_title">دوچرخه‌ها را می‌توان در اینجا شارژ کرد؟</string>
     <string name="quest_charging_station_bicycles_hint">آداپتورهای برق شارژر دوچرخه به پریزهای برق معمولی خانگی وصل می‌شوند.</string>
     <string name="quest_tower_access_title">چه کسی می‌تواند به این برج دسترسی داشته باشد؟ ممکن است رایگان یا پولی باشد.</string>
-    <string name="quest_charging_station_bicycles_answer_only">فقط برای دوچرخه است</string>
     <string name="quest_recycling_type_pet_bottles">بطری‌های PET</string>
     <string name="quest_maxweight_add_sign">اضافه‌کردن علامت</string>
     <string name="quest_maxweight_remove_sign">حذف‌کردن علامت</string>
+    <string name="weekly_osm_new_edition_title">نسخه جدید!</string>
+    <string name="pref_title_messages">پیام‌های درون‌برنامه‌ای</string>
+    <string name="pref_title_message_achievements">دستاوردهای قفل‌گشایی‌شده</string>
+    <string name="pref_title_message_weekly_osm">نسخه‌های جدید weeklyOSM</string>
+    <string name="pref_title_message_changelog">نسخه‌های جدید برنامه</string>
+    <string name="label_block2">بلوک شهری</string>
+    <string name="quest_address_answer_block2">درون یک بلوک شهری است…</string>
+    <string name="quest_address_answer_no_block2">درون یک بلوک شهری نیست…</string>
+    <string name="quest_artwork_title">این چه نوع اثری هنری است؟</string>
+    <string name="quest_artwork_sculpture">مجسمه</string>
+    <string name="quest_artwork_statue">تندیس</string>
+    <string name="quest_artwork_mural">دیوارنگاره</string>
+    <string name="quest_artwork_graffiti">دیوار‌نوشته</string>
+    <string name="quest_artwork_installation">چیدمان</string>
+    <string name="quest_artwork_bust">نیم‌تنه</string>
+    <string name="quest_artwork_stone">سنگ‌چیدمان (یا اثر سنگی)</string>
+    <string name="quest_artwork_painting">نقاشی</string>
+    <string name="quest_artwork_street_art">سایر هنرهای خیابانی</string>
+    <string name="quest_artwork_architecture">معماری</string>
+    <string name="quest_artwork_mosaic">موزائیک</string>
+    <string name="quest_artwork_relief">نقش‌برجسته</string>
+    <string name="quest_artwork_fountain">آبنما</string>
+    <string name="quest_bothway_title">در چه جهتی می‌توانید از این مسیر حرکت کنید؟</string>
+    <string name="quest_camp_tent_title">آیا می‌توانید اینجا در چادر کمپ کنید؟</string>
+    <string name="quest_camp_cabin_title">آیا کلبه‌هایی برای اقامت در اینجا وجود دارد؟</string>
+    <string name="quest_camp_caravan_title">آیا می‌توانید اینجا با کاروان یا تریلر مسافرتی کمپ کنید؟</string>
+    <string name="quest_ferry_bicycle_title">آیا دوچرخه در این کشتی مجاز است؟</string>
+    <string name="quest_openingHours_add_time">افزودن زمان</string>
+    <string name="quest_openingHours_chooseStartTimeTitle">انتخاب زمان شروع</string>
+    <string name="quest_openingHours_chooseEndTimeTitle">انتخاب زمان پایان</string>
+    <string name="quest_openingHours_chooseTimeTitle">انتخاب زمان</string>
+    <string name="quest_openingHours_no_fixed_end">بدون زمان پایان ثابت</string>
+    <string name="quest_openingHours_from">از %1$s</string>
+    <string name="quest_openingHours_until_late">%1$s تا دیروقت</string>
+    <string name="quest_collectionTimes_answer_time_spans">در یک بازه زمانی…</string>
+    <string name="quest_collectionTimes_answer_time_points">در زمان‌های مشخص…</string>
+    <string name="quest_shower_hot_water_title">آیا آب گرم در اینجا وجود دارد؟</string>
+    <string name="calendar_new_event_title">رویداد جدید OSM در منطقه شما!</string>
+    <string name="pref_title_message_calendar">رویدادهای جدید OSM در منطقه شما</string>
+    <string name="quest_ferry_hgv_title">آیا این مسیر کشتی، وسایل نقلیه سنگین باری را حمل می‌کند؟</string>
+    <string name="dialog_dont_notify_again2">لغو اشتراک</string>
+    <string name="quest_leave_new_note_track_recording">ضبط مسیر پیوست خواهد شد.</string>
+    <string name="quest_leave_new_note_photo_delete">حذف</string>
+    <string name="quest_maxspeed_type_description">حداکثر سرعت بر اساس... تعیین می‌شود</string>
+    <string name="quest_maxspeed_answer_advisory_speed_limit2">تابلوی سرعت توصیه‌شده</string>
+    <string name="quest_maxspeed_answer_roadtype_description">خیابان... است</string>
+    <string name="quest_maxspeed_answer_roadtype_urban">در محدوده شهری</string>
+    <string name="quest_maxspeed_answer_roadtype_rural">خارج از محدوده شهری</string>
+    <string name="quest_maxspeed_answer_roadtype_lit">دارای روشنایی</string>
+    <string name="quest_maxspeed_answer_roadtype_not_lit">بدون روشنایی</string>
+    <string name="quest_maxspeed_answer_roadtype_dual_carriageway">بدون روشنایی و جاده دوطرفه</string>
+    <string name="quest_board_type_tourism">گردشگری (موضوعات متعدد)</string>
+    <string name="quest_lanes_answer_oneLaneOnly">تنها یک خط مشخص</string>
+    <string name="quest_shop_gone_replaced_answer_hint2">آنچه را که به دنبال آن هستید تایپ کنید</string>
+    <string name="link_gomap_description">ویرایشگر پیشرفته OSM برای iOS</string>
+    <string name="link_terraink_description">ایجاد پوسترهای زیبای سفارشی از یک شهر یا محله</string>
+    <string name="quest_place_vacant_type_title">این مکان قبلا خالی بوده است. الان چه چیزی اینجاست؟</string>
+    <string name="about_title">درباره %1$s</string>
+    <string name="quest_surface_value_laterite">لاتریت</string>
+    <string name="leave_note_quest_context_hint">نمی‌توان پاسخ داد به “%1$s”:</string>
+    <string name="leave_note_overlay_context_hint">در زمینه همپوشانی «%1$s»:</string>
+    <string name="quest_split_way_tutorial2">برای تقسیم مسیر در موقعیت نشانگر ضربدری، دکمه را لمس کنید.</string>
+    <string name="quest_leave_new_note_track_delete_title">آیا می‌خواهید این ضبط مسیر را حذف کنید؟</string>
+    <string name="unchanged_tag_action_title">تأیید شد %1$s</string>
+    <string name="quest_streetName_cantType_description2">اگر از صفحه‌کلید پیش‌فرض استفاده می‌کنید، به احتمال زیاد می‌توانید به سادگی چیدمان صفحه‌کلید زبان مورد نیاز خود را در تنظیمات روش ورودی فعال کنید.
+
+در غیر این صورت، می‌توانید صفحه‌کلید دیگری را از فروشگاه برنامه دانلود کنید. در اندروید، شاید بخواهید FlorisBoard یا HeliBoard را امتحان کنید.</string>
+    <string name="bicycle_boulevard_is_a2">این یک بلوار دوچرخه است</string>
+    <string name="bicycle_boulevard_is_not_a2">این یک بلوار دوچرخه نیست</string>
 </resources>

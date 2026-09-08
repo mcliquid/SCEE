@@ -1,7 +1,6 @@
 package de.westnordost.streetcomplete.overlays.street_parking
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -15,10 +14,7 @@ import de.westnordost.streetcomplete.osm.Sides
 import de.westnordost.streetcomplete.osm.street_parking.StreetParking
 import de.westnordost.streetcomplete.osm.street_parking.floatingIcon
 import de.westnordost.streetcomplete.osm.street_parking.painter
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.street_parking_street_width
-import de.westnordost.streetcomplete.resources.street_side_unknown
-import de.westnordost.streetcomplete.resources.street_side_unknown_l
+import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.TextWithHalo
 import de.westnordost.streetcomplete.ui.common.street_side_select.Side
 import de.westnordost.streetcomplete.ui.common.street_side_select.StreetSideForm
@@ -68,7 +64,6 @@ import org.jetbrains.compose.resources.stringResource
                 parking?.floatingIcon?.let { painterResource(it) }
             },
             lastPicked = lastPicked,
-            lastPickedContentPadding = PaddingValues(start = 48.dp, end = 56.dp),
         )
 
         if (width != null) {

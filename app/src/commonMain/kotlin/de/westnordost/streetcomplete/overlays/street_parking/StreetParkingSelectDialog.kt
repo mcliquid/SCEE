@@ -44,9 +44,7 @@ import de.westnordost.streetcomplete.osm.street_parking.StreetParkingSelection
 import de.westnordost.streetcomplete.osm.street_parking.dialogPainter
 import de.westnordost.streetcomplete.osm.street_parking.painter
 import de.westnordost.streetcomplete.osm.street_parking.title
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.select_street_parking_orientation
-import de.westnordost.streetcomplete.resources.select_street_parking_position
+import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.BackIcon
 import de.westnordost.streetcomplete.ui.common.item_select.ImageWithLabel
 import de.westnordost.streetcomplete.ui.common.item_select.ItemSelectGrid
@@ -100,7 +98,7 @@ fun StreetParkingSelectionDialog(
             AnimatedContent(
                 targetState = parkingOrientation,
                 transitionSpec = {
-                    val dir = if (parkingOrientation != null) 1 else - 1
+                    val dir = if (parkingOrientation != null) 1 else -1
                     slideInHorizontally { it * dir } togetherWith slideOutHorizontally { -it * dir }
                 }
             ) { orientation ->

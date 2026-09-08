@@ -4,14 +4,13 @@ import android.animation.TimeAnimator
 import android.content.ContentResolver
 import android.provider.Settings
 import androidx.annotation.UiThread
-import androidx.core.graphics.Insets
 import androidx.lifecycle.DefaultLifecycleObserver
-import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.Prefs
 import androidx.lifecycle.LifecycleOwner
 import com.google.gson.JsonObject
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
+import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.screens.main.map.maplibre.CameraPosition
 import de.westnordost.streetcomplete.screens.main.map.maplibre.Padding
 import de.westnordost.streetcomplete.screens.main.map.maplibre.camera
@@ -42,7 +41,7 @@ import kotlin.math.sin
 /** Display element geometry and enables focussing on given geometry. I.e. to highlight the geometry
  *  of the element a selected quest refers to. Also zooms to the element in question so that it is
  *  contained in the screen area */
-class FocusGeometryMapComponent(private val contentResolver: ContentResolver, private val map: MapLibreMap, private val prefs: ObservableSettings) :
+class FocusGeometryMapComponent(private val contentResolver: ContentResolver, private val map: MapLibreMap, private val prefs: Preferences) :
     DefaultLifecycleObserver {
 
     private val focusedGeometrySource = GeoJsonSource(SOURCE)
@@ -157,8 +156,8 @@ class FocusGeometryMapComponent(private val contentResolver: ContentResolver, pr
         animation.end()
     }
 
-    @UiThread fun beginFocusGeometry(g: ElementGeometry, insets: Insets) {
-        val targetPos = map.getEnclosingCamera(g, insets) ?: return
+    @UiThread fun beginFocusGeometry(g: ElementGeometry, padding: Padding?) {
+        val targetPos = map.getEnclosingCamera(g, padding) ?: return
 
         val currentPos = map.camera
         // limit max zoom to not zoom in to the max when zooming in on points;
@@ -170,7 +169,7 @@ class FocusGeometryMapComponent(private val contentResolver: ContentResolver, pr
 
         map.updateCamera(zoomTime, contentResolver) {
             position = targetPos.position
-            padding = targetPos.padding
+            this.padding = targetPos.padding
             // also, only zoom if diff big enough
             if (zoomDiff > 0.5) zoom = targetZoom
         }
@@ -191,7 +190,7 @@ class FocusGeometryMapComponent(private val contentResolver: ContentResolver, pr
             map.updateCamera(zoomTime, contentResolver) {
                 position = pos.position
                 zoom = pos.zoom
-                padding = Padding(0.0, 0.0, 0.0, 0.0)
+                padding = null
             }
         }
         previousCameraPosition = null

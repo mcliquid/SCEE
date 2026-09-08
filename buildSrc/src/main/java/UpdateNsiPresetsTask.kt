@@ -3,9 +3,10 @@ import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import java.io.File
-import java.net.URL
+import java.net.URI
 
 /** Download and split the brand presets from the name suggestion index by countries they are in:
  *  Instead of one big presets file, sort those brands that only exist in certain countries into own
@@ -16,12 +17,16 @@ import java.net.URL
  *  all because they exist only in select countries and the user will only be editing usually in one
  *  country per session anyways. */
 open class UpdateNsiPresetsTask : DefaultTask() {
-    @get:Input lateinit var targetDir: String
+    @get:OutputDirectory lateinit var targetDir: File
     @get:Input lateinit var version: String
 
     @TaskAction
     fun run() {
-        val presetsUrl = URL("https://cdn.jsdelivr.net/npm/name-suggestion-index@$version/dist/presets/nsi-id-presets.min.json")
+        // create / clear target directory
+        targetDir.mkdirs()
+        targetDir.listFiles()?.forEach { it.delete() }
+
+        val presetsUrl = URI("https://cdn.jsdelivr.net/npm/name-suggestion-index@$version/dist/presets/nsi-id-presets.min.json").toURL()
         val nsiPresetsJson = Parser.default().parse(presetsUrl.openStream()) as JsonObject
         /* NSI uses (atm) a slightly different format than the normal presets: The presets are in
            a sub-object called "presets" */
@@ -65,7 +70,7 @@ open class UpdateNsiPresetsTask : DefaultTask() {
             if (include != null) transform(include)
             if (exclude != null) transform(exclude)
             // remove "locationSet": { "include": "001" } because that's the default
-            if (include?.singleOrNull() == "001" && exclude == null) {
+            if ((include?.singleOrNull() == "001" || include?.singleOrNull() == "Planet") && exclude == null) {
                 value.remove("locationSet")
             }
         }
@@ -77,7 +82,7 @@ open class UpdateNsiPresetsTask : DefaultTask() {
             val preset = entry.value as JsonObject
             val locationSet = preset["locationSet"] as? JsonObject
             val include = locationSet?.get("include") as? JsonArray<*>
-            val includeContains001 = include?.any { it as? String == "001" } == true
+            val includeContains001 = include?.any { it as? String == "001" || it as? String == "Planet" } == true
             if (include != null && !includeContains001) {
                 for (country in include) {
                     byCountryMap.getOrPut(country as String) { JsonObject() }[key] = preset
@@ -88,8 +93,8 @@ open class UpdateNsiPresetsTask : DefaultTask() {
         }
 
         for ((country, jsonObject) in byCountryMap.entries) {
-            val name = "$targetDir/presets${ if (country != null) "-${country.uppercase()}" else "" }.json"
-            File(name).writeText(jsonObject.toJsonString())
+            val name = "presets${ if (country != null) "-${country.uppercase()}" else "" }.json"
+            File(targetDir, name).writeText(jsonObject.toJsonString())
         }
     }
 }

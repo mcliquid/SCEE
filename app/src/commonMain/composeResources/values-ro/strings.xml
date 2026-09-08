@@ -58,7 +58,6 @@
     <string name="about_title_privacy_statement">Declarație de confidențialitate</string>
     <string name="quest_openingHours_public_holidays">Sărbători legale</string>
     <string name="quest_openingHours_public_holidays_short">Sărbători legale</string>
-    <string name="quest_openingHours_open_end">până la ultimul client</string>
     <string name="quest_openingHours_answer_247">Deschis 24/7</string>
     <string name="quest_openingHours_answer_seasonal_opening_hours">Diferă în funcție de lună…</string>
     <string name="quest_openingHours_answer_no_regular_opening_hours">Fără program stabilit…</string>
@@ -110,7 +109,6 @@ Această aplicație comunică direct cu serverele OSM.&lt;br/&gt;
     <string name="quest_surface_value_sett">Piatră cubică</string>
     <string name="quest_surface_value_wood">Lemn</string>
     <string name="quest_sidewalk_title">Are strada trotuar?</string>
-    <string name="quest_maxspeed_answer_noSign_info_urbanOrRural">Unde este această stradă?</string>
     <string name="quest_address_title">Ce număr administrativ are clădirea?</string>
     <string name="store_listing_short_description">Aplicația topografică OpenStreetMap</string>
     <string name="store_listing_full_description">Ajutați la îmbunătățirea OpenStreetMap cu StreetComplete!
@@ -118,7 +116,6 @@ Această aplicație comunică direct cu serverele OSM.&lt;br/&gt;
 Această aplicație găsește date lipsă în vecinătate și le afișează pe o hartă sub formă de misiuni. Rezolvați fiecare misiune vizitând locația și răspunzând la o simplă întrebare pentru a actualiza harta.
 
 Informațiile pe care le introduceți sunt direct adăugate în OpenStreetMap în numele dumneavoastră, fără a fi nevoie să utilizați un alt editor.</string>
-    <string name="quest_name_answer_noName">Nu are nume…</string>
     <string name="quest_name_answer_noName_confirmation_title">Sigur nu are nume?</string>
     <string name="quest_name_noName_confirmation_positive">Da, nu are</string>
     <string name="quest_openingHours_add_times">Adaugă orele de funcționare</string>
@@ -177,9 +174,6 @@ Informațiile pe care le introduceți sunt direct adăugate în OpenStreetMap î
     <string name="quest_maxspeed_answer_noSign_confirmation">Ați verificat la capetele străzii?
 Dacă nu există indicatoare de-a lungul întregii străzi care se aplică pentru secțiunea evidențiată, sunt aplicate limitele de viteză implicite.</string>
     <string name="quest_maxspeed_answer_noSign_confirmation_positive">Da, nu e niciun indicator</string>
-    <string name="quest_maxspeed_answer_noSign_urbanOrRural_description">Drumurile din zonele construite au o limită de viteză implicită mai mică decât drumurile rurale.</string>
-    <string name="quest_maxspeed_answer_noSign_urbanOk">Zona construită</string>
-    <string name="quest_maxspeed_answer_noSign_ruralOk">Rural</string>
     <string name="quest_maxspeed_answer_noSign_info_zone">Dacă există un indicator de acest fel la intersecția cu strada principală, probabil nu veți găsi indicatoare individuale în zonă, deoarece limita de viteză afișată acolo se aplică întregii zone.</string>
     <string name="quest_sport_softball">Softball</string>
     <string name="quest_sport_racquet">Badminton</string>
@@ -198,11 +192,6 @@ Dacă nu există indicatoare de-a lungul întregii străzi care se aplică pentr
     <string name="underground_recycling_container">Container subteran</string>
     <string name="quest_streetName_answer_cantType">Nu se pot introduce caracterele de pe indicator</string>
     <string name="quest_streetName_cantType_title">Format de tastatură indisponibil?</string>
-    <string name="quest_streetName_cantType_open_settings">Deschide setările</string>
-    <string name="quest_streetName_cantType_open_store">Accesați magazinul de aplicații</string>
-    <string name="quest_streetName_cantType_description">Dacă utilizați o tastatură implicită, este posibil să activați pur și simplu aspectul tastaturii pentru limba de care aveți nevoie în setările metodei de introducere.
-
-În caz contrar, puteți descărca o altă tastatură din magazinul de aplicații. Tastaturile populare care acceptă multe limbi sunt Google Gboard, SwiftKey Keyboard și Multiling O Keyboard.</string>
     <string name="quest_streetName_menuItem_nolanguage">(nespecificat)</string>
     <string name="quest_fireHydrant_type_title">Ce fel de hidrant este?</string>
     <string name="quest_fireHydrant_type_pillar">Stâlp</string>
@@ -213,7 +202,6 @@ Dacă nu există indicatoare de-a lungul întregii străzi care se aplică pentr
     <string name="credits_contributors_title">Contribuții la cod</string>
     <string name="credits_author_title">Autor și întreținător</string>
     <string name="quest_maxspeed_answer_living_street">Este o zonă rezidențială</string>
-    <string name="quest_maxspeed_answer_living_street_confirmation_title">Deci, există un indicator ca acesta?</string>
     <string name="quest_orchard_produce_title">Ce se cultivă aici?</string>
     <string name="produce_grapes">Struguri</string>
     <string name="produce_agaves">Agave</string>
@@ -285,7 +273,6 @@ Dacă nu există indicatoare de-a lungul întregii străzi care se aplică pentr
     <string name="quest_buildingLevels_levelsLabel2">niveluri (excluzând acoperișul)</string>
     <string name="quest_buildingLevels_answer_multipleLevels">Diferă în funcție de partea clădirii</string>
     <string name="quest_buildingLevels_answer_description">In această situație, introduceți valoarea pentru cea mai înaltă parte a clădirii.</string>
-    <string name="quest_maxspeed_answer_noSign_singleOrDualCarriageway_description">Sensurile opuse ale acestui drum sunt separate printr-o barieră fizică sau spațiu verde? Limita de viteză implicită poate depinde de aceasta.</string>
     <string name="about_category_feedback">Contribuiți</string>
     <string name="quest_leave_new_note_photo">Atașează o fotografie</string>
     <string name="quest_leave_new_note_photo_delete_title">Doriți sa ștergeți această fotografie?</string>
@@ -316,7 +303,6 @@ Dacă nu există indicatoare de-a lungul întregii străzi care se aplică pentr
     <string name="quest_housenumber_conscription_number">Număr de înregistrare</string>
     <string name="quest_housenumber_street_number_optional">Număr pentru orientare (optional)</string>
     <string name="quest_cycleway_answer_contraflow_cycleway">De asemenea, bandă pentru ciclism pe cealaltă parte …</string>
-    <string name="quest_openingHours_emptyAnswer">Trebuie să descrieți ce este pe semn. Dacă nu este un semn, ar trebui să întrebați înăuntru care este programul.</string>
     <string name="quest_cycleway_value_none_but_no_oneway">niciuna, dar cicliștii pot utiliza drumul în ambele direcții</string>
     <string name="quest_wheelchairAccess_description_toilets">Un indicator ce afișează un scaun cu rotile, ca acesta, ar putea exista dacă toaleta este accesibilă.
 Parțial înseamnă că o persoană cu scaun cu rotile poate intra și folosi toaleta, dar nu este prezentă nici o bară de susținere sau vas de wc adaptat.</string>
@@ -452,7 +438,6 @@ la parter</string>
     <string name="quest_openingHours_no_sign">Nu sunt afișate orele de funcționare</string>
     <string name="quest_buildingType_sports_centre">Centru sportiv</string>
     <string name="quest_buildingType_toilets">Toalete</string>
-    <string name="quest_maxspeed_sign_question">Ce definește limita de viteză?</string>
     <string name="quest_segregated_title">Cum sunt aranjate pistele pietonală și de biciclete?</string>
     <string name="dialog_tutorial_upload">Pentru a trimite manual modificările dumneavoastră, utilizați butonul din bara de instrumente care arată astfel.</string>
     <string name="quest_segregated_separated">Separate una de alta</string>
@@ -467,7 +452,6 @@ la parter</string>
     <string name="privacy_html_image_upload2">&lt;p&gt;Fotografiile pe care le atașați unei note sunt încărcate pe serverul meu și șterse la câteva zile după ce nota a fost rezolvată. Meta-datele lor sunt eliminate înainte de încărcare.&lt;/p&gt;</string>
     <string name="action_deselect_all">Deselectați toate</string>
     <string name="quest_buildingType_retail_description">incluzând clădiri pentru restaurante, cafenele, magazine…</string>
-    <string name="quest_openingHours_timeSelect_next">Mai departe</string>
     <string name="quest_tracktype_title">Cât de dură este suprafața acestui drum?</string>
     <string name="quest_tracktype_grade1">Pavat</string>
     <string name="quest_tracktype_grade4">Preponderent moale</string>
@@ -491,9 +475,7 @@ la parter</string>
     <string name="theme_dark">Întunecată</string>
     <string name="theme_system_default">Cea folosită de sistem</string>
     <string name="action_open_location">Deschide locația în altă aplicație</string>
-    <string name="map_application_missing">Nu este instalată o altă aplicație pentru hărți</string>
     <string name="label_housenumber">numărul casei</string>
-    <string name="label_blocknumber">numărul grupului de locuințe</string>
     <string name="quest_busStopShelter_covered">Întreaga stație este acoperită</string>
     <string name="quest_ferry_pedestrian_title">Se pot transporta pietoni pe ruta de feribot?</string>
     <string name="quest_ferry_motor_vehicle_title">Se pot transporta autovehicule pe ruta de feribot?</string>
@@ -507,7 +489,6 @@ la parter</string>
     <string name="quest_generic_answer_differs_along_the_way">Diferă pe parcurs …</string>
     <string name="quest_split_way_description">Dacă diferă de-a lungul drumului, primul pas este să împărțiți drumul. După aceea, se poate răspunde separat pentru fiecare parte divizată.
 Îl împărțiți acum?</string>
-    <string name="quest_split_way_tutorial">Atingeți drumul pentru a-l împărți în punctul (punctele) în care răspunsul diferă. Puteți folosi funcția de mărire și încercați să fiți cât mai precis posibil.</string>
     <string name="quest_split_way_too_imprecise">Măriți mai mult</string>
     <string name="quest_split_way_many_splits_confirmation_description">Sunt deja destul de multe scindări. Puteți face oricând împărțirea, chiar și mai târziu.</string>
     <string name="quest_footwayPartSurface_title">Ce tip de suprafață are calea pietonală?</string>
@@ -690,7 +671,6 @@ activitate</string>
     <string name="at_housenumber">numărul casei %1$s</string>
     <string name="quest_openingHours_add_off_days">Adaugă zile libere</string>
     <string name="quest_openingHours_off_day">Zile libere</string>
-    <string name="quest_openingHours_unspecified_range">Nespecificat</string>
     <string name="quest_cycleway_resurvey_title">Este situația pistei de biciclete aceeași?</string>
     <string name="pref_title_resurvey_intervals">Interval reluare chestionare</string>
     <string name="resurvey_intervals_less_often">Mai rar</string>
@@ -765,13 +745,9 @@ Dacă există benzi rezervate autobuzelor, vă rugăm să lăsați o notă.</str
     <string name="quest_shop_gone_title">Ce este aici acum?</string>
     <string name="quest_shop_gone_vacant_answer">Este neocupat...</string>
     <string name="quest_shop_gone_replaced_answer">Un/O...</string>
-    <string name="quest_shop_gone_replaced_answer_hint">Ce fel de loc este aici</string>
-    <string name="quest_shop_vacant_type_title">Magazinul era neocupat. Ce se află acum aici?</string>
     <string name="default_disabled_msg_go_inside_regional_warning">Acest tip de misiune este dezactivat implicit, fiindcă nu este utilă în unele regiuni și probabil va trebui să intrați în locație pentru a o rezolva.</string>
     <string name="quest_dietType_explanation_kosher">Produsele Kosher trebuie să fie pregătite în conformitate cu reguli speciale, agențiile de certificare kashrut marcând produsele conforme.</string>
     <string name="quest_cycleway_answer_no_bicycle_infrastructure">Nu există bandă de biciclete sau pistă</string>
-    <string name="quest_cycleway_answer_no_bicycle_infrastructure_explanation">Ca de obicei, atingeți o parte a ilustrației, selectați un răspuns adecvat și faceți același lucru pentru cealaltă parte. Rețineți toate opțiunile disponibile: unele cazuri nu sunt evidente, cum ar fi un drum cu sens unic care permite bicicliștilor în ambele direcții!</string>
-    <string name="quest_cycleway_answer_no_bicycle_infrastructure_title">Se selectează că nu există bandă sau pistă de biciclete</string>
     <string name="quest_construction_completed_at_known_date">Va fi finalizată la data de…</string>
     <string name="quest_construction_completion_date_title">Când va fi finalizată?</string>
     <string name="quest_surface_value_clay">Zgură</string>
@@ -870,7 +846,9 @@ Datele sunt actualizate după %1$s zile, iar datele neutilizate sunt șterse dup
     <string name="quest_bollard_type_foldable2">Pliabil (cu sau fără cheie)</string>
     <string name="no_search_results">Nu s-a găsit nimic</string>
     <string name="quest_selection_hint_title">Prea multe de făcut?</string>
-    <string name="quest_selection_hint_message">Să contribuiți ar trebui să fie în primul rând distractiv! Dacă sunteți copleșit de numărul de misiuni, puteți oricând să ajustați din setări ce misiuni vi se afișează și în ce ordine.</string>
+    <string name="quest_selection_hint_message">Să contribuiți ar trebui să fie în primul rând distractiv!
+
+Dacă sunteți copleșit de numărul de misiuni, puteți oricând să ajustați din setări ce misiuni vi se afișează și în ce ordine.</string>
     <string name="quest_presets_preset_add">Adaugă preset</string>
     <string name="quest_presets_preset_name">Nume preset</string>
     <string name="quest_presets_default_name">Implicit</string>
@@ -997,9 +975,6 @@ Alternativ, puteți lăsa o notă (cu fotografie).</string>
     <string name="quest_bicycle_parking_type_handlebarholder">Prindere cu bară</string>
     <string name="quest_bicycle_parking_access_title2">Cine poate parca bicicleta aici? Parcarea poate fi gratuită sau cu plată.</string>
     <string name="quest_playground_access_title2">Cui îi este permis să folosească locul de joacă?</string>
-    <string name="quest_sidewalk_answer_none_title">Se selectează că trotuarele lipsesc</string>
-    <string name="quest_side_select_interface_explanation">Atingeți o parte și selectați răspunsul corespunzător.
-Faceți același lucru și pentru partea cealaltă, dacă este prezentă.</string>
     <string name="ar_measure">Măsoară</string>
     <string name="ar_core_tracking_error_too_steep_angle">Unghiul este prea mare, îndepărtați-vă puțin</string>
     <string name="default_disabled_msg_no_ar">Vă trebuie o ruletă pentru a rezolva această misiune fiindcă măsurarea cu ajutorul camerei nu este suportată pe acest dispozitiv.</string>
@@ -1135,10 +1110,6 @@ Faceți același lucru și pentru partea cealaltă, dacă este prezentă.</strin
     <string name="quest_camp_drinking_water_title">Este apa potabilă accesibilă gratuit pentru cei ce campează?</string>
     <string name="quest_camp_shower_title">Există dușuri?</string>
     <string name="quest_camp_power_supply_title">Există posibilitatea încărcării telefoanelor, laptopurilor, etc. ?</string>
-    <string name="quest_camp_type_title">Cine poate campa?</string>
-    <string name="quest_camp_type_tents_and_caravans">Atât corturi, cât și caravane, rulote, ...</string>
-    <string name="quest_camp_type_caravans_only">Doar caravane, rulote, ...</string>
-    <string name="quest_camp_type_tents_only">Doar corturi</string>
     <string name="quest_camp_type_backcountry">Campare (fără facilități)</string>
     <string name="quest_fireHydrant_diameter_unusualInput_confirmation_description2">Acest diametru pare implauzibil, este de obicei între %1$d și %2$d.</string>
     <string name="street_parking_street_width">Lățimea străzii: %1$s</string>
@@ -1205,8 +1176,6 @@ Doriți să îl mutați acum?</string>
     <string name="quest_placeName_no_name_answer">Nu este un indicator cu numele...</string>
     <string name="quest_road_width_unusualInput_confirmation_description">Lățimea pare nerealistă. Țineți minte, ar trebui să fie lățimea de la bordură la bordură, inclusiv benzile pentru parcare, de biciclete, etc.</string>
     <string name="overlay_cycleway">Piste de biciclete</string>
-    <string name="bicycle_boulevard_is_a">Este un %1$s</string>
-    <string name="bicycle_boulevard_is_not_a">Nu este un %1$s</string>
     <string name="bicycle_boulevard">Bulevard pentru biciclete</string>
     <string name="separate_cycleway_no_or_allowed">Nu este special făcută pentru bicicliști (dar ciclismul poate fi în continuare permis)</string>
     <string name="separate_cycleway_non_segregated">Pistă comună</string>
@@ -1229,9 +1198,6 @@ Doriți să îl mutați acum?</string>
     <string name="street_parking_staggered_half_on_kerb">Parțial pe stradă, alternând partea</string>
     <string name="quest_traffic_signals_sound_description">Sugestie: uitați-vă după difuzoare. Nu toate semnalele auditive pot fi activate cu un buton.</string>
     <string name="quest_presets_duplicate">Duplică</string>
-    <string name="label_block">grup de locuințe</string>
-    <string name="quest_address_answer_block">Face parte dintr-un grup de locuințe...</string>
-    <string name="quest_address_answer_no_block">Nu face parte dintr-un grup de locuințe...</string>
     <string name="quest_surface_value_mud">Nămol persistent</string>
     <string name="quest_wheelchairAccessPat_noToilet">Nu este toaletă</string>
     <string name="unknown_surface_title">Alt fel de suprafață</string>
@@ -1335,4 +1301,136 @@ Puteți găsi informații despre donații pe site-ul nostru sau pe pagina de por
     <string name="quest_moped_access_designated">Există un semn care desemnează această pistă de biciclete pentru mopede</string>
     <string name="quest_moped_access_forbidden">Există un semn care interzice mopedele</string>
     <string name="default_disabled_msg_visible_sign_moped">Acest tip de misiune este dezactivat în mod implicit, deoarece accesul pentru mopede este indicat doar prin semne specifice la începutul/finalul unei piste pentru biciclete.</string>
+    <string name="quest_arrow_tutorial">Săgețile din ilustrație indică direcțiile în care se desfășoară traseul pe hartă, în poziția sa centrală. Încercați să rotiți harta și veți obține rezultatul.</string>
+    <string name="info">Mai multe informații</string>
+    <string name="quest_accessible_for_pedestrians_prohibited">Este interzis.</string>
+    <string name="quest_accessible_for_pedestrians_allowed">Este permis.</string>
+    <string name="quest_buildingLevels_hint">Pentru clădirile în pantă, numărarea nivelurilor începe de la nivelul solului laturii celei mai joase.
+
+Un nivel este considerat nivel de acoperiș atunci când ferestrele sale sunt în acoperiș. Prin urmare, acoperișurile cu niveluri zero nu sunt neapărat plate, ci pur și simplu nu sunt suficient de înalte pentru un nivel întreg.</string>
+    <string name="quest_parcel_locker_brand">Ce marca este acest dulap pentru colete?</string>
+    <string name="quest_powerPolesMaterial_is_terminal">Linia electrică este ancorată la clădire</string>
+    <string name="quest_cycleway_value_sidewalk_ok">niciunul, dar indicatorul permite ciclismul pe trotuar</string>
+    <string name="separate_cycleway_no_signed">Un indicator interzice explicit mersul cu bicicleta</string>
+    <string name="separate_cycleway_footway_allowed_sign">Potecă, dar un indicator permite ciclismul</string>
+    <string name="quest_bicycle_parking_type_floor">Zona desemnată</string>
+    <string name="link_osmapp_description">O hartă cu diverse straturi, cum ar fi pentru alpinism sau schi</string>
+    <string name="action_back">Spate</string>
+    <string name="action_clear">Clar</string>
+    <string name="action_more">Mai mult</string>
+    <string name="action_open_in_browser">Deschide în browser</string>
+    <string name="about_category_contribute">Contribui</string>
+    <string name="pref_category_quests">Misiuni</string>
+    <string name="pref_title_language_select2">Limbă</string>
+    <string name="pref_title_resurvey_intervals_summary">Cât de des vi se solicită să confirmați dacă datele mapate anterior sunt încă corecte.</string>
+    <string name="questList_disabled_by_default">Dezactivat în mod implicit</string>
+    <string name="action_manage_presets_summary">Sub ce nume este salvată selecția de misiuni de mai jos.</string>
+    <string name="quest_multiselect_hint">Selectați toate variantele aplicabile:</string>
+    <string name="quest_barrier_opening_width_gate">Care este lățimea deschiderii aici?</string>
+    <string name="bridge">Pe Pod</string>
+    <string name="about_title_intro">Afișați introducerea</string>
+    <string name="about_category_help">Ajutor</string>
+    <string name="quest_camp_power_supply_hint">Acestea ar putea fi prize direct la locurile de campare, prize într-o clădire de servicii accesibilă oaspeților, o stație de încărcare dedicată pentru telefoane, laptopuri etc.</string>
+    <string name="quest_barrier_opening_width_bollard">Care este cea mai mare breșă prin care se poate trece aici?</string>
+    <string name="user_profile_all_time_title">Per total</string>
+    <string name="user_statistics_country_rank2">Clasament în %1$s</string>
+    <string name="quest_leafType_tree_is_just_a_stump">Este doar un ciot de copac</string>
+    <string name="quest_board_name_title">Care este titlul acestui panou informativ?</string>
+    <string name="quest_crossing_hint">O potecă informală care traversează un drum:</string>
+    <string name="note_for_object">O altă persoană a remarcat:</string>
+    <string name="quest_bicycle_parking_type_safeloops">Bucle de siguranță (susțin roata și cadrul)</string>
+    <string name="quest_cycleway_value_sidewalk_ok_dual">niciunul, dar indicatorul permite ciclismul pe trotuar, în ambele direcții</string>
+    <string name="quest_surface_value_rubber">Granule de cauciuc</string>
+    <string name="quest_surface_value_acrylic">Rășină sintetică</string>
+    <string name="action_messages">Afișați mesajele</string>
+    <string name="action_create_new_poi">Creați nou</string>
+    <string name="auth_error">Eroare de autorizare. Încercați să vă conectați din nou.</string>
+    <string name="quest_accessible_for_pedestrians_sidewalk">De fapt, există un trotuar.</string>
+    <string name="quest_bicycle_repair_station_services_title">Ce echipament pentru biciclete este disponibil aici?</string>
+    <string name="quest_bicycle_repair_station_pump">Pompa</string>
+    <string name="quest_bicycle_repair_station_tools">Diverse instrumente</string>
+    <string name="quest_bicycle_repair_station_stand">Stand de lucru</string>
+    <string name="quest_bicycle_repair_station_chain_tool">Instrument de lanț</string>
+    <string name="quest_boat_rental_title">Ce tipuri de bărci sunt de închiriat aici?</string>
+    <string name="quest_boat_rental_motorboat">Barcă cu motor</string>
+    <string name="quest_boat_rental_jetski">Jetski</string>
+    <string name="quest_boat_rental_sailboat">Barcă cu pânze</string>
+    <string name="quest_boat_rental_pedalboat">Barcă cu pedale</string>
+    <string name="quest_boat_rental_kayak">Caiac</string>
+    <string name="quest_boat_rental_canoe">Canoe</string>
+    <string name="quest_boat_rental_houseboat">Casă plutitoare</string>
+    <string name="quest_boat_rental_rowboat">Barcă cu vâsle</string>
+    <string name="quest_boat_rental_raft">Plută</string>
+    <string name="quest_boat_rental_surfboard">Placă de surf</string>
+    <string name="quest_boat_rental_sailboard">Placă de pânze</string>
+    <string name="quest_boat_rental_yacht">Iaht</string>
+    <string name="quest_boat_rental_standup_paddleboard">Placă de stand-up paddle (SUP)</string>
+    <string name="quest_powerAttachment_title">Cum este conectată această linie electrică?</string>
+    <string name="quest_powerAttachment_suspension">Susținut de sus</string>
+    <string name="quest_powerAttachment_anchor">Fixat pe orizontală</string>
+    <string name="quest_powerAttachment_pin">Susținut de jos</string>
+    <string name="pedestrian_zone_designated">Desemnat pentru ciclism aici</string>
+    <string name="pedestrian_zone_allowed_sign">Un indicator permite accesul cu bicicleta aici</string>
+    <string name="pedestrian_zone_no_sign">Niciun indicator explicit despre ciclism aici</string>
+    <string name="team_mode_description_overlay_hint">Dacă folosiți suprapuneri, fiecare dintre voi ar trebui să folosească una diferită, deoarece doar misiunile sunt împărțite.</string>
+    <string name="quest_dietType_glutenfree_name_title">Se oferă aici produse fără gluten?</string>
+    <string name="quest_dietType_explanation_glutenfree">Prepararea produselor fără gluten necesită cunoștințe, deoarece condimentele și sosurile comune pot conține gluten. Alimentele fără gluten ar fi etichetate explicit ca atare.</string>
+    <string name="quest_construction_minor_title">S-au finalizat micile lucrări rutiere de aici?</string>
+    <string name="map_attribution">Atribuire hartă</string>
+    <string name="link_panoramax_description">Un software gratuit și open source și un serviciu non-profit pentru partajarea de fotografii stradale realizate prin crowdsourcing</string>
+    <string name="link_opengeofiction_description">Te-ai săturat să cartografiezi realitatea? Creează în colaborare hărți fictive!</string>
+    <string name="link_openclimbing_description">O hartă a locurilor de alpinism</string>
+    <string name="pref_title_zoom_buttons">Afișați butoanele de zoom ale hărții</string>
+    <string name="overlay_mtb_scale">Dificultate MTB</string>
+    <string name="overlay_mtb_scale_0">Gradul 0</string>
+    <string name="overlay_mtb_scale_0_description">Suprafață compactă sau naturală, fermă, cu aderență bună; fără obstacole; pantă ușoară; viraje largi.</string>
+    <string name="overlay_mtb_scale_1">Clasa 1</string>
+    <string name="overlay_mtb_scale_1_description">Teren parțial afânat cu rădăcini mici, pietre, eroziune sau șanțuri de apă; pantă ≤40%; obstacole rulabile; este necesară o tehnică de bază de călărie.</string>
+    <string name="overlay_mtb_scale_2">Clasa a II-a</string>
+    <string name="overlay_mtb_scale_2_description">Teren accidentat cu rădăcini și pietre mai mari, pante plate/scări mici, pantă de până la 70%; viraje ușoare în ac de păr; necesită frânare avansată și schimbarea greutății.</string>
+    <string name="overlay_mtb_scale_3">Clasa a 3-a</string>
+    <string name="overlay_mtb_scale_3_description">Teren alunecos, accidentat, cu grohotiș, bolovani, rădăcini mari și pietre, trepte înalte și traversări dificile; viraje strânse în ac de păr, pantă &gt;70%; necesită echilibru foarte bun și frânare precisă.</string>
+    <string name="overlay_mtb_scale_4">Clasa a IV-a</string>
+    <string name="overlay_mtb_scale_4_description">Obstacole dificile și tehnice: bolovani mari, rădăcini, grohotiș, rampe abrupte; serpentine pivotante, prăpăstii plate cu apăsări de pedală; echilibru perfect, frânare precisă și repoziționarea roților din spate necesare.</string>
+    <string name="overlay_mtb_scale_5">Clasa a 5-a</string>
+    <string name="overlay_mtb_scale_5_description">Teren extrem de abrupt, accidentat, cu urcări inverse, câmpuri de bolovani, alunecări de teren, serpentine cu obstacole, prăpăstii înalte una după alta și copaci căzuți. Căratul bicicletei în jurul obstacolelor este imposibil; mersul cu bicicleta este inevitabil. Este necesară o probă de stăpânire a traseului.</string>
+    <string name="overlay_mtb_scale_6">Clasa a VI-a</string>
+    <string name="overlay_mtb_scale_6_description">Teren periculos și impracticabil, nepotrivit pentru ciclism montan.</string>
+    <string name="default_disabled_overlay_domain_expert">Această suprapunere este dezactivată în mod implicit, deoarece trebuie să fii expert în domeniu pentru a înregistra cu exactitate aceste date.</string>
+    <string name="pref_title_overlays">Selecție suprapusă</string>
+    <string name="pref_overlays_reset">Resetare activare suprapunere la valoarea implicită?</string>
+    <string name="overlay">Suprapunere</string>
+    <string name="enable_overlay_confirmation_title">Activați această suprapunere?</string>
+    <string name="link_transitous_description">Rutare de transport public neutră față de furnizori, gratuită și cu sursă deschisă.</string>
+    <string name="compass">Busolă</string>
+    <string name="quest_tracktype_grade2">În mare parte solid</string>
+    <string name="quest_tracktype_grade3">Amestec</string>
+    <string name="quest_housenumber_multiple_numbers_description2">Puteți introduce numere de casă separate prin virgulă.
+De exemplu 1, 3 sau 2b, 4, 6.</string>
+    <string name="quest_drinking_water_potable_unsigned2">Niciun semn</string>
+    <string name="or">sau</string>
+    <string name="action_copy">Copie</string>
+    <string name="quest_stopName_hint">Puteți aplica același nume unei alte stații atingând-o pe hartă.</string>
+    <string name="quest_shelter_capacity_title">Câți oameni pot dormi aici?</string>
+    <string name="quest_handwashing_title">Poți să te speli pe mâini aici?</string>
+    <string name="quest_openingHours_delete">Şterge</string>
+    <string name="quest_streetName_hint">Puteți aplica același nume ca și unei secțiuni adiacente atingând-o pe hartă.</string>
+    <string name="quest_streetName_abbreviation_instruction">Abrevierile precum, de exemplu, „Rd” ar trebui extinse.</string>
+    <string name="quest_streetName_add_language">Adăugați o limbă</string>
+    <string name="ok">Bine</string>
+    <string name="cancel">Anula</string>
+    <string name="quest_aerialway_bicycle_title">Această platformă aeriană transportă biciclete?</string>
+    <string name="quest_aerialway_bicycle_summer">Numai vara</string>
+    <string name="quest_board_type_rules">Reguli</string>
+    <string name="quest_firewood_provided_title">Se oferă lemne de foc aici?</string>
+    <string name="quest_first_aid_kit_location">Unde se află această trusă de prim ajutor?</string>
+    <string name="quest_lane_markings_title">Acest drum are marcaje rutiere?</string>
+    <string name="quest_level_thing_title">La ce număr de etaj se află acest lucru?</string>
+    <string name="quest_bicycle_charging_station_capacity_title">Câte biciclete pot fi încărcate aici în același timp?</string>
+    <string name="quest_charging_station_bicycles_title">Se pot încărca și bicicletele aici?</string>
+    <string name="quest_charging_station_bicycles_hint">Adaptoarele de alimentare pentru încărcătoare de biciclete se conectează la prizele normale de uz casnic.</string>
+    <string name="quest_tower_access_title">Cine poate accesa acest turn? Poate fi gratuit sau cu plată.</string>
+    <string name="quest_recycling_type_pet_bottles">Sticle PET</string>
+    <string name="quest_maxweight_add_sign">Adăugați semn</string>
+    <string name="quest_maxweight_remove_sign">Eliminați semnul</string>
 </resources>

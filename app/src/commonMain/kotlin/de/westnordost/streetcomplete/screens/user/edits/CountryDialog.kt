@@ -17,24 +17,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.user_profile_all_time_title
-import de.westnordost.streetcomplete.resources.user_profile_current_week_title
-import de.westnordost.streetcomplete.resources.user_statistics_country_rank2
-import de.westnordost.streetcomplete.resources.user_statistics_country_wiki_link
+import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.screens.user.DialogContentWithIconLayout
 import de.westnordost.streetcomplete.screens.user.profile.LaurelWreathBadge
 import de.westnordost.streetcomplete.screens.user.profile.getLocalRankCurrentWeekProgress
 import de.westnordost.streetcomplete.screens.user.profile.getLocalRankProgress
 import de.westnordost.streetcomplete.ui.common.OpenInBrowserIcon
+import de.westnordost.streetcomplete.ui.ktx.fadingVerticalScrollEdges
+import de.westnordost.streetcomplete.ui.ktx.tryOpenUri
 import de.westnordost.streetcomplete.ui.theme.headlineSmall
 import de.westnordost.streetcomplete.util.ktx.displayRegion
 import de.westnordost.streetcomplete.util.ktx.getDisplayRegion
 import org.jetbrains.compose.resources.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 
 /** Shows the details for a certain country as a dialog. */
 @Composable
@@ -85,8 +83,12 @@ private fun CountryInfoDetails(
     val countryLocale = Locale("en-$countryCode")
     val countryName = countryLocale.displayRegion ?: countryLocale.region
 
+    val scrollState = rememberScrollState()
+
     Column(
-        modifier = modifier.verticalScroll(rememberScrollState()),
+        modifier = modifier
+            .fadingVerticalScrollEdges(scrollState, 32.dp)
+            .verticalScroll(scrollState),
         horizontalAlignment = if (isLandscape) Alignment.Start else Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -116,7 +118,7 @@ private fun CountryInfoDetails(
             onClick = {
                 val britishCountryName = countryLocale.getDisplayRegion(Locale("en-GB"))
                 if (britishCountryName != null) {
-                    uriHandler.openUri("https://wiki.openstreetmap.org/wiki/$britishCountryName")
+                    uriHandler.tryOpenUri("https://wiki.openstreetmap.org/wiki/$britishCountryName")
                 }
             }
         ) {

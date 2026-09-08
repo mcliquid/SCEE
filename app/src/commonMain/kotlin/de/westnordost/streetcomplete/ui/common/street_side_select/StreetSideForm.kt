@@ -14,14 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.osm.Sides
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.street_side_unknown
-import de.westnordost.streetcomplete.resources.street_side_unknown_l
+import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.last_picked.LastPickedChipsRow
+import de.westnordost.streetcomplete.ui.theme.divider
 import org.jetbrains.compose.resources.painterResource
 
 /** Form to input the something for the left and right side of a street */
-@Composable  fun <T> StreetSideForm(
+@Composable fun <T> StreetSideForm(
     value: Sides<T>,
     onValueChanged: (Sides<T>) -> Unit,
     getIllustrationPainter: @Composable (T?, Side) -> Painter?,
@@ -33,10 +32,11 @@ import org.jetbrains.compose.resources.painterResource
     modifier: Modifier = Modifier,
     getFloatingPainter: @Composable (T?, Side) -> Painter? = { _, _ -> null },
     lastPicked: List<Sides<T>> = emptyList(),
-    lastPickedContentPadding: PaddingValues = PaddingValues.Zero,
     enabled: Boolean = true,
     isLeftSideVisible: Boolean = true,
     isRightSideVisible: Boolean = true,
+    isLeftSideEnabled: Boolean = true,
+    isRightSideEnabled: Boolean = true,
 ) {
     val rotation = geometryRotation - mapRotation
 
@@ -58,7 +58,8 @@ import org.jetbrains.compose.resources.painterResource
             rotation = rotation,
             modifier = Modifier.align(Alignment.Center),
             getFloatingPainter = getFloatingPainter,
-            enabled = enabled,
+            isLeftSideEnabled = isLeftSideEnabled && enabled,
+            isRightSideEnabled = isRightSideEnabled && enabled,
             isLeftSideVisible = isLeftSideVisible,
             isRightSideVisible = isRightSideVisible,
         )
@@ -75,9 +76,8 @@ import org.jetbrains.compose.resources.painterResource
                 onClick = { onValueChanged(it) },
                 modifier = Modifier
                     .padding(8.dp)
-                    .align(Alignment.BottomStart)
-                    .padding(lastPickedContentPadding),
-                chipBorder = BorderStroke(1.dp, MaterialTheme.colors.onSurface.copy(alpha = 0.12f)),
+                    .align(Alignment.BottomStart),
+                chipBorder = BorderStroke(1.dp, MaterialTheme.colors.divider),
                 chipContentPadding = PaddingValues.Zero,
             ) { value ->
                 StreetSideIllustration(

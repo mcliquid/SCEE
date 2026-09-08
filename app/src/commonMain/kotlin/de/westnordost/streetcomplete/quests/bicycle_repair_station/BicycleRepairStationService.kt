@@ -1,8 +1,22 @@
 package de.westnordost.streetcomplete.quests.bicycle_repair_station
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class BicycleRepairStationService(val value: String) {
     PUMP("pump"),
     TOOLS("tools"),
     STAND("stand"),
     CHAIN_TOOL("chain_tool"),
+}
+
+fun parseBicycleRepairStationService(tags: Map<String, String>): Set<BicycleRepairStationService> {
+    val initialSelectedItems = mutableSetOf<BicycleRepairStationService>()
+    for (service in BicycleRepairStationService.entries)
+    {
+        if (tags["service:bicycle:${service.value}"] == "yes") {
+            initialSelectedItems += service
+        }
+    }
+    return initialSelectedItems
 }

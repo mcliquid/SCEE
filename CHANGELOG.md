@@ -1,5 +1,171 @@
 # Changelog
 
+## 64.0-alpha1
+
+🍏 This update brings huge changes, albeit they should be mostly invisible. I re-did the UI for all 
+quest forms, a side effect of the migration to a multiplatform UI framework. An iOS version of the 
+app has now come within reach! (#6842). @kiliankoe, helped a bit, too (#6989)
+
+### General
+
+- Re-did UI for splitting ways: It is now based on the crosshair (like moving node and overlay) instead of tapping where to split
+- Improved UI for attaching tracks and images to a note and undoing the same
+- Now you must press "back" to close a quest form, clicking on the map will not close the form
+  anymore (this is a bit of a technical limitation of the new implementation)
+- Serbian language in Latin script is now available again (#6914)
+- All forms with free text input: Visually show error state when input exceeds 255 characters
+
+### New Quests
+
+- _"How much do you need to pay to park here?"_ (#6653), thanks @marekkrug
+- _"What doctors are present here?"_ (#7044), by @paulklie
+
+### Fixes
+
+- Post box was missing in things overlay (#6976)
+- Sharing logs no longer crashes when the log is too large (#5561)
+- UI now prevents possibility to create duplicate notes (#4853)
+- Context menus now appear at less wrong positions (#6665)
+- "Are you sure?" dialog had poor contrast in dark mode (#6753)
+- Fix rare crash in places overlay (#6648) 
+- Quest form used to not have padding for the camera notch (#6764)
+- Internet access: "none" option was not exclusive (#7016)
+- Fix formatting of links in notes (#7048)
+- Other small visual fixes (#6827, #7007, #6981, …)
+
+### Quest improvements
+
+- Parking fee: Don't ask for customer parking (#6996), by @paulklie
+- Parking access: Add "permit" as answer option (#2662, #7058), by @paulklie
+- Crossings: Don't ask for islands and kerb height on continuous crossings (#6983), by @eginhard
+- BBQ fuel: Allow to specify several fuels (#6915, #7028), by @paulklie
+- Toilets fee: Don't ask in Australia and New Zealand (#7011), by @andrewharvey
+- Other small improvements that improve clarity (#6991, #6984, #7003, #7020, #7027, #7025, #7049), thanks @paulklie
+
+## v63.4
+
+Fix in certain languages (such as French), presets wouldn't load, which made the app unusable. Regression from v63.3 (#6964)
+
+## v63.3
+
+### Fixes
+
+- _Fix upload of photos in notes stopped to work on 27th of July_ (#6959)
+- Places overlay: Handle name field correctly for places that _usually_ have a fixed name but not necessarily (#6907)
+- Fix some elements in the settings screen didn't respect window insets correctly
+
+### Quest improvements
+
+- Place & road name: Force resurvey if name was explicitly marked as to be fixed (#6932), by @paulklie
+- Summit register: Ask in Norway, too (#6902), by @paulklie
+- Sidewalks: Prefer the same tagging schema as iD (#6944)
+- Surfaces: Add laterite as an option in some countries (#6942), by @thirumani-vihaan
+- Ask a few quests for more places (#6899, #6901, #6900, #6898, #6908, #6953, #6952), by @paulklie
+- Other small improvements (#6903, #6909, #6919, #6948, #6938 …), thanks @paulklie, @mnalis
+
+### General
+
+- Make app name more visible in about screen (#6951), by @geritwagner
+
+## v63.2
+
+### Fixes
+
+- Fix map display on older devices: Some old devices have issues with the new rendering backend introduced in v63.1, so I reverted back to the old backend for v63.x at least.
+- Board type: Fixed it was possible to answer "none" (#6887), by @paulklie
+- Fix selected language would reset to device language on device rotation (#5942)
+- Notes: Fix enter key would exit the form rather than add a return
+- Fix "move node" form had black text on black background in dark mode
+
+### Quest improvements
+
+- Bike paths, sidewalks: Re-enable quest as the overlays are not really that much more efficient that it warrants the quests to be disabled
+- Surface: Don't ask for winter roads (#6835), by @paulklie
+- Opening hours: Don't ask for street vendors (#6848), by @matkoniecz
+- Baby changing tables: Can now answer that there is actually no toilet (#6837), by @paulklie
+- Ask various quests for ranger stations, water points, bird hides (#6888, #6857, #6836), by @paulklie
+- Lanes: Allow answering that there is only _one_ marked lane (#6879)
+- Crossing island: Don't ask when the traffic island has already been mapped in detail (#6874)
+- Check existence: Don't ask for objects with heritage status (#6776)
+- Power line attachment to pole: Disable this quest, it is too complex (in edge cases) (#6547)
+- All quests with input of decimals: Allow input of decimal separators in any locale (#6864)
+- Tactile paving: Enabled quests in Iceland (#6897)
+- Bicycle charging station: Make answer "Only" more prominent (#6862)
+- Board type: Add "Tourism (multiple topics)" as answer option (#6892, #6868), by @mnalis
+- Max height: Don't ask for private roads/paths (#6860, #6894)
+- Other small improvements (#6831, …)
+
+### Overlay improvements
+
+- Add more things and more places (#6833, #6839, #6834) by @paulklie
+
+## v63.1
+
+### Overlay improvements
+
+- Places & things overlay: Redid and improved UI, added quick access to previous selections (#6773, #5622)
+- Places overlay: (All) education-related places are now selectable (#6782), by @mcliquid
+
+### Quest improvements
+
+- Max speed: Redid UI. The quest is now activated also in the United States (#6758, #813)
+- Redid UI for quest title speech bubble with smoother ℹ️ area (#6784)
+- Redid UI for forms creating a note, especially attaching images (#6804)
+- Power line attachment: Don't ask when several power lines go through one power pole or tower (#6547)
+- Other minor improvements (#6770, #6810, #6798, #6771…), thanks @mnalis
+
+### General Improvements
+
+- More effective usage of available screen space in settings & about screen (#6787), thanks @deevroman
+- Move logs filter selection in logs screen into own screen (#6772)
+
+### New Translations
+
+- Vietnamese by tsklxiv, Minh Nguyễn and more
+- Irish by Brian Affenstark
+- Welsh by dreigiau, fin-w
+- Cornish by Flynn
+
+### Fixes
+
+- Bike paths overlay: OK button didn't always show (#6644) (wasn't fixed in v62.1 after all)
+- Fix layout for "New OSM message" dialog (#6791)
+- Fix crash caused by automatic conflict resolution on upload under certain circumstances (#6825, #6779, #6419)
+
+## v63.0
+
+### General Improvements
+
+- You’ll now get in-app notifications when a new issue of weeklyOSM is out, the news blog about what’s happening in the OpenStreetMap world (#1796, #6728, #5977)
+- You’ll also get in-app notifications about local OSM community events in your area (#6743, #1798)
+- You can now change in settings which in-app notifications you want to receive (#6493)
+- You can now also zoom by dragging the zoom button up or down (#6719, #6716), by @Helium314
+- Redid the UI for opening hours, postbox collection times and parking fee quests with slight improvements, especially in regards to localization (#6691, #6175)
+- Other small improvements (#6748, …)
+- Added language Malayalam, translated by Rabah Assainar
+
+### New Quests
+
+- _"In what direction can you ride this?"_, asked for lifts (#6583), by @NariaReynhard
+- _"What kind of artwork is this?"_ (#6605, #2125), by @paulklie and @vfosnar
+- _"Are there cabins that you may stay in here?"_ asked for campsites (#6685, #6447), by @paulklie
+- _"What’s the surface here?"_, asked for beaches (#6729, #1098), by @mcliquid
+- _"Are bicycles allowed on this ferry?"_ (#6718, #6509), by @mcliquid
+- _"Does this ferry route transport heavy goods vehicles?"_ (#6734, #6737), by @mcliquid
+
+### Quest improvements
+
+- Postbox collection times: Allow input of time ranges (#6646)
+- Information board topics: Allow to select multiple topics (#6148), thanks @paulklie
+- Campsite type: Split the quest up into several quests (#6685, #6447), by @paulklie
+- Other small improvements on quests (#6704, #6705, #6696, #6710, #6598…), thanks @matkoniecz, @paulklie, @mcliquid
+
+### Fixes
+
+- Parking overlay: Specifying only one side is enabled again (#6721)
+- Achievement dialog now displays well on square screen (#6702)
+- Fix that some icons were black on black background in dark mode (#6453, #6717), by @Helium314
+
 ## v62.2
 
 ### Fixes
@@ -144,8 +310,8 @@
 
 ### Android below 7.1 no longer supported (#6210)
 
-In reality, support for Android versions below 7.1 has already been just on-paper for a while now, 
-as more and more issues with old Androids have been popping up lately that cannot be fixed on our 
+In reality, support for Android versions below 7.1 has already been just on-paper for a while now,
+as more and more issues with old Androids have been popping up lately that cannot be fixed on our
 side. Luckily, it seems that >99.6% of app users already use Android 7.1 and above. (See #6210)
 
 ### Main screen improvements (#6213)

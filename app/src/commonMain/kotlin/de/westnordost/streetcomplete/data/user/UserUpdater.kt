@@ -5,12 +5,15 @@ import de.westnordost.streetcomplete.data.user.statistics.StatisticsApiClient
 import de.westnordost.streetcomplete.data.user.statistics.StatisticsController
 import de.westnordost.streetcomplete.util.Listeners
 import de.westnordost.streetcomplete.util.logs.Log
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
+/** Updates user data from OSM API / StreetComplete API: user name, avatar, unread messages,
+ *  StreetComplete statistics */
 class UserUpdater(
     private val userApi: UserApiClient,
     private val avatarsDownloader: AvatarsDownloader,
@@ -19,7 +22,7 @@ class UserUpdater(
     private val statisticsController: StatisticsController,
     private val userLoginSource: UserLoginSource
 ) {
-    private val coroutineScope = CoroutineScope(SupervisorJob())
+    private val coroutineScope = CoroutineScope(SupervisorJob() + CoroutineName("UserUpdater"))
 
     private val userLoginListener = object : UserLoginSource.Listener {
         override fun onLoggedIn() {

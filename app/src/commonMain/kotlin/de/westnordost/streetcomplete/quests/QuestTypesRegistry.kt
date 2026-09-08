@@ -454,7 +454,7 @@ fun getQuestTypeList(
 
     59 to AddSelfServiceLaundry(),
 
-    200 to AddGeneralAccess(),
+    198 to AddGeneralAccess(),
     60 to AddGeneralFee(),
 
     61 to AddDrinkingWater(), // used by AnyFinder
@@ -508,7 +508,6 @@ fun getQuestTypeList(
     179 to AddChargingStationBicycleCapacity(),
     200 to AddChargingStationSocket(getCountryInfoByLocation),
     88 to AddChargingStationOperator(),
-    198 to AddChargingStationSocket(),
 
     // postboxes (collection times are further up, see comment)
     89 to AddPostboxRoyalCypher(), // can be glanced across the road (if postbox facing the right way)

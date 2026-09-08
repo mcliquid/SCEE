@@ -36,12 +36,15 @@ class AddCrossingMarkings : OsmElementQuestType<Set<CrossingMarkings>> {
           and $crossingMarkingExpression
           and (!crossing:signals or crossing:signals = no)
     """.toElementFilterExpression() }
-    /* only looking for crossings that have no crossing=* at all set because if the crossing was
+    /* Default filter only looks at crossings without crossing=* (or crossing=island)
+     * because if the crossing was
      * - if it had markings, it would be tagged with "marked","zebra" or "uncontrolled"
      * - if it hadn't, it would be tagged with "unmarked"
      * - and in case of "traffic_signals", we currently assume that when there are traffic signals
      *   it would be spammy to ask about markings because the answer would almost always be "yes".
-     *   Might differ per country, research necessary. */
+     *   Might differ per country, research necessary.
+     * The extended filter additionally asks for the marking type when crossing=marked/uncontrolled,
+     * but still skips crossing=unmarked (implies crossing:markings=no) and crossing=zebra. */
 
     private val excludedWaysFilter by lazy { """
         ways with
@@ -93,6 +96,17 @@ class AddCrossingMarkings : OsmElementQuestType<Set<CrossingMarkings>> {
 
     override fun applyAnswerTo(answer: Set<CrossingMarkings>, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         tags["crossing:markings"] = answer.map { it.osmValue }.sorted().joinToString(";")
+
+        // Keep crossing=* consistent with the new markings value.
+        // crossing=unmarked implies crossing:markings=no; marked/zebra/uncontrolled imply markings.
+        val crossing = tags["crossing"]
+        if (answer == setOf(CrossingMarkings.NO)) {
+            if (crossing in setOf("marked", "zebra", "uncontrolled")) {
+                tags["crossing"] = "unmarked"
+            }
+        } else if (crossing == "zebra" && answer.none { it.osmValue == "zebra" || it.osmValue.startsWith("zebra:") }) {
+            tags["crossing"] = "marked"
+        }
     }
 
     override val hasQuestSettings: Boolean = true
@@ -112,7 +126,7 @@ class AddCrossingMarkings : OsmElementQuestType<Set<CrossingMarkings>> {
     private val crossingMarkingExpression = if (prefs.getBoolean(PREF_CROSSING_MARKING_EXTENDED, false)) {
         """(
             (!crossing:markings or crossing:markings = yes)
-            and crossing != zebra and crossing_ref != zebra
+            and crossing != zebra and crossing != unmarked and crossing_ref != zebra
            )
         """.trimIndent()
     } else {

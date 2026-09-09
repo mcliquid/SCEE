@@ -39,13 +39,13 @@ class AddGeneralAccess : OsmFilterQuestType<GeneralAccess>() {
             title = stringResource(
                 if (element.tags["amenity"] != null || element.tags["waterway"] != null) {
                     // Things you "use"
-                    Res.string.quest_generalFee_title
+                    Res.string.quest_generalAccess_title
                 } else if (element.tags["shelter_type"] == "basic_hut") {
                     // Places you "stay at"
-                    Res.string.quest_generalFee_title3
+                    Res.string.quest_generalAccess_title3
                 } else {
                     // Places you "enter"
-                    Res.string.quest_generalFee_title2
+                    Res.string.quest_generalAccess_title2
                 }
             ),
             items = GeneralAccess.entries,

@@ -123,7 +123,6 @@ fun RestrictionOverlayWayForm(
     }
 
     var turnRestrictionSelectionMode by rememberSaveable { mutableStateOf(false) }
-    var canSwapFromTo by rememberSaveable { mutableStateOf(false) }
     var draftSigned by rememberSaveable {
         mutableStateOf(
             (selectedRestriction as? TurnRestriction)?.relation?.tags?.get("implicit") != "yes"
@@ -169,7 +168,6 @@ fun RestrictionOverlayWayForm(
     fun selectRestriction(restriction: RestrictionOverlayRestriction) {
         selectedRestriction = restriction
         currentRestriction = restriction
-        canSwapFromTo = false
         turnRestrictionSelectionMode = false
         if (restriction is WeightRestriction) {
             editedWeight = parseWeight(restriction.weight, units)
@@ -215,11 +213,13 @@ fun RestrictionOverlayWayForm(
             baseTags = baseTags,
         )
         currentRestriction = TurnRestriction(relation)
-        canSwapFromTo = true
         turnRestrictionSelectionMode = false
     }
 
-    LaunchedEffect(currentRestriction, draftTurnType, wayGeometry, turnRestrictionSelectionMode) {
+    // Include member roles so from<->to swap refreshes via bearing / highlights.
+    val turnMemberRoles = (currentRestriction as? TurnRestriction)
+        ?.relation?.members?.joinToString { "${it.role}:${it.type}:${it.ref}" }
+    LaunchedEffect(currentRestriction, turnMemberRoles, draftTurnType, wayGeometry, turnRestrictionSelectionMode) {
         if (turnRestrictionSelectionMode) {
             mapMarkersCallback?.invoke(listOf(Marker(wayGeometry)))
             return@LaunchedEffect
@@ -310,9 +310,9 @@ fun RestrictionOverlayWayForm(
                 turnRestrictionSelectionMode -> {
                     TurnRestrictionEditor(
                         relation = (currentRestriction as? TurnRestriction)?.relation,
+                        wayId = way.id,
                         draftTurnType = draftTurnType,
                         draftSigned = draftSigned,
-                        canSwapFromTo = false,
                         selectionMode = true,
                         onTurnTypeChange = { draftTurnType = it },
                         onSignedChange = { draftSigned = it },
@@ -337,32 +337,38 @@ fun RestrictionOverlayWayForm(
                             .joinToString("\n")
                         TurnRestrictionEditor(
                             relation = turn.relation,
+                            wayId = way.id,
                             draftTurnType = draftTurnType,
                             draftSigned = draftSigned,
-                            canSwapFromTo = canSwapFromTo || turn.relation.id == 0L,
                             selectionMode = false,
                             onTurnTypeChange = { type ->
                                 draftTurnType = type
+                                val latest = (currentRestriction as? TurnRestriction)?.relation
+                                    ?: turn.relation
                                 currentRestriction = TurnRestriction(
-                                    withTurnRestrictionType(turn.relation, type)
+                                    withTurnRestrictionType(latest, type)
                                 )
                             },
                             onSignedChange = { signed ->
                                 draftSigned = signed
+                                val latest = (currentRestriction as? TurnRestriction)?.relation
+                                    ?: turn.relation
                                 currentRestriction = TurnRestriction(
-                                    withImplicitSigned(turn.relation, signed)
+                                    withImplicitSigned(latest, signed)
                                 )
                             },
                             onSwap = {
-                                currentRestriction = TurnRestriction(
-                                    withSwappedFromTo(turn.relation)
-                                )
+                                val latest = (currentRestriction as? TurnRestriction)?.relation
+                                    ?: return@TurnRestrictionEditor
+                                if (!isTurnRestrictionFromToSwapAllowed(latest)) return@TurnRestrictionEditor
+                                currentRestriction = TurnRestriction(withSwappedFromTo(latest))
                             },
                             onExceptionsClick = { showExceptionsDialog = true },
                             onOnlyForClick = { showOnlyForDialog = true },
                             onConditionalClick = {
+                                val latestTurn = currentRestriction as? TurnRestriction ?: turn
                                 if (infoText.isNotBlank()) {
-                                    currentRestriction = removeConditional(turn)
+                                    currentRestriction = removeConditional(latestTurn)
                                 } else {
                                     showAddConditionalDialog = true
                                 }
@@ -461,7 +467,6 @@ fun RestrictionOverlayWayForm(
                         turnRestrictionSelectionMode = true
                         draftSigned = true
                         draftTurnType = turnRestrictionTypeList.first()
-                        canSwapFromTo = false
                     }
                     RestrictionType.WEIGHT -> showWeightTypeDialog = true
                 }
@@ -715,9 +720,9 @@ private fun OtherRestrictionsList(
 @Composable
 private fun TurnRestrictionEditor(
     relation: Relation?,
+    wayId: Long,
     draftTurnType: String,
     draftSigned: Boolean,
-    canSwapFromTo: Boolean,
     selectionMode: Boolean,
     onTurnTypeChange: (String) -> Unit,
     onSignedChange: (Boolean) -> Unit,
@@ -732,6 +737,8 @@ private fun TurnRestrictionEditor(
     val selectedType = relation?.tags?.getShortRestrictionValue()
         ?.takeIf { it in turnRestrictionTypeList }
         ?: draftTurnType
+    val canSwap = relation != null && isTurnRestrictionFromToSwapAllowed(relation)
+    val wayRole = relation?.let { wayRoleInTurnRestriction(it, wayId) }
 
     DropdownButton(
         items = turnRestrictionTypeList,
@@ -764,6 +771,14 @@ private fun TurnRestrictionEditor(
     }
 
     if (!selectionMode && relation != null) {
+        if (wayRole != null) {
+            Text(
+                text = wayRole,
+                style = MaterialTheme.typography.subtitle1,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+
         val exceptionsArgs = relation.tags["except"]?.replace(";", ", ")
             ?: stringResource(Res.string.overlay_none)
         Button2(onClick = onExceptionsClick, style = ButtonStyle.Outlined) {
@@ -777,9 +792,10 @@ private fun TurnRestrictionEditor(
             }
         }
 
-        if (canSwapFromTo && relation.id == 0L) {
+        // Historical: swap control only for new draft relations (id == 0), not existing ones
+        if (canSwap) {
             Button2(onClick = onSwap, style = ButtonStyle.Outlined) {
-                Text("from ↔ to")
+                Text("from <-> to")
             }
         }
 

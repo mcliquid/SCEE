@@ -109,6 +109,68 @@ class RestrictionOverlayWayTest {
         assertEquals("to", swapped.members[0].role)
         assertEquals("from", swapped.members[1].role)
         assertEquals("via", swapped.members[2].role)
+        assertEquals(10L, swapped.members[0].ref)
+        assertEquals(20L, swapped.members[1].ref)
+    }
+
+    @Test fun `from to swap allowed only for draft relations`() {
+        val draft = createTurnRestrictionRelation(
+            fromWay = way(1, nodes = listOf(1, 2)),
+            toWay = way(2, nodes = listOf(2, 3)),
+            viaNode = node(2),
+            restrictionType = "no_left_turn",
+            signed = true,
+        )
+        assertTrue(isTurnRestrictionFromToSwapAllowed(draft))
+        assertFalse(
+            isTurnRestrictionFromToSwapAllowed(
+                draft.copy(id = 42L)
+            )
+        )
+    }
+
+    @Test fun `draft swap updates roles used for create and way role helper`() {
+        val from = way(10, nodes = listOf(1, 2))
+        val to = way(20, nodes = listOf(2, 3))
+        val draft = createTurnRestrictionRelation(
+            fromWay = from,
+            toWay = to,
+            viaNode = node(2),
+            restrictionType = "only_right_turn",
+            signed = true,
+        )
+        assertEquals("from", wayRoleInTurnRestriction(draft, from.id))
+        assertEquals("to", wayRoleInTurnRestriction(draft, to.id))
+
+        val swapped = withSwappedFromTo(draft)
+        assertTrue(isTurnRestrictionFromToSwapAllowed(swapped))
+        assertEquals("to", wayRoleInTurnRestriction(swapped, from.id))
+        assertEquals("from", wayRoleInTurnRestriction(swapped, to.id))
+        assertEquals(
+            listOf(
+                RelationMember(ElementType.WAY, 10, "to"),
+                RelationMember(ElementType.WAY, 20, "from"),
+                RelationMember(ElementType.NODE, 2, "via"),
+            ),
+            swapped.members
+        )
+    }
+
+    @Test fun `existing relation swap helper still swaps members but is not allowed in UI`() {
+        val existing = rel(
+            id = 99,
+            members = listOf(
+                RelationMember(ElementType.WAY, 1, "from"),
+                RelationMember(ElementType.WAY, 2, "to"),
+                RelationMember(ElementType.NODE, 3, "via"),
+            ),
+            tags = mapOf("type" to "restriction", "restriction" to "no_u_turn"),
+        )
+        assertFalse(isTurnRestrictionFromToSwapAllowed(existing))
+        val swapped = withSwappedFromTo(existing)
+        assertEquals("to", swapped.members[0].role)
+        assertEquals("from", swapped.members[1].role)
+        assertEquals(99L, swapped.id)
     }
 
     @Test fun `withExceptions writes and clears except tag`() {

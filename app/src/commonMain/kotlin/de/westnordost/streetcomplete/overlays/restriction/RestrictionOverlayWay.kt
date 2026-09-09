@@ -238,6 +238,13 @@ fun withSwappedFromTo(relation: Relation): Relation {
     return relation.copy(members = newMembers)
 }
 
+/** Historical UI only enabled from/to swap for newly created draft relations (id == 0). */
+fun isTurnRestrictionFromToSwapAllowed(relation: Relation): Boolean =
+    relation.id == 0L
+
+fun wayRoleInTurnRestriction(relation: Relation, wayId: Long): String? =
+    relation.members.firstOrNull { it.type == ElementType.WAY && it.ref == wayId }?.role
+
 fun withExceptions(relation: Relation, exceptions: List<String>): Relation {
     val newTags = relation.tags.toMutableMap()
     val value = exceptions.joinToString(";")

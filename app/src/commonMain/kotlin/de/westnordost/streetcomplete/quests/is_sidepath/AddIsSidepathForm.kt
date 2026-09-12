@@ -50,10 +50,18 @@ fun AddIsSidepathForm(
 
     when (step) {
         IsSidepathFormStep.AskIfSidepath -> {
+            val isFootway = element.tags["highway"] == "footway"
             QuestForm(
                 on = on,
-                answers = listOf(
-                    AnswerItem(stringResource(Res.string.quest_generic_hasFeature_yes)) {
+                answers = listOfNotNull(
+                    if (isFootway) {
+                        AnswerItem(stringResource(Res.string.quest_is_sidepath_answer_sidewalk)) {
+                            on(Answer(IsSidepathAnswer.IsSidewalk))
+                        }
+                    } else {
+                        null
+                    },
+                    AnswerItem(stringResource(Res.string.quest_is_sidepath_answer_parallel_path)) {
                         step = IsSidepathFormStep.ChooseRoad
                     },
                     AnswerItem(stringResource(Res.string.quest_generic_hasFeature_no)) {
@@ -61,16 +69,7 @@ fun AddIsSidepathForm(
                     },
                 ),
                 otherAnswers = {
-                    listOfNotNull(
-                        if (element.tags["highway"] == "footway") {
-                            AnswerItem(
-                                stringResource(Res.string.quest_is_sidepath_answer_is_sidewalk)
-                            ) {
-                                on(Answer(IsSidepathAnswer.IsSidewalk))
-                            }
-                        } else {
-                            null
-                        },
+                    listOf(
                         AnswerItem(
                             stringResource(Res.string.quest_is_sidepath_answer_is_crossing)
                         ) {

@@ -5,9 +5,8 @@ import de.westnordost.streetcomplete.data.elementfilter.withOptionalUnitToDouble
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.osm.getLastCheckDateKeys
 import de.westnordost.streetcomplete.osm.toCheckDate
-import de.westnordost.streetcomplete.util.ktx.toLocalDate
+import de.westnordost.streetcomplete.util.ktx.toEpochMilli
 import kotlinx.datetime.LocalDate
-import kotlin.time.Instant
 
 sealed interface ElementFilter : Matcher<Element> {
     abstract override fun toString(): String
@@ -131,31 +130,37 @@ abstract class CompareDateTagValue(val key: String, val dateFilter: DateFilter) 
 
 class TagOlderThan(key: String, dateFilter: DateFilter) : CompareTagAge(key, dateFilter) {
     override fun toString() = "$key older $dateFilter"
-    override fun compareTo(tagValue: LocalDate) =
-        if (resurveyDate != null && resurveyKeys.contains(key))
-            tagValue < resurveyDate!!
-        else
-            tagValue < dateFilter.date
+    // SC: Long comparison + cached threshold; SCEE: optional custom resurvey date per key
+    override fun compareTo(timestamp: Long): Boolean {
+        val threshold = resurveyDate?.takeIf { resurveyKeys.contains(key) }?.toEpochMilli() ?: dateTimestamp
+        return timestamp < threshold
+    }
 }
 class TagNewerThan(key: String, dateFilter: DateFilter) : CompareTagAge(key, dateFilter) {
     override fun toString() = "$key newer $dateFilter"
-    override fun compareTo(tagValue: LocalDate) = tagValue > dateFilter.date
+    override fun compareTo(timestamp: Long) = timestamp > dateTimestamp
 }
 
 abstract class CompareTagAge(val key: String, val dateFilter: DateFilter) : ElementFilter {
-    abstract fun compareTo(tagValue: LocalDate): Boolean
+    // Cache the threshold for each filter to avoid computing it for every element.
+    protected val dateTimestamp by lazy { dateFilter.date.toEpochMilli() }
+
+    abstract fun compareTo(timestamp: Long): Boolean
+
     override fun matches(obj: Element): Boolean {
-        if (compareTo(Instant.fromEpochMilliseconds(obj.timestampEdited).toLocalDate())) return true
+        if (compareTo(obj.timestampEdited)) return true
         return if (resurveyKeys.contains(key)) {
-            // if we have a tag in the resurvey list, interpret missing check date as match
+            // SCEE: if we have a tag in the resurvey list, interpret missing check date as match
             val l = getLastCheckDateKeys(key)
-                .mapNotNull { obj.tags[it]?.toCheckDate() }.toList()
+                .mapNotNull { obj.tags[it]?.toCheckDate()?.toEpochMilli() }
+                .toList()
             if (l.isEmpty()) true
             else l.any { compareTo(it) }
-        } else
+        } else {
             getLastCheckDateKeys(key)
-                .mapNotNull { obj.tags[it]?.toCheckDate() }
+                .mapNotNull { obj.tags[it]?.toCheckDate()?.toEpochMilli() }
                 .any { compareTo(it) }
+        }
     }
 
     companion object {
@@ -166,16 +171,20 @@ abstract class CompareTagAge(val key: String, val dateFilter: DateFilter) : Elem
 
 class ElementOlderThan(dateFilter: DateFilter) : CompareElementAge(dateFilter) {
     override fun toString() = "older $dateFilter"
-    override fun compareTo(tagValue: LocalDate) = tagValue < dateFilter.date
+    override fun compareTo(timestamp: Long): Boolean = timestamp < dateTimestamp
 }
 class ElementNewerThan(dateFilter: DateFilter) : CompareElementAge(dateFilter) {
     override fun toString() = "newer $dateFilter"
-    override fun compareTo(tagValue: LocalDate) = tagValue > dateFilter.date
+    override fun compareTo(timestamp: Long): Boolean = timestamp > dateTimestamp
 }
 
 abstract class CompareElementAge(val dateFilter: DateFilter) : ElementFilter {
-    abstract fun compareTo(tagValue: LocalDate): Boolean
-    override fun matches(obj: Element) = compareTo(Instant.fromEpochMilliseconds(obj.timestampEdited).toLocalDate())
+    // Cache the threshold for each filter to avoid computing it for every element.
+    protected val dateTimestamp by lazy { dateFilter.date.toEpochMilli() }
+
+    abstract fun compareTo(timestamp: Long): Boolean
+
+    override fun matches(obj: Element) = compareTo(obj.timestampEdited)
 }
 
 class CombineFilters(vararg val filters: ElementFilter) : ElementFilter {

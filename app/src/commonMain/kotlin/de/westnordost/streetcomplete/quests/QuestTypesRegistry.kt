@@ -116,7 +116,6 @@ import de.westnordost.streetcomplete.quests.fire_hydrant_position.AddFireHydrant
 import de.westnordost.streetcomplete.quests.fire_hydrant_ref.AddFireHydrantRef
 import de.westnordost.streetcomplete.quests.firewood.AddFirewood
 import de.westnordost.streetcomplete.quests.first_aid_kit.AddFirstAidKitLocation
-import de.westnordost.streetcomplete.quests.foot.AddProhibitedForPedestrians
 import de.westnordost.streetcomplete.quests.fuel_service.AddFuelSelfService
 import de.westnordost.streetcomplete.quests.general_access.AddGeneralAccess
 import de.westnordost.streetcomplete.quests.general_fee.AddGeneralFee
@@ -179,7 +178,6 @@ import de.westnordost.streetcomplete.quests.piste_lit.AddPisteLit
 import de.westnordost.streetcomplete.quests.piste_ref.AddPisteRef
 import de.westnordost.streetcomplete.quests.pitch_lit.AddPitchLit
 import de.westnordost.streetcomplete.quests.place_name.AddPlaceName
-import de.westnordost.streetcomplete.quests.playground_access.AddPlaygroundAccess
 import de.westnordost.streetcomplete.quests.police_type.AddPoliceType
 import de.westnordost.streetcomplete.quests.post_office.AddPostOfficeType
 import de.westnordost.streetcomplete.quests.postbox_collection_times.AddPostboxCollectionTimes
@@ -245,7 +243,6 @@ import de.westnordost.streetcomplete.quests.tactile_paving.AddTactilePavingSteps
 import de.westnordost.streetcomplete.quests.toilet_availability.AddToiletAvailability
 import de.westnordost.streetcomplete.quests.toilets_fee.AddToiletsFee
 import de.westnordost.streetcomplete.quests.tourism_information.AddInformationToTourism
-import de.westnordost.streetcomplete.quests.tower_access.AddTowerAccess
 import de.westnordost.streetcomplete.quests.tracktype.AddTracktype
 import de.westnordost.streetcomplete.quests.traffic_calming_type.AddTrafficCalmingType
 import de.westnordost.streetcomplete.quests.traffic_signals_button.AddTrafficSignalsButton
@@ -259,6 +256,7 @@ import de.westnordost.streetcomplete.quests.sauna_availability.AddSaunaAvailabil
 import de.westnordost.streetcomplete.quests.swimming_pool_availability.AddSwimmingPoolAvailability
 import de.westnordost.streetcomplete.quests.toilets_disposal.AddToiletsDisposal
 import de.westnordost.streetcomplete.quests.valves.AddValves
+import de.westnordost.streetcomplete.quests.vending_machine.AddVendingMachineType
 import de.westnordost.streetcomplete.quests.via_ferrata_scale.AddViaFerrataScale
 import de.westnordost.streetcomplete.quests.way_lit.AddWayLit
 import de.westnordost.streetcomplete.quests.wheelchair_access.AddWheelchairAccessBusiness
@@ -413,6 +411,7 @@ fun getQuestTypeList(
     38 to AddCrossing(),
     164 to AddCrossingSignals(),
     39 to AddCrossingIsland(), // can be done at a glance
+    // 40 AddCrossingType(), - removed in https://github.com/streetcomplete/StreetComplete/pull/5471
     163 to AddCrossingMarkings(),
     41 to AddTactilePavingCrosswalk(),
     159 to AddCrossingKerbHeight(),
@@ -425,7 +424,7 @@ fun getQuestTypeList(
 
     46 to AddPoliceType(),
 
-    47 to AddPlaygroundAccess(),
+    // 47 to AddPlaygroundAccess(), - removed in https://github.com/streetcomplete/StreetComplete/pull/7109
 
     191 to AddBeachSurface(),
 
@@ -454,7 +453,7 @@ fun getQuestTypeList(
 
     59 to AddSelfServiceLaundry(),
 
-    198 to AddGeneralAccess(),
+    195 to AddGeneralAccess(),
     60 to AddGeneralFee(),
 
     61 to AddDrinkingWater(), // used by AnyFinder
@@ -468,7 +467,7 @@ fun getQuestTypeList(
     67 to AddFireHydrantRef(),
 
     160 to AddBbqFuel(),
-    182 to AddTowerAccess(),
+    // 182 to AddTowerAccess(), - removed in https://github.com/streetcomplete/StreetComplete/pull/7109
     185 to AddFirewood(),
     /* ↓ 2.solvable when right in front of it but takes longer to input --------------------- */
 
@@ -484,6 +483,8 @@ fun getQuestTypeList(
     173 to AddBicycleRepairStationServices(),
 
     167 to AddParcelLockerBrand(),
+    // 168 to AddParcelLockerPickup(), - removed in https://github.com/streetcomplete/StreetComplete/commit/bc8fc7907912c507742bdc4f17dcca03ddd49376
+    // 169 to AddParcelLockerMailIn(), - removed in https://github.com/streetcomplete/StreetComplete/commit/bc8fc7907912c507742bdc4f17dcca03ddd49376
 
     // address: usually only visible when just in front + sometimes requires to take "other answer"
     75 to AddHousenumber(getCountryInfoByLocation),
@@ -509,6 +510,8 @@ fun getQuestTypeList(
     200 to AddChargingStationSocket(getCountryInfoByLocation),
     88 to AddChargingStationOperator(),
 
+    194 to AddVendingMachineType(), // May take some time to find the machine in building with multiple levels
+
     // postboxes (collection times are further up, see comment)
     89 to AddPostboxRoyalCypher(), // can be glanced across the road (if postbox facing the right way)
     90 to AddPostboxRef(), // requires text input and to be very close to the collection plate
@@ -523,6 +526,7 @@ fun getQuestTypeList(
     95 to AddMaxPhysicalHeight(arSupportChecker), // same as above, best if it appears right after (if enabled)
     96 to AddRoadName(),
     97 to AddOneway(),
+    // 98 to AddSuspectedOneway(), - removed in https://github.com/streetcomplete/StreetComplete/pull/5725
 
     99 to AddEntrance(),
     100 to AddEntranceReference(),
@@ -542,7 +546,7 @@ fun getQuestTypeList(
     184 to AddAerialwayBicycleAccess(),
     187 to AddOnewayAerialway(),
 
-    103 to AddProhibitedForPedestrians(), // need to understand the pedestrian situation
+    //103 to AddProhibitedForPedestrians(), - removed in https://github.com/streetcomplete/StreetComplete/issues/7014
 
     104 to MarkCompletedHighwayConstruction(), // need to look the whole way
 
@@ -621,6 +625,8 @@ fun getQuestTypeList(
     137 to AddCycleway(getCountryInfoByLocation), // for any cyclist routers (and cyclist maps)
     181 to AddLaneMarkings(),
     138 to AddLanes(), // abstreet, certainly most routing engines - often requires way to be split
+
+    // 139 to AddShoulder(), - removed in https://github.com/streetcomplete/StreetComplete/commit/2819a8d440fdf33fc1bff178679ae1fcfd739998
 
     140 to AddRoadWidth(arSupportChecker),
     141 to AddRoadSmoothness(),

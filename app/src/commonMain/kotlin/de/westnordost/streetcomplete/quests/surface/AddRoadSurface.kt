@@ -27,26 +27,27 @@ import org.jetbrains.compose.resources.stringResource
 class AddRoadSurface : OsmFilterQuestType<Surface>() {
 
     override val elementFilter = """
-        ways with (
-          ${prefs.getString("${questPrefix(prefs)}qs_${name}_element_selection", highwaySelection)}
-        )
-        and (
-          !surface
-          or surface ~ ${INVALID_SURFACES.joinToString("|")}
-          or (
-            surface ~ paved|unpaved
-            and !surface:note
-            and !note:surface
-            and !check_date:surface
+        ways with
+          (
+            ${prefs.getString("${questPrefix(prefs)}qs_${name}_element_selection", highwaySelection)}
           )
-          or surface ~ ${UNPAVED_SURFACES.joinToString("|")} and surface older today -6 years
-          or surface older today -12 years
-          ${INVALID_SURFACES_FOR_TRACKTYPES.entries.joinToString("\n") { (tracktype, surfaces) ->
-              "or tracktype = $tracktype and surface ~ ${surfaces.joinToString("|")}"
-          }}
-        )
-        and (access !~ private|no or (foot and foot !~ private|no))
-        and ice_road != yes
+          and (
+            !surface
+            or surface ~ ${INVALID_SURFACES.joinToString("|")}
+            or (
+              surface ~ paved|unpaved
+              and !surface:note
+              and !note:surface
+              and !check_date:surface
+            )
+            or surface ~ ${UNPAVED_SURFACES.joinToString("|")} and surface older today -6 years
+            or surface older today -12 years
+            ${INVALID_SURFACES_FOR_TRACKTYPES.entries.joinToString("\n") { (tracktype, surfaces) ->
+            "or tracktype = $tracktype and surface ~ ${surfaces.joinToString("|")}"
+            }}
+          )
+          and (access !~ private|no or (foot and foot !~ private|no))
+          and ice_road != yes
     """
 
     override val changesetComment = "Specify road surfaces"

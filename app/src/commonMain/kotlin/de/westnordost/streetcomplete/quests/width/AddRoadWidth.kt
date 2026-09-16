@@ -25,23 +25,24 @@ class AddRoadWidth(
 ) : OsmElementQuestType<WidthAnswer> {
 
     private val nodeFilter by lazy { """
-       nodes with
-         traffic_calming ~ ${ROAD_NARROWERS.joinToString("|")}
-         and (!width or source:width ~ ".*estimat.*")
-         and (!maxwidth or source:maxwidth ~ ".*estimat.*")
+        nodes with
+          traffic_calming ~ ${ROAD_NARROWERS.joinToString("|")}
+          and (!width or source:width ~ ".*estimat.*")
+          and (!maxwidth or source:maxwidth ~ ".*estimat.*")
     """.toElementFilterExpression() }
 
     private val wayFilter by lazy { """
-        ways with (
-          ${prefs.getString(questPrefix(prefs) + PREF_ROAD_WIDTH_ELEMENTS, ROAD_SELECTION)}
-        )
-        and area != yes
-        and (!width or source:width ~ ".*estimat.*")
-        and (traffic_calming !~ ${ROAD_NARROWERS.joinToString("|")} or !maxwidth or source:maxwidth ~".*estimat.*")
-        and (surface ~ ${PAVED_SURFACES.joinToString("|")} or highway ~ ${ROADS_ASSUMED_TO_BE_PAVED.joinToString("|")})
-        and (access !~ private|no or (foot and foot !~ private|no))
-        and foot != no
-        and placement != transition
+        ways with
+          (
+            ${prefs.getString(questPrefix(prefs) + PREF_ROAD_WIDTH_ELEMENTS, ROAD_SELECTION)}
+          )
+          and area != yes
+          and (!width or source:width ~ ".*estimat.*")
+          and (traffic_calming !~ ${ROAD_NARROWERS.joinToString("|")} or !maxwidth or source:maxwidth ~".*estimat.*")
+          and (surface ~ ${PAVED_SURFACES.joinToString("|")} or highway ~ ${ROADS_ASSUMED_TO_BE_PAVED.joinToString("|")})
+          and (access !~ private|no or (foot and foot !~ private|no))
+          and foot != no
+          and placement != transition
     """.toElementFilterExpression() }
 
     override val changesetComment = "Determine road widths"

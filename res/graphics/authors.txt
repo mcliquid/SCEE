@@ -90,6 +90,7 @@ building/
     fire_truck.svg              modified bus.svg, which is based on Twemoji: U+1F68D
     garage.svg                  parts taken from Twemoji: U+1F698
     garages.svg                 parts taken from Twemoji: U+1F698
+    grandstand.svg              Amaan Qureshi, License: CC-BY-SA 4.0
     greenhouse.svg
     guardhouse.svg
     hangar.svg
@@ -113,7 +114,7 @@ building/
     semi_detached.svg
     service.svg
     shed.svg
-    stadium.svg                 EmojiOne 2: U+1F3D0
+    stadium.svg                 Amaan Qureshi, License: CC-BY-SA 4.0
     static_caravan.svg
     storage_tank.svg
     temple.svg
@@ -459,6 +460,7 @@ quest/
     traffic_lights.svg
     tree.svg                        modified from https://commons.wikimedia.org/wiki/File:Broccoli-tree.svg (public domain)
     tree_denotation.svg             modified from tree.svg and street.svg
+    vending_machine.svg
     via_ferrata_scale.svg           https://www.svgrepo.com/svg/137349/climbing (CC0) and based on way_surface.svg
     washing_hands.svg               modified from Twemoji: U+1FAF1
     way_surface.svg

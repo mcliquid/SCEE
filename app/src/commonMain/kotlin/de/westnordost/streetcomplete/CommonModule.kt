@@ -612,7 +612,7 @@ val commonModule = module {
     viewModel<MainViewModel> {
         MainViewModelImpl(
             get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
         )
     }
 

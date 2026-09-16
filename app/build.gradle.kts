@@ -7,7 +7,6 @@ import java.io.FileWriter
 
 /** App version name, code and flavor */
 val appVersionName = "64.0-alpha1"
-val appVersionCode = 6400
 
 /** Localizations the app should be available in */
 val bcp47ExportLanguages = setOf(
@@ -149,7 +148,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.9.1")
 
                 // location
-                implementation("org.maplibre.compose:location:0.15.0")
+                implementation("org.maplibre.compose:location:0.16.0")
 
                 // SQLite
                 implementation("androidx.sqlite:sqlite:2.7.0")

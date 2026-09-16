@@ -131,8 +131,7 @@ mapOf(
 ).map { it.key + " ~ " + it.value.joinToString("|") }.joinToString("\n or ") + "\n" + """
     )
     and (!opening_hours or opening_hours older today -1 years)
-    and
-    (
+    and (
         name
         or brand
         or noname = yes
@@ -178,15 +177,15 @@ mapOf(
     )
     """
     private val filterString = """
-        nodes, ways with
-        (
+        nodes, ways, relations with
+          (
             $namedFilterFragment
             or $unnamedFilterFragment
             or $updateFilterFragment
-        )
-        and access !~ private|no
-        and street_vendor != yes
-        and opening_hours:signed != no
+          )
+          and access !~ private|no
+          and street_vendor != yes
+          and opening_hours:signed != no
     """
 
     private val filter by lazy { prefs.getString(getPrefixedFullElementSelectionPref(prefs), filterString).toElementFilterExpression() }

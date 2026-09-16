@@ -54,9 +54,11 @@ class CheckShopExistence(
     override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> =
         mapData.filter { isApplicableTo(it) }
 
+    // Apply 'filter' last since it will check the age of almost every element (very slow)
     override fun isApplicableTo(element: Element): Boolean =
-        filter.matches(element) &&
-        element.isPlace()
+        element.isPlace() &&
+        hasName(element) &&
+        filter.matches(element)
 
     override fun getHighlightedElements(element: Element, mapData: MapDataWithGeometry) =
         mapData.asSequence().filter { it.isPlaceOrDisusedPlace() }
@@ -75,4 +77,11 @@ class CheckShopExistence(
     override fun applyAnswerTo(answer: Unit, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         tags.updateCheckDate()
     }
+
+    private fun hasName(element: Element) = hasProperName(element.tags) || hasFeatureName(element)
+
+    private fun hasProperName(tags: Map<String, String>): Boolean =
+        tags.containsKey("name") || tags.containsKey("brand")
+
+    private fun hasFeatureName(element: Element) = getFeature(element)?.name != null
 }

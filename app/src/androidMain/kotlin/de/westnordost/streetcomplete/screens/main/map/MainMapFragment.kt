@@ -61,19 +61,17 @@ import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.Style
 import org.maplibre.android.style.layers.Property
 import org.maplibre.android.style.layers.PropertyFactory.visibility
-import org.maplibre.compose.location.AndroidOrientationProvider
-import org.maplibre.compose.location.Location
+import org.maplibre.compose.location.AndroidHeadingProvider
+import org.maplibre.compose.location.HeadingMeasurement
+import org.maplibre.compose.location.HeadingProvider
+import org.maplibre.compose.location.HeadingRequest
 import org.maplibre.compose.location.LocationEvent
-import org.maplibre.compose.location.Orientation
-import org.maplibre.compose.location.OrientationProvider
-import org.maplibre.compose.location.PositionWithAccuracy
+import org.maplibre.compose.location.LocationMeasurement
 import org.maplibre.spatialk.units.Bearing
-import org.maplibre.spatialk.units.DMS
 import org.maplibre.spatialk.units.International
+import org.maplibre.spatialk.units.extensions.degrees
+import org.maplibre.spatialk.units.extensions.inDegrees
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.TimeSource
-import kotlin.math.PI
-import java.io.File
 import kotlin.time.Duration.Companion.minutes
 
 /** This is the map shown in the main view. It manages a map that shows the quest pins, quest
@@ -91,7 +89,7 @@ class MainMapFragment : MapFragment() {
     private val prefs: Preferences by inject()
     private val levelFilter: LevelFilter by inject()
 
-    private lateinit var orientationProvider: OrientationProvider
+    private lateinit var headingProvider: HeadingProvider
 
     private var mapImages: MapImages? = null
     private var geometryMarkersMapComponent: GeometryMarkersMapComponent? = null
@@ -123,7 +121,7 @@ class MainMapFragment : MapFragment() {
     private var zoomedYet = false
 
     /** The GPS position at which the user is displayed at */
-    var displayedLocation: Location? = null
+    var displayedLocation: LocationMeasurement? = null
         private set
 
     /** The GPS trackpoints the user has walked */
@@ -178,15 +176,11 @@ class MainMapFragment : MapFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        orientationProvider = AndroidOrientationProvider(
-            context = context,
-            updateInterval = 33.milliseconds,
-            coroutineScope = lifecycleScope
-        )
+        headingProvider = AndroidHeadingProvider(context)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                orientationProvider.orientation.collect { orientation ->
-                    onCompassRotationChanged(orientation)
+                headingProvider.updates(HeadingRequest(33.milliseconds)).collect { heading ->
+                    onCompassRotationChanged(heading)
                 }
             }
         }
@@ -195,10 +189,7 @@ class MainMapFragment : MapFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (savedInstanceState != null) {
-            val position: PositionWithAccuracy? =
-                savedInstanceState.getString(DISPLAYED_POSITION)?.let { Json.decodeFromString(it) }
-            Log.i("test", "create with loc")
-            displayedLocation = position?.let { Location(it, timestamp = TimeSource.Monotonic.markNow()) }
+            displayedLocation = savedInstanceState.getString(DISPLAYED_LOCATION)?.let { Json.decodeFromString(it) }
             isRecordingTracks = savedInstanceState.getBoolean(TRACKS_IS_RECORDING)
             tracks = Json.decodeFromString(savedInstanceState.getString(TRACKS)!!)
         }
@@ -301,8 +292,7 @@ class MainMapFragment : MapFragment() {
         loadGpxTrack()
         loadCustomGeometry()
 
-        Log.i("test", "setup location ${displayedLocation?.position}")
-        locationMapComponent?.targetPositionWithAccuracy = displayedLocation?.position
+        locationMapComponent?.targetLocation = displayedLocation
 
         val positionsLists = tracks.map { track -> track.map { it.position } }
         tracksMapComponent?.setTracks(positionsLists, isRecordingTracks)
@@ -315,7 +305,7 @@ class MainMapFragment : MapFragment() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString(DISPLAYED_POSITION, Json.encodeToString(displayedLocation?.position))
+        outState.putString(DISPLAYED_LOCATION, Json.encodeToString(displayedLocation))
         // the amount of data one can put into a bundle is limited, let's cut off at 1000 points
         outState.putString(TRACKS, Json.encodeToString(tracks.takeLastNested(1000)))
         outState.putBoolean(TRACKS_IS_RECORDING, isRecordingTracks)
@@ -369,28 +359,26 @@ class MainMapFragment : MapFragment() {
         return true
     }
 
-    private fun onCompassRotationChanged(orientation: Orientation?) {
-        val rotation = orientation
-            ?.orientation
-            ?.value
-            ?.clockwiseRotationTo(Bearing.North)
-            ?.toDouble(DMS.Degrees)
-        locationMapComponent?.targetRotation = rotation?.let { rotation - (map?.camera?.rotation ?: 0.0) }?.toFloat()
+    private fun onCompassRotationChanged(heading: HeadingMeasurement) {
+        val cameraBearing = Bearing.North + (map?.camera?.rotation ?: 0.0).degrees
+        locationMapComponent?.targetRotation = (heading.bearing - cameraBearing).inDegrees.toFloat()
     }
 
     fun onLocationEvent(locationEvent: LocationEvent) {
         when (locationEvent) {
-            is LocationEvent.Fix -> {
-                val location = locationEvent.location
-                if (location.timestamp.elapsedNow() > 10.minutes) return // on startup we move to the last known position, which is usually useless and incredibly annoying
+            is LocationEvent.Update -> {
+                val location = locationEvent.measurement
+                // On startup, the last known position is usually stale and would cause an
+                // annoying camera jump. measurementMark is on the Update event (MapLibre location API).
+                if (locationEvent.measurementMark.elapsedNow() > 10.minutes) return
                 displayedLocation = location
-                surveyChecker.addRecentLocation(location.toLocation())
-                locationMapComponent?.targetPositionWithAccuracy = location.position
+                surveyChecker.addRecentLocation(locationEvent.toLocation())
+                locationMapComponent?.targetLocation = location
                 addTrackLocation(location)
                 centerCurrentPositionIfFollowing()
             }
             is LocationEvent.Unavailable -> {
-                locationMapComponent?.targetPositionWithAccuracy = null
+                locationMapComponent?.targetLocation = null
                 displayedLocation = null
                 isNavigationMode = false
 
@@ -445,24 +433,24 @@ class MainMapFragment : MapFragment() {
         previouslyHiddenLayers = new
     }
 
-    private fun addTrackLocation(location: Location) {
+    private fun addTrackLocation(location: LocationMeasurement) {
         // ignore if too imprecise
-        val accuracy = location.position.accuracy?.toFloat(International.Meters)
+        val accuracy = location.horizontalAccuracy?.toFloat(International.Meters)
         if (accuracy != null && accuracy > MIN_TRACK_ACCURACY) return
         val lastLocation = tracks.last().lastOrNull()
 
         // create new track if last position too old
         if (lastLocation != null && !isRecordingTracks) {
-            if ((displayedLocation?.timestamp?.elapsedNow()?.inWholeMilliseconds ?: 0) - lastLocation.time > MAX_TIME_BETWEEN_LOCATIONS) {
+            if (location.measuredAt.toEpochMilliseconds() - lastLocation.time > MAX_TIME_BETWEEN_LOCATIONS) {
                 tracks.add(ArrayList())
                 tracksMapComponent?.startNewTrack(false)
             }
         }
         val trackpoint = Trackpoint(
-            position = location.position.value.toLatLon(),
-            time = location.timestamp.elapsedNow().inWholeMilliseconds,
+            position = location.position.toLatLon(),
+            time = location.measuredAt.toEpochMilliseconds(),
             accuracy = accuracy ?: 0f,
-            elevation = location.position.value.altitude?.toFloat() ?: 0f
+            elevation = location.position.altitude?.toFloat() ?: 0f
         )
 
         tracks.last().add(trackpoint)
@@ -557,7 +545,7 @@ class MainMapFragment : MapFragment() {
     }
 
     private fun centerCurrentPosition() {
-        val displayedPosition = displayedLocation?.position?.value?.let { it.toLatLon() } ?: return
+        val displayedPosition = displayedLocation?.position?.let { it.toLatLon() } ?: return
 
         updateCameraPosition(600) {
             if (isNavigationMode) {
@@ -616,7 +604,7 @@ class MainMapFragment : MapFragment() {
     //endregion
 
     companion object {
-        private const val DISPLAYED_POSITION = "displayed_position"
+        private const val DISPLAYED_LOCATION = "displayed_location"
         private const val TRACKS = "tracks"
         private const val TRACKS_IS_RECORDING = "tracks_is_recording"
 

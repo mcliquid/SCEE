@@ -53,6 +53,7 @@ import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeControlle
 import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeTable
 import de.westnordost.streetcomplete.quests.amenity_cover.AddAmenityCover
 import de.westnordost.streetcomplete.quests.custom.CustomQuest
+import de.westnordost.streetcomplete.quests.general_access.AddGeneralAccess
 import de.westnordost.streetcomplete.quests.osmose.OsmoseDao
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.*
@@ -392,11 +393,14 @@ private const val BACKUP_PRESETS_QUEST_SETTINGS = "quest_settings"
 
 private const val TAG = "DataManagementSettings"
 
-const val LAST_KNOWN_DB_VERSION = 20L
+const val LAST_KNOWN_DB_VERSION = 21L
 
 val renamedQuests = mapOf(
     "ExternalQuest" to CustomQuest::class.simpleName!!,
     "AddPicnicTableCover" to AddAmenityCover::class.simpleName!!,
+    // DB v21 / SC #7109: merged into AddGeneralAccess
+    "AddPlaygroundAccess" to AddGeneralAccess::class.simpleName!!,
+    "AddTowerAccess" to AddGeneralAccess::class.simpleName!!,
 )
 fun String.renameUpdatedQuests() =
     renamedQuests.entries.fold(this) { acc, (old, new) -> acc.replace(old, new) }

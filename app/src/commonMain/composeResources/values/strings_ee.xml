@@ -330,6 +330,8 @@
     <!-- service times quest -->
     <string name="quest_service_times_title">When is religious service performed here?</string>
     <string name="quest_service_times_resurvey_title">Are the religious service times here still correct?</string>
+    <!-- SCEE resurvey title; SC translation updates omit this key from strings.xml -->
+    <string name="quest_postboxCollectionTimes_resurvey_title">Are the pickup times of this collection box still correct?</string>
 
     <!-- swimming pool availability quest -->
     <string name="quest_swimmingPoolAvailability_title">Is there a swimming pool here?</string>

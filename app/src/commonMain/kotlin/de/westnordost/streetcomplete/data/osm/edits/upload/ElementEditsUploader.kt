@@ -32,7 +32,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -56,6 +58,7 @@ class ElementEditsUploader(
 
     suspend fun upload(uploader: Uploader) = mutex.withLock { withContext(Dispatchers.IO) {
         while (true) {
+            currentCoroutineContext().ensureActive()
             val edit = elementEditsController.getOldestUnsynced() ?: break
             val getIdProvider: () -> ElementIdProvider = { elementEditsController.getIdProvider(edit.id) }
             if (downloader.isDownloadInProgress) {

@@ -20,6 +20,8 @@ import de.westnordost.streetcomplete.data.user.UserLoginSource
 import de.westnordost.streetcomplete.util.Listeners
 import de.westnordost.streetcomplete.util.logs.Log
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.koin.core.component.KoinComponent
@@ -42,7 +44,7 @@ class Uploader(
 
     private val listeners = Listeners<UploadProgressSource.Listener>()
 
-    private lateinit var bannedInfo: BannedInfo
+    private var bannedInfo: BannedInfo? = null
 
     private val uploadedChangeRelay = object : OnUploadedChangeListener {
         override fun onUploaded(editType: String, at: LatLon) {
@@ -68,7 +70,7 @@ class Uploader(
             isUploadInProgress = true
             listeners.forEach { it.onStarted() }
 
-            if (!::bannedInfo.isInitialized) {
+            if (bannedInfo == null) {
                 bannedInfo = versionIsBannedChecker.get()
             }
             val banned = bannedInfo

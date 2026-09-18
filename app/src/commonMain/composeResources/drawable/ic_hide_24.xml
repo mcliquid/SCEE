@@ -1,0 +1,14 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#000"
+        android:fillType="evenOdd"
+        android:pathData="M12,5C7.5,5 3.7,8.1 2,12c1.7,3.9 5.5,7 10,7s8.3,-3.1 10,-7C20.3,8.1 16.5,5 12,5zM15.75,12a3.75,3.75 0 1 1,-7.5 0a3.75,3.75 0 1 1,7.5 0z"/>
+    <path
+        android:fillColor="#000"
+        android:pathData="M19,3.6L20.4,5 5,20.4 3.6,19z"/>
+</vector>
+<!-- from https://www.svgrepo.com/svg/453947/hide -->

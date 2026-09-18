@@ -25,6 +25,14 @@ import de.westnordost.streetcomplete.ui.common.SwitchKeyboardPopupButton
 import de.westnordost.streetcomplete.ui.common.TextField2
 import de.westnordost.streetcomplete.ui.util.isImeVisible
 
+/**
+ * Material TextField only shows the placeholder while unfocused when [label] is null.
+ * Blank labels must therefore be treated as absent, otherwise the housenumber suggestion
+ * stays invisible until the field is focused (see Helium314/SCEE#918).
+ */
+fun effectiveAddressNumberLabel(label: String?): String? =
+    label?.takeIf { it.isNotEmpty() }
+
 /** An input field for adding some address number. There's something all these fields have in
  *  common, which is that
  *  - they are single-line text fields with auto-size on
@@ -52,6 +60,7 @@ fun AnAddressNumberInput(
 
     var isFocused by remember { mutableStateOf(false) }
     val showSwitchKeyboardPopup = isFocused && isImeVisible()
+    val effectiveLabel = effectiveAddressNumberLabel(label)
 
     ProvideTextStyle(LocalTextStyle.current.copy(
         // to avoid the size of the text changing when going from e.g. "123j" to "123k"
@@ -68,7 +77,7 @@ fun AnAddressNumberInput(
                     valueState = it
                     onValueChange(valueState.text)
                 },
-                label = label?.let { { Text(it) } },
+                label = effectiveLabel?.let { { Text(it) } },
                 placeholder = if (!suggestion.isNullOrEmpty()) {
                     { BasicText(
                         text = suggestion,

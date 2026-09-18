@@ -131,8 +131,9 @@ fun AccessManagerDialog(
                                         }
                                     ) {
                                         Icon(
-                                            painterResource(Res.drawable.ic_delete_24),
-                                            stringResource(Res.string.delete_confirmation)
+                                            painter = painterResource(Res.drawable.ic_delete_24),
+                                            contentDescription = stringResource(Res.string.delete_confirmation),
+                                            tint = MaterialTheme.colors.onSurface
                                         )
                                     }
                                 }

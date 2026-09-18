@@ -29,19 +29,35 @@ import kotlin.collections.set
 
 class AddCrossingMarkings : OsmElementQuestType<Set<CrossingMarkings>> {
 
-    private val crossingFilter by lazy { """
+    /* Read the pref on each use: the expression used to be captured once at construction,
+     * so enabling the extended markings quest had no effect until process restart. */
+    private val crossingFilter get() =
+        if (prefs.getBoolean(PREF_CROSSING_MARKING_EXTENDED, false)) extendedCrossingFilter
+        else defaultCrossingFilter
+
+    /* Default: same as StreetComplete. Only ask if crossing=* is unset (or island),
+     * because marked/zebra/uncontrolled already imply markings and unmarked implies none. */
+    private val defaultCrossingFilter by lazy { """
         nodes with
           highway = crossing
           and foot != no
-          and $crossingMarkingExpression
+          and !crossing:markings
+          and (!crossing or crossing = island)
           and (!crossing:signals or crossing:signals = no)
     """.toElementFilterExpression() }
-    /* only looking for crossings that have no crossing=* at all set because if the crossing was
-     * - if it had markings, it would be tagged with "marked","zebra" or "uncontrolled"
-     * - if it hadn't, it would be tagged with "unmarked"
-     * - and in case of "traffic_signals", we currently assume that when there are traffic signals
-     *   it would be spammy to ask about markings because the answer would almost always be "yes".
-     *   Might differ per country, research necessary. */
+
+    /* Extended: also ask for the marking style on crossing=marked/uncontrolled/etc.,
+     * but still skip unmarked (implies crossing:markings=no) and zebra. */
+    private val extendedCrossingFilter by lazy { """
+        nodes with
+          highway = crossing
+          and foot != no
+          and (!crossing:markings or crossing:markings = yes)
+          and crossing != zebra
+          and crossing != unmarked
+          and crossing_ref != zebra
+          and (!crossing:signals or crossing:signals = no)
+    """.toElementFilterExpression() }
 
     private val excludedWaysFilter by lazy { """
         ways with
@@ -93,6 +109,17 @@ class AddCrossingMarkings : OsmElementQuestType<Set<CrossingMarkings>> {
 
     override fun applyAnswerTo(answer: Set<CrossingMarkings>, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         tags["crossing:markings"] = answer.map { it.osmValue }.sorted().joinToString(";")
+
+        // Keep crossing=* consistent with the new markings value.
+        // crossing=unmarked implies crossing:markings=no; marked/zebra/uncontrolled imply markings.
+        val crossing = tags["crossing"]
+        if (answer == setOf(CrossingMarkings.NO)) {
+            if (crossing in setOf("marked", "zebra", "uncontrolled")) {
+                tags["crossing"] = "unmarked"
+            }
+        } else if (crossing == "zebra" && answer.none { it.osmValue == "zebra" || it.osmValue.startsWith("zebra:") }) {
+            tags["crossing"] = "marked"
+        }
     }
 
     override val hasQuestSettings: Boolean = true
@@ -107,16 +134,6 @@ class AddCrossingMarkings : OsmElementQuestType<Set<CrossingMarkings>> {
             Res.string.quest_generic_hasFeature_no,
             onDismissRequest
         )
-    }
-
-    private val crossingMarkingExpression = if (prefs.getBoolean(PREF_CROSSING_MARKING_EXTENDED, false)) {
-        """(
-            (!crossing:markings or crossing:markings = yes)
-            and crossing != zebra and crossing_ref != zebra
-           )
-        """.trimIndent()
-    } else {
-        "!crossing:markings and (!crossing or crossing = island)"
     }
 }
 

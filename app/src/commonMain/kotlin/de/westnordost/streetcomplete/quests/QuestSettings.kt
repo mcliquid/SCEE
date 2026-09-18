@@ -336,6 +336,7 @@ private fun DiffButton(defaultText: String, getCurrentText: () -> String) {
                 Button(
                     {
                         if (default) prefs.remove(key) else prefs.putBoolean(key, true)
+                        OsmQuestController.reloadQuestTypes()
                         onDismissRequest()
                     },
                     Modifier.fillMaxWidth()
@@ -345,6 +346,7 @@ private fun DiffButton(defaultText: String, getCurrentText: () -> String) {
                 Button(
                     {
                         if (!default) prefs.remove(key) else prefs.putBoolean(key, false)
+                        OsmQuestController.reloadQuestTypes()
                         onDismissRequest()
                     },
                     Modifier.fillMaxWidth()

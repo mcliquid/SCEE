@@ -64,13 +64,19 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer> {
         )
     }
 
-    override fun getApplicableElements(
-        mapData: MapDataWithGeometry
-    ): Iterable<Element> =
-        mapData.ways.filter { filter.matches(it) }
+    override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> =
+        mapData.ways.filter { path ->
+            if (!filter.matches(path)) return@filter false
+            val geometry = mapData.getWayGeometry(path.id) ?: return@filter false
+            hasNearbyAlignedRoad(geometry, mapData)
+        }
 
-    override fun isApplicableTo(element: Element): Boolean? =
-        if (filter.matches(element)) null else false
+    /**
+     * Tag filter only. Geometry gating runs in [getApplicableElements] on download.
+     * Returning null here would re-fetch only path.bounds+20m and can miss long sparse roads,
+     * making the quest disappear after updates.
+     */
+    override fun isApplicableTo(element: Element): Boolean = filter.matches(element)
 
     @Composable
     override fun Form(
@@ -82,6 +88,7 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer> {
         AddIsSidepathForm(
             on = on,
             element = element,
+            geometry = geometry,
         )
     }
 
@@ -92,8 +99,13 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer> {
         timestampEdited: Long
     ) {
         when (answer) {
-            IsSidepathAnswer.Yes ->
+            is IsSidepathAnswer.Yes -> {
                 tags["is_sidepath"] = "yes"
+                val ofName = answer.ofName
+                if (!ofName.isNullOrEmpty()) {
+                    tags["is_sidepath:of:name"] = ofName
+                }
+            }
 
             IsSidepathAnswer.No ->
                 tags["is_sidepath"] = "no"

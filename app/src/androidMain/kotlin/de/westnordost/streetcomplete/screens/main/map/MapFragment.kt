@@ -112,7 +112,7 @@ open class MapFragment : Fragment() {
         lifecycleScope.launch {
             delay(30000) // cleaning is low priority, do it once startup is done
             val retainTime = prefs.getInt(Prefs.DATA_RETAIN_TIME, ApplicationConstants.DELETE_OLD_DATA_AFTER_DAYS)
-            val oldDataTimestamp = nowAsEpochMilliseconds() - retainTime
+            val oldDataTimestamp = nowAsEpochMilliseconds() - retainTime * 24L * 60 * 60 * 1000
             OfflineManager.getInstance(requireContext()).deleteRegionsOlderThan(oldDataTimestamp)
         }
     }

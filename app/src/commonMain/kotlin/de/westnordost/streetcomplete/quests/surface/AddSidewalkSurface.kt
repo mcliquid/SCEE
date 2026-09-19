@@ -48,11 +48,12 @@ class AddSidewalkSurface : OsmFilterQuestType<SidewalkSurfaceAnswer>() {
 
     override fun getHighlightedElements(element: Element, mapData: MapDataWithGeometry) =
         mapData.filter("""
-            ways with (
-                highway ~ cycleway|path
-                or highway ~ footway|bridleway and bicycle ~ yes|designated
+            ways with
+              (
+                highway ~ path|footway|steps
+                or highway ~ cycleway|bridleway and foot ~ yes|designated
               )
-              and bicycle !~ no|private
+              and foot !~ no|private
               and access !~ no|private
         """)
 

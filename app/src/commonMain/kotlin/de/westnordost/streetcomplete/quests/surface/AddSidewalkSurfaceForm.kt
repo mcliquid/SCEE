@@ -30,7 +30,6 @@ import de.westnordost.streetcomplete.util.math.getOrientationOrZero
 import de.westnordost.streetcomplete.util.takeFavorites
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import kotlin.collections.emptyList
 
 @Composable
 fun AddSidewalkSurfaceForm(
@@ -40,19 +39,14 @@ fun AddSidewalkSurfaceForm(
     countryInfo: CountryInfo,
     preferences: Preferences = koinInject(),
 ) {
-    val favKey = "AddSidewalkSurfaceForm"
     val sidewalk = remember(element) { parseSidewalkSides(element.tags) }
     val hasSidewalkLeft = sidewalk?.left == Sidewalk.YES
     val hasSidewalkRight = sidewalk?.right == Sidewalk.YES
+    val favKey = sidewalkSurfaceLastPickedKey(hasSidewalkLeft, hasSidewalkRight)
     val geometryRotation = remember(geometry) { geometry.getOrientationOrZero() }
 
-    val lastPicked = remember {
-        if (hasSidewalkLeft && hasSidewalkRight) {
-            preferences.getLastPicked<Sides<Surface>>(favKey)
-                .takeFavorites(n = 5, history = 15, first = 1)
-        } else {
-            emptyList()
-        }
+    val lastPicked = remember(favKey) {
+        loadSidewalkSurfaceLastPicked(preferences, hasSidewalkLeft, hasSidewalkRight)
     }
 
     var sidewalkSurfaces by rememberSerializable(element) { mutableStateOf(Sides<Surface>(null, null)) }
@@ -65,9 +59,7 @@ fun AddSidewalkSurfaceForm(
         hasChanges =
             sidewalkSurfaces.any { it != null },
         onClickOk = {
-            if (hasSidewalkLeft && hasSidewalkRight) {
-                preferences.setLastPicked(favKey, listOf(sidewalkSurfaces))
-            }
+            saveSidewalkSurfaceLastPicked(preferences, sidewalkSurfaces, hasSidewalkLeft, hasSidewalkRight)
             on(Answer(SidewalkSurfaceAnswer.Surfaces(SidewalkSurface(sidewalkSurfaces))))
         },
         otherAnswers = { listOf(
@@ -90,4 +82,48 @@ fun AddSidewalkSurfaceForm(
             hasSidewalkRight = hasSidewalkRight,
         )
     }
+}
+
+internal const val SIDEWALK_SURFACE_LAST_PICKED_KEY = "AddSidewalkSurfaceForm"
+
+internal fun sidewalkSurfaceLastPickedKey(
+    hasSidewalkLeft: Boolean,
+    hasSidewalkRight: Boolean,
+): String? = when {
+    hasSidewalkLeft && hasSidewalkRight -> SIDEWALK_SURFACE_LAST_PICKED_KEY
+    hasSidewalkLeft -> "$SIDEWALK_SURFACE_LAST_PICKED_KEY.left"
+    hasSidewalkRight -> "$SIDEWALK_SURFACE_LAST_PICKED_KEY.right"
+    else -> null
+}
+
+internal fun sidewalkSurfacesForLastPicked(
+    sidewalkSurfaces: Sides<Surface>,
+    hasSidewalkLeft: Boolean,
+    hasSidewalkRight: Boolean,
+): Sides<Surface> = Sides(
+    left = sidewalkSurfaces.left.takeIf { hasSidewalkLeft },
+    right = sidewalkSurfaces.right.takeIf { hasSidewalkRight },
+)
+
+internal fun loadSidewalkSurfaceLastPicked(
+    preferences: Preferences,
+    hasSidewalkLeft: Boolean,
+    hasSidewalkRight: Boolean,
+): List<Sides<Surface>> {
+    val key = sidewalkSurfaceLastPickedKey(hasSidewalkLeft, hasSidewalkRight) ?: return emptyList()
+    return preferences.getLastPicked<Sides<Surface>>(key)
+        .takeFavorites(n = 5, history = 15, first = 1)
+}
+
+internal fun saveSidewalkSurfaceLastPicked(
+    preferences: Preferences,
+    sidewalkSurfaces: Sides<Surface>,
+    hasSidewalkLeft: Boolean,
+    hasSidewalkRight: Boolean,
+) {
+    val key = sidewalkSurfaceLastPickedKey(hasSidewalkLeft, hasSidewalkRight) ?: return
+    preferences.setLastPicked(
+        key,
+        listOf(sidewalkSurfacesForLastPicked(sidewalkSurfaces, hasSidewalkLeft, hasSidewalkRight))
+    )
 }

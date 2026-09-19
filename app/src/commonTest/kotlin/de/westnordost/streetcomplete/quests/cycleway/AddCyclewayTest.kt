@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.quests.cycleway
 
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.meta.IncompleteCountryInfo
+import de.westnordost.streetcomplete.osm.cycleway.parseCyclewaySides
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
 import de.westnordost.streetcomplete.testutils.pGeom
 import de.westnordost.streetcomplete.testutils.way
@@ -37,6 +38,50 @@ class AddCyclewayTest {
 
         assertEquals(1, questType.getApplicableElements(mapData).toList().size)
         assertTrue(questType.isApplicableTo(way)!!)
+    }
+
+    @Test fun `applicable to road with separately mapped sidewalk without inferring cycleway`() {
+        val way = way(
+            1L, listOf(1, 2, 3), mapOf(
+                "highway" to "primary",
+                "sidewalk" to "separate",
+            )
+        )
+        val mapData = TestMapDataWithGeometry(listOf(way))
+
+        assertEquals(1, questType.getApplicableElements(mapData).toList().size)
+        assertTrue(questType.isApplicableTo(way)!!)
+        assertNull(parseCyclewaySides(way.tags, false))
+        assertTrue(way.tags.keys.none { it.startsWith("cycleway") })
+    }
+
+    @Test fun `side-specific separate sidewalk tags do not affect applicability`() {
+        for (sidewalkKey in listOf("sidewalk:left", "sidewalk:right", "sidewalk:both")) {
+            val way = way(
+                1L, listOf(1, 2, 3), mapOf(
+                    "highway" to "primary",
+                    sidewalkKey to "separate",
+                )
+            )
+            val mapData = TestMapDataWithGeometry(listOf(way))
+
+            assertEquals(1, questType.getApplicableElements(mapData).toList().size)
+            assertTrue(questType.isApplicableTo(way)!!)
+        }
+    }
+
+    @Test fun `separate sidewalk does not bypass use-sidepath exclusion`() {
+        val way = way(
+            1L, listOf(1, 2, 3), mapOf(
+                "highway" to "primary",
+                "sidewalk" to "separate",
+                "bicycle" to "use_sidepath",
+            )
+        )
+        val mapData = TestMapDataWithGeometry(listOf(way))
+
+        assertEquals(0, questType.getApplicableElements(mapData).toList().size)
+        assertFalse(questType.isApplicableTo(way)!!)
     }
 
     @Test fun `not applicable to road with cycleway=separate`() {

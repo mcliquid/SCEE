@@ -50,7 +50,7 @@ class SpatialCache<K, T>(
     }
 
     /** @return a new list of all items in the cache */
-    fun getItems(): List<T> = synchronized(this) { byKey.values.toList() }
+    fun getItems(): List<T> = lock.withLock { byKey.values.toList() }
 
     /** @return a new set of all tilePos in the cache */
     fun getTiles(): Set<TilePos> = lock.withLock {

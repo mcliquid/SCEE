@@ -76,12 +76,14 @@ class OsmQuestController(
          *  as well. */
         override fun onUpdated(updated: MapDataWithGeometry, deleted: Collection<ElementKey>) {
             val time = nowAsEpochMilliseconds()
+            val questTypes = allQuestTypes
+            val updatedElementKeys = updated.map { it.key }
 
             val deferredQuests = mutableListOf<Deferred<OsmQuest?>>()
 
             for (element in updated) {
                 val geometry = updated.getGeometry(element.type, element.id) ?: continue
-                deferredQuests.addAll(createQuestsForElementDeferred(element, geometry, allQuestTypes))
+                deferredQuests.addAll(createQuestsForElementDeferred(element, geometry, questTypes))
             }
             val quests = runBlocking { deferredQuests.awaitAll().filterNotNull() }
 
@@ -92,7 +94,7 @@ class OsmQuestController(
             var obsoleteQuestKeys: List<OsmQuestKey> = listOf()
             var visibleQuests: Collection<OsmQuest> = listOf()
             lock.withLock {
-                val previousQuests = db.getAllForElements(updated.map { it.key })
+                val previousQuests = db.getAllForElements(updatedElementKeys)
                 // quests that refer to elements that have been deleted shall be deleted
                 val deleteQuestKeys = db.getAllForElements(deleted).map { it.key }
 
@@ -104,10 +106,18 @@ class OsmQuestController(
                 visibleQuests = quests.filterVisible()
             }
 
-            val questKeysToDelete = lastAnsweredQuestKey?.let {
-                lastAnsweredQuestKey = null
-                obsoleteQuestKeys + it
-            } ?: obsoleteQuestKeys
+            val questKeysToDelete =
+                if (prefs.getBoolean(Prefs.DYNAMIC_QUEST_CREATION, false)) {
+                    getDynamicallyObsoleteQuestKeys(
+                        quests,
+                        obsoleteQuestKeys,
+                        updatedElementKeys,
+                        deleted,
+                        questTypes,
+                    )
+                } else {
+                    obsoleteQuestKeys
+                }
             onUpdated(added = visibleQuests, deleted = questKeysToDelete)
         }
 
@@ -253,6 +263,31 @@ class OsmQuestController(
         return deletedQuestKeys + obsoleteQuestKeys
     }
 
+    private fun getDynamicallyObsoleteQuestKeys(
+        questsNow: Collection<OsmQuest>,
+        persistedObsoleteQuestKeys: Collection<OsmQuestKey>,
+        updatedElementKeys: Collection<ElementKey>,
+        deletedElementKeys: Collection<ElementKey>,
+        questTypes: Collection<OsmElementQuestType<*>>,
+    ): Set<OsmQuestKey> {
+        val currentlyApplicableQuestKeys = questsNow.mapTo(HashSet(questsNow.size)) { it.key }
+        val questTypeNames = questTypes.map { it.name }
+        val obsoleteQuestKeys = persistedObsoleteQuestKeys.toMutableSet()
+
+        for (elementKey in updatedElementKeys) {
+            for (questTypeName in questTypeNames) {
+                val questKey = OsmQuestKey(elementKey.type, elementKey.id, questTypeName)
+                if (questKey !in currentlyApplicableQuestKeys) obsoleteQuestKeys.add(questKey)
+            }
+        }
+        for (elementKey in deletedElementKeys) {
+            for (questTypeName in questTypeNames) {
+                obsoleteQuestKeys.add(OsmQuestKey(elementKey.type, elementKey.id, questTypeName))
+            }
+        }
+        return obsoleteQuestKeys
+    }
+
     private fun updateQuests(questsNow: Collection<OsmQuest>, obsoleteQuestKeys: Collection<OsmQuestKey>) {
         val time = nowAsEpochMilliseconds()
 
@@ -371,6 +406,5 @@ class OsmQuestController(
         private const val TAG = "OsmQuestController"
         private var instance: OsmQuestController? = null
         fun reloadQuestTypes() = instance?.reloadQuestTypes()
-        var lastAnsweredQuestKey: OsmQuestKey? = null // workaround for issues with dynamic quest creation
     }
 }

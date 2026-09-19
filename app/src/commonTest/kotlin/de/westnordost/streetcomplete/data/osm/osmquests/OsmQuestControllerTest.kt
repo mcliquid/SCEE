@@ -1,5 +1,7 @@
 package de.westnordost.streetcomplete.data.osm.osmquests
 
+import com.russhwolf.settings.ObservableSettings
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometryEntry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
@@ -11,6 +13,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.ElementType.NODE
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.MutableMapDataWithGeometry
+import de.westnordost.streetcomplete.data.osm.mapdata.key
 import de.westnordost.streetcomplete.data.osmnotes.edits.NotesWithEditsSource
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.data.quest.TestQuestTypeA
@@ -45,6 +48,7 @@ class OsmQuestControllerTest {
     private lateinit var notesSource: NotesWithEditsSource
     private lateinit var questTypeRegistry: QuestTypeRegistry
     private lateinit var countryBoundaries: CountryBoundaries
+    private lateinit var prefs: ObservableSettings
 
     private lateinit var ctrl: OsmQuestController
     private lateinit var listener: OsmQuestSource.Listener
@@ -84,9 +88,12 @@ class OsmQuestControllerTest {
                 countries !is NoCountriesExcept
         }
 
+        prefs = mock {
+            every { getBoolean(Prefs.DYNAMIC_QUEST_CREATION, false) } returns false
+        }
         listener = mock()
 
-        ctrl = OsmQuestController(db, mapDataSource, notesSource, questTypeRegistry, lazyOf(countryBoundaries), mock())
+        ctrl = OsmQuestController(db, mapDataSource, notesSource, questTypeRegistry, lazyOf(countryBoundaries), prefs)
         ctrl.addListener(listener)
     }
 
@@ -216,6 +223,100 @@ class OsmQuestControllerTest {
             listener.onUpdated(
                 added = expectedCreatedQuests,
                 deleted = expectedDeletedQuestKeys
+            )
+        }
+    }
+
+    @Test fun `dynamic update deletes non-persisted quest that is no longer applicable`() {
+        every { prefs.getBoolean(Prefs.DYNAMIC_QUEST_CREATION, false) } returns true
+        val element = node(1, tags = mapOf("a" to "b"))
+        val mapData = MutableMapDataWithGeometry(
+            listOf(element),
+            listOf(ElementGeometryEntry(NODE, element.id, pGeom())),
+        )
+        every { db.getAllForElements(listOf(element.key)) } returns emptyList()
+        every { db.getAllForElements(emptyList()) } returns emptyList()
+        every { mapDataSource.getMapDataWithGeometry(any()) } returns mapData
+        every { notesSource.getAllPositions(any()) } returns emptyList()
+
+        mapDataListener.onUpdated(mapData, emptyList())
+
+        val dynamicOnlyObsoleteKey = osmQuestKey(NODE, element.id, NotApplicableQuestType.name)
+        verify {
+            listener.onUpdated(
+                added = any(),
+                deleted = matches { dynamicOnlyObsoleteKey in it },
+            )
+        }
+    }
+
+    @Test fun `dynamic update deletes all quest keys for deleted element`() {
+        every { prefs.getBoolean(Prefs.DYNAMIC_QUEST_CREATION, false) } returns true
+        val deletedElement = ElementKey(NODE, 1)
+        every { db.getAllForElements(emptyList()) } returns emptyList()
+        every { db.getAllForElements(listOf(deletedElement)) } returns emptyList()
+
+        mapDataListener.onUpdated(MutableMapDataWithGeometry(), listOf(deletedElement))
+
+        val expectedDeletedQuestKeys = questTypeRegistry
+            .filterIsInstance<OsmElementQuestType<*>>()
+            .map { osmQuestKey(deletedElement.type, deletedElement.id, it.name) }
+        verify {
+            listener.onUpdated(
+                added = emptyList(),
+                deleted = matches { it.containsExactlyInAnyOrder(expectedDeletedQuestKeys) },
+            )
+        }
+    }
+
+    @Test fun `dynamic update includes persisted obsolete quest only once`() {
+        every { prefs.getBoolean(Prefs.DYNAMIC_QUEST_CREATION, false) } returns true
+        val element = node(1, tags = mapOf("a" to "b"))
+        val mapData = MutableMapDataWithGeometry(
+            listOf(element),
+            listOf(ElementGeometryEntry(NODE, element.id, pGeom())),
+        )
+        val persistedObsoleteQuest = osmQuest(NotApplicableQuestType, NODE, element.id)
+        every { db.getAllForElements(listOf(element.key)) } returns listOf(persistedObsoleteQuest)
+        every { db.getAllForElements(emptyList()) } returns emptyList()
+        every { mapDataSource.getMapDataWithGeometry(any()) } returns mapData
+        every { notesSource.getAllPositions(any()) } returns emptyList()
+
+        mapDataListener.onUpdated(mapData, emptyList())
+
+        val expectedDeletedQuestKeys = listOf(
+            persistedObsoleteQuest.key,
+            osmQuestKey(NODE, element.id, ComplexQuestTypeApplicableToNode42.name),
+            osmQuestKey(NODE, element.id, ApplicableQuestTypeNotInAnyCountry.name),
+        )
+        verify { db.deleteAll(listOf(persistedObsoleteQuest.key)) }
+        verify {
+            listener.onUpdated(
+                added = any(),
+                deleted = matches { it.containsExactlyInAnyOrder(expectedDeletedQuestKeys) },
+            )
+        }
+    }
+
+    @Test fun `dynamic update does not delete quest that remains applicable`() {
+        every { prefs.getBoolean(Prefs.DYNAMIC_QUEST_CREATION, false) } returns true
+        val element = node(1, tags = mapOf("a" to "b"))
+        val mapData = MutableMapDataWithGeometry(
+            listOf(element),
+            listOf(ElementGeometryEntry(NODE, element.id, pGeom())),
+        )
+        every { db.getAllForElements(listOf(element.key)) } returns emptyList()
+        every { db.getAllForElements(emptyList()) } returns emptyList()
+        every { mapDataSource.getMapDataWithGeometry(any()) } returns mapData
+        every { notesSource.getAllPositions(any()) } returns emptyList()
+
+        mapDataListener.onUpdated(mapData, emptyList())
+
+        val applicableQuestKey = osmQuestKey(NODE, element.id, ApplicableQuestType.name)
+        verify {
+            listener.onUpdated(
+                added = any(),
+                deleted = matches { applicableQuestKey !in it },
             )
         }
     }

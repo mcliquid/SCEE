@@ -200,7 +200,7 @@ class MainBottomSheetViewModelImpl(
 
     private fun showOsmQuest(questKey: OsmQuestKey) {
         val element = mapDataSource.get(questKey.elementType, questKey.elementId) ?: return
-        val quest = osmQuestSource.get(questKey) ?: return
+        val quest = visibleQuestsSource.get(questKey) as? OsmQuest ?: return
         shownBottomSheet.value = ShownBottomSheet.OsmQuest(quest, element)
     }
 

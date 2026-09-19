@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.data.osmnotes.edits
 
+import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementIdUpdate
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
@@ -25,9 +26,6 @@ import kotlinx.coroutines.launch
 import kotlinx.io.files.FileSystem
 import kotlinx.io.files.Path
 import java.io.File
-import java.time.Instant
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 class NoteEditsControllerImpl(
     private val editsDB: NoteEditsDao,
@@ -158,19 +156,9 @@ class NoteEditsControllerImpl(
         }
     }
 
-    // there is some xmlwriter, and even gpxTrackWriter
-    // maybe use this instead of the current ugly things, probably less prone to bugs caused by weird characters
     private suspend fun createGpxNote(note: String, imagePaths: List<String>, position: LatLon, recordedTrack: List<Trackpoint>?) {
         gpxNotesDir.createDirectories()
-        if (!gpxNotesFile.exists())
-            gpxNotesFile.writeString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<gpx \n" +
-                " xmlns=\"http://www.topografix.com/GPX/1/1\" \n" +
-                " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" +
-                " xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\">\n" +
-                "</gpx>")
-        // now delete the last 6 characters, which is <\gpx>
-        val oldText = gpxNotesFile.readString().dropLast(6)
+        val serializer = GpxNoteSerializer(ApplicationConstants.USER_AGENT)
         // save image file names (this is not nice, but better than not keeping any reference to them
         val imageText = if (imagePaths.isEmpty()) "" else
             "\n images used: ${imagePaths.joinToString(", ") { it.substringAfterLast(File.separator) }}"
@@ -181,43 +169,12 @@ class NoteEditsControllerImpl(
                 i += 1
             }
             trackFile = PlatformFile(gpxNotesDir, "track_$i.gpx")
-            val formatter = DateTimeFormatter
-                .ofPattern("yyyy_MM_dd'T'HH_mm_ss.SSSSSS'Z'")
-                .withZone(ZoneOffset.UTC)
-            val trackText = recordedTrack.map {
-                "     <trkpt lon=\"${it.position.longitude}\" lat=\"${it.position.latitude}\">\n" +
-                    "       <time>\"${formatter.format(Instant.ofEpochMilli(it.time))}\"</time>\n" +
-                    if (it.elevation == 0.0f)
-                        ""
-                    else {
-                        "       <ele>\"${it.elevation}\"</ele>\n" +
-                            "       <hdop>\"${it.accuracy}\"</hdop>\n"
-                    } +
-                    "     </trkpt>"
-            }
-            trackFile.writeString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<gpx \n" +
-                " xmlns=\"http://www.topografix.com/GPX/1/1\" \n" +
-                " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" \n" +
-                " xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd\">\n" +
-                "  <trk>\n" +
-                "    <name>${trackFile.name.substringBefore(".gpx")}</name>\n" +
-                "    <trkseg>\n" +
-                trackText.joinToString("\n") + "\n" +
-                "    </trkseg>\n" +
-                "  </trk>\n" +
-                "</gpx>")
+            trackFile.writeString(serializer.serializeTrack(trackFile.name.substringBefore(".gpx"), recordedTrack))
         } else trackFile = null
         val trackText = if (trackFile == null) "" else
             "\n attached track: ${trackFile.name}"
-        gpxNotesFile.writeString(oldText +" <wpt lon=\"" + position.longitude + "\" lat=\"" + position.latitude + "\">\n" +
-            "  <name>" + (note + trackText + imageText).replace("&","&amp;")
-            .replace("<","&lt;")
-            .replace(">","&gt;")
-            .replace("\"","&quot;")
-            .replace("'","&apos;") + "</name>\n" +
-            " </wpt>\n" +
-            "</gpx>")
+        val oldGpx = if (gpxNotesFile.exists()) gpxNotesFile.readString() else null
+        gpxNotesFile.writeString(serializer.appendWaypoint(oldGpx, position, note + trackText + imageText))
     }
 
     /* ------------------------------------ Listeners ------------------------------------------- */

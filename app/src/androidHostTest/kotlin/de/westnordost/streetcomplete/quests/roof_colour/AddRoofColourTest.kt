@@ -1,8 +1,11 @@
 package de.westnordost.streetcomplete.quests.roof_colour
 
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
 import de.westnordost.streetcomplete.quests.answerApplied
+import de.westnordost.streetcomplete.testutils.mockPrefs3
 import de.westnordost.streetcomplete.testutils.way
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -10,6 +13,10 @@ import kotlin.test.assertTrue
 
 class AddRoofColourTest {
     private val questType = AddRoofColour()
+
+    @BeforeTest fun setUp() {
+        Prefs.preferences = mockPrefs3()
+    }
 
     @Test
     fun `not applicable to roofs with colour already set`() {

@@ -1,6 +1,9 @@
 package de.westnordost.streetcomplete.data.osm.edits.upload
 
 import de.westnordost.streetcomplete.data.ConflictException
+import de.westnordost.streetcomplete.data.download.Downloader
+import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesController
+import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditAction
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditsController
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
@@ -9,7 +12,13 @@ import de.westnordost.streetcomplete.data.osm.mapdata.MapDataApiClient
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataController
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataUpdates
 import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditsController
+import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditsUploader
+import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.upload.OnUploadedChangeListener
+import de.westnordost.streetcomplete.data.upload.Uploader
+import de.westnordost.streetcomplete.data.upload.VersionIsBannedChecker
+import de.westnordost.streetcomplete.data.user.UserLoginController
+import de.westnordost.streetcomplete.data.user.UserLoginSource
 import de.westnordost.streetcomplete.data.user.statistics.StatisticsController
 import de.westnordost.streetcomplete.testutils.edit
 import de.westnordost.streetcomplete.testutils.mockPrefs2
@@ -27,9 +36,11 @@ import dev.mokkery.verify
 import dev.mokkery.verify.VerifyMode.Companion.exactly
 import dev.mokkery.verifyNoMoreCalls
 import dev.mokkery.verifySuspend
+import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 
@@ -41,8 +52,11 @@ class ElementEditsUploaderTest {
     private lateinit var singleUploader: ElementEditUploader
     private lateinit var mapDataApi: MapDataApiClient
     private lateinit var statisticsController: StatisticsController
+    private lateinit var downloader: Downloader
+    private lateinit var externalSourceQuestController: ExternalSourceQuestController
 
     private lateinit var uploader: ElementEditsUploader
+    private lateinit var parentUploader: Uploader
     private lateinit var listener: OnUploadedChangeListener
 
     @BeforeTest fun setUp() {
@@ -53,18 +67,39 @@ class ElementEditsUploaderTest {
         singleUploader = mock()
         mapDataApi = mock()
         statisticsController = mock()
+        downloader = mock {
+            every { isDownloadInProgress } returns false
+        }
+        externalSourceQuestController = mock()
 
         listener = mock()
 
-        uploader = ElementEditsUploader(elementEditsController, noteEditsController, mapDataController, singleUploader, mapDataApi, statisticsController, mock(), mock(), mockPrefs2())
+        uploader = ElementEditsUploader(elementEditsController, noteEditsController, mapDataController, singleUploader, mapDataApi, statisticsController, downloader, externalSourceQuestController, mockPrefs2())
+        parentUploader = createParentUploader()
         uploader.uploadedChangeListener = listener
     }
 
-    @Test fun `cancel upload works`() = runBlocking {
-        val job = launch { /*uploader.upload(mock())*/ }
-        job.cancel()
+    @Test fun `cancel upload finishes current edit`() = runBlocking {
+        val edit = edit()
+        val updates = MapDataUpdates()
+        val job = launch(start = CoroutineStart.LAZY) { uploader.upload(parentUploader) }
+        every { elementEditsController.getOldestUnsynced() } sequentially {
+            returns(edit)
+            repeat { returns(null) }
+        }
+        everySuspend { singleUploader.upload(any(), any()) } calls {
+            job.cancel()
+            updates
+        }
+
+        job.start()
         job.join()
-        verifyNoMoreCalls(elementEditsController, mapDataController, singleUploader, statisticsController)
+
+        verify(exactly(1)) { elementEditsController.getOldestUnsynced() }
+        verify { elementEditsController.markSynced(edit, updates) }
+        verify { noteEditsController.updateElementIds(any()) }
+        verify { mapDataController.updateAll(updates) }
+        verify { statisticsController.addOne(any(), any()) }
     }
 
     @Test fun `upload works`() = runBlocking {
@@ -77,7 +112,7 @@ class ElementEditsUploaderTest {
         }
         everySuspend { singleUploader.upload(any(), any()) } returns updates
 
-//        uploader.upload(mock())
+        uploader.upload(parentUploader)
 
         verifySuspend { singleUploader.upload(edit, any()) }
         verify { listener.onUploaded(any(), any()) }
@@ -109,11 +144,12 @@ class ElementEditsUploaderTest {
         }
         everySuspend { singleUploader.upload(any(), any()) } throws ConflictException()
 
-//        uploader.upload(mock())
+        uploader.upload(parentUploader)
 
         verifySuspend { singleUploader.upload(edit, any()) }
         verify { listener.onDiscarded(any(), any()) }
 
+        verify { externalSourceQuestController.onSyncEditFailed(edit) }
         verify { elementEditsController.markSyncFailed(edit) }
         verifyNoMoreCalls(statisticsController)
 
@@ -124,4 +160,16 @@ class ElementEditsUploaderTest {
             ))
         }
     }
+
+    private fun createParentUploader() = Uploader(
+        NoteEditsUploader(mock(), mock(), mock(), mock(), mock(), mock()),
+        uploader,
+        DownloadedTilesController(mock()),
+        mock<UserLoginSource>(),
+        VersionIsBannedChecker(HttpClient(), "", ""),
+        UserLoginController(Preferences(mockPrefs2())),
+        Mutex(),
+        externalSourceQuestController,
+        mockPrefs2(),
+    )
 }

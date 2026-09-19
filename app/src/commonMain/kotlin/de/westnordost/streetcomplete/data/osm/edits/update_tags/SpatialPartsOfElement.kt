@@ -15,9 +15,9 @@ internal fun isGeometrySubstantiallyDifferent(element: Element, newElement: Elem
 
 private fun isNodeGeometrySubstantiallyDifferent(node: Node, newNode: Node) =
     /* Moving the node a distance beyond what would pass as adjusting the position within a large
-       building counts as substantial change. Also, the maximum distance should be not (much)
-       bigger than the usual GPS inaccuracy in the city.
-       Current value is equal to max move distance of the MoveNodeAction */
+       building counts as substantial change.
+       SCEE-mc intentionally uses a 5000 m threshold for this conflict check (strictly greater than).
+       That is independent of the MoveNode UI limit (MAX_MOVE_DISTANCE), which may be lower. */
     node.position.distanceTo(newNode.position) > 5000
 
 private fun isWayGeometrySubstantiallyDifferent(way: Way, newWay: Way): Boolean {

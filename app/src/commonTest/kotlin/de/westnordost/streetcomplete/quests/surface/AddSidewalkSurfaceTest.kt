@@ -1,15 +1,32 @@
 package de.westnordost.streetcomplete.quests.surface
 
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryDelete
+import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.quests.answerAppliedTo
+import de.westnordost.streetcomplete.testutils.inMemoryPrefs
 import de.westnordost.streetcomplete.testutils.way
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AddSidewalkSurfaceTest {
-    private val questType = AddSidewalkSurface()
+    private lateinit var questType: AddSidewalkSurface
+    private var previousPreferences: Preferences? = null
+
+    @BeforeTest fun setUp() {
+        // isApplicableTo reads Prefs.preferences via OsmFilterQuestType.filter
+        previousPreferences = runCatching { Prefs.preferences }.getOrNull()
+        Prefs.preferences = inMemoryPrefs()
+        questType = AddSidewalkSurface()
+    }
+
+    @AfterTest fun tearDown() {
+        previousPreferences?.let { Prefs.preferences = it }
+    }
 
     @Test fun `not applicable to road with separate sidewalks`() {
         assertIsNotApplicable("sidewalk" to "separate")

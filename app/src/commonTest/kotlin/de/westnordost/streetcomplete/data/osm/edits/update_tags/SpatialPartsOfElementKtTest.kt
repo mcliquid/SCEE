@@ -12,18 +12,28 @@ import kotlin.test.Test
 
 internal class SpatialPartsOfElementKtTest {
 
+    // SCEE-mc conflict threshold is 5000 m with a strict greater-than comparison
+    // (distance > 5000). Exact boundary (5000 m) is therefore not "moved too much".
+
     @Test
-    fun `node moved too much`() {
+    fun `node moved clearly below 5000 m is not substantially different`() {
         val n1 = node(pos = p(0.0, 0.0))
-        val n2 = n1.copy(position = n1.position.translate(50.0, 0.0))
-        assertTrue(isGeometrySubstantiallyDifferent(n1, n2))
+        val n2 = n1.copy(position = n1.position.translate(4999.0, 0.0))
+        assertFalse(isGeometrySubstantiallyDifferent(n1, n2))
     }
 
     @Test
-    fun `node moved only a little`() {
+    fun `node moved exactly 5000 m is not substantially different`() {
         val n1 = node(pos = p(0.0, 0.0))
-        val n2 = n1.copy(position = n1.position.translate(10.0, 0.0))
+        val n2 = n1.copy(position = n1.position.translate(5000.0, 0.0))
         assertFalse(isGeometrySubstantiallyDifferent(n1, n2))
+    }
+
+    @Test
+    fun `node moved clearly above 5000 m is substantially different`() {
+        val n1 = node(pos = p(0.0, 0.0))
+        val n2 = n1.copy(position = n1.position.translate(5001.0, 0.0))
+        assertTrue(isGeometrySubstantiallyDifferent(n1, n2))
     }
 
     @Test

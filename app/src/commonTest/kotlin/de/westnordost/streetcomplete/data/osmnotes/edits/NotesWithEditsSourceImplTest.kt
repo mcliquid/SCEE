@@ -206,9 +206,14 @@ class NotesWithEditsSourceImplTest {
     fun getAllPositions() {
         val ps1 = listOf(p(3.0, 2.0), p(1.0, 3.0))
         val ps2 = listOf(p(3.0, 2.0), p(5.0, 1.0))
+        val bbox = bbox(0.0, 0.0, 6.0, 4.0)
 
-        every { noteController.getAllPositions(any()) } returns ps1
-        every { noteEditsSource.getAllUnsyncedPositions(any()) } returns ps2
+        every { noteController.getAll(any<BoundingBox>()) } returns ps1.mapIndexed { index, position ->
+            note(id = index.toLong() + 1, position = position)
+        }
+        every { noteEditsSource.getAllUnsynced(any()) } returns ps2.mapIndexed { index, position ->
+            noteEdit(noteId = -index.toLong() - 1, action = NoteEditAction.CREATE, pos = position)
+        }
 
         val positions = src.getAllPositions(bbox)
 
@@ -238,6 +243,7 @@ class NotesWithEditsSourceImplTest {
 
     @Test
     fun `getAll returns updated notes`() {
+        val bbox = bbox(0.0, 0.0, 13.0, 4.0)
         every { noteController.getAll(any<BoundingBox>()) } returns listOf(
             note(id = 1, position = p(1.0, 2.0), timestamp = 10, comments = listOf(
                 comment("test", NoteComment.Action.OPENED, timestamp = 100)

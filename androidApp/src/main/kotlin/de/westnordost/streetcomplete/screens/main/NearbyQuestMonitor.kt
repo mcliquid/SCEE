@@ -189,4 +189,4 @@ private const val FOUND_NOTIFICATION_ID = 16540685
 private const val MONITOR_CHANNEL_ID = "quest_monitor"
 private const val FOUND_CHANNEL_ID = "quest_found"
 
-private fun Location.toLatLon() = LatLon(longitude, longitude)
+private fun Location.toLatLon() = LatLon(latitude, longitude)

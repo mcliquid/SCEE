@@ -81,9 +81,9 @@ class MapDataApiClientImplTest {
         assertTrue(hamburg.relations.isNotEmpty())
     }
 
-    @Test fun `getMap does not return relations of ignored type`(): Unit = runBlocking {
+    @Test fun `getMap does not return ignored relations`(): Unit = runBlocking {
         val hamburg = liveClient.getMap(AREA_NEAR_BUS_STATION, ApplicationConstants::ignoreRelation)
-        assertTrue(hamburg.relations.none { it.tags["type"] == "route" })
+        assertTrue(hamburg.relations.none { ApplicationConstants.ignoreRelation(it.tags, it.members.size) })
     }
 
     @Test fun `getMap fails when bbox crosses 180th meridian`(): Unit = runBlocking {

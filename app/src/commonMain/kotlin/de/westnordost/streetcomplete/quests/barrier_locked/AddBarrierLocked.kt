@@ -100,12 +100,19 @@ class AddBarrierLocked : OsmElementQuestType<BarrierLockedAnswer> {
             }
     }
 
-    override fun isApplicableTo(element: Element): Boolean = elementFilter.matches(element)
+    override fun isApplicableTo(element: Element): Boolean? {
+        if (!elementFilter.matches(element)) return false
+        // Matching nodes need surrounding connected-way data for access-boundary suppression.
+        // Returning null makes OsmQuestController load map data and use getApplicableElements.
+        if (element is Node) return null
+        // Matching ways have no surrounding-data rule; filter match is definitive.
+        return true
+    }
 
     override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> {
-        val base = mapData.filter(elementFilter).asIterable()
+        val filteredElements = mapData.filter(elementFilter).asIterable()
 
-        // Build a lookup from node id to the ways that are connected to it
+        // Build a lookup from node id to the highway ways that are connected to it
         val waysByNodeId = mutableMapOf<Long, MutableList<Way>>()
         for (way in mapData.ways) {
             if (way.tags["highway"] == null) continue // restrict to highway ways for relevance
@@ -114,7 +121,7 @@ class AddBarrierLocked : OsmElementQuestType<BarrierLockedAnswer> {
             }
         }
 
-        return base
+        val nodeResults = filteredElements
             .filterIsInstance<Node>()
             .filter { node ->
                 val connectedWays = waysByNodeId[node.id].orEmpty()
@@ -137,6 +144,11 @@ class AddBarrierLocked : OsmElementQuestType<BarrierLockedAnswer> {
                 // and exactly one connected way has no access tag.
                 !(restrictedCount == 1 && noAccessTagCount == 1)
             }
+
+        // Ways matching the filter are applicable as-is (no node-specific highway logic).
+        val wayResults = filteredElements.filterIsInstance<Way>()
+
+        return nodeResults + wayResults
     }
 
     override fun applyAnswerTo(answer: BarrierLockedAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {

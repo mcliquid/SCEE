@@ -1,10 +1,28 @@
 package de.westnordost.streetcomplete.osm.things
 
+import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.data.preferences.Preferences
+import de.westnordost.streetcomplete.testutils.inMemoryPrefs
 import de.westnordost.streetcomplete.testutils.node
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ThingsKtTest {
+
+    private var previousPreferences: Preferences? = null
+
+    @BeforeTest fun setUp() {
+        // isThing() reads the global Prefs.preferences.expertMode, so it must be initialized
+        previousPreferences = runCatching { Prefs.preferences }.getOrNull()
+        Prefs.preferences = inMemoryPrefs()
+    }
+
+    @AfterTest fun tearDown() {
+        // restore whatever (if anything) was set before, so no global state leaks between tests
+        previousPreferences?.let { Prefs.preferences = it }
+    }
 
     @Test fun `disused bench matches`() {
         val node = node(tags = mapOf("disused:amenity" to "bench"))

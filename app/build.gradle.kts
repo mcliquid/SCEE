@@ -278,6 +278,8 @@ kotlin {
 
                 implementation("io.ktor:ktor-client-mock:3.5.1")
                 implementation("androidx.sqlite:sqlite-bundled:2.7.0")
+                // in-memory ObservableSettings (MapSettings) for deterministic preference fixtures
+                implementation("com.russhwolf:multiplatform-settings-test:1.3.0")
             }
         }
         getByName("androidHostTest") {

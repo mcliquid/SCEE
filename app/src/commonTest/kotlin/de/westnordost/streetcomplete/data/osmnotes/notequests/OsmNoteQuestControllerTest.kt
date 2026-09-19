@@ -7,7 +7,7 @@ import de.westnordost.streetcomplete.data.user.UserDataSource
 import de.westnordost.streetcomplete.data.user.UserLoginSource
 import de.westnordost.streetcomplete.testutils.bbox
 import de.westnordost.streetcomplete.testutils.comment
-import de.westnordost.streetcomplete.testutils.mockPrefs3
+import de.westnordost.streetcomplete.testutils.inMemoryPrefs
 import de.westnordost.streetcomplete.testutils.note
 import de.westnordost.streetcomplete.testutils.osmNoteQuest
 import de.westnordost.streetcomplete.testutils.p
@@ -50,7 +50,7 @@ class OsmNoteQuestControllerTest {
                 userLoginListener = listener
             }
         }
-        prefs = mockPrefs3()
+        prefs = inMemoryPrefs()
 
         listener = mock()
 
@@ -74,8 +74,8 @@ class OsmNoteQuestControllerTest {
     }
 
     @Test fun `get note quest with comment from user returns non-null if reallyAllNotes`() {
-        every { prefs.reallyAllNotes } returns true
-        every { prefs.showAllNotes } returns true
+        prefs.reallyAllNotes = true
+        prefs.showAllNotes = true
         every { noteSource.get(1) } returns note(comments = listOf(
             comment(text = "test?", user = User(id = 100, "Blaubär")),
             comment(text = "test", user = User(id = 1, "Blubbi"))
@@ -137,7 +137,7 @@ class OsmNoteQuestControllerTest {
 
     @Test fun `get quest not phrased as question returns null`() {
         every { noteSource.get(1) } returns note(comments = listOf(comment(text = "test")))
-        every { prefs.showAllNotes } returns false
+        prefs.showAllNotes = false
 
         assertNull(ctrl.get(1))
     }
@@ -149,7 +149,7 @@ class OsmNoteQuestControllerTest {
                 position = p(1.0, 1.0),
                 comments = listOf(comment(text = "test?"))
             )
-        every { prefs.showAllNotes } returns false
+        prefs.showAllNotes = false
 
         assertEquals(osmNoteQuest(1, p(1.0, 1.0)), ctrl.get(1))
     }
@@ -162,7 +162,7 @@ class OsmNoteQuestControllerTest {
         every { noteSource.get(5) } returns note(5, comments = listOf(comment(text = "Ethiopian question mark: ፧")))
         every { noteSource.get(6) } returns note(6, comments = listOf(comment(text = "Vai question mark: ꘏")))
         every { noteSource.get(7) } returns note(7, comments = listOf(comment(text = "full width question mark: ？")))
-        every { prefs.showAllNotes } returns false
+        prefs.showAllNotes = false
 
         assertEquals(1, ctrl.get(1)?.id)
         assertEquals(2, ctrl.get(2)?.id)
@@ -180,7 +180,7 @@ class OsmNoteQuestControllerTest {
                 position = p(1.0, 1.0),
                 comments = listOf(comment(text = "test #surveyme"))
             )
-        every { prefs.showAllNotes } returns false
+        prefs.showAllNotes = false
 
         assertEquals(osmNoteQuest(1, p(1.0, 1.0)), ctrl.get(1))
     }
@@ -192,7 +192,7 @@ class OsmNoteQuestControllerTest {
                 position = p(1.0, 1.0),
                 comments = listOf(comment(text = "test"))
             )
-        every { prefs.showAllNotes } returns true
+        prefs.showAllNotes = true
 
         assertEquals(osmNoteQuest(1, p(1.0, 1.0)), ctrl.get(1))
     }
@@ -204,7 +204,7 @@ class OsmNoteQuestControllerTest {
         val notes = listOf(note(1), note(2), note(3))
 
         every { noteSource.getAll(bbox) } returns notes
-        every { prefs.showAllNotes } returns true
+        prefs.showAllNotes = true
 
         val expectedQuests = notes.map { osmNoteQuest(it.id, it.position) }
 
@@ -225,7 +225,7 @@ class OsmNoteQuestControllerTest {
     }
 
     @Test fun `calls onUpdated when notes changed`() {
-        every { prefs.showAllNotes } returns true
+        prefs.showAllNotes = true
 
         noteUpdatesListener.onUpdated(
             added = listOf(note(1)),

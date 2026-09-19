@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.data.user.statistics
 
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.user.UserLoginSource
+import de.westnordost.streetcomplete.testutils.inMemoryPrefs
 import de.westnordost.streetcomplete.testutils.p
 import de.westnordost.streetcomplete.util.countryboundaries.CountryBoundaries
 import dev.mokkery.answering.calls
@@ -40,7 +41,7 @@ class StatisticsControllerImplTest {
         currentWeekCountryStatisticsDao = mock()
         activeDatesDao = mock()
         countryBoundaries = mock()
-        prefs = mock()
+        prefs = inMemoryPrefs()
         listener = mock()
 
         userLoginSource = mock {
@@ -84,7 +85,7 @@ class StatisticsControllerImplTest {
 
     @Test fun `adding one one day later`() {
         every { countryBoundaries.getIds(any()) } returns listOf()
-        every { prefs.userLastTimestampActive } returns 0
+        prefs.userLastTimestampActive = 0
 
         statisticsController.addOne(questA, p(0.0, 0.0))
 
@@ -109,7 +110,7 @@ class StatisticsControllerImplTest {
 
     @Test fun `subtracting one one day later`() {
         every { countryBoundaries.getIds(any()) } returns listOf()
-        every { prefs.userLastTimestampActive } returns 0
+        prefs.userLastTimestampActive = 0
 
         statisticsController.subtractOne(questA, p(0.0, 0.0))
 
@@ -122,21 +123,28 @@ class StatisticsControllerImplTest {
 
     @Test fun `mark as not synchronized on login`() {
         userLoginListener.onLoggedIn()
-        verify { prefs.statisticsSynchronizedOnce = false }    }
+        assertEquals(false, prefs.statisticsSynchronizedOnce)
+    }
 
     @Test fun `clear on logout`() {
+        // set some non-default user statistics that clearUserStatistics() is expected to reset
+        prefs.userDaysActive = 5
+        prefs.userGlobalRank = 5
+
         userLoginListener.onLoggedOut()
         verify { editTypeStatisticsDao.clear() }
         verify { countryStatisticsDao.clear() }
         verify { currentWeekCountryStatisticsDao.clear() }
         verify { currentWeekEditTypeStatisticsDao.clear() }
         verify { activeDatesDao.clear() }
-        verify { prefs.clearUserStatistics() }
+        // prefs.clearUserStatistics() resets the user statistics back to their defaults
+        assertEquals(0, prefs.userDaysActive)
+        assertEquals(-1, prefs.userGlobalRank)
         verify { listener.onCleared() }
     }
 
     @Test fun `update all`() {
-        every { prefs.statisticsSynchronizedOnce } returns false
+        prefs.statisticsSynchronizedOnce = false
         statisticsController.updateAll(Statistics(
             types = listOf(
                 EditTypeStatistics(questA, 123),
@@ -195,13 +203,13 @@ class StatisticsControllerImplTest {
                 LocalDate.parse("1888-01-02")
             ))
         }
-        verify { prefs.userActiveDatesRange = 12 }
-        verify { prefs.userDaysActive = 333 }
-        verify { prefs.isSynchronizingStatistics = false }
-        verify { prefs.userGlobalRank = 999 }
-        verify { prefs.userGlobalRankCurrentWeek = 111 }
-        verify { prefs.userLastTimestampActive = 9999999 }
-        verify { prefs.statisticsSynchronizedOnce = true }
+        assertEquals(12, prefs.userActiveDatesRange)
+        assertEquals(333, prefs.userDaysActive)
+        assertEquals(false, prefs.isSynchronizingStatistics)
+        assertEquals(999, prefs.userGlobalRank)
+        assertEquals(111, prefs.userGlobalRankCurrentWeek)
+        assertEquals(9999999L, prefs.userLastTimestampActive)
+        assertEquals(true, prefs.statisticsSynchronizedOnce)
         verify { listener.onUpdatedAll(true) }
     }
 }

@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.testutils
 
 import android.content.SharedPreferences
+import com.russhwolf.settings.MapSettings
 import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import dev.mokkery.answering.calls
@@ -43,3 +44,16 @@ fun mockPrefs2(): ObservableSettings {
 
 // actually only the ObservableSettings are mocked, but ok for now
 fun mockPrefs3() = Preferences(mockPrefs2())
+
+/**
+ * A real [Preferences] instance backed by deterministic in-memory [MapSettings].
+ *
+ * Unlike [mockPrefs3] (which wraps a mocked [ObservableSettings] that cannot store values), this
+ * returns a fully functional wrapper:
+ * - reads return the production defaults until a value is explicitly assigned,
+ * - writes are stored and read back normally (so tests can assign preferences the usual way),
+ * - preference change listeners fire just like in production.
+ *
+ * Each call returns a fresh, isolated instance, so no state leaks between tests.
+ */
+fun inMemoryPrefs(): Preferences = Preferences(MapSettings())

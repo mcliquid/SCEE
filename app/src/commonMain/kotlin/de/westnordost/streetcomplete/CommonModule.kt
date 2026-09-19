@@ -617,7 +617,7 @@ val commonModule = module {
     }
 
     viewModel<EditHistoryViewModel> {
-        EditHistoryViewModelImpl(get(), get(), get())
+        EditHistoryViewModelImpl(get(), get(), get(), get())
     }
 
     viewModel<MainBottomSheetViewModel> {

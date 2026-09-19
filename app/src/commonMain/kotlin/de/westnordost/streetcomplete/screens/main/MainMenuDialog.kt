@@ -11,14 +11,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.ButtonColors
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Icon
+import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,7 +78,7 @@ fun MainMenuDialog(
     isLoggedIn: Boolean,
     indexInTeam: Int?,
     unsyncedEditsCount: Int?,
-    isUploadingOrDownloading: Boolean,
+    isUploading: Boolean,
     modifier: Modifier = Modifier,
     shape: Shape = MaterialTheme.shapes.medium,
     backgroundColor: Color = MaterialTheme.colors.surface,
@@ -132,7 +135,7 @@ fun MainMenuDialog(
                                 }
                             },
                             text = stringResource(Res.string.action_upload),
-                            enabled = !isUploadingOrDownloading,
+                            enabled = isManualUploadEnabled(isUploading),
                         )
                     }
                     if (indexInTeam == null) {
@@ -186,7 +189,7 @@ fun MainMenuDialog(
                             icon = { DownloadIcon() },
                             text = stringResource(Res.string.action_download),
                         )
-                        if (unsyncedEditsCount != null && !isUploadingOrDownloading) {
+                        if (unsyncedEditsCount != null) {
                             BigMenuButton(
                                 onClick = { onDismissRequest(); onClickUpload() },
                                 icon = {
@@ -198,6 +201,7 @@ fun MainMenuDialog(
                                     }
                                 },
                                 text = stringResource(Res.string.action_upload),
+                                enabled = isManualUploadEnabled(isUploading),
                             )
                         }
                         if (indexInTeam == null) {
@@ -239,20 +243,25 @@ private fun BigMenuButton(
     icon: @Composable () -> Unit,
     text: String,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     Column(
         modifier = modifier
             .width(160.dp)
-            .clickable { onClick() }
+            .clickable(enabled = enabled) { onClick() }
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        icon()
-        Text(
-            text = text,
-            style = MaterialTheme.typography.body1,
-            textAlign = TextAlign.Center
-        )
+        CompositionLocalProvider(
+            LocalContentAlpha provides if (enabled) ContentAlpha.high else ContentAlpha.disabled
+        ) {
+            icon()
+            Text(
+                text = text,
+                style = MaterialTheme.typography.body1,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
@@ -306,6 +315,6 @@ private fun PreviewMainMenuDialog() {
         isLoggedIn = true,
         indexInTeam = 0,
         unsyncedEditsCount = 122,
-        isUploadingOrDownloading = true,
+        isUploading = true,
     )
 }

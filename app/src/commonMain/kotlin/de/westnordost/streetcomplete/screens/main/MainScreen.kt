@@ -99,6 +99,7 @@ fun MainScreen(
     val messagesCount by viewModel.messagesCount.collectAsState()
 
     val isLoggedIn by viewModel.isLoggedIn.collectAsState()
+    val isUploading by viewModel.isUploading.collectAsState()
     val isUploadingOrDownloading by viewModel.isUploadingOrDownloading.collectAsState()
 
     val urlConfig by viewModel.urlConfig.collectAsState()
@@ -256,7 +257,7 @@ fun MainScreen(
                 },
 
                 hasEdits = hasEdits,
-                isUndoEnabled = !isUploadingOrDownloading,
+                isUndoEnabled = isMainUndoEnabled(isUploading),
                 onClickUndo = { editHistoryViewModel.showSidebar() },
 
                 metersPerDp = metersPerDp,
@@ -278,6 +279,7 @@ fun MainScreen(
             EditHistorySidebar(
                 editItems = editItems,
                 selectedEdit = selectedEdit,
+                isUploading = isUploading,
                 onSelectEdit = { editHistoryViewModel.select(it.key) },
                 onUndoEdit = { editHistoryViewModel.undo(it.key) },
                 onDismissRequest = { editHistoryViewModel.hideSidebar() },
@@ -346,7 +348,7 @@ fun MainScreen(
             isLoggedIn = isLoggedIn,
             indexInTeam = if (isTeamMode) indexInTeam else null,
             unsyncedEditsCount = if (!isAutoSync) unsyncedEditsCount else null,
-            isUploadingOrDownloading = isUploadingOrDownloading,
+            isUploading = isUploading,
             modifier = Modifier
                 .focusRequester(requester)
                 .focusable()

@@ -16,6 +16,8 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestHidden
 import de.westnordost.streetcomplete.data.preferences.Preferences
+import de.westnordost.streetcomplete.data.upload.UploadProgressSource
+import de.westnordost.streetcomplete.screens.main.isEditUndoEnabled
 import de.westnordost.streetcomplete.util.ktx.launch
 import de.westnordost.streetcomplete.util.ktx.toLocalDateTime
 import de.westnordost.streetcomplete.util.logs.Log
@@ -63,6 +65,7 @@ class EditHistoryViewModelImpl(
     private val mapDataSource: MapDataWithEditsSource,
     private val editHistoryController: EditHistoryController,
     private val prefs: Preferences,
+    private val uploadProgressSource: UploadProgressSource,
 ) : EditHistoryViewModel() {
 
     private val edits = MutableStateFlow<List<Edit>>(emptyList())
@@ -96,6 +99,8 @@ class EditHistoryViewModelImpl(
 
     override fun undo(editKey: EditKey) {
         launch(Dispatchers.IO) {
+            val edit = editHistoryController.get(editKey) ?: return@launch
+            if (!isEditUndoEnabled(edit, uploadProgressSource.isUploadInProgress)) return@launch
             editHistoryController.undo(editKey)
         }
     }

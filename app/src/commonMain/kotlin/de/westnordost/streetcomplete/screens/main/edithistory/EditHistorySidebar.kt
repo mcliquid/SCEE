@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.data.edithistory.Edit
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.resources.*
+import de.westnordost.streetcomplete.screens.main.isEditUndoEnabled
+import de.westnordost.streetcomplete.screens.main.isUnsyncedEditBlockedByUpload
 import de.westnordost.streetcomplete.ui.common.ToastPopup
 import de.westnordost.streetcomplete.ui.ktx.isItemAtIndexFullyVisible
 import de.westnordost.streetcomplete.ui.ktx.plus
@@ -61,6 +63,7 @@ import kotlin.time.Instant
 fun EditHistorySidebar(
     editItems: List<EditItem>,
     selectedEdit: Edit?,
+    isUploading: Boolean,
     onSelectEdit: (Edit) -> Unit,
     onUndoEdit: (Edit) -> Unit,
     onDismissRequest: () -> Unit,
@@ -94,7 +97,7 @@ fun EditHistorySidebar(
     }
 
     fun onClickUndoEdit(edit: Edit) {
-        if (edit.isUndoable) {
+        if (isEditUndoEnabled(edit, isUploading)) {
             scope.launch {
                 editElement = getEditElement(edit)
                 showUndoDialog = true
@@ -141,6 +144,7 @@ fun EditHistorySidebar(
                         onSelect = { onSelectEdit(editItem.edit) },
                         onUndo = { onClickUndoEdit(editItem.edit) },
                         edit = editItem.edit,
+                        undoEnabled = !isUnsyncedEditBlockedByUpload(editItem.edit, isUploading),
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -156,7 +160,13 @@ fun EditHistorySidebar(
                 showUndoDialog = false
                 editElement = null
             },
-            onConfirmed = { onUndoEdit(selectedEdit) }
+            onConfirmed = {
+                if (isEditUndoEnabled(selectedEdit, isUploading)) {
+                    onUndoEdit(selectedEdit)
+                } else {
+                    showUndoNotAvailable = true
+                }
+            }
         )
     }
 

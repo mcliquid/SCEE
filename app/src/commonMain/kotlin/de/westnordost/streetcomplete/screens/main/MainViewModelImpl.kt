@@ -302,7 +302,7 @@ class MainViewModelImpl(
         awaitClose { uploadProgressSource.removeListener(listener) }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, uploadProgressSource.isUploadInProgress)
 
-    private val isDownloading: StateFlow<Boolean> = callbackFlow {
+    override val isDownloading: StateFlow<Boolean> = callbackFlow {
         val listener = object : DownloadProgressSource.Listener {
             override fun onStarted() { trySend(true) }
             override fun onFinished() { trySend(false) }
@@ -312,7 +312,9 @@ class MainViewModelImpl(
     }.stateIn(viewModelScope, SharingStarted.Eagerly, downloadProgressSource.isDownloadInProgress)
 
     override val isUploadingOrDownloading: StateFlow<Boolean> =
-        combine(isUploading, isDownloading) { it1, it2 -> it1 || it2 }
+        combine(isUploading, isDownloading) { uploading, downloading ->
+            isSyncProgressVisible(uploading, downloading)
+        }
             .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     override val isUserInitiatedDownloadInProgress: Boolean

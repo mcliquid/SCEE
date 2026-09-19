@@ -66,6 +66,7 @@ abstract class MainViewModel : ViewModel() {
     abstract val unsyncedEditsCount: StateFlow<Int>
 
     abstract val isUploading: StateFlow<Boolean>
+    abstract val isDownloading: StateFlow<Boolean>
     abstract val isUploadingOrDownloading: StateFlow<Boolean>
 
     abstract val isUserInitiatedDownloadInProgress: Boolean

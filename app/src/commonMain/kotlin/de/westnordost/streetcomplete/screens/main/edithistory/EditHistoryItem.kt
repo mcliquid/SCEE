@@ -38,6 +38,7 @@ fun EditHistoryItem(
     onUndo: () -> Unit,
     edit: Edit,
     modifier: Modifier = Modifier,
+    undoEnabled: Boolean = true,
 ) {
     val backgroundColor = when {
         edit.isSynced == true -> MaterialTheme.colors.onSurface.copy(alpha = 0.1f)
@@ -64,7 +65,7 @@ fun EditHistoryItem(
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                MapButton(onClick = onUndo, contentPadding = 8.dp) { UndoIcon() }
+                MapButton(onClick = onUndo, enabled = undoEnabled, contentPadding = 8.dp) { UndoIcon() }
             }
         }
     }

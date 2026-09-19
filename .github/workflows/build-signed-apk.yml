@@ -27,10 +27,10 @@ jobs:
         -Pandroid.injected.signing.key.alias=${{ secrets.key_alias }}
         -Pandroid.injected.signing.key.password=${{ secrets.key_password }}
     - name: Rename APK
-      run: mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/SCEE-release-$(git log -n 1 --format='%h').apk
+      run: mv androidApp/build/outputs/apk/release/androidApp-release.apk androidApp/build/outputs/apk/release/SCEE-release-$(git log -n 1 --format='%h').apk
     - name: Archive APK
       uses: actions/upload-artifact@v4
       with:
         name: release-apk
-        path: app/build/outputs/apk/release/*.apk
+        path: androidApp/build/outputs/apk/release/*.apk
         retention-days: 14

@@ -38,7 +38,7 @@ class AddBarrierLocked : OsmElementQuestType<BarrierLockedAnswer> {
     // We keep nodes and ways because many barriers are mapped as ways in OSM.
     val elementFilter by lazy { """
         nodes, ways with
-          barrier ~ bump_gate|chain|door|gate|swing_gate|sliding_gate|sliding_beam|wicket_gate
+          barrier ~ bump_gate|chain|door|lift_gate|gate|swing_gate|sliding_gate|sliding_beam|wicket_gate
         and (
           !locked
           or locked = yes and locked older today -5 years

@@ -213,7 +213,8 @@ fun InsertNodeForm(
                 countryCode = countryInfo.countryOrSubdivisionCode,
                 officialLanguages = countryInfo.officialLanguages,
                 filterFn = { true },
-                codesOfDefaultFeatures = defaultFeatureIds.reversed()
+                codesOfDefaultFeatures = defaultFeatureIds.reversed(),
+                showKeyboardInitially = prefs.getBoolean(Prefs.CREATE_NODE_SHOW_KEYBOARD, true),
             )
         }
     }

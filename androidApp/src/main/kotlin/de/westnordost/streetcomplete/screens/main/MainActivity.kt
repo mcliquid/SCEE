@@ -355,7 +355,8 @@ class MainActivity :
                     countryCode = country,
                     officialLanguages = officialLanguages,
                     filterFn = { true },
-                    codesOfDefaultFeatures = defaultFeatureIds.reversed()
+                    codesOfDefaultFeatures = defaultFeatureIds.reversed(),
+                    showKeyboardInitially = prefs.getBoolean(Prefs.CREATE_NODE_SHOW_KEYBOARD, true),
                 )
             }
             if (currentTextIntentUri.value != null) {

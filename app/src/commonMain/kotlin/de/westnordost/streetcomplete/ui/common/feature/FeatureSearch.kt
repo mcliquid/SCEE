@@ -2,6 +2,8 @@ package de.westnordost.streetcomplete.ui.common.feature
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,10 +33,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.InterceptPlatformTextInput
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.PlatformTextInputInterceptor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import de.westnordost.osmfeatures.Feature
 import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.osmfeatures.GeometryType
@@ -60,6 +67,7 @@ fun FeatureSearch(
     searchMoreLanguages: Boolean = false,
     filterFn: (Feature) -> Boolean = { true },
     codesOfDefaultFeatures: List<String> = emptyList(),
+    showKeyboardInitially: Boolean = true,
 ) {
 
     val focusRequester = remember { FocusRequester() }
@@ -103,25 +111,11 @@ fun FeatureSearch(
     Column(
         modifier = modifier
     ) {
-        TextField(
-            value = search,
-            onValueChange = { search = it },
-            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
-            placeholder = {
-                Text(stringResource(Res.string.quest_shop_gone_replaced_answer_hint2))
-            },
-            leadingIcon = { SearchIcon() },
-            trailingIcon = {
-                if (search.isNotEmpty()) {
-                    IconButton(onClick = { search = "" }) { ClearIcon() }
-                }
-            },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions.Default.copy(
-                showKeyboardOnFocus = true,
-                imeAction = ImeAction.None,
-                hintLocales = LocaleList.current,
-            ),
+        FeatureSearchTextField(
+            search = search,
+            onSearchChange = { search = it },
+            focusRequester = focusRequester,
+            showKeyboardInitially = showKeyboardInitially,
         )
         Divider()
         if (features.isEmpty()) {
@@ -155,6 +149,66 @@ fun FeatureSearch(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun FeatureSearchTextField(
+    search: String,
+    onSearchChange: (String) -> Unit,
+    focusRequester: FocusRequester,
+    showKeyboardInitially: Boolean,
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val interactionSource = remember { MutableInteractionSource() }
+    val allowIme = remember { MutableStateFlow(showKeyboardInitially) }
+
+    if (!showKeyboardInitially) {
+        LaunchedEffect(interactionSource) {
+            interactionSource.interactions.collect { interaction ->
+                if (interaction is PressInteraction.Press) {
+                    allowIme.value = true
+                    keyboardController?.show()
+                }
+            }
+        }
+    }
+
+    val textField = @Composable {
+        TextField(
+            value = search,
+            onValueChange = onSearchChange,
+            modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
+            placeholder = {
+                Text(stringResource(Res.string.quest_shop_gone_replaced_answer_hint2))
+            },
+            leadingIcon = { SearchIcon() },
+            trailingIcon = {
+                if (search.isNotEmpty()) {
+                    IconButton(onClick = { onSearchChange("") }) { ClearIcon() }
+                }
+            },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions.Default.copy(
+                imeAction = ImeAction.None,
+                hintLocales = LocaleList.current,
+            ),
+            interactionSource = interactionSource,
+        )
+    }
+
+    if (showKeyboardInitially) {
+        textField()
+    } else {
+        InterceptPlatformTextInput(
+            interceptor = remember {
+                PlatformTextInputInterceptor { request, nextHandler ->
+                    allowIme.first { it }
+                    nextHandler.startInputMethod(request)
+                }
+            },
+            content = textField,
+        )
     }
 }
 

@@ -28,6 +28,7 @@ fun FeatureSearchDialog(
     officialLanguages: List<String> = emptyList(),
     filterFn: (Feature) -> Boolean = { true },
     codesOfDefaultFeatures: List<String> = emptyList(),
+    showKeyboardInitially: Boolean = true,
 ) {
     val prefs: Preferences = koinInject()
     val searchMoreLanguages = remember { prefs.getBoolean(Prefs.SEARCH_MORE_LANGUAGES, false) }
@@ -49,6 +50,7 @@ fun FeatureSearchDialog(
                         searchMoreLanguages = searchMoreLanguages,
                         filterFn = filterFn,
                         codesOfDefaultFeatures = codesOfDefaultFeatures,
+                        showKeyboardInitially = showKeyboardInitially,
                     )
                 }
             },

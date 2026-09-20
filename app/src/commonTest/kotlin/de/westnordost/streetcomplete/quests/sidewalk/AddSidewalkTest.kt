@@ -1,17 +1,34 @@
 package de.westnordost.streetcomplete.quests.sidewalk
 
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
+import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
+import de.westnordost.streetcomplete.testutils.inMemoryPrefs
 import de.westnordost.streetcomplete.testutils.p
 import de.westnordost.streetcomplete.testutils.way
 import de.westnordost.streetcomplete.util.math.translate
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AddSidewalkTest {
 
-    private val questType = AddSidewalk()
+    private lateinit var questType: AddSidewalk
+    private var previousPreferences: Preferences? = null
+
+    @BeforeTest fun setUp() {
+        previousPreferences = runCatching { Prefs.preferences }.getOrNull()
+        Prefs.preferences = inMemoryPrefs()
+        questType = AddSidewalk()
+    }
+
+    @AfterTest fun tearDown() {
+        previousPreferences?.let { Prefs.preferences = it }
+    }
 
     @Test fun `not applicable to road with sidewalk`() {
         val road = way(tags = mapOf(
@@ -144,5 +161,77 @@ class AddSidewalkTest {
         val mapData = TestMapDataWithGeometry(listOf(road))
         assertEquals(1, questType.getApplicableElements(mapData).toList().size)
         assertTrue(questType.isApplicableTo(road))
+    }
+
+    @Test fun `exposes quest settings`() {
+        assertTrue(AddSidewalk().hasQuestSettings)
+    }
+
+    @Test fun `untagged primary is not applicable when excluded from highway preference`() {
+        Prefs.preferences.putString(
+            "qs_AddSidewalk_highway_selection",
+            "residential|secondary|tertiary"
+        )
+        questType = AddSidewalk()
+
+        val road = way(tags = mapOf(
+            "highway" to "primary",
+            "lit" to "yes"
+        ))
+        val mapData = TestMapDataWithGeometry(listOf(road))
+        assertEquals(0, questType.getApplicableElements(mapData).toList().size)
+        assertFalse(questType.isApplicableTo(road))
+    }
+
+    @Test fun `untagged highway included in custom preference is applicable`() {
+        Prefs.preferences.putString(
+            "qs_AddSidewalk_highway_selection",
+            "service"
+        )
+        questType = AddSidewalk()
+
+        val road = way(tags = mapOf(
+            "highway" to "service",
+            "lit" to "yes"
+        ))
+        val mapData = TestMapDataWithGeometry(listOf(road))
+        assertEquals(1, questType.getApplicableElements(mapData).toList().size)
+        assertTrue(questType.isApplicableTo(road))
+    }
+
+    @Test fun `invalid sidewalk tagging remains applicable when highway is excluded from preference`() {
+        Prefs.preferences.putString(
+            "qs_AddSidewalk_highway_selection",
+            "residential"
+        )
+        questType = AddSidewalk()
+
+        val road = way(tags = mapOf(
+            "highway" to "primary",
+            "sidewalk" to "something"
+        ))
+        val mapData = TestMapDataWithGeometry(listOf(road))
+        assertEquals(1, questType.getApplicableElements(mapData).toList().size)
+        assertTrue(questType.isApplicableTo(road))
+    }
+
+    @Test fun `highway preference uses per-preset prefix`() {
+        Prefs.preferences.putBoolean(Prefs.QUEST_SETTINGS_PER_PRESET, true)
+        Prefs.preferences.putLong(Preferences.SELECTED_EDIT_TYPE_PRESET, 42)
+        Prefs.preferences.putString(
+            "42_qs_AddSidewalk_highway_selection",
+            "residential"
+        )
+        questType = AddSidewalk()
+
+        val excluded = way(tags = mapOf(
+            "highway" to "primary",
+            "lit" to "yes"
+        ))
+        val included = way(tags = mapOf(
+            "highway" to "residential"
+        ))
+        assertFalse(questType.isApplicableTo(excluded))
+        assertTrue(questType.isApplicableTo(included))
     }
 }

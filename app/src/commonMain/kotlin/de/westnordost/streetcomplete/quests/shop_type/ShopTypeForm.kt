@@ -28,6 +28,7 @@ fun ShopTypeForm(
     modifier: Modifier = Modifier,
     geometryType: GeometryType? = null,
     countryCode: String? = null,
+    officialLanguages: List<String> = emptyList(),
     filterFn: (Feature) -> Boolean = { true },
     codesOfDefaultFeatures: List<String> = emptyList(),
 ) {
@@ -48,6 +49,7 @@ fun ShopTypeForm(
                         featureDictionary = featureDictionary,
                         geometryType = geometryType,
                         countryCode = countryCode,
+                        officialLanguages = officialLanguages,
                         filterFn = filterFn,
                         codesOfDefaultFeatures = codesOfDefaultFeatures,
                     )

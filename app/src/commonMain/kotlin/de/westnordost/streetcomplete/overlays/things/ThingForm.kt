@@ -31,6 +31,7 @@ fun ThingForm(
     lastPickedFeatures: List<Feature>,
     element: Element?,
     countryCode: String?,
+    officialLanguages: List<String> = emptyList(),
     featureDictionary: FeatureDictionary,
     modifier: Modifier = Modifier,
     isEnabled: Boolean = true,
@@ -49,6 +50,7 @@ fun ThingForm(
                 featureDictionary = featureDictionary,
                 geometryType = element?.geometryType ?: GeometryType.POINT, // for new features: always POINT
                 countryCode = countryCode,
+                officialLanguages = officialLanguages,
                 filterFn = { it.toElement().isThing() },
                 codesOfDefaultFeatures = POPULAR_THING_FEATURE_IDS,
             )

@@ -43,6 +43,7 @@ fun FeaturesSelectionQuestForm(
     initialSelectedFeatures: List<Feature> = emptyList(),
     geometryType: GeometryType? = null,
     countryCode: String? = null,
+    officialLanguages: List<String> = emptyList(),
     filterFn: (Feature) -> Boolean = { true },
     codesOfDefaultFeatures: List<String> = emptyList(),
     featureDictionary: FeatureDictionary = koinInject(),
@@ -87,6 +88,7 @@ fun FeaturesSelectionQuestForm(
                     featureDictionary = featureDictionary,
                     geometryType = geometryType,
                     countryCode = countryCode,
+                    officialLanguages = officialLanguages,
                     // Ensure a preset cannot be selected twice
                     filterFn = { feature -> feature !in selectedFeatures && filterFn(feature) },
                     codesOfDefaultFeatures = codesOfDefaultFeatures

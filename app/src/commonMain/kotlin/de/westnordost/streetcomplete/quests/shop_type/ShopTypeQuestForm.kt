@@ -63,6 +63,7 @@ fun ShopTypeQuestForm(
             featureDictionary = featureDictionary,
             geometryType = element.geometryType,
             countryCode = countryInfo.countryOrSubdivisionCode,
+            officialLanguages = countryInfo.officialLanguages,
             filterFn = { it.toElement().isPlace() },
             codesOfDefaultFeatures = POPULAR_PLACE_FEATURE_IDS
         )

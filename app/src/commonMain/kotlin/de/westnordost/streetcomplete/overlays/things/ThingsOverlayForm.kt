@@ -122,6 +122,7 @@ import kotlin.time.Duration.Companion.milliseconds
             lastPickedFeatures = lastPickedFeatures,
             element = element,
             countryCode = countryInfo.countryOrSubdivisionCode,
+            officialLanguages = countryInfo.officialLanguages,
             featureDictionary = featureDictionary,
             // editing an existing feature is disabled because unlike shops, they don't just change
             // (e.g. a photo booth rarely transforms into a fountain). If something doesn't exist,

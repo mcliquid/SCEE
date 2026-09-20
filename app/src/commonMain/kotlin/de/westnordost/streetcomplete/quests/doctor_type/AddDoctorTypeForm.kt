@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.quests.doctor_type
 
 import androidx.compose.runtime.Composable
 import de.westnordost.osmfeatures.Feature
+import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.ui.common.quest.FeaturesSelectionQuestForm
@@ -26,10 +27,13 @@ val POPULAR_DOCTORS_FEATURE_IDS = listOf(
 fun AddDoctorTypeForm(
     on: (QuestAction<List<Feature>>) -> Unit,
     element: Element,
+    countryInfo: CountryInfo,
 ) {
     FeaturesSelectionQuestForm(
         on = on,
         geometryType = element.geometryType,
+        countryCode = countryInfo.countryOrSubdivisionCode,
+        officialLanguages = countryInfo.officialLanguages,
         filterFn = { (it.tags["amenity"] == "doctors" && it.tags["healthcare:speciality"] != null) },
         codesOfDefaultFeatures = POPULAR_DOCTORS_FEATURE_IDS
     )

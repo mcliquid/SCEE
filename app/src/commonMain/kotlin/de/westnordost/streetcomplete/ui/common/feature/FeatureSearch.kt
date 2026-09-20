@@ -56,6 +56,8 @@ fun FeatureSearch(
     modifier: Modifier = Modifier,
     geometryType: GeometryType? = null,
     countryCode: String? = null,
+    officialLanguages: List<String> = emptyList(),
+    searchMoreLanguages: Boolean = false,
     filterFn: (Feature) -> Boolean = { true },
     codesOfDefaultFeatures: List<String> = emptyList(),
 ) {
@@ -67,6 +69,9 @@ fun FeatureSearch(
 
     var search by remember { mutableStateOf("") }
     val languages = remember { getLanguagesForFeatureDictionary() }
+    val additionalLanguages = remember(languages, officialLanguages) {
+        languages.drop(1).filterNotNull() + officialLanguages
+    }
     val defaultFeatures = remember(codesOfDefaultFeatures, featureDictionary, languages, countryCode) {
         codesOfDefaultFeatures.mapNotNull { id ->
             featureDictionary.getById(
@@ -76,14 +81,20 @@ fun FeatureSearch(
             )
         }.filter(filterFn)
     }
-    val features = remember(search, featureDictionary, languages, countryCode, geometryType, filterFn, defaultFeatures) {
+    val features = remember(
+        search, featureDictionary, languages, additionalLanguages, searchMoreLanguages,
+        countryCode, geometryType, filterFn, defaultFeatures
+    ) {
         if (search.isNotEmpty()) {
-            featureDictionary.getByTerm(
-                search = search,
+            featureDictionary.searchFeaturesByTerm(
+                query = search,
                 languages = languages,
-                country = countryCode,
-                geometry = geometryType,
-            ).filter(filterFn).take(50).toList()
+                additionalLanguages = additionalLanguages,
+                searchMoreLanguages = searchMoreLanguages,
+                countryCode = countryCode,
+                geometryType = geometryType,
+                filterFn = filterFn,
+            )
         } else {
             defaultFeatures
         }
@@ -216,10 +227,6 @@ private fun IconFeaturesColumn(
         }
     }
 }
-
-// todo (from old dialog)
-//  optional position for local language
-//  but this requires countryInfos, which are currently Android only
 
 // todo: weird mix of pin icons, quest icons, temaki icons
 //  ideally all would be same style, especially avoid monochrome temaki icons

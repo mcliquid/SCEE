@@ -211,6 +211,7 @@ fun InsertNodeForm(
                 featureDictionary = featureDictionary,
                 geometryType = GeometryType.VERTEX,
                 countryCode = countryInfo.countryOrSubdivisionCode,
+                officialLanguages = countryInfo.officialLanguages,
                 filterFn = { true },
                 codesOfDefaultFeatures = defaultFeatureIds.reversed()
             )

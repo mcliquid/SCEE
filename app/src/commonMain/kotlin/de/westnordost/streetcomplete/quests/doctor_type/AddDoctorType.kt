@@ -30,7 +30,7 @@ class AddDoctorType() : OsmFilterQuestType<List<Feature>>() {
 
     @Composable
     override fun Form(on: (QuestAction<List<Feature>>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
-        AddDoctorTypeForm(on, element)
+        AddDoctorTypeForm(on, element, countryInfo)
     }
 
     override fun applyAnswerTo(answer: List<Feature>, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {

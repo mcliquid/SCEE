@@ -229,6 +229,7 @@ import kotlin.time.Duration.Companion.milliseconds
             },
             element = element,
             countryCode = countryInfo.countryOrSubdivisionCode,
+            officialLanguages = countryInfo.officialLanguages,
             featureDictionary = featureDictionary,
         )
     }

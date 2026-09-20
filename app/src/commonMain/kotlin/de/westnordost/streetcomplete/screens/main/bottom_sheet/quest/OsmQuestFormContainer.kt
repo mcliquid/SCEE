@@ -239,6 +239,7 @@ fun <T> OsmQuestFormContainer(
             featureDictionary = featureDictionary,
             geometryType = element.geometryType,
             countryCode = countryInfo.countryOrSubdivisionCode,
+            officialLanguages = countryInfo.officialLanguages,
         )
     }
     if (confirmDeletePoi) {

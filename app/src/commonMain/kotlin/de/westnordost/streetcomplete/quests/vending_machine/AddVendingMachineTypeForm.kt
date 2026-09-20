@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.quests.vending_machine
 
 import androidx.compose.runtime.Composable
 import de.westnordost.osmfeatures.Feature
+import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.ui.common.quest.FeaturesSelectionQuestForm
@@ -24,10 +25,13 @@ val POPULAR_VENDING_MACHINE_FEATURE_IDS = listOf(
 fun AddVendingMachineTypeForm(
     on: (QuestAction<List<Feature>>) -> Unit,
     element: Element,
+    countryInfo: CountryInfo,
 ) {
     FeaturesSelectionQuestForm(
         on = on,
         geometryType = element.geometryType,
+        countryCode = countryInfo.countryOrSubdivisionCode,
+        officialLanguages = countryInfo.officialLanguages,
         filterFn = { (it.tags["amenity"] == "vending_machine" && it.tags["vending"] != null) },
         codesOfDefaultFeatures = POPULAR_VENDING_MACHINE_FEATURE_IDS
     )

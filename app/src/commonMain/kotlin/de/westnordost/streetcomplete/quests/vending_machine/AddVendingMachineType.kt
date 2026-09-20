@@ -30,7 +30,7 @@ class AddVendingMachineType() : OsmFilterQuestType<List<Feature>>() {
 
     @Composable
     override fun Form(on: (QuestAction<List<Feature>>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
-        AddVendingMachineTypeForm(on, element)
+        AddVendingMachineTypeForm(on, element, countryInfo)
     }
 
     override fun getHighlightedElements(element: Element, mapData: MapDataWithGeometry) =

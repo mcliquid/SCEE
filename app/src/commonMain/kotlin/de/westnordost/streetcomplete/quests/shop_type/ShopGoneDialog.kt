@@ -30,6 +30,7 @@ fun ShopGoneDialog(
     modifier: Modifier = Modifier,
     geometryType: GeometryType? = null,
     countryCode: String? = null,
+    officialLanguages: List<String> = emptyList(),
 ) {
     var feature: Feature? by remember { mutableStateOf(null) }
     var option: ShopTypeFormOption? by remember { mutableStateOf(null) }
@@ -80,6 +81,7 @@ fun ShopGoneDialog(
                     featureDictionary = featureDictionary,
                     geometryType = geometryType,
                     countryCode = countryCode,
+                    officialLanguages = officialLanguages,
                     filterFn = { it.toElement().isPlace() },
                     codesOfDefaultFeatures = POPULAR_PLACE_FEATURE_IDS
                 )

@@ -47,6 +47,7 @@ fun PlaceForm(
     onLocalizedNamesChanged: (List<LocalizedName>) -> Unit,
     element: Element?,
     countryCode: String?,
+    officialLanguages: List<String> = emptyList(),
     featureDictionary: FeatureDictionary,
     modifier: Modifier = Modifier,
 ) {
@@ -65,6 +66,7 @@ fun PlaceForm(
             featureDictionary = featureDictionary,
             geometryType = element?.geometryType ?: GeometryType.POINT,
             countryCode = countryCode,
+            officialLanguages = officialLanguages,
             filterFn = { it.toElement().isPlace() || it.id == "shop/vacant" },
             codesOfDefaultFeatures = POPULAR_PLACE_FEATURE_IDS,
         )

@@ -44,6 +44,7 @@ import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.download.tiles.asBoundingBoxOfEnclosingTiles
+import de.westnordost.streetcomplete.data.meta.CountryInfos
 import de.westnordost.streetcomplete.data.edithistory.EditKey
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuest
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
@@ -175,6 +176,7 @@ class MainActivity :
     private val locationProvider: LocationProvider by inject()
     private val systemSettingsLauncher: SystemSettingsLauncher by inject()
     private val countryBoundaries: Lazy<CountryBoundaries> by inject(named("CountryBoundariesLazy"))
+    private val countryInfos: CountryInfos by inject()
     private val customQuestList: CustomQuestList by inject()
 
     private val viewModel by viewModel<MainViewModel>()
@@ -331,7 +333,9 @@ class MainActivity :
             )
 
             if (showAddPoiDialog) {
-                val country = countryBoundaries.value.getIds(lastLongPressPosition!!).firstOrNull()
+                val countryIds = countryBoundaries.value.getIds(lastLongPressPosition!!)
+                val country = countryIds.firstOrNull()
+                val officialLanguages = countryInfos.get(countryIds).officialLanguages
                 val defaultFeatureIds: List<String> = prefs.getString(Prefs.CREATE_POI_RECENT_FEATURE_IDS, "")
                     .split("§").filter { it.isNotBlank() && it != "shop" }
                     .ifEmpty { POPULAR_PLACE_FEATURE_IDS }
@@ -349,6 +353,7 @@ class MainActivity :
                     featureDictionary = featureDictionary.value,
                     geometryType = GeometryType.POINT,
                     countryCode = country,
+                    officialLanguages = officialLanguages,
                     filterFn = { true },
                     codesOfDefaultFeatures = defaultFeatureIds.reversed()
                 )

@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.quests.cycleway
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.meta.IncompleteCountryInfo
 import de.westnordost.streetcomplete.osm.cycleway.parseCyclewaySides
+import de.westnordost.streetcomplete.osm.cycleway.selectableOrNullValues
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
 import de.westnordost.streetcomplete.testutils.pGeom
 import de.westnordost.streetcomplete.testutils.way
@@ -173,6 +174,26 @@ class AddCyclewayTest {
             bulk = true,
             single = null,
         )
+    }
+
+    @Test fun `legacy opposite tagging makes both sides relevant`() {
+        for (legacyValue in listOf("opposite", "opposite_lane", "opposite_track")) {
+            val way = way(
+                tags = mapOf(
+                    "highway" to "primary",
+                    "oneway" to "yes",
+                    "cycleway" to legacyValue,
+                )
+            )
+            val cycleways = parseCyclewaySides(way.tags, false)!!
+                .selectableOrNullValues(countryInfo)
+
+            assertEquals(
+                CyclewaySideRelevance(left = true, right = true),
+                getCyclewaySideRelevance(way, cycleways, false),
+                legacyValue,
+            )
+        }
     }
 
     @Test fun `major reversed oneway only requires flow side`() {

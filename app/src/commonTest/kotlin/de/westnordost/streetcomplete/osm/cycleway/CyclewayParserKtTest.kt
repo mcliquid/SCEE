@@ -88,6 +88,71 @@ class CyclewayParserKtTest {
         )
     }
 
+    @Test fun `implicit directions follow motor oneway independent of side and traffic handedness`() {
+        assertEquals(
+            cycleway(TRACK to FORWARD, null),
+            parse("oneway" to "yes", "cycleway:left" to "track")
+        )
+        assertEquals(
+            cycleway(null, UNSPECIFIED_LANE to FORWARD),
+            parse("oneway" to "yes", "cycleway:right" to "lane")
+        )
+        assertEquals(
+            cycleway(null, TRACK to BACKWARD),
+            parse("oneway" to "-1", "cycleway:right" to "track")
+        )
+        assertEquals(
+            cycleway(null, TRACK to FORWARD),
+            parseForLeftHandTraffic("oneway" to "yes", "cycleway:right" to "track")
+        )
+        assertEquals(
+            cycleway(TRACK to BACKWARD, null),
+            parseForLeftHandTraffic("oneway" to "-1", "cycleway:left" to "track")
+        )
+    }
+
+    @Test fun `implicit directions on both sides and roundabouts follow motor oneway`() {
+        assertEquals(
+            cycleway(TRACK to FORWARD, TRACK to FORWARD),
+            parse("oneway" to "yes", "cycleway:both" to "track")
+        )
+        assertEquals(
+            cycleway(TRACK to BACKWARD, TRACK to BACKWARD),
+            parseForLeftHandTraffic("oneway" to "-1", "cycleway:both" to "track")
+        )
+        assertEquals(
+            cycleway(TRACK to FORWARD, null),
+            parse("junction" to "roundabout", "cycleway:left" to "track")
+        )
+    }
+
+    @Test fun `explicit facility directions override motor oneway direction`() {
+        assertEquals(
+            cycleway(UNSPECIFIED_LANE to BACKWARD, null),
+            parse(
+                "oneway" to "yes",
+                "cycleway:left" to "lane",
+                "cycleway:left:oneway" to "-1",
+            )
+        )
+        assertEquals(
+            cycleway(TRACK to BOTH, null),
+            parse(
+                "oneway" to "yes",
+                "cycleway:left" to "track",
+                "cycleway:left:oneway" to "no",
+            )
+        )
+        assertEquals(
+            cycleway(null, TRACK to FORWARD),
+            parse(
+                "oneway" to "-1",
+                "cycleway:right" to "track",
+                "cycleway:right:oneway" to "yes",
+            )
+        )
+    }
+
     @Test fun `fixed directions`() {
         assertEquals(
             cycleway(NONE to BACKWARD, NONE to BACKWARD),

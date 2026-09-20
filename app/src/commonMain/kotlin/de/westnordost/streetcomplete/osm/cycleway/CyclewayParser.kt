@@ -16,6 +16,7 @@ fun parseCyclewaySides(tags: Map<String, String>, isLeftHandTraffic: Boolean): S
     val isForwardOneway = isForwardOneway(tags)
     val isReversedOneway = isReversedOneway(tags)
     val isOneway = isReversedOneway || isForwardOneway
+    val onewayDirection = if (isOneway) Direction.from(tags) else null
     val isReverseSideRight = isReversedOneway xor isLeftHandTraffic
     val isOpposite = tags["cycleway"]?.startsWith("opposite") == true
     val isOnewayButNotForCyclists = isOneway && isNotOnewayForCyclists(tags, isLeftHandTraffic)
@@ -44,17 +45,29 @@ fun parseCyclewaySides(tags: Map<String, String>, isLeftHandTraffic: Boolean): S
         right = parseCyclewayForSide(expandedTags, true)
     }
 
-    val leftDir = parseDirectionForSide(expandedTags, false, isLeftHandTraffic)
-    val rightDir = parseDirectionForSide(expandedTags, true, isLeftHandTraffic)
+    var leftDir = parseDirectionForSide(expandedTags, left, false, isLeftHandTraffic, onewayDirection)
+    var rightDir = parseDirectionForSide(expandedTags, right, true, isLeftHandTraffic, onewayDirection)
+
+    // Legacy opposite* values explicitly describe contraflow even without a separate oneway tag.
+    if (isOpposite && onewayDirection != null) {
+        if (left != null && !expandedTags.containsKey("cycleway:left:oneway")) {
+            leftDir = onewayDirection.reverse()
+        }
+        if (right != null && !expandedTags.containsKey("cycleway:right:oneway")) {
+            rightDir = onewayDirection.reverse()
+        }
+    }
 
     /* if there is no cycleway in a direction but it is a oneway in the other direction but not
        for cyclists, we have a special selection for that */
     if (isOnewayButNotForCyclists) {
         if ((left == NONE || left == null) && !isReverseSideRight && rightDir != Direction.BOTH) {
             left = NONE_NO_ONEWAY
+            leftDir = onewayDirection!!.reverse()
         }
         if ((right == NONE || right == null) && isReverseSideRight && leftDir != Direction.BOTH) {
             right = NONE_NO_ONEWAY
+            rightDir = onewayDirection!!.reverse()
         }
     }
 
@@ -151,8 +164,10 @@ private fun parseCyclewayForSide(
 
 private fun parseDirectionForSide(
     tags: Map<String, String>,
+    cycleway: Cycleway?,
     isRight: Boolean,
-    isLeftHandTraffic: Boolean
+    isLeftHandTraffic: Boolean,
+    onewayDirection: Direction?,
 ): Direction {
     val sideVal = if (isRight) ":right" else ":left"
     val cyclewayKey = "cycleway$sideVal"
@@ -171,7 +186,10 @@ private fun parseDirectionForSide(
             else -> null
         }
     }
-    return explicitDirection ?: Direction.getDefault(isRight, isLeftHandTraffic)
+    val hasDirectionalFacility = cycleway != null && cycleway !in listOf(NONE, NONE_NO_ONEWAY, SEPARATE)
+    return explicitDirection
+        ?: onewayDirection?.takeIf { hasDirectionalFacility }
+        ?: Direction.getDefault(isRight, isLeftHandTraffic)
 }
 
 /** Returns the cycleway value using the given tags for the given side using other tags that imply

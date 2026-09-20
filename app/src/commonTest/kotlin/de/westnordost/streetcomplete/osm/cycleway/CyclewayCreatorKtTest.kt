@@ -13,6 +13,7 @@ import de.westnordost.streetcomplete.osm.oneway.Direction.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 
 class CyclewayCreatorKtTest {
 
@@ -742,6 +743,21 @@ class CyclewayCreatorKtTest {
         )
     }
 
+    @Test fun `parse and apply implicit oneway facility does not invent contraflow`() {
+        val originalTags = mapOf(
+            "oneway" to "yes",
+            "cycleway:left" to "track",
+        )
+        val parsed = parseCyclewaySides(originalTags, false)!!
+        val tagChanges = StringMapChangesBuilder(originalTags)
+
+        parsed.applyTo(tagChanges, false)
+
+        assertEquals(FORWARD, parsed.left?.direction)
+        assertNull(tagChanges["cycleway:left:oneway"])
+        assertNull(tagChanges["oneway:bicycle"])
+    }
+
     @Test fun `apply answer for one side in oneway when bare tag was set before`() {
         assertEquals(
             setOf(
@@ -767,6 +783,7 @@ class CyclewayCreatorKtTest {
                 StringMapEntryDelete("cycleway", "opposite_track"),
                 StringMapEntryDelete("cycleway:segregated", "yes"),
                 StringMapEntryAdd("cycleway:left", "track"),
+                StringMapEntryAdd("cycleway:left:oneway", "-1"),
                 StringMapEntryAdd("cycleway:left:segregated", "yes"),
                 StringMapEntryAdd("cycleway:right", "no"),
                 StringMapEntryAdd("oneway:bicycle", "no")
@@ -783,6 +800,7 @@ class CyclewayCreatorKtTest {
                 StringMapEntryDelete("cycleway:lane", "advisory"),
                 StringMapEntryAdd("cycleway:left", "lane"),
                 StringMapEntryAdd("cycleway:left:lane", "advisory"),
+                StringMapEntryAdd("cycleway:left:oneway", "-1"),
                 StringMapEntryAdd("cycleway:right", "no"),
                 StringMapEntryAdd("oneway:bicycle", "no")
             ),

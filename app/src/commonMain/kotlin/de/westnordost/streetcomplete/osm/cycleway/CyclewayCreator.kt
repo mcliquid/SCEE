@@ -78,6 +78,8 @@ private fun expandBareTags(tags: Tags, isLeftHandTraffic: Boolean) {
         tags["oneway:bicycle"] = "no"
     }
 
+    val convertsOppositeFacility =
+        cycleway.startsWith("opposite_") && !tags.containsKey("cycleway:$side")
     if (!tags.containsKey("cycleway:$side")) {
         tags["cycleway:$side"] = cycleway
             .removePrefix("opposite_") // opposite_track -> track etc.
@@ -86,6 +88,12 @@ private fun expandBareTags(tags: Tags, isLeftHandTraffic: Boolean) {
     tags.remove("cycleway")
     tags.expandBareTagIntoSide("cycleway", "lane", side)
     tags.expandBareTagIntoSide("cycleway", "oneway", side)
+    if (convertsOppositeFacility &&
+        !tags.containsKey("cycleway:$side:oneway") &&
+        !tags.containsKey("cycleway:both:oneway")
+    ) {
+        tags["cycleway:$side:oneway"] = Direction.from(tags).reverse().onewayValue
+    }
     tags.expandBareTagIntoSide("cycleway", "segregated", side)
 }
 
@@ -179,7 +187,8 @@ private fun CyclewayAndDirection.applyTo(tags: Tags, isRight: Boolean, isLeftHan
            - or the road is a oneway and the cycleway is on the contra-flow side
            - or it is already tagged (to correct it if need be)
          */
-        val defaultDirection = Direction.getDefault(isRight, isLeftHandTraffic)
+        val defaultDirection = Direction.from(tags).takeUnless { it == BOTH }
+            ?: Direction.getDefault(isRight, isLeftHandTraffic)
         val isDefaultDirection = defaultDirection == direction
         val roadDirection = Direction.from(tags)
         val isInContraflowOfOneway = roadDirection.isReverseOf(direction)

@@ -23,6 +23,7 @@ import de.westnordost.streetcomplete.osm.cycleway.isAmbiguous
 import de.westnordost.streetcomplete.osm.cycleway.parseCyclewaySides
 import de.westnordost.streetcomplete.osm.cycleway.selectableOrNullValues
 import de.westnordost.streetcomplete.osm.maxspeed.FILTER_IS_IMPLICIT_MAX_SPEED_BUT_NOT_SLOW_ZONE
+import de.westnordost.streetcomplete.osm.oneway.isNotOnewayForCyclists
 import de.westnordost.streetcomplete.osm.oneway.isReversedOneway
 import de.westnordost.streetcomplete.osm.surface.UNPAVED_SURFACES
 import de.westnordost.streetcomplete.resources.*
@@ -155,8 +156,7 @@ private val initialSurveyRoadsFilter by lazy { """
 
 private val likelyNoBicycleContraflow by lazy { """
     ways with
-      oneway:bicycle != no
-      and (
+      (
         oneway ~ yes|-1 and highway ~ primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|unclassified
         or dual_carriageway = yes
         or junction ~ roundabout|circular
@@ -176,7 +176,9 @@ internal fun getCyclewaySideRelevance(
     val contraflowSideIsRight = isReversedOneway(element.tags) xor isLeftHandTraffic
     val contraflowSide = if (contraflowSideIsRight) cycleways.right else cycleways.left
     val bothSidesAreRelevant =
-        contraflowSide != null || !likelyNoBicycleContraflow.matches(element)
+        contraflowSide != null ||
+        isNotOnewayForCyclists(element.tags, isLeftHandTraffic) ||
+        !likelyNoBicycleContraflow.matches(element)
     if (bothSidesAreRelevant) return CyclewaySideRelevance(left = true, right = true)
 
     return CyclewaySideRelevance(

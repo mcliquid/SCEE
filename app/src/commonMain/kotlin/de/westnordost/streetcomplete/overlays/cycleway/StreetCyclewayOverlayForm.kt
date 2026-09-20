@@ -32,6 +32,7 @@ import de.westnordost.streetcomplete.osm.bicycle_in_pedestrian_street.BicycleInP
 import de.westnordost.streetcomplete.osm.bicycle_in_pedestrian_street.BicycleInPedestrianStreetAllowedSign
 import de.westnordost.streetcomplete.osm.bicycle_in_pedestrian_street.BicycleInPedestrianStreetDesignatedSign
 import de.westnordost.streetcomplete.osm.bicycle_in_pedestrian_street.applyTo
+import de.westnordost.streetcomplete.osm.bicycle_in_pedestrian_street.hasConfirmedNoBicycleSign
 import de.westnordost.streetcomplete.osm.bicycle_in_pedestrian_street.parseBicycleInPedestrianStreet
 import de.westnordost.streetcomplete.osm.cycleway.Cycleway
 import de.westnordost.streetcomplete.osm.cycleway.CyclewayAndDirection
@@ -77,6 +78,7 @@ fun StreetCyclewayOverlayForm(
     }
     val originalBicycleBoulevard = remember(element) { parseBicycleBoulevard(element.tags) }
     val originalBicycleInPedestrianStreet = remember(element) { parseBicycleInPedestrianStreet(element.tags) }
+    val originalHasConfirmedNoBicycleSign = remember(element) { hasConfirmedNoBicycleSign(element.tags) }
 
     val geometryRotation = remember(geometry) { geometry.getOrientationOrZero() }
 
@@ -88,6 +90,9 @@ fun StreetCyclewayOverlayForm(
     }
     var bicycleInPedestrianStreet by rememberSerializable(originalBicycleInPedestrianStreet) {
         mutableStateOf(originalBicycleInPedestrianStreet)
+    }
+    var isNoBicycleSignConfirmed by rememberSerializable(originalHasConfirmedNoBicycleSign) {
+        mutableStateOf(originalHasConfirmedNoBicycleSign)
     }
     var selectionMode by remember { mutableStateOf(CyclewayFormSelectionMode.SELECT)  }
 
@@ -108,7 +113,12 @@ fun StreetCyclewayOverlayForm(
 
         sides.applyTo(tags, countryInfo.isLeftHandTraffic)
         bicycleBoulevard.applyTo(tags, countryInfo.countryCode)
-        bicycleInPedestrianStreet?.applyTo(tags)
+        if (
+            originalBicycleInPedestrianStreet != bicycleInPedestrianStreet ||
+            originalHasConfirmedNoBicycleSign != isNoBicycleSignConfirmed
+        ) {
+            bicycleInPedestrianStreet?.applyTo(tags)
+        }
 
         on(Edit(UpdateElementTagsAction(element, tags.create())))
     }
@@ -132,10 +142,14 @@ fun StreetCyclewayOverlayForm(
                     }
                 )
             }
-            if (bicycleInPedestrianStreet != BicycleInPedestrianStreet.NOT_SIGNED) {
+            if (
+                bicycleInPedestrianStreet != BicycleInPedestrianStreet.NOT_SIGNED ||
+                !isNoBicycleSignConfirmed
+            ) {
                 result.add(
                     AnswerItem(stringResource(Res.string.pedestrian_zone_no_sign)) {
                         bicycleInPedestrianStreet = BicycleInPedestrianStreet.NOT_SIGNED
+                        isNoBicycleSignConfirmed = true
                     }
                 )
             }
@@ -169,12 +183,14 @@ fun StreetCyclewayOverlayForm(
             cycleways.left != null ||
             cycleways.right != null ||
             originalBicycleBoulevard != bicycleBoulevard ||
-            originalBicycleInPedestrianStreet != bicycleInPedestrianStreet,
+            originalBicycleInPedestrianStreet != bicycleInPedestrianStreet ||
+            originalHasConfirmedNoBicycleSign != isNoBicycleSignConfirmed,
         hasChanges =
             cycleways.left != originalCycleway.left ||
             cycleways.right != originalCycleway.right ||
             originalBicycleBoulevard != bicycleBoulevard ||
-            originalBicycleInPedestrianStreet != bicycleInPedestrianStreet,
+            originalBicycleInPedestrianStreet != bicycleInPedestrianStreet ||
+            originalHasConfirmedNoBicycleSign != isNoBicycleSignConfirmed,
         onClickOk = {
             if (cycleways.wasNoOnewayForCyclistsButNowItIs(element.tags, countryInfo.isLeftHandTraffic)) {
                 confirmNotOnewayForCyclists = true

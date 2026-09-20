@@ -19,12 +19,16 @@ fun parseBicycleInPedestrianStreet(tags: Map<String, String>): BicycleInPedestri
     val bicycleSigned = tags["bicycle:signed"] == "yes"
     return when {
         tags["highway"] != "pedestrian" -> null
+        tags["bicycle:signed"] == "no" -> NOT_SIGNED
         tags["bicycle"] == "designated" -> DESIGNATED
         tags["bicycle"] in yesButNotDesignated && bicycleSigned -> ALLOWED
         tags["bicycle"] in noCycling && bicycleSigned -> NOT_ALLOWED
         else -> NOT_SIGNED
     }
 }
+
+internal fun hasConfirmedNoBicycleSign(tags: Map<String, String>): Boolean =
+    tags["highway"] == "pedestrian" && tags["bicycle:signed"] == "no"
 
 private val yesButNotDesignated = setOf(
     "yes", "permissive", "private", "destination", "customers", "permit"
@@ -53,7 +57,7 @@ fun BicycleInPedestrianStreet.applyTo(tags: Tags) {
         NOT_SIGNED -> {
             // only remove if designated before, it might still be allowed by legislation!
             if (tags["bicycle"] == "designated") tags.remove("bicycle")
-            tags.remove("bicycle:signed")
+            tags["bicycle:signed"] = "no"
         }
     }
 }

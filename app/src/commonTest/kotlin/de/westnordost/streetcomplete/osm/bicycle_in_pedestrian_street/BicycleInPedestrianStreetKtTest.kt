@@ -8,6 +8,8 @@ import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryMo
 import de.westnordost.streetcomplete.osm.bicycle_in_pedestrian_street.BicycleInPedestrianStreet.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class BicycleInPedestrianStreetKtTest {
 
@@ -19,6 +21,14 @@ class BicycleInPedestrianStreetKtTest {
         assertEquals(
             NOT_SIGNED,
             parseBicycleInPedestrianStreet(mapOf("highway" to "pedestrian"))
+        )
+        assertEquals(
+            NOT_SIGNED,
+            parseBicycleInPedestrianStreet(mapOf(
+                "highway" to "pedestrian",
+                "bicycle" to "designated",
+                "bicycle:signed" to "no",
+            ))
         )
         assertEquals(
             NOT_SIGNED,
@@ -131,26 +141,57 @@ class BicycleInPedestrianStreetKtTest {
 
     @Test fun `apply not signed`() {
         assertEquals(
-            setOf(),
+            setOf(
+                StringMapEntryAdd("bicycle:signed", "no"),
+            ),
             NOT_SIGNED.appliedTo(mapOf())
         )
         assertEquals(
             setOf(
-                StringMapEntryDelete("bicycle:signed", "yes"),
+                StringMapEntryModify("bicycle:signed", "yes", "no"),
             ),
             NOT_SIGNED.appliedTo(mapOf("bicycle:signed" to "yes"))
         )
         // bicycle=yes is not changed
         assertEquals(
-            setOf(),
+            setOf(
+                StringMapEntryAdd("bicycle:signed", "no"),
+            ),
             NOT_SIGNED.appliedTo(mapOf("bicycle" to "yes"))
         )
         assertEquals(
             setOf(
                 StringMapEntryDelete("bicycle", "designated"),
+                StringMapEntryAdd("bicycle:signed", "no"),
             ),
             NOT_SIGNED.appliedTo(mapOf("bicycle" to "designated"))
         )
+    }
+
+    @Test fun `not signed is persistable without changing bicycle access`() {
+        val tags = StringMapChangesBuilder(mapOf("highway" to "pedestrian"))
+
+        assertFalse(hasConfirmedNoBicycleSign(tags))
+        NOT_SIGNED.applyTo(tags)
+
+        assertEquals("no", tags["bicycle:signed"])
+        assertFalse(tags.containsKey("bicycle"))
+        assertEquals(NOT_SIGNED, parseBicycleInPedestrianStreet(tags))
+        assertTrue(hasConfirmedNoBicycleSign(tags))
+    }
+
+    @Test fun `apply not signed preserves non-designated bicycle access values`() {
+        val bicycleValues = listOf(
+            "yes", "no", "dismount", "permissive", "private", "destination", "customers", "permit"
+        )
+
+        for (bicycle in bicycleValues) {
+            val tags = StringMapChangesBuilder(mapOf("highway" to "pedestrian", "bicycle" to bicycle))
+            NOT_SIGNED.applyTo(tags)
+
+            assertEquals(bicycle, tags["bicycle"])
+            assertEquals("no", tags["bicycle:signed"])
+        }
     }
 }
 

@@ -635,6 +635,7 @@
     <string name="quest_lampMount_suspended">An einem Draht aufgehängt</string>
     <string name="quest_bench_armrest_title">Hat diese Bank Armlehnen?</string>
     <string name="quest_onewayBicycle_title">Ist dieser Weg für Fahrräder nur in eine Richtung befahrbar? In welche Richtung?</string>
+    <string name="quest_cyclewayPartSmoothness_title">Wie ist die Qualität der Oberfläche des Radwegs hier?</string>
     <string name="quest_material_pebbledash">Kieselputz</string>
     <string name="quest_postOffice_postPartner_hint">Auch wenn es als amenity=post_office gekennzeichnet ist, wird post_partner oft benutzt, um den genauen Standort eines Postschalters anzugeben.</string>
     <string name="quest_toilets_disposal_title">Was für eine Art Toilettenentsorgung wird hier benutzt?</string>

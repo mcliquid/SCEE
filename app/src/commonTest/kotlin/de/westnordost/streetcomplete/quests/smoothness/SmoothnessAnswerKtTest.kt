@@ -86,10 +86,78 @@ class SmoothnessAnswerKtTest {
             ))
         )
     }
+
+    @Test fun `apply prefixed smoothness answer`() {
+        assertEquals(
+            setOf(StringMapEntryAdd("cycleway:smoothness", "excellent")),
+            SmoothnessValueAnswer(Smoothness.EXCELLENT).appliedTo(mapOf(), "cycleway")
+        )
+    }
+
+    @Test fun `prefixed smoothness updates cycleway surface check date only`() {
+        assertEquals(
+            setOf(
+                StringMapEntryAdd("cycleway:smoothness", "excellent"),
+                StringMapEntryModify("check_date:cycleway:surface", "2000-10-10", nowAsCheckDateString()),
+            ),
+            SmoothnessValueAnswer(Smoothness.EXCELLENT).appliedTo(mapOf(
+                "cycleway:surface" to "asphalt",
+                "check_date:cycleway:surface" to "2000-10-10",
+                "surface" to "gravel",
+                "check_date:surface" to "2000-10-10",
+                "footway:surface" to "sett",
+                "check_date:footway:surface" to "2000-10-10",
+            ), "cycleway")
+        )
+    }
+
+    @Test fun `prefixed smoothness preserves generic and footway smoothness`() {
+        assertEquals(
+            setOf(
+                StringMapEntryModify("cycleway:smoothness", "good", "good"),
+                StringMapEntryDelete("cycleway:smoothness:date", "2000-10-10"),
+                StringMapEntryDelete("cycleway:surface:grade", "1"),
+                StringMapEntryAdd("check_date:cycleway:smoothness", nowAsCheckDateString()),
+            ),
+            SmoothnessValueAnswer(Smoothness.GOOD).appliedTo(mapOf(
+                "cycleway:smoothness" to "good",
+                "cycleway:smoothness:date" to "2000-10-10",
+                "cycleway:surface:grade" to "1",
+                "smoothness" to "bad",
+                "footway:smoothness" to "excellent",
+            ), "cycleway")
+        )
+    }
+
+    @Test fun `prefixed wrong surface refers to cycleway part only`() {
+        assertEquals(
+            setOf(
+                StringMapEntryDelete("cycleway:surface", "asphalt"),
+                StringMapEntryDelete("cycleway:smoothness", "excellent"),
+                StringMapEntryDelete("cycleway:smoothness:date", "2000-10-10"),
+                StringMapEntryDelete("check_date:cycleway:smoothness", "2000-10-10"),
+                StringMapEntryDelete("cycleway:paving_stones:length", "30"),
+            ),
+            WrongSurfaceAnswer.appliedTo(mapOf(
+                "cycleway:smoothness" to "excellent",
+                "cycleway:smoothness:date" to "2000-10-10",
+                "cycleway:surface" to "asphalt",
+                "check_date:cycleway:smoothness" to "2000-10-10",
+                "cycleway:paving_stones:length" to "30",
+                "surface" to "asphalt",
+                "smoothness" to "good",
+                "footway:surface" to "paving_stones",
+                "footway:smoothness" to "excellent",
+            ), "cycleway")
+        )
+    }
 }
 
-private fun SmoothnessAnswer.appliedTo(tags: Map<String, String>): Set<StringMapEntryChange> {
+private fun SmoothnessAnswer.appliedTo(
+    tags: Map<String, String>,
+    prefix: String? = null,
+): Set<StringMapEntryChange> {
     val cb = StringMapChangesBuilder(tags)
-    applyTo(cb)
+    applyTo(cb, prefix)
     return cb.create().changes
 }

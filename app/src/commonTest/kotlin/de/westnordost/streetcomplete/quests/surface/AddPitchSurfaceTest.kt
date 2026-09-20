@@ -1,13 +1,21 @@
 package de.westnordost.streetcomplete.quests.surface
 
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.osm.nowAsCheckDateString
+import de.westnordost.streetcomplete.testutils.inMemoryPrefs
 import de.westnordost.streetcomplete.testutils.way
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AddPitchSurfaceTest {
-    private val questType = AddPitchSurface()
+    private lateinit var questType: AddPitchSurface
+
+    @BeforeTest fun setUp() {
+        Prefs.preferences = inMemoryPrefs()
+        questType = AddPitchSurface()
+    }
 
     @Test fun `not applicable to pitch area without tagged sport`() {
         assertIsNotApplicable("leisure" to "pitch")

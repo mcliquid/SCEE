@@ -221,6 +221,7 @@ import de.westnordost.streetcomplete.quests.show_poi.ShowTrafficStuff
 import de.westnordost.streetcomplete.quests.show_poi.ShowVacant
 import de.westnordost.streetcomplete.quests.sidewalk.AddSidewalk
 import de.westnordost.streetcomplete.quests.smoking.AddSmoking
+import de.westnordost.streetcomplete.quests.smoothness.AddCyclewayPartSmoothness
 import de.westnordost.streetcomplete.quests.smoothness.AddPathSmoothness
 import de.westnordost.streetcomplete.quests.smoothness.AddRoadSmoothness
 import de.westnordost.streetcomplete.quests.sport.AddSport
@@ -706,6 +707,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 55 to AddPostOfficeType(),
     EE_QUEST_OFFSET + 57 to AddLampMount(),
     EE_QUEST_OFFSET + 58 to AddOnewayBicycle(),
+    EE_QUEST_OFFSET + 69 to AddCyclewayPartSmoothness(),
     EE_QUEST_OFFSET + 201 to AddIsSidepath(),
     EE_QUEST_OFFSET + 62 to AddToiletsDisposal(),
     EE_QUEST_OFFSET + 63 to AddEvseId(),

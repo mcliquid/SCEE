@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.quests.surface
 
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryModify
 import de.westnordost.streetcomplete.osm.nowAsCheckDateString
@@ -7,15 +8,22 @@ import de.westnordost.streetcomplete.osm.surface.Surface
 import de.westnordost.streetcomplete.quests.answerApplied
 import de.westnordost.streetcomplete.quests.answerAppliedTo
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
+import de.westnordost.streetcomplete.testutils.inMemoryPrefs
 import de.westnordost.streetcomplete.testutils.way
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AddCyclewayPartSurfaceTest {
-    private val questType = AddCyclewayPartSurface()
+    private lateinit var questType: AddCyclewayPartSurface
+
+    @BeforeTest fun setUp() {
+        Prefs.preferences = inMemoryPrefs()
+        questType = AddCyclewayPartSurface()
+    }
 
     @Test fun `applicable to segregated cycleway`() {
         assertIsApplicable("highway" to "cycleway", "segregated" to "yes")

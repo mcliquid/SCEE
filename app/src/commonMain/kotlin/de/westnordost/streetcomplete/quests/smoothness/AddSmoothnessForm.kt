@@ -23,6 +23,7 @@ import de.westnordost.streetcomplete.ui.common.dialogs.InfoDialog
 import de.westnordost.streetcomplete.ui.common.item_select.ImageWithDescription
 import de.westnordost.streetcomplete.ui.common.quest.AnswerItem
 import de.westnordost.streetcomplete.ui.common.quest.ItemSelectQuestForm
+import de.westnordost.streetcomplete.ui.common.quest.LocalQuestType
 import de.westnordost.streetcomplete.util.ktx.couldBeSteps
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -32,15 +33,19 @@ import org.koin.compose.koinInject
 fun AddSmoothnessForm(
     on: (QuestAction<SmoothnessAnswer>) -> Unit,
     element: Element,
+    surfaceKey: String = "surface",
+    allowIsActuallySteps: Boolean = true,
+    allowWrongSurface: Boolean = true,
 ) {
-    val surfaceTag = element.tags["surface"]
-    val items = remember(surfaceTag) { smoothnessAnswersForSurface(surfaceTag) }
+    val surfaceTag = element.tags[surfaceKey]
+    val items = remember(surfaceKey, surfaceTag) { smoothnessAnswersForSurfaceKey(element.tags, surfaceKey) }
     val prefs: Preferences = koinInject()
 
     var showObstacleHint by remember { mutableStateOf(false) }
     var confirmSurface by remember { mutableStateOf<Surface?>(null) }
     val titleExtra = if (prefs.expertMode && surfaceTag != null) " ($surfaceTag)" else ""
     val knownSurface = parseSurface(surfaceTag)?.takeIf { it != Surface.UNSUPPORTED }
+    val titleRes = LocalQuestType.current?.title ?: Res.string.quest_smoothness_title
 
     ItemSelectQuestForm(
         on = {
@@ -66,17 +71,17 @@ fun AddSmoothnessForm(
             }
         },
         itemsPerRow = 1,
-        // SC #7091: use generic quest title; keep SCEE expert-mode surface suffix
-        title = stringResource(Res.string.quest_smoothness_title) + titleExtra,
+        // SC #7091: use quest title; keep SCEE expert-mode surface suffix
+        title = stringResource(titleRes) + titleExtra,
         otherAnswers = { listOfNotNull(
-            if (knownSurface != null) {
+            if (allowWrongSurface && knownSurface != null) {
                 AnswerItem(stringResource(Res.string.quest_smoothness_wrong_surface)) {
                     confirmSurface = knownSurface
                 }
             } else {
                 null
             },
-            if (element.couldBeSteps()) {
+            if (allowIsActuallySteps && element.couldBeSteps()) {
                 AnswerItem(stringResource(Res.string.quest_generic_answer_is_actually_steps)) {
                     on(Answer(IsActuallyStepsAnswer))
                 }

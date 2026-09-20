@@ -677,6 +677,9 @@
     <!-- bicycle oneway -->
     <string name="quest_onewayBicycle_title">Is this path one-way for bicycles? In which direction?</string>
 
+    <!-- cycleway part smoothness -->
+    <string name="quest_cyclewayPartSmoothness_title">What’s the surface quality of the bicycle path here?</string>
+
     <!-- is_sidepath -->
     <string name="quest_is_sidepath_title">Does this path run along a road?</string>
     <string name="quest_is_sidepath_hint">A sidepath runs adjacent and parallel to a road so that you would describe movement as “along &lt;road name&gt;”. If the path goes through a park, forest or otherwise independent corridor, answer “No”.</string>

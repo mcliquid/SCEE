@@ -48,4 +48,20 @@ class SmoothnessItemKtTest {
             }
         }
     }
+
+    @Test fun `surface key helper reads the requested surface tag`() {
+        val tags = mapOf(
+            "cycleway:surface" to "asphalt",
+            "surface" to "gravel",
+            "footway:surface" to "sett",
+        )
+        assertEquals(
+            smoothnessAnswersForSurface("asphalt"),
+            smoothnessAnswersForSurfaceKey(tags, "cycleway:surface")
+        )
+        assertEquals(
+            smoothnessAnswersForSurface("gravel"),
+            smoothnessAnswersForSurfaceKey(tags)
+        )
+    }
 }

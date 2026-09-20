@@ -55,6 +55,10 @@ fun Smoothness.getIllustrationSurface(surface: String?): String =
 fun smoothnessAnswersForSurface(surface: String?): List<Smoothness> =
     Smoothness.entries.filter { it.getImage(it.getIllustrationSurface(surface)) != null }
 
+/** Smoothness choices governed by the surface stored under [surfaceKey], e.g. `cycleway:surface`. */
+fun smoothnessAnswersForSurfaceKey(tags: Map<String, String>, surfaceKey: String = "surface"): List<Smoothness> =
+    smoothnessAnswersForSurface(tags[surfaceKey])
+
 fun Smoothness.getDescription(surface: String?): StringResource? = when (surface) {
     "asphalt", "concrete", "concrete:plates" -> pavedDescription
     "sett" -> settDescription

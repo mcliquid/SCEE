@@ -3,9 +3,12 @@ package de.westnordost.streetcomplete.data.upload
 import android.content.Context
 import android.content.pm.ServiceInfo
 import android.os.Build
+import androidx.work.BackoffPolicy
+import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingWorkPolicy
 import androidx.work.ForegroundInfo
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.OutOfQuotaPolicy
@@ -13,12 +16,13 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.data.sync.createSyncNotification
+import java.util.concurrent.TimeUnit
 
 class AndroidUploadController(private val context: Context) : UploadController {
     override fun upload(isUserInitiated: Boolean) {
         WorkManager.getInstance(context).enqueueUniqueWork(
             Uploader.TAG,
-            ExistingWorkPolicy.KEEP,
+            uploadExistingWorkPolicy(isUserInitiated),
             UploadWorker.createWorkRequest(isUserInitiated)
         )
     }
@@ -46,14 +50,33 @@ class UploadWorker(
             uploader.upload()
             Result.success()
         } catch (e: Exception) {
-            Result.failure()
+            when (uploadWorkOutcome(e, runAttemptCount)) {
+                UploadWorkOutcome.Success -> Result.success()
+                UploadWorkOutcome.Retry -> Result.retry()
+                UploadWorkOutcome.Failure -> Result.failure()
+            }
         }
 
     companion object {
         fun createWorkRequest(isUserInitiated: Boolean): OneTimeWorkRequest {
             val builder = OneTimeWorkRequestBuilder<UploadWorker>()
+                .setConstraints(uploadWorkConstraints())
+                .setBackoffCriteria(
+                    BackoffPolicy.EXPONENTIAL,
+                    UPLOAD_RETRY_INITIAL_BACKOFF_SECONDS,
+                    TimeUnit.SECONDS
+                )
             if (isUserInitiated) builder.setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
             return builder.build()
         }
     }
 }
+
+/** KEEP so AutoSyncer cannot clobber a backed-off retry. REPLACE so a manual Upload can. */
+internal fun uploadExistingWorkPolicy(isUserInitiated: Boolean): ExistingWorkPolicy =
+    if (isUserInitiated) ExistingWorkPolicy.REPLACE else ExistingWorkPolicy.KEEP
+
+internal fun uploadWorkConstraints(): Constraints =
+    Constraints.Builder()
+        .setRequiredNetworkType(NetworkType.CONNECTED)
+        .build()

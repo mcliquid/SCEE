@@ -372,7 +372,7 @@ val commonModule = module {
 
     single { OpenChangesetsManager(get(), get()) }
 
-    single { ElementEditsUploader(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    single { ElementEditsUploader(get(), get(), get(), get(), get(), get(), get(), get()) }
 
     single<ElementEditsSource> { get<ElementEditsController>() }
     single<ElementEditsController> { ElementEditsControllerImpl(get(), get(), get()) }

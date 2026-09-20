@@ -17,7 +17,7 @@ import kotlin.test.assertTrue
 class AddCyclewayTest {
     private var countryInfo = CountryInfo(
         null,
-        listOf(IncompleteCountryInfo(hasAdvisoryCycleLane = false))
+        listOf(IncompleteCountryInfo(hasAdvisoryCycleLane = false, isLeftHandTraffic = false))
     )
 
     private lateinit var questType: AddCycleway
@@ -84,8 +84,8 @@ class AddCyclewayTest {
         assertFalse(questType.isApplicableTo(way)!!)
     }
 
-    @Test fun `not applicable to road with cycleway=separate`() {
-        for (cyclewayKey in listOf("cycleway", "cycleway:left", "cycleway:right", "cycleway:both")) {
+    @Test fun `not applicable to road with complete separate cycleway information`() {
+        for (cyclewayKey in listOf("cycleway", "cycleway:both")) {
             val way = way(
                 1L, listOf(1, 2, 3), mapOf(
                     "highway" to "primary",
@@ -97,6 +97,123 @@ class AddCyclewayTest {
             assertEquals(0, questType.getApplicableElements(mapData).toList().size)
             assertFalse(questType.isApplicableTo(way)!!)
         }
+    }
+
+    @Test fun `applicable to two-way road with only one side tagged`() {
+        val values = listOf(
+            mapOf("cycleway:{side}" to "separate"),
+            mapOf("cycleway:{side}" to "track"),
+            mapOf("cycleway:{side}" to "lane", "cycleway:{side}:lane" to "exclusive"),
+            mapOf("cycleway:{side}" to "no"),
+            mapOf("cycleway:{side}" to "shoulder"),
+        )
+
+        for (side in listOf("left", "right")) {
+            for (value in values) {
+                val sideTags = value.mapKeys { (key, _) -> key.replace("{side}", side) }
+                assertApplicability(sideTags, bulk = true, single = true)
+            }
+        }
+    }
+
+    @Test fun `not applicable to two-way road with both sides tagged`() {
+        assertApplicability(
+            mapOf("cycleway:right" to "separate", "cycleway:left" to "no"),
+            bulk = false,
+            single = false,
+        )
+        assertApplicability(
+            mapOf(
+                "cycleway:right" to "lane",
+                "cycleway:right:lane" to "exclusive",
+                "cycleway:left" to "track",
+            ),
+            bulk = false,
+            single = false,
+        )
+    }
+
+    @Test fun `not applicable to two-way road with unsuffixed cycleway tag`() {
+        assertApplicability(mapOf("cycleway" to "track"), bulk = false, single = false)
+    }
+
+    @Test fun `not applicable to two-way road with unknown value on one side`() {
+        assertApplicability(mapOf("cycleway:right" to "something"), bulk = false, single = false)
+    }
+
+    @Test fun `major forward oneway only requires flow side`() {
+        assertApplicability(
+            mapOf("oneway" to "yes", "cycleway:right" to "track"),
+            bulk = false,
+            single = null,
+        )
+        assertApplicability(
+            mapOf("oneway" to "yes", "cycleway:left" to "track"),
+            bulk = true,
+            single = null,
+        )
+    }
+
+    @Test fun `oneway bicycle no follows parser completeness`() {
+        assertApplicability(
+            mapOf(
+                "oneway" to "yes",
+                "oneway:bicycle" to "no",
+                "cycleway:right" to "track",
+            ),
+            bulk = false,
+            single = null,
+        )
+        assertApplicability(
+            mapOf(
+                "oneway" to "yes",
+                "oneway:bicycle" to "no",
+                "cycleway:left" to "track",
+            ),
+            bulk = true,
+            single = null,
+        )
+    }
+
+    @Test fun `major reversed oneway only requires flow side`() {
+        assertApplicability(
+            mapOf("oneway" to "-1", "cycleway:left" to "track"),
+            bulk = false,
+            single = null,
+        )
+        assertApplicability(
+            mapOf("oneway" to "-1", "cycleway:right" to "track"),
+            bulk = true,
+            single = null,
+        )
+    }
+
+    @Test fun `major left-hand-traffic oneway only requires flow side`() {
+        countryInfo = CountryInfo(
+            "GB",
+            listOf(IncompleteCountryInfo(hasAdvisoryCycleLane = false, isLeftHandTraffic = true)),
+        )
+
+        assertApplicability(
+            mapOf("oneway" to "yes", "cycleway:left" to "track"),
+            bulk = false,
+            single = null,
+        )
+        assertApplicability(
+            mapOf("oneway" to "yes", "cycleway:right" to "track"),
+            bulk = true,
+            single = null,
+        )
+        assertApplicability(
+            mapOf("oneway" to "-1", "cycleway:right" to "track"),
+            bulk = false,
+            single = null,
+        )
+        assertApplicability(
+            mapOf("oneway" to "-1", "cycleway:left" to "track"),
+            bulk = true,
+            single = null,
+        )
     }
 
     @Test fun `not applicable to non-road`() {
@@ -212,7 +329,10 @@ class AddCyclewayTest {
         val mapData = TestMapDataWithGeometry(listOf(way))
         mapData.wayGeometriesById[1L] = pGeom(0.0, 0.0)
 
-        countryInfo = CountryInfo("DE", listOf(IncompleteCountryInfo(hasAdvisoryCycleLane = true)))
+        countryInfo = CountryInfo(
+            "DE",
+            listOf(IncompleteCountryInfo(hasAdvisoryCycleLane = true, isLeftHandTraffic = false)),
+        )
 
         assertEquals(1, questType.getApplicableElements(mapData).toList().size)
         // because we don't know if we are in Belgium
@@ -229,7 +349,10 @@ class AddCyclewayTest {
         val mapData = TestMapDataWithGeometry(listOf(way))
         mapData.wayGeometriesById[1L] = pGeom(0.0, 0.0)
 
-        countryInfo = CountryInfo("BE", listOf(IncompleteCountryInfo(hasAdvisoryCycleLane = true)))
+        countryInfo = CountryInfo(
+            "BE",
+            listOf(IncompleteCountryInfo(hasAdvisoryCycleLane = true, isLeftHandTraffic = false)),
+        )
 
         assertEquals(0, questType.getApplicableElements(mapData).toList().size)
         // because we don't know if we are in Belgium
@@ -299,5 +422,22 @@ class AddCyclewayTest {
         // a residential way with maxspeed=30 and no other maxspeed tags is assumed to be in a max-speed 30 zone
         assertEquals(0, questType.getApplicableElements(mapData).toList().size)
         assertFalse(questType.isApplicableTo(residentialWayWithMaxspeed30)!!)
+    }
+
+    private fun assertApplicability(
+        extraTags: Map<String, String>,
+        bulk: Boolean,
+        single: Boolean?,
+    ) {
+        val way = way(
+            1L,
+            listOf(1, 2, 3),
+            mapOf("highway" to "primary") + extraTags,
+        )
+        val mapData = TestMapDataWithGeometry(listOf(way))
+        mapData.wayGeometriesById[1L] = pGeom(0.0, 0.0)
+
+        assertEquals(bulk, questType.getApplicableElements(mapData).any())
+        assertEquals(single, questType.isApplicableTo(way))
     }
 }

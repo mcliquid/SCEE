@@ -9,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -60,25 +59,10 @@ fun AddCyclewayForm(
             ?: Sides<CyclewayAndDirection>(null, null)
     }
 
-    val likelyNoBicycleContraflow = remember { """
-        ways with
-          oneway:bicycle != no
-          and (
-            oneway ~ yes|-1 and highway ~ primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|unclassified
-            or dual_carriageway = yes
-            or junction ~ roundabout|circular
-          )
-    """.toElementFilterExpression()
+    val sideRelevance = remember(element, originalCycleway, countryInfo.isLeftHandTraffic) {
+        getCyclewaySideRelevance(element, originalCycleway, countryInfo.isLeftHandTraffic)
     }
-
-    val showBothSides = remember(element) {
-        val contraflowSide =
-            if (countryInfo.isLeftHandTraffic) originalCycleway.right
-            else originalCycleway.left
-        val contraflowSideWasDefinedBefore = contraflowSide != null
-        val bicycleTrafficOnBothSidesIsLikely = !likelyNoBicycleContraflow.matches(element)
-        contraflowSideWasDefinedBefore || bicycleTrafficOnBothSidesIsLikely
-    }
+    val showBothSides = sideRelevance.left && sideRelevance.right
 
     val lastPicked = remember(showBothSides) {
         if (showBothSides) {
@@ -100,14 +84,14 @@ fun AddCyclewayForm(
 
     var isDisplayingPrevious by rememberSaveable(originalCycleway) {
         // only show as re-survey (yes/no button) if the previous tagging was complete
-        mutableStateOf(originalCycleway.all { it != null })
+        mutableStateOf(sideRelevance.isComplete(originalCycleway))
     }
     var cycleways by rememberSerializable(originalCycleway) { mutableStateOf(originalCycleway) }
-    var isLeftSideVisible by rememberSerializable(showBothSides, countryInfo.isLeftHandTraffic) {
-        mutableStateOf(showBothSides || countryInfo.isLeftHandTraffic)
+    var isLeftSideVisible by rememberSerializable(sideRelevance) {
+        mutableStateOf(sideRelevance.left)
     }
-    var isRightSideVisible by rememberSerializable(showBothSides, countryInfo.isLeftHandTraffic) {
-        mutableStateOf(showBothSides || !countryInfo.isLeftHandTraffic)
+    var isRightSideVisible by rememberSerializable(sideRelevance) {
+        mutableStateOf(sideRelevance.right)
     }
     var selectionMode by rememberSerializable { mutableStateOf(CyclewayFormSelectionMode.SELECT) }
 

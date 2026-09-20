@@ -21,7 +21,9 @@ import de.westnordost.streetcomplete.osm.cycleway.CyclewayAndDirection
 import de.westnordost.streetcomplete.osm.cycleway.applyTo
 import de.westnordost.streetcomplete.osm.cycleway.isAmbiguous
 import de.westnordost.streetcomplete.osm.cycleway.parseCyclewaySides
+import de.westnordost.streetcomplete.osm.cycleway.selectableOrNullValues
 import de.westnordost.streetcomplete.osm.maxspeed.FILTER_IS_IMPLICIT_MAX_SPEED_BUT_NOT_SLOW_ZONE
+import de.westnordost.streetcomplete.osm.oneway.isReversedOneway
 import de.westnordost.streetcomplete.osm.surface.UNPAVED_SURFACES
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.util.countryboundaries.NoCountriesExcept
@@ -66,20 +68,25 @@ class AddCycleway(
 
     override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> {
         val eligibleRoads = mapData.ways.filter { roadsFilter.matches(it) }
-        val roadsWithMissingCycleway = eligibleRoads.filter { untaggedRoadsFilter.matches(it) }
-        val oldRoadsWithKnownCycleways = eligibleRoads.filter { way ->
+        return eligibleRoads.filter { way ->
             val position = mapData.getWayGeometry(way.id)?.center
             val countryInfo = position?.let { getCountryInfoByLocation(it) }
-            way.hasOldInvalidOrAmbiguousCyclewayTags(countryInfo) == true
+            val hasMissingCycleway =
+                initialSurveyRoadsFilter.matches(way) &&
+                way.hasMissingRelevantCyclewayInfo(countryInfo) == true
+            hasMissingCycleway || way.hasOldInvalidOrAmbiguousCyclewayTags(countryInfo) == true
         }
-
-        return roadsWithMissingCycleway + oldRoadsWithKnownCycleways
     }
 
     override fun isApplicableTo(element: Element): Boolean? {
         if (!roadsFilter.matches(element)) return false
-        if (untaggedRoadsFilter.matches(element)) return true
-        return element.hasOldInvalidOrAmbiguousCyclewayTags(null)
+        val hasMissingCycleway = if (initialSurveyRoadsFilter.matches(element)) {
+            element.hasMissingRelevantCyclewayInfo(null)
+        } else {
+            false
+        }
+        val hasOldInvalidOrAmbiguousCycleway = element.hasOldInvalidOrAmbiguousCyclewayTags(null)
+        return hasMissingCycleway.or(hasOldInvalidOrAmbiguousCycleway)
     }
 
     override fun getHighlightedElements(element: Element, mapData: MapDataWithGeometry) =
@@ -126,17 +133,13 @@ private val roadsFilter by lazy { """
       and access !~ private|no
 """.toElementFilterExpression() }
 
-// streets that do not have cycleway tagging yet
-private val untaggedRoadsFilter by lazy { """
+// streets for which missing cycleway information should be surveyed
+private val initialSurveyRoadsFilter by lazy { """
     ways with
       (
         highway ~ primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|unclassified
         or highway = residential and (maxspeed > 33 or $FILTER_IS_IMPLICIT_MAX_SPEED_BUT_NOT_SLOW_ZONE)
       )
-      and !cycleway
-      and !cycleway:left
-      and !cycleway:right
-      and !cycleway:both
       and !sidewalk:bicycle
       and !sidewalk:left:bicycle
       and !sidewalk:right:bicycle
@@ -149,6 +152,69 @@ private val untaggedRoadsFilter by lazy { """
       and surface !~ ${UNPAVED_SURFACES.joinToString("|")}
       and ~bicycle|bicycle:backward|bicycle:forward !~ use_sidepath
 """.toElementFilterExpression() }
+
+private val likelyNoBicycleContraflow by lazy { """
+    ways with
+      oneway:bicycle != no
+      and (
+        oneway ~ yes|-1 and highway ~ primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|unclassified
+        or dual_carriageway = yes
+        or junction ~ roundabout|circular
+      )
+""".toElementFilterExpression() }
+
+internal data class CyclewaySideRelevance(val left: Boolean, val right: Boolean)
+
+internal fun CyclewaySideRelevance.isComplete(cycleways: Sides<CyclewayAndDirection>): Boolean =
+    (!left || cycleways.left != null) && (!right || cycleways.right != null)
+
+internal fun getCyclewaySideRelevance(
+    element: Element,
+    cycleways: Sides<CyclewayAndDirection>,
+    isLeftHandTraffic: Boolean,
+): CyclewaySideRelevance {
+    val contraflowSideIsRight = isReversedOneway(element.tags) xor isLeftHandTraffic
+    val contraflowSide = if (contraflowSideIsRight) cycleways.right else cycleways.left
+    val bothSidesAreRelevant =
+        contraflowSide != null || !likelyNoBicycleContraflow.matches(element)
+    if (bothSidesAreRelevant) return CyclewaySideRelevance(left = true, right = true)
+
+    return CyclewaySideRelevance(
+        left = contraflowSideIsRight,
+        right = !contraflowSideIsRight,
+    )
+}
+
+private fun Element.hasMissingRelevantCyclewayInfo(countryInfo: CountryInfo?): Boolean? {
+    if (countryInfo != null) {
+        return hasMissingRelevantCyclewayInfo(countryInfo.isLeftHandTraffic, countryInfo)
+    }
+
+    val forRightHandTraffic = hasMissingRelevantCyclewayInfo(false, null)
+    val forLeftHandTraffic = hasMissingRelevantCyclewayInfo(true, null)
+    return if (forRightHandTraffic == forLeftHandTraffic) forRightHandTraffic else null
+}
+
+private fun Element.hasMissingRelevantCyclewayInfo(
+    isLeftHandTraffic: Boolean,
+    countryInfo: CountryInfo?,
+): Boolean {
+    val parsedCycleways = parseCyclewaySides(tags, isLeftHandTraffic)
+    // Do not offer the quest if it would have to replace an unknown value.
+    if (parsedCycleways?.any { it?.cycleway?.isUnknown == true } == true) return false
+
+    val cycleways = parsedCycleways
+        ?.let { if (countryInfo != null) it.selectableOrNullValues(countryInfo) else it }
+        ?: Sides<CyclewayAndDirection>(null, null)
+    val relevance = getCyclewaySideRelevance(this, cycleways, isLeftHandTraffic)
+    return !relevance.isComplete(cycleways)
+}
+
+private fun Boolean?.or(other: Boolean?): Boolean? = when {
+    this == true || other == true -> true
+    this == null || other == null -> null
+    else -> false
+}
 
 private val olderThan4Years = TagOlderThan("cycleway", RelativeDate(-(365 * 4).toFloat()))
 

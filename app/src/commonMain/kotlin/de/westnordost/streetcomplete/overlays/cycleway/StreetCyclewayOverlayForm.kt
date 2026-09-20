@@ -142,6 +142,13 @@ fun StreetCyclewayOverlayForm(
                     }
                 )
             }
+            if (bicycleInPedestrianStreet != BicycleInPedestrianStreet.NOT_ALLOWED) {
+                result.add(
+                    AnswerItem(stringResource(Res.string.separate_cycleway_no_signed)) {
+                        bicycleInPedestrianStreet = BicycleInPedestrianStreet.NOT_ALLOWED
+                    }
+                )
+            }
             if (
                 bicycleInPedestrianStreet != BicycleInPedestrianStreet.NOT_SIGNED ||
                 !isNoBicycleSignConfirmed

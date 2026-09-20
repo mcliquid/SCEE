@@ -124,13 +124,31 @@ class BicycleInPedestrianStreetKtTest {
             ),
             NOT_ALLOWED.appliedTo(mapOf())
         )
+        // transition from confirmed NOT_SIGNED
+        assertEquals(
+            setOf(
+                StringMapEntryAdd("bicycle", "no"),
+                StringMapEntryModify("bicycle:signed", "no", "yes"),
+            ),
+            NOT_ALLOWED.appliedTo(mapOf("bicycle:signed" to "no"))
+        )
+        // transition from ALLOWED
         assertEquals(
             setOf(
                 StringMapEntryModify("bicycle", "yes", "no"),
-                StringMapEntryModify("bicycle:signed", "no", "yes"),
+                StringMapEntryModify("bicycle:signed", "yes", "yes"),
             ),
-            NOT_ALLOWED.appliedTo(mapOf("bicycle" to "yes", "bicycle:signed" to "no"))
+            NOT_ALLOWED.appliedTo(mapOf("bicycle" to "yes", "bicycle:signed" to "yes"))
         )
+        // transition from DESIGNATED
+        assertEquals(
+            setOf(
+                StringMapEntryModify("bicycle", "designated", "no"),
+                StringMapEntryAdd("bicycle:signed", "yes"),
+            ),
+            NOT_ALLOWED.appliedTo(mapOf("bicycle" to "designated"))
+        )
+        // bicycle=dismount is deliberately preserved
         assertEquals(
             setOf(
                 StringMapEntryModify("bicycle:signed", "yes", "yes"),

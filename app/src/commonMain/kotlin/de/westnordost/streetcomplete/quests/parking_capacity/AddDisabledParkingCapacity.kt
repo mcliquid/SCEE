@@ -6,14 +6,17 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
+import de.westnordost.streetcomplete.data.osm.osmquests.Answer
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.WHEELCHAIR
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.*
+import de.westnordost.streetcomplete.ui.common.quest.AnswerItem
 import de.westnordost.streetcomplete.ui.common.quest.CountInputQuestForm
 import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 class AddDisabledParkingCapacity : OsmFilterQuestType<Int>() {
 
@@ -39,6 +42,10 @@ class AddDisabledParkingCapacity : OsmFilterQuestType<Int>() {
         CountInputQuestForm(
             on = on,
             icon = painterResource(Res.drawable.wheelchair_sign),
+            otherAnswers = { listOf(AnswerItem(stringResource(Res.string.quest_parking_capacity_disabled_answer_yes)) {
+                on(Answer(-1))
+            }) },
+            minCount = 0,
         )
     }
 

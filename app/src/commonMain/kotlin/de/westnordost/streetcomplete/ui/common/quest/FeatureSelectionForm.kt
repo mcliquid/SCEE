@@ -14,7 +14,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,17 +23,25 @@ import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.osmfeatures.GeometryType
 import de.westnordost.streetcomplete.data.osm.osmquests.Answer
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
+import de.westnordost.streetcomplete.data.preferences.Preferences
+import de.westnordost.streetcomplete.data.preferences.addLastPicked
+import de.westnordost.streetcomplete.data.preferences.getLastPicked
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.Button2
 import de.westnordost.streetcomplete.ui.common.feature.FeatureItem
 import de.westnordost.streetcomplete.ui.common.feature.FeatureSearchDialog
 import de.westnordost.streetcomplete.ui.util.FeatureListSaver
+import de.westnordost.streetcomplete.util.locale.getLanguagesForFeatureDictionary
+import de.westnordost.streetcomplete.util.withRecentFirst
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 /**
  * A quest form that allows selecting of features via search or from a list of presets.
+ *
+ * When the search field is empty, recently used presets for this quest are shown before the
+ * remaining default presets. Search results keep their relevance order.
  */
 @Composable
 fun FeaturesSelectionQuestForm(
@@ -47,11 +54,27 @@ fun FeaturesSelectionQuestForm(
     filterFn: (Feature) -> Boolean = { true },
     codesOfDefaultFeatures: List<String> = emptyList(),
     featureDictionary: FeatureDictionary = koinInject(),
+    preferences: Preferences = koinInject(),
 ) {
+    val recentKey = LocalQuestType.current!!.name
     var selectedFeatures by rememberSaveable(initialSelectedFeatures, stateSaver = FeatureListSaver(featureDictionary)) {
         mutableStateOf(initialSelectedFeatures)
     }
-    var showSearch by remember  { mutableStateOf(false) }
+    var showSearch by remember { mutableStateOf(false) }
+    var recentIds by remember(recentKey) { mutableStateOf(preferences.getLastPicked<String>(recentKey)) }
+    val languages = remember { getLanguagesForFeatureDictionary() }
+    val orderedDefaultIds = withRecentFirst(
+        items = codesOfDefaultFeatures,
+        recent = recentIds,
+        isAvailable = { id ->
+            val feature = featureDictionary.getById(
+                id = id,
+                languages = languages,
+                country = countryCode,
+            )
+            feature != null && feature !in selectedFeatures && filterFn(feature)
+        },
+    )
 
     QuestForm(
         on = on,
@@ -81,8 +104,12 @@ fun FeaturesSelectionQuestForm(
             if (showSearch) {
                 FeatureSearchDialog(
                     onDismissRequest = { showSearch = false },
-                    onSelectedFeature = {
-                        selectedFeatures = selectedFeatures + it
+                    onSelectedFeature = { feature ->
+                        if (!feature.isSuggestion) {
+                            preferences.addLastPicked(recentKey, feature.id)
+                            recentIds = preferences.getLastPicked(recentKey)
+                        }
+                        selectedFeatures = selectedFeatures + feature
                         showSearch = false
                     },
                     featureDictionary = featureDictionary,
@@ -91,7 +118,7 @@ fun FeaturesSelectionQuestForm(
                     officialLanguages = officialLanguages,
                     // Ensure a preset cannot be selected twice
                     filterFn = { feature -> feature !in selectedFeatures && filterFn(feature) },
-                    codesOfDefaultFeatures = codesOfDefaultFeatures
+                    codesOfDefaultFeatures = orderedDefaultIds
                 )
             }
         }

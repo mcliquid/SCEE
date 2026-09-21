@@ -52,6 +52,7 @@ import de.westnordost.streetcomplete.ui.common.ClearIcon
 import de.westnordost.streetcomplete.ui.common.SearchIcon
 import de.westnordost.streetcomplete.ui.common.VerticalDivider
 import de.westnordost.streetcomplete.ui.ktx.fadingVerticalScrollEdges
+import de.westnordost.streetcomplete.util.choicesForQuery
 import de.westnordost.streetcomplete.util.locale.getLanguagesForFeatureDictionary
 import org.jetbrains.compose.resources.stringResource
 
@@ -93,7 +94,7 @@ fun FeatureSearch(
         search, featureDictionary, languages, additionalLanguages, searchMoreLanguages,
         countryCode, geometryType, filterFn, defaultFeatures
     ) {
-        if (search.isNotEmpty()) {
+        val searchResults = if (search.isNotEmpty()) {
             featureDictionary.searchFeaturesByTerm(
                 query = search,
                 languages = languages,
@@ -104,8 +105,9 @@ fun FeatureSearch(
                 filterFn = filterFn,
             )
         } else {
-            defaultFeatures
+            emptyList()
         }
+        choicesForQuery(search, searchResults, defaultFeatures)
     }
 
     Column(

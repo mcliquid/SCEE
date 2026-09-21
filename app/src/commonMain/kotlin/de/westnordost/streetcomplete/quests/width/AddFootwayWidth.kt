@@ -16,8 +16,8 @@ class AddFootwayWidth(
     private val checkArSupport: ArSupportChecker
 ) : OsmFilterQuestType<WidthAnswer>() {
 
-    /* All either exclusive footways or ways that are cycleway + footway (or bridleway) but
-     *  segregated */
+    /* Exclusive footways, or ways that are cycleway + footway (or bridleway) but segregated.
+     *  Also a footway with bicycle=yes that is not segregated: one shared surface, so width. */
     override val elementFilter = """
         ways with (
           (
@@ -33,6 +33,12 @@ class AddFootwayWidth(
               or highway = bridleway and bicycle ~ designated|yes
             )
             and (!footway:width or source:footway:width ~ ".*estimat.*")
+          ) or (
+            highway = footway
+            and footway !~ link|crossing
+            and bicycle = yes
+            and segregated != yes
+            and (!width or source:width ~ ".*estimat.*")
           )
         )
         and area != yes
@@ -55,8 +61,9 @@ class AddFootwayWidth(
 
     override fun applyAnswerTo(answer: WidthAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         val isExclusive = tags["highway"] == "footway" && tags["bicycle"] != "yes" && tags["bicycle"] != "designated"
-
-        val key = if (isExclusive) "width" else "footway:width"
+        val isBicyclePermittedFootway =
+            tags["highway"] == "footway" && tags["bicycle"] == "yes" && tags["segregated"] != "yes"
+        val key = if (isExclusive || isBicyclePermittedFootway) "width" else "footway:width"
 
         tags[key] = answer.width.toOsmValue()
         if (answer.isARMeasurement) {

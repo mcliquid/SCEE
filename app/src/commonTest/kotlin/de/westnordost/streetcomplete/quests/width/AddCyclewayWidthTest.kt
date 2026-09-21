@@ -118,6 +118,13 @@ class AddCyclewayWidthTest {
         ))))
     }
 
+    @Test fun `not applicable to footway with bicycle yes when segregated is missing`() {
+        assertFalse(quest.isApplicableTo(way(tags = mapOf(
+            "highway" to "footway",
+            "bicycle" to "yes",
+        ))))
+    }
+
     @Test fun `not applicable to path with bicycle yes and foot yes and segregated no`() {
         assertFalse(quest.isApplicableTo(way(tags = mapOf(
             "highway" to "path",

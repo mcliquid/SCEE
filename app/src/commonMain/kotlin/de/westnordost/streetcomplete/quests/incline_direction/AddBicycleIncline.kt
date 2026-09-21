@@ -10,6 +10,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
+import de.westnordost.streetcomplete.osm.FILTER_BICYCLE_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.util.math.measuredLength
@@ -22,7 +23,7 @@ class AddBicycleIncline : OsmElementQuestType<BicycleInclineAnswer> {
           and highway ~ footway|cycleway|path|bridleway|track
           and (!indoor or indoor = no)
           and area != yes
-          and access !~ private|no
+          and ($FILTER_BICYCLE_ACCESSIBLE)
           and !incline
     """.toElementFilterExpression() }
 

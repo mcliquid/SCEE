@@ -82,6 +82,20 @@ class AddCyclewaySegregationTest {
         assertEquals(0, questType.getApplicableElements(mapData).toList().size)
     }
 
+    @Test fun `not applicable when bicycles are explicitly prohibited`() {
+        val mapData = TestMapDataWithGeometry(
+            listOf(
+                way(1, tags = mapOf(
+                    "highway" to "cycleway",
+                    "foot" to "designated",
+                    "bicycle" to "no",
+                    "surface" to "asphalt",
+                )),
+            ),
+        )
+        assertEquals(0, questType.getApplicableElements(mapData).toList().size)
+    }
+
     @Test fun `sets expected tags on answer`() {
         assertEquals(
             setOf(StringMapEntryAdd("segregated", "yes")),

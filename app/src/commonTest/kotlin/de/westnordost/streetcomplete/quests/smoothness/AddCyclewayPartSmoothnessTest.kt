@@ -245,6 +245,16 @@ class AddCyclewayPartSmoothnessTest {
         )
     }
 
+    @Test fun `not applicable when vehicle access is private without bicycle override`() {
+        assertIsNotApplicable(
+            "highway" to "cycleway",
+            "foot" to "designated",
+            "segregated" to "yes",
+            "cycleway:surface" to "asphalt",
+            "vehicle" to "private",
+        )
+    }
+
     @Test fun `not applicable to private access without bicycle or foot override`() {
         assertIsNotApplicable(
             "highway" to "cycleway",

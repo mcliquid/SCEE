@@ -41,6 +41,20 @@ class AddCyclewayTest {
         assertTrue(questType.isApplicableTo(way)!!)
     }
 
+    @Test fun `bicycle access hierarchy and designated exclusion are applied`() {
+        assertApplicability(
+            mapOf("access" to "private", "bicycle" to "yes"),
+            bulk = true,
+            single = true,
+        )
+        assertApplicability(mapOf("vehicle" to "private"), bulk = false, single = false)
+        assertApplicability(
+            mapOf("access" to "no", "bicycle" to "designated"),
+            bulk = false,
+            single = false,
+        )
+    }
+
     @Test fun `applicable to road with separately mapped sidewalk without inferring cycleway`() {
         val way = way(
             1L, listOf(1, 2, 3), mapOf(

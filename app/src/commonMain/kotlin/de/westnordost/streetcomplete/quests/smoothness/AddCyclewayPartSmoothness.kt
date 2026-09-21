@@ -10,6 +10,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
+import de.westnordost.streetcomplete.osm.FILTER_BICYCLE_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.resources.*
 
@@ -31,7 +32,7 @@ class AddCyclewayPartSmoothness : OsmFilterQuestType<SmoothnessAnswer>() {
             )
           )
           and segregated = yes
-          and bicycle !~ no|private
+          and ($FILTER_BICYCLE_ACCESSIBLE)
           and cycleway:surface ~ ${SURFACES_FOR_SMOOTHNESS.joinToString("|")}
           and !(sidewalk or sidewalk:left or sidewalk:right or sidewalk:both)
           and (!conveying or conveying = no)
@@ -40,11 +41,6 @@ class AddCyclewayPartSmoothness : OsmFilterQuestType<SmoothnessAnswer>() {
             !cycleway:smoothness
             or cycleway:smoothness older today -4 years
             or cycleway:smoothness:date < today -4 years
-          )
-          and (
-            access !~ private|no
-            or (foot and foot !~ private|no)
-            or (bicycle and bicycle !~ private|no)
           )
           and ~path|footway|cycleway|bridleway !~ link
     """

@@ -8,6 +8,7 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
+import de.westnordost.streetcomplete.osm.FILTER_BICYCLE_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.surface.INVALID_SURFACES
 import de.westnordost.streetcomplete.osm.surface.Surface
@@ -36,11 +37,7 @@ class AddCyclewayPartSurface : OsmFilterQuestType<Surface>() {
             )
             or cycleway:surface older today -8 years
           )
-          and (
-            access !~ private|no
-            or (foot and foot !~ private|no)
-            or (bicycle and bicycle !~ private|no)
-          )
+          and ($FILTER_BICYCLE_ACCESSIBLE)
           and ~path|footway|cycleway|bridleway !~ link
     """
     override val changesetComment = "Specify cycleway path surfaces"

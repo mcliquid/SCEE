@@ -13,6 +13,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
+import de.westnordost.streetcomplete.osm.FILTER_BICYCLE_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Sides
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.any
@@ -129,9 +130,8 @@ private val roadsFilter by lazy { """
       and expressway != yes
       and bicycle_road != yes
       and cyclestreet != yes
-      and bicycle != no
+      and ($FILTER_BICYCLE_ACCESSIBLE)
       and bicycle != designated
-      and access !~ private|no
 """.toElementFilterExpression() }
 
 // streets for which missing cycleway information should be surveyed

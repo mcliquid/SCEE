@@ -92,13 +92,21 @@ class AddCyclewayWidthTest {
         ))))
     }
 
-    @Test fun `not applicable to shared path with private access`() {
-        assertFalse(quest.isApplicableTo(way(tags = mapOf(
+    @Test fun `bicycle permission overrides private access`() {
+        assertTrue(quest.isApplicableTo(way(tags = mapOf(
             "highway" to "path",
             "bicycle" to "designated",
             "foot" to "designated",
             "segregated" to "no",
             "access" to "private",
+        ))))
+    }
+
+    @Test fun `not applicable when bicycles are explicitly prohibited`() {
+        assertFalse(quest.isApplicableTo(way(tags = mapOf(
+            "highway" to "cycleway",
+            "access" to "yes",
+            "bicycle" to "no",
         ))))
     }
 

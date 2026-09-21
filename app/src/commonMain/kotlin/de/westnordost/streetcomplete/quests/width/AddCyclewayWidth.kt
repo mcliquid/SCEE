@@ -7,6 +7,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
+import de.westnordost.streetcomplete.osm.FILTER_BICYCLE_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.util.measure.ArSupportChecker
@@ -45,7 +46,7 @@ class AddCyclewayWidth(
             )
           )
           and area != yes
-          and access !~ private|no
+          and ($FILTER_BICYCLE_ACCESSIBLE)
           and placement != transition
           and ~path|footway|cycleway|bridleway !~ link
     """

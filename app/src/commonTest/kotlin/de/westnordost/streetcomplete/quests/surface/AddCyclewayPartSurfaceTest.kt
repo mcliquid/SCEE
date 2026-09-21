@@ -82,6 +82,7 @@ class AddCyclewayPartSurfaceTest {
     @Test fun `not applicable to private cycleways`() {
         assertIsNotApplicable("highway" to "cycleway", "segregated" to "yes", "access" to "private")
         assertIsNotApplicable("highway" to "cycleway", "segregated" to "yes", "access" to "private", "bicycle" to "private")
+        assertIsNotApplicable("highway" to "cycleway", "segregated" to "yes", "access" to "yes", "bicycle" to "no")
     }
 
     @Test fun `applicable to access-restricted but cycle allowed cycleway`() {

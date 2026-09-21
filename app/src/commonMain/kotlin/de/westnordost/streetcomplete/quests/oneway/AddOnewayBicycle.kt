@@ -9,6 +9,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement
+import de.westnordost.streetcomplete.osm.FILTER_BICYCLE_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
 import de.westnordost.streetcomplete.quests.getPrefixedFullElementSelectionPref
@@ -29,7 +30,7 @@ class AddOnewayBicycle : OsmElementQuestType<OnewayAnswer> {
       and !oneway:bicycle
       and area != yes
       and junction != roundabout
-      and access !~ private|no
+      and ($FILTER_BICYCLE_ACCESSIBLE)
 """.trimIndent()
 
     private val filter by lazy {

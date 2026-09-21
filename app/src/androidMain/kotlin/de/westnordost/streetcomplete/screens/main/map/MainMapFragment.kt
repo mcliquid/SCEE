@@ -301,7 +301,6 @@ class MainMapFragment : MapFragment() {
         loadGpxTrack()
         loadCustomGeometry()
 
-        Log.i("test", "setup location ${displayedLocation?.position}")
         locationMapComponent?.targetPositionWithAccuracy = displayedLocation?.position
 
         val positionsLists = tracks.map { track -> track.map { it.position } }

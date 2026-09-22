@@ -1,9 +1,6 @@
 import java.io.FileInputStream
 import java.util.Properties
 
-val appVersionName = "63.4"
-val appVersionCode = 6308
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -31,8 +28,8 @@ android {
         applicationId = "de.westnordost.streetcomplete.expert"
         minSdk = 25
         targetSdk = 37
-        versionCode = appVersionCode
-        versionName = appVersionName
+        versionCode = 6308
+        versionName = "64.0-alpha1"
     }
 
     signingConfigs {
@@ -95,7 +92,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling:1.10.0")
 
     // location
-    implementation("org.maplibre.compose:location:0.15.0")
+    implementation("org.maplibre.compose:location:0.16.0")
 
     // Dependency Injection
     implementation("io.insert-koin:koin-android:4.2.2")

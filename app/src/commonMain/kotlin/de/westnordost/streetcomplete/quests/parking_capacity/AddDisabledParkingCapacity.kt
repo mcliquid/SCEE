@@ -45,7 +45,7 @@ class AddDisabledParkingCapacity : OsmFilterQuestType<Int>() {
             otherAnswers = { listOf(AnswerItem(stringResource(Res.string.quest_parking_capacity_disabled_answer_yes)) {
                 on(Answer(-1))
             }) },
-            minCount = 0,
+            minimum = 0,
         )
     }
 

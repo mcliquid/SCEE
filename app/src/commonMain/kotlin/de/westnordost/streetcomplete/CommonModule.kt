@@ -185,8 +185,8 @@ import de.westnordost.streetcomplete.screens.settings.SettingsViewModel
 import de.westnordost.streetcomplete.screens.settings.SettingsViewModelImpl
 import de.westnordost.streetcomplete.screens.settings.debug.ShowQuestFormsViewModel
 import de.westnordost.streetcomplete.screens.settings.debug.ShowQuestFormsViewModelImpl
-import de.westnordost.streetcomplete.screens.settings.language_selection.LanguageSelectionViewModel
-import de.westnordost.streetcomplete.screens.settings.language_selection.LanguageSelectionViewModelImpl
+import de.westnordost.streetcomplete.screens.settings.locale_selection.LocaleSelectionViewModel
+import de.westnordost.streetcomplete.screens.settings.locale_selection.LocaleSelectionViewModelImpl
 import de.westnordost.streetcomplete.screens.settings.messages.MessageSelectionViewModel
 import de.westnordost.streetcomplete.screens.settings.messages.MessageSelectionViewModelImpl
 import de.westnordost.streetcomplete.screens.settings.overlay_selection.OverlaySelectionViewModel
@@ -370,12 +370,12 @@ val commonModule = module {
     factory { OpenChangesetsDao(get()) }
     factory { EditElementsDao(get()) }
 
-    single { OpenChangesetsManager(get(), get(), get(), get()) }
+    single { OpenChangesetsManager(get(), get()) }
 
     single { ElementEditsUploader(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 
     single<ElementEditsSource> { get<ElementEditsController>() }
-    single<ElementEditsController> { ElementEditsControllerImpl(get(), get(), get(), get()) }
+    single<ElementEditsController> { ElementEditsControllerImpl(get(), get(), get()) }
     single<MapDataWithEditsSource> { MapDataWithEditsSourceImpl(get(), get(), get()) }
 
     factory { CreatedElementsDao(get()) }
@@ -612,7 +612,7 @@ val commonModule = module {
     viewModel<MainViewModel> {
         MainViewModelImpl(
             get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
-            get(), get(), get(), get(), get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
         )
     }
 
@@ -658,7 +658,7 @@ val commonModule = module {
 
     viewModel<SettingsViewModel> { SettingsViewModelImpl(get(), get(), get(), get(), get(), get(), get()) }
     viewModel<OverlaySelectionViewModel> { OverlaySelectionViewModelImpl(get(), get(), get()) }
-    viewModel<LanguageSelectionViewModel> { LanguageSelectionViewModelImpl(get(), get()) }
+    viewModel<LocaleSelectionViewModel> { LocaleSelectionViewModelImpl(get(), get()) }
     viewModel<EditTypePresetsViewModel> { EditTypePresetsViewModelImpl(get(), get(), get(), get()) }
     viewModel<MessageSelectionViewModel> { MessageSelectionViewModelImpl(get()) }
     viewModel<QuestSelectionViewModel> { QuestSelectionViewModelImpl(get(), get(), get(), get(), get(named("CountryBoundariesLazy")), get()) }

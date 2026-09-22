@@ -22,13 +22,13 @@ fun CountInputQuestForm(
     icon: Painter,
     modifier: Modifier = Modifier,
     otherAnswers: @Composable () -> List<AnswerItem> = { emptyList() },
-    minCount: Int = 1
+    minimum: Int = 1,
 ) {
     var count by rememberSaveable { mutableStateOf<Int?>(null) }
 
     QuestForm(
         on = on,
-        isComplete = count?.let { it >= minCount } == true,
+        isComplete = count?.let { it >= minimum } == true,
         onClickOk = { on(Answer(count!!)) },
         modifier = modifier,
         otherAnswers = otherAnswers,

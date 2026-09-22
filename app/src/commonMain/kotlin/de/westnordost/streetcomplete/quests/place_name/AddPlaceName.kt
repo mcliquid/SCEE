@@ -43,16 +43,16 @@ class AddPlaceName(
 ) : OsmElementQuestType<PlaceNameAnswer> {
 
     private val filter by lazy { ("""
-        nodes, ways with
-        (
-          shop and shop !~ no|vacant
-          or office and office !~ no|vacant
-          or craft
-          or amenity = recycling and recycling_type = centre
-          or amenity = shelter and shelter_type = basic_hut
-          or tourism = information and information ~ office|visitor_centre
-          or natural = cave_entrance and fee = yes
-          or """ +
+        nodes, ways, relations with
+          (
+            shop and shop !~ no|vacant
+            or office and office !~ no|vacant
+            or craft
+            or amenity = recycling and recycling_type = centre
+            or amenity = shelter and shelter_type = basic_hut
+            or tourism = information and information ~ office|visitor_centre
+            or natural = cave_entrance and fee = yes
+            or """ +
 
         // The common list is shared by the opening hours quest and the wheelchair quest.
         // It is also mostly shared by the name quest, that has some wildcards (for say craft and office)

@@ -109,6 +109,7 @@ import de.westnordost.streetcomplete.util.ktx.toLatLon
 import de.westnordost.streetcomplete.util.ktx.toList
 import de.westnordost.streetcomplete.util.ktx.toOffset
 import de.westnordost.streetcomplete.util.ktx.toast
+import de.westnordost.streetcomplete.util.ktx.updatesWithPermissionChanges
 import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.util.math.area
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
@@ -170,15 +171,12 @@ class MainActivity :
 
     override val scope: Scope by activityScope()
 
-    private val autoSyncer: AutoSyncer by inject()
     private val prefs: Preferences by inject()
     private val visibleQuestsSource: VisibleQuestsSource by inject()
     private val mapDataWithEditsSource: MapDataWithEditsSource by inject()
-    private val feedsUpdater: FeedsUpdater by inject()
     private val featureDictionary: Lazy<FeatureDictionary> by inject(named("FeatureDictionaryLazy"))
     private val locationProvider: LocationProvider by inject()
     private val systemSettingsLauncher: SystemSettingsLauncher by inject()
-    private val periodicCleaner: PeriodicCleaner by inject()
     private val countryBoundaries: Lazy<CountryBoundaries> by inject(named("CountryBoundariesLazy"))
     private val customQuestList: CustomQuestList by inject()
 
@@ -246,16 +244,6 @@ class MainActivity :
                 add(mapContainer, MainMapFragment(), TAG_MAP)
             }
         }
-
-        lifecycle.addObserver(autoSyncer)
-
-        feedsUpdater.updateAtMostDaily()
-        // this must be enqueued once the UI is started, i.e. not in headless mode. This is why
-        // it is done here, rather than in AppInitializer. Reason is that
-        // AppInitializer.initialize() is also executed when a background job is run. But we don't
-        // want to enqueue the cleanup job again while running the cleanup job, but only once after
-        // the user actually opened the app!
-        periodicCleaner.enqueue()
 
         compose.setContent { AppTheme {
             val mapAppLauncher = rememberMapAppLauncher()
@@ -475,15 +463,14 @@ class MainActivity :
         val locationRequest = if (prefs.contains(Prefs.LOCATION_INTERVAL))
             LocationRequest(minimumInterval = prefs.getInt(Prefs.LOCATION_INTERVAL, 0).seconds)
         else LocationRequest()
-        observe(locationProvider.updates(locationRequest)) { locationEvent ->
+        observe(locationProvider.updatesWithPermissionChanges(locationRequest)) { locationEvent ->
             viewModel.locationState.value = when (locationEvent) {
-                is LocationEvent.Fix -> LocationState.UPDATING
+                is LocationEvent.Update -> LocationState.UPDATING
                 is LocationEvent.Unavailable -> when (locationEvent.reason) {
                     LocationUnavailableReason.ServicesDisabled -> LocationState.ALLOWED
                     LocationUnavailableReason.TemporarilyUnavailable -> LocationState.SEARCHING
                     LocationUnavailableReason.PermissionDenied -> LocationState.DENIED
                     LocationUnavailableReason.Unsupported,
-                    LocationUnavailableReason.Misconfigured,
                     LocationUnavailableReason.UnexpectedFailure -> null
                 }
             }
@@ -641,7 +628,7 @@ class MainActivity :
 
     private fun getDisplayedPoint(): PointF? {
         val mapFragment = mapFragment ?: return null
-        val displayedPosition = mapFragment.displayedLocation?.position?.value?.toLatLon() ?: return null
+        val displayedPosition = mapFragment.displayedLocation?.position?.toLatLon() ?: return null
         return mapFragment.getPointOf(displayedPosition)
     }
 
@@ -739,7 +726,7 @@ class MainActivity :
         viewModel.isRecordingTracks.value = false
         val mapFragment = mapFragment ?: return
         mapFragment.stopPositionTrackRecording()
-        val pos = mapFragment.displayedLocation?.position?.value?.toLatLon() ?: return
+        val pos = mapFragment.displayedLocation?.position?.toLatLon() ?: return
         composeNote(pos, mapFragment.recordedTracks.takeIf { it.isNotEmpty() })
     }
 

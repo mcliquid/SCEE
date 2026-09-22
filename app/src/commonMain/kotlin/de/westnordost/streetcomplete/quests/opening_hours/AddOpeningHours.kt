@@ -131,8 +131,7 @@ mapOf(
 ).map { it.key + " ~ " + it.value.joinToString("|") }.joinToString("\n or ") + "\n" + """
     )
     and (!opening_hours or opening_hours older today -1 years)
-    and
-    (
+    and (
         name
         or brand
         or noname = yes
@@ -178,7 +177,7 @@ mapOf(
     )
     """
     private val filterString = """
-        nodes, ways with
+        nodes, ways, relations with
         (
             $namedFilterFragment
             or $unnamedFilterFragment

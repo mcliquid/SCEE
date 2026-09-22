@@ -16,7 +16,6 @@ import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
-import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuest
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestSource
 import de.westnordost.streetcomplete.data.osmnotes.Note
@@ -31,7 +30,9 @@ import de.westnordost.streetcomplete.data.quest.ExternalSourceQuestKey
 import de.westnordost.streetcomplete.data.quest.OsmNoteQuestKey
 import de.westnordost.streetcomplete.data.quest.OsmQuestKey
 import de.westnordost.streetcomplete.data.quest.QuestKey
+import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.data.quest.VisibleQuestsSource
+import de.westnordost.streetcomplete.data.visiblequests.QuestTypeOrderSource
 import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenController
 import de.westnordost.streetcomplete.util.ktx.launch
 import de.westnordost.streetcomplete.util.ktx.truncateTo6Decimals
@@ -95,6 +96,8 @@ class MainBottomSheetViewModelImpl(
     private val surveyChecker: SurveyChecker,
     private val externalSource: ExternalSourceQuestController,
     private val visibleQuestsSource: VisibleQuestsSource,
+    private val questTypeRegistry: QuestTypeRegistry,
+    private val questTypeOrderSource: QuestTypeOrderSource,
     private val prefs: Preferences,
 ) : MainBottomSheetViewModel() {
     override val shownBottomSheet = MutableStateFlow<ShownBottomSheet?>(null)
@@ -164,13 +167,18 @@ class MainBottomSheetViewModelImpl(
             val isNearUserLocation = surveyChecker.checkIsSurvey(geometry)
             val source = if (hasExtra) "survey,extra" else "survey"
             elementEditsController.add(elementEditType, geometry, source, elementEditAction, isNearUserLocation, key)
-            if (elementEditType !is OsmElementQuestType<*> || !prefs.getBoolean(Prefs.SHOW_NEXT_QUEST_IMMEDIATELY, false))
-                return@launch
-            val quest = visibleQuestsSource.getAll(geometry.center.enclosingBoundingBox(0.5))
-                .filterIsInstance<OsmQuest>()
-                .firstOrNull { it.geometry == geometry && it.type.dotColor == null }
-            if (quest == null) return@launch
-            shownBottomSheet.value = ShownBottomSheet.OsmQuest(quest, mapDataSource.get(quest.elementType, quest.elementId)!!)
+            val elementKey = elementKeyForImmediateSameElementQuest(
+                elementEditType,
+                elementEditAction,
+                prefs.getBoolean(Prefs.SHOW_NEXT_QUEST_IMMEDIATELY, false),
+            ) ?: return@launch
+            // VisibleQuestsSource already applied enabled/hidden/team/level/day-night/overlay filters.
+            val successor = immediateSameElementQuestSheet(
+                visibleQuestsSource.getAll(geometry.center.enclosingBoundingBox(0.5)),
+                elementKey,
+                questTypesInChainingOrder(questTypeRegistry, questTypeOrderSource),
+            ) { type, id -> mapDataSource.get(type, id) }
+            if (successor != null) shownBottomSheet.value = successor
         }
     }
 

@@ -41,6 +41,7 @@ class AddMapType : OsmFilterQuestType<MapType>() {
             items = MapType.entries,
             itemContent = { ImageWithDescription(painterResource(it.icon), stringResource(it.title), stringResource(it.description)) },
             itemsPerRow = 1,
+            submitOnSelection = true,
         )
     }
 }

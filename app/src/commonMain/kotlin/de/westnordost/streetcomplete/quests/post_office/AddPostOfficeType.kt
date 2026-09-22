@@ -44,7 +44,8 @@ class AddPostOfficeType : OsmFilterQuestType<String>() {
                 "post_annex" -> Res.string.quest_postOffice_postAnnex
                 "post_partner" -> Res.string.quest_postOffice_postPartner
                 else -> null
-            }!!) }
+            }!!) },
+            submitOnSelection = true,
         )
     }
 

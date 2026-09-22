@@ -37,6 +37,7 @@ class AddArtworkType : OsmFilterQuestType<ArtworkType>() {
             on = on,
             items = ArtworkType.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },
+            submitOnSelection = true,
         )
     }
 

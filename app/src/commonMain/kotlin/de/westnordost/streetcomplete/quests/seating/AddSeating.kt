@@ -43,6 +43,7 @@ class AddSeating : OsmFilterQuestType<Seating>() {
             on = on,
             items = Seating.entries,
             itemContent = { Text(stringResource(it.text)) },
+            submitOnSelection = true,
         )
     }
 

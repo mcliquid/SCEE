@@ -48,6 +48,7 @@ class AddBenchMaterial : OsmFilterQuestType<BenchMaterial>() {
             items = BenchMaterial.entries.filterNot { it == BenchMaterial.PICNIC },
             itemContent = { ImageWithLabel(painterResource(it.icon!!), stringResource(it.title!!)) },
             favoriteKey = "AddBenchMaterialForm",
+            submitOnSelection = true,
             otherAnswers = {
                 if (element.tags["amenity"] == "bench")
                     listOf(AnswerItem(stringResource(Res.string.quest_bench_answer_picnic_table)) { on(

@@ -38,6 +38,7 @@ class AddFireHydrantType : OsmFilterQuestType<FireHydrantType>() {
             items = FireHydrantType.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },
             itemsPerRow = 2,
+            submitOnSelection = true,
         )
     }
 

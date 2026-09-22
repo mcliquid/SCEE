@@ -42,6 +42,7 @@ class AddCameraType : OsmFilterQuestType<CameraType>() {
             on = on,
             items = CameraType.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },
+            submitOnSelection = true,
         )
     }
 

@@ -40,6 +40,7 @@ class AddBikeParkingType : OsmFilterQuestType<BikeParkingType>() {
             items = BikeParkingType.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },
             favoriteKey = "AddBikeParkingTypeForm",
+            submitOnSelection = true,
         )
     }
 

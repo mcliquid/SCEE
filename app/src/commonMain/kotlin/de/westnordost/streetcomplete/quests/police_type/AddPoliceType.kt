@@ -33,6 +33,7 @@ class AddPoliceType : OsmFilterQuestType<PoliceType>() {
             on = on,
             items = PoliceType.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), it.title) },
+            submitOnSelection = true,
         )
     }
 

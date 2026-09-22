@@ -13,7 +13,9 @@ import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.ui.common.RadioGroup
 import org.jetbrains.compose.resources.stringResource
 
-/** Quest form in which the [items] are displayed as a list of radio buttons */
+/** Quest form in which the [items] are displayed as a list of radio buttons. If
+ *  [submitOnSelection] is true, selecting an item submits it as the answer immediately.
+ */
 @Composable
 fun <I> RadioGroupQuestForm(
     on: (QuestAction<I>) -> Unit,
@@ -22,6 +24,7 @@ fun <I> RadioGroupQuestForm(
     modifier: Modifier = Modifier,
     title: String = stringResource(LocalQuestType.current!!.title),
     otherAnswers: @Composable (() -> List<AnswerItem>) = { emptyList() },
+    submitOnSelection: Boolean = false,
 ) {
     var checkedItemIndex by rememberSaveable(items) { mutableStateOf<Int>(-1) }
     val checkedItem by remember {
@@ -37,7 +40,14 @@ fun <I> RadioGroupQuestForm(
     ) {
         RadioGroup(
             options = items,
-            onSelectionChange = { checkedItemIndex = items.indexOf(it) },
+            onSelectionChange = { selection ->
+                handleSingleChoiceSelection(
+                    selection = selection,
+                    submitOnSelection = submitOnSelection,
+                    onIntermediateSelection = { checkedItemIndex = items.indexOf(it) },
+                    onTerminalAnswer = { on(Answer(it)) },
+                )
+            },
             selectedOption = checkedItem,
             itemContent = { itemContent(it) }
         )

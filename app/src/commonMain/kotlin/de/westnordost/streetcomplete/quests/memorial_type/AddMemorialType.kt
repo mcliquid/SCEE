@@ -34,6 +34,7 @@ class AddMemorialType : OsmFilterQuestType<MemorialType>() {
             on = on,
             items = MemorialType.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },
+            submitOnSelection = true,
         )
     }
 

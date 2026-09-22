@@ -30,7 +30,9 @@ import de.westnordost.streetcomplete.util.takeFavorites
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
-/** Quest form that lets the user select one item from a set of items arranged in [groups].
+/** Quest form that lets the user select one item from a set of items arranged in [groups]. If
+ *  [submitOnSelection] is true, concrete item selections submit immediately. Group selections
+ *  always expand the group or retain their explicit confirmation flow.
  *
  *  At the top, ungrouped [topItems] are shown as a quick selection.
  *  If [favoriteKey] is not null, the last picked items saved for that key supplant the [topItems],
@@ -46,7 +48,8 @@ inline fun <reified G : Group<I>, reified I> GroupedItemSelectQuestForm(
     favoriteKey: String? = null,
     noinline otherAnswers: @Composable (() -> List<AnswerItem>) = { emptyList() },
     preferences: Preferences = koinInject(),
-    title: String = stringResource(LocalQuestType.current!!.title)
+    title: String = stringResource(LocalQuestType.current!!.title),
+    submitOnSelection: Boolean = false,
 ) {
     val actualTopItems = remember(topItems) {
         if (favoriteKey != null) {
@@ -60,6 +63,10 @@ inline fun <reified G : Group<I>, reified I> GroupedItemSelectQuestForm(
     var selectedItem by rememberSerializable { mutableStateOf<I?>(null) }
 
     var confirmSelectionOfGroupItem by remember { mutableStateOf<I?>(null) }
+    val submitAnswer: (I) -> Unit = { value ->
+        if (favoriteKey != null) preferences.addLastPicked(favoriteKey, value)
+        on(Answer(value))
+    }
 
     QuestForm(
         on = on,
@@ -69,10 +76,7 @@ inline fun <reified G : Group<I>, reified I> GroupedItemSelectQuestForm(
             val groupItem = group?.item
             val item = selectedItem
             if (item != null) {
-                if (favoriteKey != null) {
-                    preferences.addLastPicked(favoriteKey, item)
-                }
-                on(Answer(item))
+                submitAnswer(item)
             } else if (groupItem != null) {
                 confirmSelectionOfGroupItem = groupItem
             }
@@ -94,8 +98,20 @@ inline fun <reified G : Group<I>, reified I> GroupedItemSelectQuestForm(
                 selectedItem = selectedItem,
                 selectedGroup = selectedGroup,
                 onSelect = { group, item ->
-                    selectedGroup = group
-                    selectedItem = item
+                    if (item != null) {
+                        handleSingleChoiceSelection(
+                            selection = item,
+                            submitOnSelection = submitOnSelection,
+                            onIntermediateSelection = {
+                                selectedGroup = group
+                                selectedItem = it
+                            },
+                            onTerminalAnswer = submitAnswer,
+                        )
+                    } else {
+                        selectedGroup = group
+                        selectedItem = null
+                    }
                 },
                 groupContent = groupContent,
                 itemContent = itemContent,
@@ -108,10 +124,7 @@ inline fun <reified G : Group<I>, reified I> GroupedItemSelectQuestForm(
         AreYouSureDialog(
             onDismissRequest = { confirmSelectionOfGroupItem = null },
             onConfirmed = {
-                if (favoriteKey != null) {
-                    preferences.addLastPicked(favoriteKey, groupItem)
-                }
-                on(Answer(groupItem))
+                submitAnswer(groupItem)
             },
             text = { Text(stringResource(Res.string.quest_generic_item_confirmation)) }
         )

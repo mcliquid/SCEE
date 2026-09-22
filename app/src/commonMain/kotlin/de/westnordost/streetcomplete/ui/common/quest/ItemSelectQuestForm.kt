@@ -30,8 +30,9 @@ import de.westnordost.streetcomplete.util.takeFavorites
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
-/** Quest form that lets the user select one item from a set of [items], displayed in a grid with a
- *  width of [itemsPerRow].
+/** Quest form that lets the user answer by selecting one item from a set of [items], displayed in a
+ *  grid with a width of [itemsPerRow]. If [submitOnSelection] is true, selecting an item submits it
+ *  as the answer immediately. Otherwise, the selection must be confirmed with the OK button.
  *  If [favoriteKey] is not null, moves the last picked items saved for that key to the front in the
  *  first row.
  *  */
@@ -45,7 +46,8 @@ inline fun <reified I> ItemSelectQuestForm(
     favoriteKey: String? = null,
     title: String = stringResource(LocalQuestType.current!!.title),
     noinline otherAnswers: @Composable (() -> List<AnswerItem>) = { emptyList() },
-    preferences: Preferences = koinInject()
+    preferences: Preferences = koinInject(),
+    submitOnSelection: Boolean = false,
 ) {
     val reorderedItems = remember(items, itemsPerRow, favoriteKey) {
         if (favoriteKey != null && items.size > preferences.getInt(Prefs.FAVS_FIRST_MIN_LINES, 1) * 2 * itemsPerRow) {
@@ -57,17 +59,15 @@ inline fun <reified I> ItemSelectQuestForm(
         }
     }
     var selectedItem by rememberSerializable { mutableStateOf<I?>(null) }
+    val submitAnswer: (I) -> Unit = { value ->
+        if (favoriteKey != null) preferences.addLastPicked(favoriteKey, value)
+        on(Answer(value))
+    }
 
     QuestForm(
         on = on,
         isComplete = selectedItem != null,
-        onClickOk = {
-            val value = selectedItem!!
-            if (favoriteKey != null) {
-                preferences.addLastPicked(favoriteKey, value)
-            }
-            on(Answer(value))
-        },
+        onClickOk = { submitAnswer(selectedItem!!) },
         modifier = modifier,
         title = title,
         otherAnswers = otherAnswers,
@@ -83,7 +83,14 @@ inline fun <reified I> ItemSelectQuestForm(
                 columns = SimpleGridCells.Fixed(itemsPerRow),
                 items = reorderedItems,
                 selectedItem = selectedItem,
-                onSelect = { selectedItem = it },
+                onSelect = { selection ->
+                    handleSingleChoiceSelection(
+                        selection = selection,
+                        submitOnSelection = submitOnSelection,
+                        onIntermediateSelection = { selectedItem = it },
+                        onTerminalAnswer = submitAnswer,
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
                 itemContent = itemContent
             )

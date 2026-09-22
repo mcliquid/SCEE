@@ -645,7 +645,6 @@
     <string name="quest_orchard_type_meadow_orchard_description">Великі дерева, широкі міжряддя</string>
     <string name="quest_orchard_type_plantation_description">Веретеноподібні дерева, вузькі міжряддя (зазвичай комерційні насадження)</string>
     <string name="quest_service_times_title">Коли тут проводяться богослужіння?</string>
-    <string name="quest_service_times_resurvey_title">Чи є актуальним наведений тут розклад богослужінь?</string>
     <string name="quest_railwayPlatformRef_abc">ABC</string>
     <string name="quest_tree_denotation_title">Який опис підходить для цього дерева? Виберіть найкращий варіант.</string>
     <string name="quest_tree_denotation_landmark">Орієнтир</string>

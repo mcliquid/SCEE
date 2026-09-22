@@ -263,7 +263,7 @@
     <string name="quest_barrier_height_title">Com d'alt és aquesta barrera?</string>
     <string name="quest_railwayPlatformRef_title">Quin número de pista és aquest?</string>
     <string name="quest_tree_genus_title">Quin és el gènere o espècie d'aquest arbre?</string>
-    <string name="quest_tree_error">No reconegut. Prova d'introduir en el gènere, l'espècie o el nom de l'arbre en anglès. De lo contrari, considera deixar una nota.</string>
+    <string name="quest_tree_error">No reconegut. Prova d\'introduir en el gènere, l\'espècie o el nom de l\'arbre en anglès. De lo contrari, considera deixar una nota.</string>
     <string name="default_disabled_msg_ee">Noves missions afegides a SCEE sempre estan desactivades per defecte, ja que no sempre poden tenir resposta fàcil, i algunes requereixen de coneixements en el tòpic o en les etiquetes a usar.</string>
     <string name="quest_buildingType_stable">Estable</string>
     <string name="quest_buildingType_sports_hall">Pavelló d'esports</string>

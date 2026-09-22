@@ -640,7 +640,6 @@
     <string name="quest_fence_material_title">Od kojeg materijala je napravljena ova ograda?</string>
     <string name="quest_material_wire">Žica</string>
     <string name="quest_service_times_title">Kada se ovdje obavlja vjerski obred?</string>
-    <string name="quest_service_times_resurvey_title">Jesu li vremena vjerskih obreda ovdje još uvijek točna?</string>
     <string name="quest_kerb_type_title">Kakva je ovo vrsta rubnika?</string>
     <string name="quest_orchard_type_title">Koja je ovo vrsta voćnjaka?</string>
     <string name="quest_orchard_type_meadow_orchard">Livadni voćnjak</string>
@@ -664,4 +663,7 @@
     <string name="quest_tree_denotation_urban_description">Unutar naselja</string>
     <string name="quest_tree_denotation_natural">Prirodno</string>
     <string name="quest_tree_denotation_natural_description">Izvan naselja</string>
+    <string name="quest_evse_id_scan_more">Skeniraj drugi EVSE ID</string>
+    <string name="quest_evse_id_scan_unknown_value">QR kod nije prepoznat. Otvori problem i priloži sliku QR koda kako bismo mogli dodati podršku.</string>
+    <string name="no_qr_code_handler">Nije pronađen skener QR koda. Instaliraj kompatibilnu aplikaciju kao što je Binary Eye i pokušaj ponovno.</string>
 </resources>

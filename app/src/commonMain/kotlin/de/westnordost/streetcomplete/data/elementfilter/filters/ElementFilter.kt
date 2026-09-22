@@ -130,11 +130,12 @@ abstract class CompareDateTagValue(val key: String, val dateFilter: DateFilter) 
 
 class TagOlderThan(key: String, dateFilter: DateFilter) : CompareTagAge(key, dateFilter) {
     override fun toString() = "$key older $dateFilter"
-    // SC: Long comparison + cached threshold; SCEE: optional custom resurvey date per key
-    override fun compareTo(timestamp: Long): Boolean {
-        val threshold = resurveyDate?.takeIf { resurveyKeys.contains(key) }?.toEpochMilli() ?: dateTimestamp
-        return timestamp < threshold
-    }
+    // Optional custom resurvey date per key, compared as epoch millis.
+    override fun compareTo(timestamp: Long) =
+        if (resurveyDateMillis != null && resurveyKeys.contains(key))
+            timestamp < resurveyDateMillis!!
+        else
+            timestamp < dateTimestamp
 }
 class TagNewerThan(key: String, dateFilter: DateFilter) : CompareTagAge(key, dateFilter) {
     override fun toString() = "$key newer $dateFilter"
@@ -165,7 +166,7 @@ abstract class CompareTagAge(val key: String, val dateFilter: DateFilter) : Elem
 
     companion object {
         var resurveyKeys = listOf<String>()
-        var resurveyDate: LocalDate? = null
+        var resurveyDateMillis: Long? = null
     }
 }
 

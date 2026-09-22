@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import de.westnordost.osmfeatures.Feature
 import de.westnordost.streetcomplete.ApplicationConstants
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditAction
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditType
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
@@ -20,6 +21,7 @@ import de.westnordost.streetcomplete.data.osm.edits.tagEdit
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
+import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.quest.ExternalSourceQuestKey
 import de.westnordost.streetcomplete.data.quest.OsmNoteQuestKey
 import de.westnordost.streetcomplete.data.quest.OsmQuestKey
@@ -65,6 +67,7 @@ fun MainBottomSheet(
     modifier: Modifier = Modifier
 ) {
     var confirmEdit by remember { mutableStateOf<PendingEdit?>(null) }
+    val prefs: Preferences = koinInject()
 
     when (shownBottomSheet) {
         is ShownBottomSheet.CreateOsmNote -> {
@@ -122,7 +125,15 @@ fun MainBottomSheet(
                         )
                         onSolved(shownBottomSheet.quest.type.icon, shownBottomSheet.quest.position)
                         onDismiss()
+                        if (prefs.getBoolean(Prefs.DYNAMIC_QUEST_CREATION, false)) {
+                            // quests that are not in db don't disappear without this
+                            val key = OsmQuestKey(
+                                shownBottomSheet.element.type,
+                                shownBottomSheet.element.id, shownBottomSheet.quest.type.name)
+                            viewModel.hideQuest(key, true)
+                        }
                     } else {
+                        // todo: avoid non-disappearing dynamic-only quests
                         confirmEdit = PendingEdit(shownBottomSheet.quest.type, shownBottomSheet.quest.geometry, action)
                     }
                 },

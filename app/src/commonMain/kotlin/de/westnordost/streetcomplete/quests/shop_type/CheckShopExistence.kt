@@ -57,7 +57,6 @@ class CheckShopExistence(
     // Apply 'filter' last since it will check the age of almost every element (very slow)
     override fun isApplicableTo(element: Element): Boolean =
         element.isPlace() &&
-        hasName(element) &&
         filter.matches(element)
 
     override fun getHighlightedElements(element: Element, mapData: MapDataWithGeometry) =

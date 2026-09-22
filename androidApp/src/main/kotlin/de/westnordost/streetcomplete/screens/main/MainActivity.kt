@@ -107,8 +107,8 @@ import de.westnordost.streetcomplete.util.ktx.toLatLon
 import de.westnordost.streetcomplete.util.ktx.toList
 import de.westnordost.streetcomplete.util.ktx.toOffset
 import de.westnordost.streetcomplete.util.ktx.toast
-import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.util.ktx.updatesWithPermissionChanges
+import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.util.math.area
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import de.westnordost.streetcomplete.util.math.enlargedBy

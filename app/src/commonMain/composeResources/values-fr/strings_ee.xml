@@ -230,7 +230,7 @@
     <string name="quest_service_building_type_title">Quel type de bâtiment de service est-ce\?</string>
     <string name="quest_service_building_type_pressure">Sous-station de distribution de gaz</string>
     <string name="quest_recycling_excrement_bag_dispenser">Il dispose d'un distributeur de sacs à excréments</string>
-    <string name="quest_tree_error">Non reconnu. Essayez de saisir le genre, l'espèce ou le nom anglais de l'arbre. Sinon, laissez une note.</string>
+    <string name="quest_tree_error">Non reconnu. Essayez de saisir le genre, l\'espèce ou le nom anglais de l\'arbre. Sinon, laissez une note.</string>
     <string name="quest_tree_genus_title">Quel est le genre ou l'espèce de cet arbre \?</string>
     <string name="quest_seating_parklet">A côté du trottoir, ou à l'endroit où se trouvait le parking</string>
     <string name="quest_seating_garden">Dans un espace vert</string>

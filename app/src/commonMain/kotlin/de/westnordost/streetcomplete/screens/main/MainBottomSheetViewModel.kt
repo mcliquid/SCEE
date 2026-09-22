@@ -208,6 +208,7 @@ class MainBottomSheetViewModelImpl(
 
     private fun showOsmQuest(questKey: OsmQuestKey) {
         val element = mapDataSource.get(questKey.elementType, questKey.elementId) ?: return
+        // VisibleQuestsSource serves dynamic quests from cache and falls back to the DB.
         val quest = visibleQuestsSource.get(questKey) as? OsmQuest ?: return
         shownBottomSheet.value = ShownBottomSheet.OsmQuest(quest, element)
     }

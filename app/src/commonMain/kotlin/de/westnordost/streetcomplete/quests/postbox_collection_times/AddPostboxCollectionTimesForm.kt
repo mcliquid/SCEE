@@ -23,7 +23,6 @@ import de.westnordost.streetcomplete.ui.common.quest.AnswerItem
 import de.westnordost.streetcomplete.ui.common.quest.QuestForm
 import de.westnordost.streetcomplete.ui.util.ReplaceBottomSheetTransitionSpec
 import de.westnordost.streetcomplete.ui.util.rememberSerializable
-import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -31,8 +30,7 @@ fun AddPostboxCollectionTimesForm(
     on: (QuestAction<CollectionTimesAnswer>) -> Unit,
     element: Element,
     countryInfo: CountryInfo,
-    tag: String = "collection_times",
-    resurveyTitle: StringResource = Res.string.quest_postboxCollectionTimes_resurvey_title
+    tag: String = "collection_times"
 ) {
     val oh = remember(element) { element.tags[tag]?.toOpeningHoursOrNull(lenient = true) }
     val originalOpeningHours = remember(oh) { oh?.toHierarchicOpeningHours(allowTimePoints = true) }
@@ -76,7 +74,6 @@ fun AddPostboxCollectionTimesForm(
                     }
                 ),
                 isResurvey = true,
-                title = stringResource(resurveyTitle),
                 otherAnswers = { listOf(
                     AnswerItem(stringResource(Res.string.quest_collectionTimes_answer_no_times_specified)) {
                         confirmNoSign = true

@@ -11,6 +11,7 @@ import de.westnordost.streetcomplete.data.osmcal.CalendarEventsDao
 import de.westnordost.streetcomplete.data.osmnotes.NoteController
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.data.quest.TestQuestTypeA
+import de.westnordost.streetcomplete.testutils.mockPrefs2
 import dev.mokkery.answering.calls
 import dev.mokkery.every
 import dev.mokkery.matcher.any
@@ -30,7 +31,7 @@ class CleanerTest {
     private val logs = LogsController(LogsDao(db))
     private val mapTiles: MapTilesDownloader = mock()
     private val events = CalendarEventsController(CalendarEventsDao(db))
-    private val cleaner = Cleaner(notes, mapData, QuestTypeRegistry(listOf(0 to TestQuestTypeA())), tiles, logs, mapTiles, events)
+    private val cleaner = Cleaner(notes, mapData, QuestTypeRegistry({ listOf(0 to TestQuestTypeA()) }), tiles, logs, mapTiles, events, mockPrefs2())
 
     @Test fun `cancellation stops cleanup between batches`() = runBlocking {
         val batchStarted = CompletableDeferred<Unit>()

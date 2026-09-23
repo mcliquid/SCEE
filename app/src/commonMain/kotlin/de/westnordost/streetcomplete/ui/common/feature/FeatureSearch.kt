@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.PlatformTextInputInterceptor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.intl.LocaleList
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -182,7 +183,11 @@ private fun FeatureSearchTextField(
             onValueChange = onSearchChange,
             modifier = Modifier.fillMaxWidth().focusRequester(focusRequester),
             placeholder = {
-                Text(stringResource(Res.string.quest_shop_gone_replaced_answer_hint2))
+                Text(
+                    text = stringResource(Res.string.quest_shop_gone_replaced_answer_hint2),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             },
             leadingIcon = { SearchIcon() },
             trailingIcon = {
@@ -192,6 +197,7 @@ private fun FeatureSearchTextField(
             },
             singleLine = true,
             keyboardOptions = KeyboardOptions.Default.copy(
+                showKeyboardOnFocus = showKeyboardInitially,
                 imeAction = ImeAction.None,
                 hintLocales = LocaleList.current,
             ),

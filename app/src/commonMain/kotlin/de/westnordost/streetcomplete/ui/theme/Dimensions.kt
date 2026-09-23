@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.ui.theme
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.ui.platform.WindowInfo
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.ui.ktx.isLandscape
 
@@ -13,7 +14,7 @@ object Dimensions {
     /** Collapsed quest form height as a fraction of the window, so list answers start well above
      *  the bottom of the screen on both compact and tall devices. */
     fun getQuestFormPeekHeight(windowInfo: WindowInfo): Dp =
-        windowInfo.containerDpSize.height * 0.62f
+        (windowInfo.containerDpSize.height * 0.6667f).coerceAtLeast(360.dp)
 
     fun getMaxQuestFormWidth(windowInfo: WindowInfo): Dp =
         if (windowInfo.isLandscape) {

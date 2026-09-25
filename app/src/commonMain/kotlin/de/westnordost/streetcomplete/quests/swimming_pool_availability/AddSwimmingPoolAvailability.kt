@@ -2,8 +2,11 @@ package de.westnordost.streetcomplete.quests.swimming_pool_availability
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
-import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.resources.quest_swimming_pool_indoor_and_outdoor
+import de.westnordost.streetcomplete.resources.quest_swimming_pool_indoor_only
+import de.westnordost.streetcomplete.resources.quest_swimming_pool_no
+import de.westnordost.streetcomplete.resources.quest_swimming_pool_outdoor_only
+import org.jetbrains.compose.resources.stringResource
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -55,10 +58,10 @@ class AddSwimmingPoolAvailability : OsmFilterQuestType<SwimmingPoolAvailability>
             on,
             items = SwimmingPoolAvailability.entries,
             itemContent = { Text(stringResource(when (it) {
-                SwimmingPoolAvailability.INDOOR_AND_OUTDOOR -> R.string.quest_swimming_pool_indoor_and_outdoor
-                SwimmingPoolAvailability.ONLY_INDOOR -> R.string.quest_swimming_pool_indoor_only
-                SwimmingPoolAvailability.ONLY_OUTDOOR -> R.string.quest_swimming_pool_outdoor_only
-                SwimmingPoolAvailability.NO -> R.string.quest_swimming_pool_no
+                SwimmingPoolAvailability.INDOOR_AND_OUTDOOR -> Res.string.quest_swimming_pool_indoor_and_outdoor
+                SwimmingPoolAvailability.ONLY_INDOOR -> Res.string.quest_swimming_pool_indoor_only
+                SwimmingPoolAvailability.ONLY_OUTDOOR -> Res.string.quest_swimming_pool_outdoor_only
+                SwimmingPoolAvailability.NO -> Res.string.quest_swimming_pool_no
             }))}
         )
     }

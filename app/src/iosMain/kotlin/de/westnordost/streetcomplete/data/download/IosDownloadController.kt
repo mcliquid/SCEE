@@ -6,7 +6,7 @@ import de.westnordost.streetcomplete.data.sync.IosSyncJob
 class IosDownloadController(private val downloader: Downloader) : DownloadController {
     private val job = IosSyncJob(Downloader.TAG)
 
-    override fun download(bbox: BoundingBox, isUserInitiated: Boolean) {
+    override fun download(bbox: BoundingBox, isUserInitiated: Boolean, enqueue: Boolean) {
         job.launch(replace = isUserInitiated) { downloader.download(bbox, isUserInitiated) }
     }
 

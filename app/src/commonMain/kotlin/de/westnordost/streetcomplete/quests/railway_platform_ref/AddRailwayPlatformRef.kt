@@ -6,8 +6,8 @@ import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.resources.quest_railwayPlatformRef_message
+import org.jetbrains.compose.resources.stringResource
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
@@ -107,7 +107,7 @@ class AddRailwayPlatformRef : OsmElementQuestType<String> {
     @Composable override fun QuestSettings(onDismissRequest: () -> Unit) {
         InfoDialog(
             onDismissRequest = onDismissRequest,
-            title = { Text(stringResource(R.string.quest_railwayPlatformRef_message)) },
+            title = { Text(stringResource(Res.string.quest_railwayPlatformRef_message)) },
             text = {
                 Column {
                     Button({ prefs.putString(PREF_KEY, "local_ref"); onDismissRequest() }, Modifier.fillMaxWidth()) {

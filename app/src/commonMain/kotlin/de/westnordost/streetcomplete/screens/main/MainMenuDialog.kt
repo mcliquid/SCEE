@@ -31,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -51,7 +50,6 @@ import de.westnordost.streetcomplete.resources.user_login
 import de.westnordost.streetcomplete.resources.user_profile
 import de.westnordost.streetcomplete.resources.quick_switch_preset
 import de.westnordost.streetcomplete.Prefs
-import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.presets.EditTypePresetsController
 import de.westnordost.streetcomplete.resources.*
@@ -160,7 +158,7 @@ fun MainMenuDialog(
                         CompactMenuButton(
                             onClick = { showProfileSelectionDialog = true },
                             icon = { },
-                            text = stringResource(R.string.quick_switch_preset)
+                            text = stringResource(Res.string.quick_switch_preset)
                         )
                 } else {
                     FlowRow(

@@ -2,13 +2,13 @@ package de.westnordost.streetcomplete.data.upload
 
 import android.content.Context
 import android.widget.Toast
-import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
 import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.data.AuthorizationException
 import de.westnordost.streetcomplete.Prefs
-import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.ban_check_fails
 import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesController
 import de.westnordost.streetcomplete.data.download.tiles.enclosingTilePos
 import de.westnordost.streetcomplete.data.osm.edits.upload.ElementEditsUploader
@@ -24,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -83,8 +84,9 @@ class Uploader(
                 prefs.putInt(Prefs.BAN_CHECK_ERROR_COUNT, 0)
             if (prefs.getInt(Prefs.BAN_CHECK_ERROR_COUNT, 0) > 10) {
                 try {
+                    val message = getString(Res.string.ban_check_fails)
                     ContextCompat.getMainExecutor(context).execute {
-                        context.toast(R.string.ban_check_fails, Toast.LENGTH_LONG)
+                        context.toast(message, Toast.LENGTH_LONG)
                     }
                 } catch (_: Exception) { }
             }
@@ -138,6 +140,6 @@ class Uploader(
         const val TAG = "Upload"
     }
 }
-private fun Context.toast(@StringRes resId: Int, duration: Int = Toast.LENGTH_SHORT) {
-    Toast.makeText(this, resId, duration).show()
+private fun Context.toast(text: CharSequence, duration: Int = Toast.LENGTH_SHORT) {
+    Toast.makeText(this, text, duration).show()
 }

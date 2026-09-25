@@ -1,19 +1,16 @@
 package de.westnordost.streetcomplete.screens.main
 
-import androidx.compose.runtime.MutableState
-import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import de.westnordost.streetcomplete.data.messages.Message
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
-import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
+import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.quest.Quest
 import de.westnordost.streetcomplete.data.quest.QuestType
 import de.westnordost.streetcomplete.data.urlconfig.UrlConfig
-import de.westnordost.streetcomplete.screens.main.controls.LocationState
-import de.westnordost.streetcomplete.screens.main.map.maplibre.CameraPosition
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import org.maplibre.compose.camera.CameraPosition
 import kotlin.reflect.KClass
 
 // not @Stable, as not all fields are StateFlows or immutable
@@ -32,7 +29,12 @@ abstract class MainViewModel : ViewModel() {
     abstract val urlConfig: StateFlow<ShownUrlConfig?>
     abstract fun applyUrlConfig(config: UrlConfig)
     abstract val geoUri: StateFlow<CameraPosition?>
-    abstract fun consumeGeoUri() // probably only necessary while not fully converted to Compose yet
+    abstract fun consumeGeoUri()
+
+    abstract val initialCamera: CameraPosition
+    abstract val initiallyFollowing: Boolean
+    abstract val initiallyNavigating: Boolean
+    abstract fun saveCamera(camera: CameraPosition, following: Boolean, navigating: Boolean)
 
     /* intro */
     abstract var hasShownTutorial: Boolean
@@ -66,6 +68,7 @@ abstract class MainViewModel : ViewModel() {
     abstract val unsyncedEditsCount: StateFlow<Int>
 
     abstract val isUploading: StateFlow<Boolean>
+    /** Exposed so UI can treat upload and download separately (sync during download). */
     abstract val isDownloading: StateFlow<Boolean>
     abstract val isUploadingOrDownloading: StateFlow<Boolean>
 
@@ -77,32 +80,28 @@ abstract class MainViewModel : ViewModel() {
     abstract fun finishRequestingLogin()
 
     abstract fun upload()
-    abstract fun download(bbox: BoundingBox, enqueue: Boolean = false)
+    /** returns false if the area is too big to download */
+    abstract fun download(displayedArea: BoundingBox, center: LatLon, enqueue: Boolean = false): Boolean
 
     /* stars */
     abstract val starsCount: StateFlow<Int>
     abstract val isShowingStarsCurrentWeek: StateFlow<Boolean>
     abstract fun toggleShowingCurrentWeek()
 
-    // NOTE: currently filled from MainActivity (communication to compose view), i.e. the source of
-    //       truth is actually the MapFragment
-    abstract val locationState: MutableStateFlow<LocationState?>
-    abstract val mapCamera: MutableStateFlow<CameraPosition?>
-    abstract val metersPerDp: MutableStateFlow<Double>
-    abstract val displayedPosition: MutableStateFlow<Offset?>
-
-    abstract val isFollowingPosition: MutableStateFlow<Boolean>
-    abstract val isNavigationMode: MutableStateFlow<Boolean>
-
-    abstract val isRecordingTracks: MutableStateFlow<Boolean>
-
-    abstract val userHasMovedCamera: MutableStateFlow<Boolean>
-
+    /* SCEE: quick settings / nearby quests / overlay selector */
     abstract val showQuickSettings: StateFlow<Boolean>
     abstract val showOverlaySelector: StateFlow<Boolean>
     abstract val reverseQuestOrder: MutableStateFlow<Boolean>
-    abstract val showMainMenuDialog: MutableState<Boolean>
     abstract val nearbyQuests: MutableStateFlow<Collection<Pair<Int, List<Quest>>>?>
+
+    /* SCEE: shared-text intent (custom quests / trees) */
+    abstract val textIntentUri: MutableStateFlow<String?>
+
+    /* SCEE: hooks for DisplaySettingsScreen flags consumed on resume */
+    abstract val reloadGpxTrack: MutableStateFlow<Boolean>
+    abstract val reloadCustomGeometry: MutableStateFlow<Boolean>
+    abstract fun consumeReloadGpxTrack()
+    abstract fun consumeReloadCustomGeometry()
 }
 
 data class ShownUrlConfig(val urlConfig: UrlConfig, val alreadyExists: Boolean)

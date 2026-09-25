@@ -27,6 +27,12 @@ import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.R
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.quest_monitor_channel_name
+import de.westnordost.streetcomplete.resources.quest_monitor_channel_name_found
+import de.westnordost.streetcomplete.resources.quest_monitor_error
+import de.westnordost.streetcomplete.resources.quest_monitor_found
+import de.westnordost.streetcomplete.resources.quest_monitor_running
 import de.westnordost.streetcomplete.data.download.DownloadController
 import de.westnordost.streetcomplete.data.download.Downloader
 import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesSource
@@ -63,13 +69,16 @@ class NearbyQuestMonitor : Service(), LocationListener, KoinComponent {
     private fun getQuestFoundNotification(size: Int, closest: Quest): Notification =
         NotificationCompat.Builder(this, FOUND_CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_app_notification)
-            .setContentTitle(getString(R.string.quest_monitor_found, size))
+            .setContentTitle(getRes(Res.string.quest_monitor_found, size))
             .setContentText(getRes(closest.type.title))
             .setContentIntent(intent(closest.position))
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .build()
 
-    private fun getRes(res: StringResource) = runBlocking { org.jetbrains.compose.resources.getString(getSystemResourceEnvironment(), res) }
+    private fun getRes(res: StringResource, vararg args: Any) = runBlocking {
+        val text = org.jetbrains.compose.resources.getString(getSystemResourceEnvironment(), res)
+        if (args.isEmpty()) text else text.format(*args)
+    }
 
     private fun intent(position: LatLon): PendingIntent? {
         val intent = Intent(this, MainActivity::class.java)
@@ -86,13 +95,13 @@ class NearbyQuestMonitor : Service(), LocationListener, KoinComponent {
         if (manager.getNotificationChannelCompat(MONITOR_CHANNEL_ID) == null)
             manager.createNotificationChannel(
                 NotificationChannelCompat.Builder(MONITOR_CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_LOW)
-                    .setName(getString(R.string.quest_monitor_channel_name))
+                    .setName(getRes(Res.string.quest_monitor_channel_name))
                     .build()
             )
         if (manager.getNotificationChannelCompat(FOUND_CHANNEL_ID) == null)
             manager.createNotificationChannel(
                 NotificationChannelCompat.Builder(FOUND_CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_HIGH)
-                    .setName(getString(R.string.quest_monitor_channel_name_found))
+                    .setName(getRes(Res.string.quest_monitor_channel_name_found))
                     .setVibrationEnabled(true)
                     .build()
             )
@@ -103,7 +112,7 @@ class NearbyQuestMonitor : Service(), LocationListener, KoinComponent {
             val notification = NotificationCompat.Builder(this, MONITOR_CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_app_notification)
                 .setContentTitle(if (ApplicationConstants.DEBUG) "SCEE Dev" else "SCEE")
-                .setContentText(getString(R.string.quest_monitor_running))
+                .setContentText(getRes(Res.string.quest_monitor_running))
                 .setContentIntent(pi)
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .build()
@@ -121,11 +130,11 @@ class NearbyQuestMonitor : Service(), LocationListener, KoinComponent {
             locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0L, 0.0f, this)
         } catch (e: SecurityException) {
             // there is some foreground issue, and of course location permissions
-            this.toast(R.string.quest_monitor_error, Toast.LENGTH_LONG)
+            this.toast(getRes(Res.string.quest_monitor_error), Toast.LENGTH_LONG)
         } catch (e: Exception) {
             // there is also ForegroundServiceNotAllowedException that can occur, didn't bother investigating details...
             // catch other exceptions because ForegroundServiceNotAllowedException is only available on API 31 and up
-            this.toast(R.string.quest_monitor_error, Toast.LENGTH_LONG)
+            this.toast(getRes(Res.string.quest_monitor_error), Toast.LENGTH_LONG)
         }
         return Binder()
     }

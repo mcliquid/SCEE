@@ -25,12 +25,14 @@ import de.westnordost.streetcomplete.util.ProfileSelectionDialog
 import de.westnordost.streetcomplete.util.LevelFilterDialog
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import org.maplibre.compose.camera.CameraPosition
 
 @Composable
 fun QuickSettingsDropdown(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     viewModel: MainViewModel,
+    camera: CameraPosition?,
     modifier: Modifier = Modifier,
 ) {
     val levelFilter: LevelFilter = koinInject()
@@ -74,7 +76,7 @@ fun QuickSettingsDropdown(
     if (levelFilterDialog)
         LevelFilterDialog(
             { onDismissRequest(); levelFilterDialog = false },
-            viewModel.mapCamera.collectAsState().value
+            camera,
         )
     if (presetsDialog)
         ProfileSelectionDialog({ onDismissRequest(); presetsDialog = false })

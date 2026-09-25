@@ -25,13 +25,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.ApplicationConstants.REFRESH_DATA_AFTER
 import de.westnordost.streetcomplete.Prefs
-import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.preferences.Autosync
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.preferences.ResurveyIntervals
@@ -263,15 +261,15 @@ fun SettingsScreen(
                 )
             }
 
-            PreferenceCategory(stringResource(R.string.pref_category_mods)) {
+            PreferenceCategory(stringResource(Res.string.pref_category_mods)) {
 
                 Preference(
-                    name = stringResource(R.string.pref_expert_mode_title),
+                    name = stringResource(Res.string.pref_expert_mode_title),
                     onClick = {
                         if (expertMode) viewModel.setExpertMode(false)
                         else showExpertModeConfirmation = true
                     },
-                    description = stringResource(R.string.pref_expert_mode_summary)
+                    description = stringResource(Res.string.pref_expert_mode_summary)
                 ) {
                     Switch(
                         checked = expertMode,
@@ -283,23 +281,23 @@ fun SettingsScreen(
                 }
 
                 Preference(
-                    name = stringResource(R.string.pref_screen_ui),
+                    name = stringResource(Res.string.pref_screen_ui),
                     onClick = onClickUiSettings,
                 )
                 Preference(
-                    name = stringResource(R.string.pref_screen_display),
+                    name = stringResource(Res.string.pref_screen_display),
                     onClick = onClickDisplaySettings,
                 )
                 Preference(
-                    name = stringResource(R.string.pref_screen_quests),
+                    name = stringResource(Res.string.pref_screen_quests),
                     onClick = onClickQuestSettings,
                 )
                 Preference(
-                    name = stringResource(R.string.pref_screen_notes),
+                    name = stringResource(Res.string.pref_screen_notes),
                     onClick = onClickNoteSettings,
                 )
                 Preference(
-                    name = stringResource(R.string.pref_screen_data_management),
+                    name = stringResource(Res.string.pref_screen_data_management),
                     onClick = onClickDataSettings,
                 )
                 if (ApplicationConstants.DEBUG) {
@@ -329,8 +327,8 @@ fun SettingsScreen(
         ConfirmationDialog(
             onDismissRequest = { showExpertModeConfirmation = false },
             onConfirmed = { viewModel.setExpertMode(true) },
-            text = { Text(stringResource(R.string.pref_expert_mode_message)) },
-            confirmButtonText = stringResource(R.string.dialog_button_understood)
+            text = { Text(stringResource(Res.string.pref_expert_mode_message)) },
+            confirmButtonText = stringResource(Res.string.dialog_button_understood)
         )
     }
     if (showDeleteCacheConfirmation) {

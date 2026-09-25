@@ -10,7 +10,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuest
 import de.westnordost.streetcomplete.data.meta.CountryInfos
@@ -75,7 +74,6 @@ fun ExternalSourceQuestFormContainer(
     onLeaveNote: (noteText: String, noteImagePaths: List<String>, isGpx: Boolean) -> Unit,
     onHideQuest: (tempHide: Boolean) -> Unit,
     quest: ExternalSourceQuest,
-    geometryOffsetInWindow: Offset?,
     mapPosition: LatLon?,
     mapRotation: Float,
     mapTilt: Float,
@@ -170,9 +168,7 @@ fun ExternalSourceQuestFormContainer(
                         onConfirmed = { onEdit(MoveNodeAction(element, it)) },
                         onDismiss = onDismiss,
                         mapPosition = mapPosition,
-                        nodeOffsetInWindow = geometryOffsetInWindow,
                         node = element as Node,
-                        elementEditType = quest.type,
                     )
                 }
                 QuestFormState2.EditTags -> {

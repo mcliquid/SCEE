@@ -35,8 +35,9 @@ import de.westnordost.streetcomplete.resources.level_filter_enable
 import de.westnordost.streetcomplete.resources.level_filter_message
 import de.westnordost.streetcomplete.resources.level_filter_title
 import de.westnordost.streetcomplete.resources.ok
-import de.westnordost.streetcomplete.screens.main.map.maplibre.CameraPosition
+import de.westnordost.streetcomplete.util.ktx.toLatLon
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
+import org.maplibre.compose.camera.CameraPosition
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import kotlin.math.ceil
@@ -102,7 +103,7 @@ import kotlin.math.floor
                 Text(stringResource(Res.string.level_filter_message))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Button({
-                        val selectableLevels = getLevelsInView(camera?.position?.enclosingBoundingBox(50.0), allowedLevelTypes, visibleQuestsSource, mapDataSource)
+                        val selectableLevels = getLevelsInView(camera?.target?.toLatLon()?.enclosingBoundingBox(50.0), allowedLevelTypes, visibleQuestsSource, mapDataSource)
                         val oldText = levelText.text
                         val currentLevel = "[\\d.+-]+".toRegex().find(oldText)?.value
                         val currentLevelNumber = currentLevel?.toDoubleOrNull()
@@ -115,7 +116,7 @@ import kotlin.math.floor
                         levelText = TextFieldValue(oldText.replace(currentLevel ?: oldText, newLevel.toNiceString()))
                     }) { Text("+") }
                     Button({
-                        val selectableLevels = getLevelsInView(camera?.position?.enclosingBoundingBox(50.0), allowedLevelTypes, visibleQuestsSource, mapDataSource)
+                        val selectableLevels = getLevelsInView(camera?.target?.toLatLon()?.enclosingBoundingBox(50.0), allowedLevelTypes, visibleQuestsSource, mapDataSource)
                         val oldText = levelText.text
                         val currentLevel = "[\\d.+-]+".toRegex().find(oldText)?.value
                         val currentLevelNumber = currentLevel?.toDoubleOrNull()

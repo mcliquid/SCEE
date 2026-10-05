@@ -9,6 +9,8 @@ import de.westnordost.streetcomplete.util.Listeners
 import de.westnordost.streetcomplete.util.ktx.format
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
 import de.westnordost.streetcomplete.util.logs.Log
+import de.westnordost.streetcomplete.util.logs.Perf
+import de.westnordost.streetcomplete.util.logs.currentPerfTrace
 import kotlinx.atomicfu.locks.ReentrantLock
 import kotlinx.atomicfu.locks.withLock
 import kotlin.plus
@@ -82,6 +84,15 @@ class MapDataControllerImpl constructor(
     }
 
     override fun updateAll(mapDataUpdates: MapDataUpdates) {
+        val start = Perf.mark()
+        try {
+            updateAllMeasured(mapDataUpdates)
+        } finally {
+            currentPerfTrace()?.addMs("updateAll", Perf.ms(start))
+        }
+    }
+
+    private fun updateAllMeasured(mapDataUpdates: MapDataUpdates) {
         val elements = mapDataUpdates.updated
         // need mapData in order to create (updated) geometry
         val mapData = MutableMapData(elements)

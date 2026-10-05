@@ -42,6 +42,10 @@ import de.westnordost.streetcomplete.screens.main.map.getIcon
 import de.westnordost.streetcomplete.screens.main.map.getTitle
 import de.westnordost.streetcomplete.ui.common.quest.Marker
 import de.westnordost.streetcomplete.util.ktx.launch
+import de.westnordost.streetcomplete.util.logs.Perf
+import de.westnordost.streetcomplete.util.logs.PerfTrace
+import de.westnordost.streetcomplete.util.logs.currentPerfTrace
+import de.westnordost.streetcomplete.util.logs.withPerfTrace
 import de.westnordost.streetcomplete.util.ktx.truncateTo6Decimals
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import de.westnordost.streetcomplete.util.math.enlargedBy
@@ -127,15 +131,28 @@ class MainBottomSheetViewModelImpl(
 
     private fun getQuestBottomSheet(selection: MainSheetSelection.Quest): ShownBottomSheet? {
         val key = selection.key
+        val trace = currentPerfTrace()
         return when (key) {
             is OsmQuestKey -> {
+                trace?.set("kind", "osm")
                 // VisibleQuestsSource serves dynamic quests from cache and falls back to the DB.
-                if (visibleQuestsSource.get(key) == null) return null
+                val questStart = Perf.mark()
+                if (visibleQuestsSource.get(key) == null) {
+                    trace?.addMs("questLookup", Perf.ms(questStart))
+                    return null
+                }
                 val quest = visibleQuestsSource.get(key) as? OsmQuest
                     ?: osmQuestSource.get(key)
-                    ?: return null
-                val element = mapDataSource.get(key.elementType, key.elementId) ?: return null
-                ShownBottomSheet.OsmQuest(quest, element)
+                trace?.addMs("questLookup", Perf.ms(questStart))
+                if (quest == null) return null
+                val elementStart = Perf.mark()
+                val element = mapDataSource.get(key.elementType, key.elementId)
+                trace?.addMs("elementLookup", Perf.ms(elementStart))
+                if (element == null) return null
+                val sheetStart = Perf.mark()
+                val sheet = ShownBottomSheet.OsmQuest(quest, element)
+                trace?.addMs("bottomSheet", Perf.ms(sheetStart))
+                sheet
             }
             is OsmNoteQuestKey -> {
                 if (visibleQuestsSource.get(key) == null) return null
@@ -207,9 +224,18 @@ class MainBottomSheetViewModelImpl(
         key: QuestKey?,
     ) {
         launch(Dispatchers.IO) {
-            val isNearUserLocation = surveyChecker.checkIsSurvey(geometry)
-            val source = if (hasExtra) "survey,extra" else "survey"
-            elementEditsController.add(elementEditType, geometry, source, elementEditAction, isNearUserLocation, key)
+            val trace = PerfTrace("answer", Perf.nextId(), Perf.mark())
+            try {
+                withPerfTrace(trace) {
+                    trace.set("quest", elementEditType.name)
+                    val isNearUserLocation = surveyChecker.checkIsSurvey(geometry)
+                    val source = if (hasExtra) "survey,extra" else "survey"
+                    elementEditsController.add(elementEditType, geometry, source, elementEditAction, isNearUserLocation, key)
+                }
+                trace.set("pipeline", "visible-quests")
+            } finally {
+                trace.finish()
+            }
 
             val elementKey = elementKeyForImmediateSameElementQuest(
                 elementEditType,

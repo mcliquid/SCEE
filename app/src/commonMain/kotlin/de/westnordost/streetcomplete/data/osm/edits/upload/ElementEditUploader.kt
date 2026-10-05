@@ -18,6 +18,8 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.user.UserLoginController
 import de.westnordost.streetcomplete.util.ktx.copy
 import de.westnordost.streetcomplete.util.Mockable
+import de.westnordost.streetcomplete.util.logs.Perf
+import de.westnordost.streetcomplete.util.logs.currentPerfTrace
 
 @Mockable
 class ElementEditUploader(
@@ -36,15 +38,23 @@ class ElementEditUploader(
         // certain edit types don't allow building changes on top of cached map data
         val mustUseRemoteData = edit.action::class in EDIT_ACTIONS_NOT_ALLOWED_TO_USE_LOCAL_CHANGES
 
-        if (ApplicationConstants.DEBUG && !UserLoginController.loggedIn)
-            return fakeUpload(edit, getIdProvider)
+        if (ApplicationConstants.DEBUG && !UserLoginController.loggedIn) {
+            val start = Perf.mark()
+            return fakeUpload(edit, getIdProvider).also {
+                currentPerfTrace()?.addMs("localBefore", Perf.ms(start))
+            }
+        }
 
         return if (mustUseRemoteData) {
             uploadUsingRemoteRepo(edit, getIdProvider)
         } else {
             // we first try to apply the changes onto the element cached locally, then upload...
+            val localStart = Perf.mark()
+            var recordedLocal = false
             try {
                 val localChanges = edit.action.createUpdates(mapDataSource, getIdProvider())
+                currentPerfTrace()?.addMs("localBefore", Perf.ms(localStart))
+                recordedLocal = true
                 try {
                     uploadChanges(edit, localChanges, false)
                 }
@@ -61,6 +71,7 @@ class ElementEditUploader(
             //
             // In any case -> try again with remote data
             catch (e: ConflictException) {
+                if (!recordedLocal) currentPerfTrace()?.addMs("localBefore", Perf.ms(localStart))
                 uploadUsingRemoteRepo(edit, getIdProvider)
             }
         }
@@ -74,7 +85,9 @@ class ElementEditUploader(
     private suspend fun uploadUsingRemoteRepo(edit: ElementEdit, getIdProvider: () -> ElementIdProvider): MapDataUpdates {
         // If a conflict is thrown here, it definitely means that the element has been changed on
         // remote in an incompatible way. So, we don't catch the exception but exit
+        val remoteStart = Perf.mark()
         val remoteChanges = edit.action.createUpdates(RemoteMapDataRepository(mapDataApi), getIdProvider())
+        currentPerfTrace()?.addMs("network", Perf.ms(remoteStart))
 
         val updates = try {
             uploadChanges(edit, remoteChanges, false)
@@ -102,12 +115,17 @@ class ElementEditUploader(
         changes: MapDataChanges,
         newChangeset: Boolean
     ): MapDataUpdates {
-        val changesetId = if (newChangeset) {
-            changesetManager.createChangeset(edit.type, edit.source, edit.position)
-        } else {
-            changesetManager.getOrCreateChangeset(edit.type, edit.source, edit.position, edit.isNearUserLocation)
+        val start = Perf.mark()
+        try {
+            val changesetId = if (newChangeset) {
+                changesetManager.createChangeset(edit.type, edit.source, edit.position)
+            } else {
+                changesetManager.getOrCreateChangeset(edit.type, edit.source, edit.position, edit.isNearUserLocation)
+            }
+            return mapDataApi.uploadChanges(changesetId, changes, ApplicationConstants::ignoreRelation)
+        } finally {
+            currentPerfTrace()?.addMs("network", Perf.ms(start))
         }
-        return mapDataApi.uploadChanges(changesetId, changes, ApplicationConstants::ignoreRelation)
     }
 
     /** Ensures that all nodes of all updated ways in [updates] are either already present in the
@@ -130,7 +148,9 @@ class ElementEditUploader(
         val nodesThatMustBeFetchedFromRemote = nodeIdsThatMustBePresentInLocalData - presentNodeIds
 
         return if (nodesThatMustBeFetchedFromRemote.isNotEmpty()) {
+            val start = Perf.mark()
             val nodes = nodesThatMustBeFetchedFromRemote.mapNotNull { mapDataApi.getNode(it) }
+            currentPerfTrace()?.addMs("network", Perf.ms(start))
             updates.copy(updated = updates.updated + nodes)
         } else {
             updates

@@ -18,6 +18,9 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.screens.main.edithistory.EditHistoryViewModel
 import de.westnordost.streetcomplete.screens.main.edithistory.EditItem
 import de.westnordost.streetcomplete.ui.common.quest.MapClick
+import de.westnordost.streetcomplete.util.logs.Perf
+import de.westnordost.streetcomplete.util.logs.withPerfTrace
+import kotlinx.coroutines.CancellationException
 import de.westnordost.streetcomplete.ui.common.quest.MapOverlayContent
 import de.westnordost.streetcomplete.ui.common.quest.Marker
 import kotlinx.coroutines.coroutineScope
@@ -90,6 +93,7 @@ class MainSheetState internal constructor(
     val hasEdits: Boolean get() = !editItems.isNullOrEmpty()
 
     fun show(selection: MainSheetSelection) {
+        if (selection is MainSheetSelection.Quest) Perf.armOpen() else Perf.cancelOpen()
         formStateHolder.removeState(id)
         id = Uuid.random().toString()
         this.selection = selection
@@ -132,8 +136,24 @@ class MainSheetState internal constructor(
     }
 
     private suspend fun showBottomSheet(selection: MainSheetSelection) {
-        val sheet = viewModel.getBottomSheet(selection)
-        if (sheet != null) shownBottomSheet = sheet else close()
+        val trace = if (selection is MainSheetSelection.Quest) Perf.takeOpen() else null
+        try {
+            val sheet = if (trace != null) {
+                withPerfTrace(trace) { viewModel.getBottomSheet(selection) }
+            } else {
+                viewModel.getBottomSheet(selection)
+            }
+            if (sheet != null) shownBottomSheet = sheet else close()
+            if (trace != null) {
+                val questName = (sheet as? ShownBottomSheet.OsmQuest)?.quest?.type?.name
+                if (questName != null) trace.set("quest", questName)
+                trace.set("ready", if (sheet != null) "viewModel" else "missing")
+                trace.set("firstFrame", "not-measured")
+                trace.finish()
+            }
+        } catch (e: CancellationException) {
+            throw e
+        }
     }
 
     private suspend fun observeEdit(key: EditKey) {

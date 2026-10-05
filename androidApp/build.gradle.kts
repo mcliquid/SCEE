@@ -47,14 +47,41 @@ android {
             isShrinkResources = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             testProguardFile("test-proguard-rules.pro")
+            // Explicit switch for ApplicationConstants.DEBUG. Not derived from the package name.
+            buildConfigField("boolean", "APPLICATION_DEBUG", "false")
         }
+        // Release-like build that updates the existing *.debug installation in place.
+        // Same application id and debug certificate as the previous debug variant.
         getByName("debug") {
-            isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             applicationIdSuffix = ".debug"
+            signingConfig = signingConfigs.getByName("debug")
+            isDebuggable = false
+            isMinifyEnabled = true
+            isShrinkResources = false
+            matchingFallbacks += listOf("release")
         }
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
+        }
+        // Previous debuggable debug variant, with its own data directory.
+        create("legacyDebug") {
+            applicationIdSuffix = ".legacydebug"
+            signingConfig = signingConfigs.getByName("debug")
+            isDebuggable = true
+            isMinifyEnabled = false
+            isShrinkResources = false
+            buildConfigField("boolean", "APPLICATION_DEBUG", "true")
+            matchingFallbacks += listOf("debug", "release")
+        }
+        // Local release-like build with a separate data directory.
+        create("perf") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".perf"
+            signingConfig = signingConfigs.getByName("debug")
+            isDebuggable = false
+            isMinifyEnabled = true
+            isShrinkResources = false
+            matchingFallbacks += listOf("release")
         }
     }
 
@@ -92,7 +119,7 @@ dependencies {
     implementation("org.jetbrains.compose.ui:ui:1.12.1")
     implementation("org.jetbrains.compose.material:material:1.12.1")
     implementation("org.jetbrains.compose.components:components-resources:1.12.1")
-    debugImplementation("androidx.compose.ui:ui-tooling:1.12.1")
+    add("legacyDebugImplementation", "androidx.compose.ui:ui-tooling:1.12.1")
 
     // location
     implementation("org.maplibre.compose:location:0.19.0")

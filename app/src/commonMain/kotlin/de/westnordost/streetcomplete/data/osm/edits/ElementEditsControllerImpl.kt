@@ -14,6 +14,8 @@ import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.util.Listeners
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
 import de.westnordost.streetcomplete.util.logs.Log
+import de.westnordost.streetcomplete.util.logs.Perf
+import de.westnordost.streetcomplete.util.logs.currentPerfTrace
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlinx.atomicfu.locks.ReentrantLock
@@ -117,6 +119,15 @@ class ElementEditsControllerImpl(
     }
 
     override fun markSynced(edit: ElementEdit, elementUpdates: MapDataUpdates) {
+        val start = Perf.mark()
+        try {
+            markSyncedMeasured(edit, elementUpdates)
+        } finally {
+            currentPerfTrace()?.addMs("markSynced", Perf.ms(start))
+        }
+    }
+
+    private fun markSyncedMeasured(edit: ElementEdit, elementUpdates: MapDataUpdates) {
         val idUpdatesMap = elementUpdates.idUpdates.associate {
             ElementKey(it.elementType, it.oldElementId) to it.newElementId
         }
@@ -178,6 +189,7 @@ class ElementEditsControllerImpl(
     /* ------------------------------------ add/sync/delete ------------------------------------- */
 
     private fun add(edit: ElementEdit, key: QuestKey? = null) {
+        val start = Perf.mark()
         lock.withLock {
             editsDB.put(edit)
             editElementsDB.put(edit.id, edit.action.elementKeys)
@@ -189,6 +201,9 @@ class ElementEditsControllerImpl(
                 createdElementsCount.relations
             )
             editCache[edit.id] = edit
+        }
+        if (currentPerfTrace()?.event == "answer") {
+            currentPerfTrace()?.addMs("persist", Perf.ms(start))
         }
         onAddedEdit(edit, key)
     }

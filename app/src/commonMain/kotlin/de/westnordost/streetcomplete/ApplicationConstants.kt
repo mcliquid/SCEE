@@ -135,5 +135,6 @@ object ApplicationConstants {
 
     const val MAX_OSM_TAG_VALUE_LENGTH = 255
 
-    var DEBUG = false // not really a constant, but does not depend on debug build vs not any more, so we fake it
+    /** Set at startup from the Android build type (`APPLICATION_DEBUG`), not from the package name. */
+    var DEBUG = false
 }

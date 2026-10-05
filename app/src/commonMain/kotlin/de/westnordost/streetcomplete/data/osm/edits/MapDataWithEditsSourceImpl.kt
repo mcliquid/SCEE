@@ -29,6 +29,8 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.mapdata.key
 import de.westnordost.streetcomplete.util.Listeners
 import de.westnordost.streetcomplete.util.logs.Log
+import de.westnordost.streetcomplete.util.logs.Perf
+import de.westnordost.streetcomplete.util.logs.currentPerfTrace
 import de.westnordost.streetcomplete.util.math.contains
 import de.westnordost.streetcomplete.util.math.intersect
 import kotlinx.atomicfu.AtomicBoolean
@@ -63,8 +65,11 @@ class MapDataWithEditsSourceImpl(
     private val mapDataListener = object : MapDataSource.Listener {
 
         override fun onUpdated(updated: MutableMapDataWithGeometry, deleted: Collection<ElementKey>) {
+            val start = Perf.mark()
             val modifiedElements = ArrayList<Pair<Element, ElementGeometry?>>()
             val modifiedDeleted = ArrayList<ElementKey>()
+            var rebuildMs = 0L
+            var unchanged = false
             lock.withLock {
                 /* We don't want to callOnUpdated if none of the changes affects map data provided
                  * by MapDataWithEditsSource
@@ -86,17 +91,19 @@ class MapDataWithEditsSourceImpl(
                     }
                 }
 
+                val rebuildStart = Perf.mark()
                 rebuildLocalChanges()
+                rebuildMs = Perf.ms(rebuildStart)
 
                 /* nothingChanged can be false at this point when e.g. there are two edits on the
                    same element, and onUpdated is called after the first edit is uploaded. */
-                val nothingChanged = deletedIsUnchanged && !hasNewElements && elementsThatMightHaveChangedByKey.all {
+                unchanged = deletedIsUnchanged && !hasNewElements && elementsThatMightHaveChangedByKey.all {
                     val updatedElement = get(it.first.type, it.first.id)
                     // old and new elements are equal except version and timestamp, or both are null
                     it.second?.isEqualExceptVersionAndTimestamp(updatedElement) ?: (updatedElement == null)
                 }
-                if (nothingChanged) {
-                    return
+                if (unchanged) {
+                    return@withLock
                 }
 
                 for (element in updated) {
@@ -131,7 +138,12 @@ class MapDataWithEditsSourceImpl(
                 }
             }
 
-            callOnUpdated(updated = updated, deleted = modifiedDeleted)
+            if (!unchanged) {
+                callOnUpdated(updated = updated, deleted = modifiedDeleted)
+            }
+            val trace = currentPerfTrace()
+            trace?.addMs("mapDataOnUpdated", Perf.ms(start))
+            trace?.addMs("rebuildLocalChanges", rebuildMs)
         }
 
         override fun onReplacedForBBox(bbox: BoundingBox, mapDataWithGeometry: MutableMapDataWithGeometry) {
@@ -171,7 +183,12 @@ class MapDataWithEditsSourceImpl(
             val mapData = MutableMapDataWithGeometry()
             var elementsToDelete: Collection<ElementKey> = listOf()
             lock.withLock {
-                val mapDataUpdates = applyEdit(edit) ?: return
+                val applyStart = Perf.mark()
+                val mapDataUpdates = applyEdit(edit)
+                if (currentPerfTrace()?.event == "answer") {
+                    currentPerfTrace()?.addMs("applyEdit", Perf.ms(applyStart))
+                }
+                if (mapDataUpdates == null) return
                 elementsToDelete = mapDataUpdates.deleted
                 for (element in mapDataUpdates.updated) {
                     mapData.put(element, getGeometry(element.type, element.id))

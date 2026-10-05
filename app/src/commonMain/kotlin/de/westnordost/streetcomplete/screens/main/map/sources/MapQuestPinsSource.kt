@@ -25,6 +25,8 @@ import de.westnordost.streetcomplete.data.visiblequests.QuestTypeOrderSource
 import de.westnordost.streetcomplete.overlays.places.PlacesOverlay
 import de.westnordost.streetcomplete.screens.main.map.layers.Pin
 import de.westnordost.streetcomplete.util.getNameLabel
+import de.westnordost.streetcomplete.util.logs.Perf
+import de.westnordost.streetcomplete.util.logs.PinRebuild
 import de.westnordost.streetcomplete.util.isDay
 import de.westnordost.streetcomplete.util.math.contains
 import kotlinx.coroutines.Dispatchers
@@ -76,10 +78,18 @@ class MapQuestPinsSource(
         emitAll(displayedRect.combine(reversedOrder) { rect, _ -> rect }.flatMapLatest { rect ->
             if (rect == null) return@flatMapLatest flowOf(emptyList())
             val bbox = rect.asBoundingBox(TILES_ZOOM)
+            var firstReload = true
             events().map { event ->
+                var rebuild: PinRebuild? = null
                 when (event) {
                     Event.Reload -> {
+                        val defaultReason = if (firstReload) "viewport" else "invalidate"
+                        firstReload = false
+                        val reload = Perf.beginPinReload(defaultReason)
+                        rebuild = reload
+                        val ordersStart = Perf.mark()
                         orders = questTypeOrders(bbox)
+                        reload.ordersMs = Perf.ms(ordersStart)
 
 
                         /* Usually, we would call pinsByQuest.clear() here. However,
@@ -96,8 +106,13 @@ class MapQuestPinsSource(
                             // or has no pins in the current view
                             || pins.none { it.position in bbox }
                         }
+                        val getAllStart = Perf.mark()
                         val quests = withContext(Dispatchers.IO) { visibleQuestsSource.getAll(bbox) }
+                        reload.getAllMs = Perf.ms(getAllStart)
+                        val toPinsStart = Perf.mark()
                         quests.forEach { pinsByQuest[it.key] = it.toPins(orders) }
+                        reload.toPinsMs = Perf.ms(toPinsStart)
+                        reload.quests = quests.size
                     }
                     is Event.Updated -> {
                         event.removed.forEach { pinsByQuest.remove(it) }
@@ -110,7 +125,16 @@ class MapQuestPinsSource(
                         }
                     }
                 }
-                pinsByQuest.values.flatten()
+                val pins = pinsByQuest.values.flatten()
+                rebuild?.let {
+                    it.pins = pins.size
+                    it.publish(pins)
+                    Perf.log(
+                        "pinsData#${it.id} reason=${it.reason} orders=${it.ordersMs}ms " +
+                            "getAll=${it.getAllMs}ms toPins=${it.toPinsMs}ms quests=${it.quests} pins=${it.pins}"
+                    )
+                }
+                pins
             }
         })
     }.flowOn(Dispatchers.Default)

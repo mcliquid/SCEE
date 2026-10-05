@@ -19,6 +19,9 @@ import de.westnordost.streetcomplete.data.user.UserLoginController
 import de.westnordost.streetcomplete.data.user.UserLoginSource
 import de.westnordost.streetcomplete.util.Listeners
 import de.westnordost.streetcomplete.util.logs.Log
+import de.westnordost.streetcomplete.util.logs.Perf
+import de.westnordost.streetcomplete.util.logs.PerfTrace
+import de.westnordost.streetcomplete.util.logs.withPerfTrace
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -96,13 +99,24 @@ class Uploader(
 
             Log.i(TAG, "Starting upload")
 
-            mutex.withLock {
-                // element edit and note edit uploader must run in sequence because the notes may need
-                // to be updated if the element edit uploader creates new elements to which notes refer
-                elementEditsUploader.upload()
-                if (!userLoginSource.isLoggedIn) return@withLock // avoid the 2 below in debug apk
-                noteEditsUploader.upload()
-                externalSourceQuestController.upload()
+            val uploadTrace = PerfTrace("upload", Perf.nextId(), Perf.mark())
+            try {
+                withPerfTrace(uploadTrace) {
+                    val waitStart = Perf.mark()
+                    mutex.withLock {
+                        uploadTrace.addMs("waitSerializeSync", Perf.ms(waitStart))
+                        // element edit and note edit uploader must run in sequence because the notes may need
+                        // to be updated if the element edit uploader creates new elements to which notes refer
+                        elementEditsUploader.upload()
+                        if (!userLoginSource.isLoggedIn) return@withLock // avoid the 2 below in debug apk
+                        val otherStart = Perf.mark()
+                        noteEditsUploader.upload()
+                        externalSourceQuestController.upload()
+                        uploadTrace.addMs("otherUploads", Perf.ms(otherStart))
+                    }
+                }
+            } finally {
+                uploadTrace.finish()
             }
             Log.i(TAG, "Finished upload")
         } catch (e: CancellationException) {

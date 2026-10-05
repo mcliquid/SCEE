@@ -23,6 +23,8 @@ import de.westnordost.streetcomplete.data.upload.OnUploadedChangeListener
 import de.westnordost.streetcomplete.data.user.UserLoginController
 import de.westnordost.streetcomplete.data.user.statistics.StatisticsController
 import de.westnordost.streetcomplete.util.logs.Log
+import de.westnordost.streetcomplete.util.logs.Perf
+import de.westnordost.streetcomplete.util.logs.currentPerfTrace
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.NonCancellable
@@ -62,6 +64,8 @@ class ElementEditsUploader(
 
     private suspend fun uploadEdit(edit: ElementEdit, getIdProvider: () -> ElementIdProvider) {
         val editActionClassName = edit.action::class.simpleName!!
+        val trace = currentPerfTrace()
+        val index = trace?.beginEdit() ?: 0
 
         try {
             if (edit.type is ExternalSourceQuestType && !externalSourceQuestController.onUpload(edit))
@@ -71,6 +75,7 @@ class ElementEditsUploader(
             Log.d(TAG, "Uploaded a $editActionClassName for ${edit.action.elementKeys}")
             uploadedChangeListener?.onUploaded(edit.type.name, edit.position)
 
+            val after = Perf.mark()
             elementEditsController.markSynced(edit, updates)
             mapDataController.updateAll(updates)
             noteEditsController.updateElementIds(updates.idUpdates)
@@ -82,12 +87,15 @@ class ElementEditsUploader(
                     statisticsController.addOne(edit.type.name, edit.position)
                 }
             }
+            trace?.addMs("localAfter", Perf.ms(after))
         } catch (e: ConflictException) {
             Log.d(TAG, "Dropped a $editActionClassName for ${edit.action.elementKeys}: ${e.message}")
             uploadedChangeListener?.onDiscarded(edit.type.name, edit.position)
 
             externalSourceQuestController.onSyncEditFailed(edit)
+            val localStart = Perf.mark()
             elementEditsController.markSyncFailed(edit)
+            var localMs = Perf.ms(localStart)
 
             /* fetching the current version of the element(s) edited on conflict and persisting
                them is not really optional, as when the edit has been deleted due to the conflict,
@@ -96,6 +104,7 @@ class ElementEditsUploader(
             val updated = mutableListOf<Element>()
             val deleted = mutableListOf<ElementKey>()
 
+            val fetchStart = Perf.mark()
             for (elementKey in edit.action.elementKeys) {
                 val mapData = fetchElementComplete(elementKey.type, elementKey.id)
                 if (mapData != null) {
@@ -104,14 +113,22 @@ class ElementEditsUploader(
                     deleted.add(elementKey)
                 }
             }
+            trace?.addMs("network", Perf.ms(fetchStart))
+            val updateStart = Perf.mark()
             if (updated.isNotEmpty() || deleted.isNotEmpty()) {
                 mapDataController.updateAll(MapDataUpdates(updated = updated, deleted = deleted))
             }
+            localMs += Perf.ms(updateStart)
+            trace?.addMs("localAfter", localMs)
         } catch (e: IllegalArgumentException) {
             Log.d(TAG, "Dropped a $editActionClassName: ${e.message}")
             uploadedChangeListener?.onDiscarded(edit.type.name, edit.position)
 
+            val after = Perf.mark()
             elementEditsController.markSyncFailed(edit)
+            trace?.addMs("localAfter", Perf.ms(after))
+        } finally {
+            trace?.logEdit(index, edit.type.name)
         }
     }
 

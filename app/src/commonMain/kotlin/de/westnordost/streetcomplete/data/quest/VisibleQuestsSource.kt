@@ -18,6 +18,9 @@ import de.westnordost.streetcomplete.data.visiblequests.TeamModeQuestFilterSourc
 import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeSource
 import de.westnordost.streetcomplete.util.Listeners
 import de.westnordost.streetcomplete.util.logs.Log
+import de.westnordost.streetcomplete.util.logs.Perf
+import de.westnordost.streetcomplete.util.logs.currentPerfState
+import de.westnordost.streetcomplete.util.logs.currentPerfTrace
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import de.westnordost.streetcomplete.util.SpatialCache
 import kotlinx.atomicfu.locks.ReentrantLock
@@ -233,16 +236,23 @@ class VisibleQuestsSource(
         added: Collection<Quest> = emptyList(),
         deleted: Collection<QuestKey> = emptyList()
     ) {
-        lock.withLock {
-            val hideOverlayQuests = prefs.getBoolean(Prefs.HIDE_OVERLAY_QUESTS, true)
-            val addedVisible = added.filter { isVisible(it, hideOverlayQuests) }
-            if (addedVisible.isEmpty() && deleted.isEmpty()) return
+        val start = Perf.mark()
+        try {
+            lock.withLock {
+                val hideOverlayQuests = prefs.getBoolean(Prefs.HIDE_OVERLAY_QUESTS, true)
+                val addedVisible = added.filter { isVisible(it, hideOverlayQuests) }
+                if (addedVisible.isEmpty() && deleted.isEmpty()) return
 
-            if (addedVisible.size > 10 || deleted.size > 10) Log.i(TAG, "added ${addedVisible.size}, deleted ${deleted.size}")
-            else Log.i(TAG, "added ${addedVisible.map { it.key }}, deleted: $deleted")
+                if (addedVisible.size > 10 || deleted.size > 10) Log.i(TAG, "added ${addedVisible.size}, deleted ${deleted.size}")
+                else Log.i(TAG, "added ${addedVisible.map { it.key }}, deleted: $deleted")
 
-            cache.update(addedVisible, deleted)
-            listeners.forEach { it.onUpdated(addedVisible, deleted) }
+                cache.update(addedVisible, deleted)
+                listeners.forEach { it.onUpdated(addedVisible, deleted) }
+            }
+        } finally {
+            val duration = Perf.ms(start)
+            currentPerfTrace()?.addMs("updateVisibleQuests", duration)
+            currentPerfState().visibleQuestHolder?.let { it[0] += duration }
         }
     }
 

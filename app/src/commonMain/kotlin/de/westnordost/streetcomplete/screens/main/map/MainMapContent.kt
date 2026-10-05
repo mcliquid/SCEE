@@ -3,10 +3,13 @@ package de.westnordost.streetcomplete.screens.main.map
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -40,6 +43,7 @@ import de.westnordost.streetcomplete.screens.main.map.layers.getIcon
 import de.westnordost.streetcomplete.screens.main.map.layers.toGeoJsonFeatures
 import de.westnordost.streetcomplete.ui.common.quest.Marker
 import de.westnordost.streetcomplete.util.ktx.toLatLon
+import de.westnordost.streetcomplete.util.logs.Perf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -94,6 +98,15 @@ internal fun MainMapContent(
     val mapState = checkNotNull(LocalMapState.current)
     val showPinsAtZoom by remember(mapState) { derivedStateOf { mapState.cameraPosition.zoom >= 13 } }
     val showOverlayAtZoom by remember(mapState) { derivedStateOf { mapState.cameraPosition.zoom >= 14 } }
+
+    // Runs before quest-pin collection so a form-close reload can see the reason.
+    var lastPinsMode by remember { mutableStateOf<PinsMode?>(null) }
+    LaunchedEffect(pinsMode) {
+        if (pinsMode == PinsMode.Quests && lastPinsMode != PinsMode.Quests) {
+            Perf.armPinRebuild(if (lastPinsMode == PinsMode.None) "form-closed" else "start")
+        }
+        lastPinsMode = pinsMode
+    }
 
     val pins: Collection<Pin> = if (!showPinsAtZoom) emptyList() else when (pinsMode) {
         PinsMode.Quests -> viewModel.questPins.collectAsStateWithLifecycle().value

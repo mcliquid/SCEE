@@ -26,6 +26,9 @@ import de.westnordost.streetcomplete.util.ktx.format
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
 import de.westnordost.streetcomplete.util.ktx.truncateTo6Decimals
 import de.westnordost.streetcomplete.util.logs.Log
+import de.westnordost.streetcomplete.util.logs.Perf
+import de.westnordost.streetcomplete.util.logs.currentPerfState
+import de.westnordost.streetcomplete.util.logs.currentPerfTrace
 import de.westnordost.streetcomplete.util.math.contains
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import de.westnordost.streetcomplete.util.math.enlargedBy
@@ -76,16 +79,21 @@ class OsmQuestController(
          *  as well. */
         override fun onUpdated(updated: MapDataWithGeometry, deleted: Collection<ElementKey>) {
             val time = nowAsEpochMilliseconds()
+            val start = Perf.mark()
             val questTypes = allQuestTypes
             val updatedElementKeys = updated.map { it.key }
+            val beforeEvalMs = Perf.ms(start)
+            val perfStats = QuestUpdatePerf()
 
             val deferredQuests = mutableListOf<Deferred<OsmQuest?>>()
+            val evalStart = Perf.mark()
 
             for (element in updated) {
                 val geometry = updated.getGeometry(element.type, element.id) ?: continue
-                deferredQuests.addAll(createQuestsForElementDeferred(element, geometry, questTypes))
+                deferredQuests.addAll(createQuestsForElementDeferred(element, geometry, questTypes, perfStats))
             }
             val quests = runBlocking { deferredQuests.awaitAll().filterNotNull() }
+            val questEvalMs = Perf.ms(evalStart)
 
             for (quest in quests) {
                 Log.d(TAG, "Created ${quest.type.name} for ${quest.elementType.name}#${quest.elementId}")
@@ -93,6 +101,7 @@ class OsmQuestController(
 
             var obsoleteQuestKeys: List<OsmQuestKey> = listOf()
             var visibleQuests: Collection<OsmQuest> = listOf()
+            var persistMs = 0L
             lock.withLock {
                 val previousQuests = db.getAllForElements(updatedElementKeys)
                 // quests that refer to elements that have been deleted shall be deleted
@@ -102,7 +111,9 @@ class OsmQuestController(
                 Log.i(TAG, "Created ${quests.size} quests for ${updated.size} updated elements in ${millis}ms")
 
                 obsoleteQuestKeys = getObsoleteQuestKeys(quests, previousQuests, deleteQuestKeys)
+                val persistStart = Perf.mark()
                 updateQuests(quests, obsoleteQuestKeys)
+                persistMs = Perf.ms(persistStart)
                 visibleQuests = quests.filterVisible()
             }
 
@@ -118,7 +129,26 @@ class OsmQuestController(
                 } else {
                     obsoleteQuestKeys
                 }
-            onUpdated(added = visibleQuests, deleted = questKeysToDelete)
+            val visibleHolder = longArrayOf(0L)
+            currentPerfState().visibleQuestHolder = visibleHolder
+            try {
+                onUpdated(added = visibleQuests, deleted = questKeysToDelete)
+            } finally {
+                currentPerfState().visibleQuestHolder = null
+            }
+            val totalMs = Perf.ms(start)
+            currentPerfTrace()?.addMs("onUpdated", totalMs)
+            val trace = currentPerfTrace()
+            val id = trace?.id ?: Perf.nextId()
+            val editSuffix = if (trace?.event == "upload" && trace.editIndex > 0) " edit=${trace.editIndex}" else ""
+            Perf.log(
+                "onUpdated#$id elements=${updated.size} questTypes=${questTypes.size} " +
+                    "beforeEval=${beforeEvalMs}ms surrounding=${perfStats.surroundingMs}ms " +
+                    "surroundingLoads=${perfStats.surroundingLoads} questEval=${questEvalMs}ms " +
+                    "persist=${persistMs}ms updateVisibleQuests=${visibleHolder[0]}ms " +
+                    "total=${totalMs}ms$editSuffix"
+            )
+            perfStats.slowLine()?.let { Perf.log("slowQuestType#$id $it") }
         }
 
         /** Replace all quests of the given types in the given bounding box with the given quests.
@@ -221,26 +251,40 @@ class OsmQuestController(
     private fun createQuestsForElementDeferred(
         element: Element,
         geometry: ElementGeometry,
-        questTypes: Collection<OsmElementQuestType<*>>
+        questTypes: Collection<OsmElementQuestType<*>>,
+        perfStats: QuestUpdatePerf? = null,
     ): List<Deferred<OsmQuest?>> {
         val paddedBounds = geometry.bounds.enlargedBy(ApplicationConstants.QUEST_FILTER_PADDING)
-        val lazyMapData by lazy { mapDataSource.getMapDataWithGeometry(paddedBounds).apply {
-            (this as? MutableMapDataWithGeometry)?.put(element, geometry) // this is specifically for tag editor to show the current version of the element, otherwise it should not matter
-        } }
+        val lazyMapData by lazy {
+            val loadStart = Perf.mark()
+            mapDataSource.getMapDataWithGeometry(paddedBounds).apply {
+                (this as? MutableMapDataWithGeometry)?.put(element, geometry) // this is specifically for tag editor to show the current version of the element, otherwise it should not matter
+            }.also {
+                perfStats?.addSurrounding(Perf.ms(loadStart))
+            }
+        }
 
         return questTypes.map { questType ->
             scope.async {
-                if (questType.enabledInCountries != AllCountries && !mayCreateQuest(questType, geometry, null)) return@async null // check whether it's disabled before creating the quest
-                var appliesToElement = questType.isApplicableTo(element)
-                if (appliesToElement == null) {
-                    Log.d(TAG, "${questType.name} requires surrounding map data to determine applicability to ${element.type.name}#${element.id}")
-                    val mapData = withContext(Dispatchers.IO) { lazyMapData }
-                    appliesToElement = questType.getApplicableElements(mapData)
-                        .any { it.id == element.id && it.type == element.type }
+                val typeStart = Perf.mark()
+                var surroundingWaitMs = 0L
+                val result = if (questType.enabledInCountries != AllCountries && !mayCreateQuest(questType, geometry, null)) {
+                    null // check whether it's disabled before creating the quest
+                } else {
+                    var appliesToElement = questType.isApplicableTo(element)
+                    if (appliesToElement == null) {
+                        Log.d(TAG, "${questType.name} requires surrounding map data to determine applicability to ${element.type.name}#${element.id}")
+                        val waitStart = Perf.mark()
+                        val mapData = withContext(Dispatchers.IO) { lazyMapData }
+                        surroundingWaitMs = Perf.ms(waitStart)
+                        appliesToElement = questType.getApplicableElements(mapData)
+                            .any { it.id == element.id && it.type == element.type }
+                    }
+                    if (appliesToElement) OsmQuest(questType, element.type, element.id, geometry) else null
                 }
-                if (!appliesToElement) return@async null
-
-                OsmQuest(questType, element.type, element.id, geometry)
+                val ownMs = (Perf.ms(typeStart) - surroundingWaitMs).coerceAtLeast(0)
+                if (ownMs >= Perf.SLOW_QUEST_TYPE_MS) perfStats?.addSlow(questType.name, ownMs)
+                result
             }
         }
     }
@@ -406,5 +450,32 @@ class OsmQuestController(
         private const val TAG = "OsmQuestController"
         private var instance: OsmQuestController? = null
         fun reloadQuestTypes() = instance?.reloadQuestTypes()
+    }
+}
+
+/** Aggregated timings for one [OsmQuestController] element update. Not a log per quest type. */
+private class QuestUpdatePerf {
+    var surroundingMs = 0L
+        private set
+    var surroundingLoads = 0
+        private set
+    private val slowMs = LinkedHashMap<String, Long>()
+    private val lock = ReentrantLock()
+
+    fun addSurrounding(ms: Long) = lock.withLock {
+        surroundingMs += ms
+        surroundingLoads++
+    }
+
+    fun addSlow(name: String, ms: Long) = lock.withLock {
+        val previous = slowMs[name]
+        if (previous == null || ms > previous) slowMs[name] = ms
+    }
+
+    fun slowLine(): String? = lock.withLock {
+        if (slowMs.isEmpty()) return@withLock null
+        val shown = slowMs.entries.take(8).joinToString(" ") { "${it.key}=${it.value}ms" }
+        val extra = slowMs.size - 8
+        if (extra > 0) "$shown more=$extra" else shown
     }
 }

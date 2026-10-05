@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.screens.main.map.layers
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import de.westnordost.streetcomplete.util.logs.Perf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -92,17 +93,35 @@ fun PinsLayers(
     LaunchedEffect(mapImages, pinPainters) { mapImages.addPins(pinPainters) }
 
     val features by produceState<List<Feature<Point, JsonObject>>>(emptyList(), iconPins) {
+        val generation = Perf.pinGeneration()
+        val start = Perf.mark()
         value = withContext(Dispatchers.Default) { iconPins.map { it.toGeoJsonFeature() } }
+        Perf.notePinFeature(generation, "icon", Perf.ms(start))
     }
     val dotFeatures by produceState<List<Feature<Point, JsonObject>>>(emptyList(), dotPins) {
+        val generation = Perf.pinGeneration()
+        val start = Perf.mark()
         value = withContext(Dispatchers.Default) { dotPins.map { it.toDotFeature() } }
+        Perf.notePinFeature(generation, "dot", Perf.ms(start))
     }
     val geometryFeatures by produceState<List<Feature<Geometry, JsonObject>>>(emptyList(), iconPins) {
+        val generation = Perf.pinGeneration()
+        val start = Perf.mark()
         value = withContext(Dispatchers.Default) {
             iconPins.mapNotNull { it.geometry }.distinct().map { geometry ->
                 Feature(geometry.toGeometry(), JsonObject(emptyMap()))
             }
         }
+        Perf.notePinFeature(generation, "geometry", Perf.ms(start))
+    }
+    LaunchedEffect(pins, features, dotFeatures, geometryFeatures) {
+        Perf.finishPinRebuildIfReady(
+            pins = pins,
+            iconPins = iconPins.size,
+            iconFeatures = features.size,
+            dotPins = dotPins.size,
+            dotFeatures = dotFeatures.size,
+        )
     }
     val options = remember {
         GeoJsonOptions(

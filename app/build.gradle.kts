@@ -26,7 +26,7 @@ val presetsVersion = "v7.2.0"
 /** Version of the Name Suggestion Index to use
  *  see https://github.com/osmlab/name-suggestion-index/tags for latest version (without leading "v"
  *  */
-val nsiVersion = "7.2.20260530"
+val nsiVersion = "8.0.20260918"
 
 /** Project ID of the crowdsource translation platform (from where to pull translations from) */
 val poEditorProjectId = "97843"
@@ -44,6 +44,8 @@ plugins {
 }
 
 repositories {
+    // SPIKE: locally published osmfeatures that reads the NSI format
+    mavenLocal { content { includeGroup("de.westnordost") } }
     google()
     mavenCentral()
     // for com.github.ticofab:android-gpx-parser
@@ -179,7 +181,7 @@ kotlin {
                 implementation("de.westnordost:countryboundaries:3.0.0")
 
                 // finding OSM features
-                implementation("de.westnordost:osmfeatures:8.0.0")
+                implementation("de.westnordost:osmfeatures:8.1.0-SNAPSHOT")
 
                 // opening hours parser
                 implementation("de.westnordost:osm-opening-hours:0.4.0")

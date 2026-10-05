@@ -42,7 +42,6 @@ import de.westnordost.streetcomplete.data.quest.Quest
 import de.westnordost.streetcomplete.data.quest.VisibleQuestsSource
 import de.westnordost.streetcomplete.util.buildGeoUri
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
-import de.westnordost.streetcomplete.util.ktx.toast
 import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.util.math.distanceTo
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
@@ -130,11 +129,11 @@ class NearbyQuestMonitor : Service(), LocationListener, KoinComponent {
             locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0L, 0.0f, this)
         } catch (e: SecurityException) {
             // there is some foreground issue, and of course location permissions
-            this.toast(getRes(Res.string.quest_monitor_error), Toast.LENGTH_LONG)
+            Toast.makeText(this, getRes(Res.string.quest_monitor_error), Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
             // there is also ForegroundServiceNotAllowedException that can occur, didn't bother investigating details...
             // catch other exceptions because ForegroundServiceNotAllowedException is only available on API 31 and up
-            this.toast(getRes(Res.string.quest_monitor_error), Toast.LENGTH_LONG)
+            Toast.makeText(this, getRes(Res.string.quest_monitor_error), Toast.LENGTH_LONG).show()
         }
         return Binder()
     }

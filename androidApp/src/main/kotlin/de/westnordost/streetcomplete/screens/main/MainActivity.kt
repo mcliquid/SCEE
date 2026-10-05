@@ -1,23 +1,24 @@
 package de.westnordost.streetcomplete.screens.main
 
 import android.content.ComponentName
+import android.content.Context.BIND_AUTO_CREATE
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
-import android.view.WindowManager
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.ui.platform.ComposeView
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.lifecycleScope
+import de.westnordost.streetcomplete.App
+import de.westnordost.streetcomplete.AppLocaleUpdater
+import de.westnordost.streetcomplete.AppViewModel
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.preferences.Preferences
-import de.westnordost.streetcomplete.screens.BaseActivity
-import de.westnordost.streetcomplete.screens.about.AboutActivity
-import de.westnordost.streetcomplete.screens.settings.SettingsActivity
 import de.westnordost.streetcomplete.screens.settings.custom_geometry_changed
 import de.westnordost.streetcomplete.screens.settings.gpx_track_changed
-import de.westnordost.streetcomplete.screens.user.UserActivity
-import de.westnordost.streetcomplete.ui.theme.AppTheme
 import de.westnordost.streetcomplete.util.ktx.loadFileKit
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -29,12 +30,13 @@ import org.koin.androidx.scope.activityScope
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.scope.Scope
 
-/** Android host for the shared main screen and application lifecycle work. */
-class MainActivity : BaseActivity(), AndroidScopeComponent {
+/** Android entry point for the shared application. */
+class MainActivity : ComponentActivity(), AndroidScopeComponent {
     override val scope: Scope by activityScope()
-
+    private val viewModel: AppViewModel by viewModel()
+    private val mainViewModel: MainViewModel by viewModel()
+    private val appLocaleUpdater: AppLocaleUpdater by inject()
     private val prefs: Preferences by inject()
-    private val viewModel: MainViewModel by viewModel()
 
     private var questMonitorJob: Job? = null
     private val questMonitorConnection = object : ServiceConnection {
@@ -43,50 +45,40 @@ class MainActivity : BaseActivity(), AndroidScopeComponent {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        appLocaleUpdater.update()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         loadFileKit()
 
         if (savedInstanceState == null) handleIntent(intent)
-
-        setContentView(ComposeView(this).apply {
-            setContent {
-                AppTheme {
-                    KoinActivityScope {
-                        MainScreen(
-                            viewModel = viewModel,
-                            onClickSettings = { startActivity(Intent(this@MainActivity, SettingsActivity::class.java)) },
-                            onClickQuestSettings = { startActivity(SettingsActivity.createLaunchQuestSettingsIntent(this@MainActivity)) },
-                            onClickAbout = { startActivity(Intent(this@MainActivity, AboutActivity::class.java)) },
-                            onClickProfile = { startActivity(Intent(this@MainActivity, UserActivity::class.java)) },
-                            onClickLogin = {
-                                startActivity(Intent(this@MainActivity, UserActivity::class.java).apply {
-                                    putExtra(UserActivity.EXTRA_LAUNCH_AUTH, true)
-                                })
-                            },
-                        )
-                    }
-                }
+        setContent {
+            KoinActivityScope {
+                val uri by viewModel.pendingUri.collectAsState()
+                App(
+                    uri = uri,
+                    onConsumedUri = viewModel::consumeUri,
+                    viewModel = viewModel,
+                )
             }
-        })
+        }
     }
 
     override fun onStart() {
         super.onStart()
-        if (prefs.keepScreenOn) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        else window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         // Stop NearbyQuestMonitor while the main map is visible.
         stopQuestMonitor()
     }
 
     override fun onResume() {
+        // Android can reset the default locales without another Application configuration callback.
+        appLocaleUpdater.update()
         super.onResume()
         if (gpx_track_changed) {
-            viewModel.reloadGpxTrack.value = true
+            mainViewModel.reloadGpxTrack.value = true
             gpx_track_changed = false
         }
         if (custom_geometry_changed) {
-            viewModel.reloadCustomGeometry.value = true
+            mainViewModel.reloadCustomGeometry.value = true
             custom_geometry_changed = false
         }
     }
@@ -105,10 +97,11 @@ class MainActivity : BaseActivity(), AndroidScopeComponent {
     private fun handleIntent(intent: Intent) {
         if (intent.action != Intent.ACTION_VIEW) return
         val uri = intent.data ?: return
+        val uriString = uri.toString()
         if (intent.type?.startsWith("text/") == true) {
-            viewModel.textIntentUri.value = uri.toString()
+            mainViewModel.textIntentUri.value = uriString
         }
-        viewModel.setUri(uri.toString())
+        viewModel.openUri(uriString)
     }
 
     private fun startQuestMonitor() {

@@ -37,6 +37,7 @@ import de.westnordost.streetcomplete.data.visiblequests.QuestTypeOrderSource
 import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenController
 import de.westnordost.streetcomplete.osm.level.levelsIntersect
 import de.westnordost.streetcomplete.osm.level.parseLevelsOrNull
+import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.screens.main.map.getIcon
 import de.westnordost.streetcomplete.screens.main.map.getTitle
 import de.westnordost.streetcomplete.ui.common.quest.Marker
@@ -51,6 +52,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.withContext
+import org.jetbrains.compose.resources.DrawableResource
 
 @Stable
 abstract class MainBottomSheetViewModel : ViewModel() {
@@ -266,6 +268,7 @@ sealed interface ShownBottomSheet {
     ) : ShownBottomSheet {
         override val position get() = quest.position
         override val geometry get() = quest.geometry
+        override val icon get() = quest.type.icon
     }
 
     data class ExternalSourceQuest(
@@ -273,6 +276,7 @@ sealed interface ShownBottomSheet {
     ) : ShownBottomSheet {
         override val position get() = quest.position
         override val geometry get() = quest.geometry
+        override val icon get() = quest.type.icon
     }
 
     data class OsmNoteQuest(
@@ -281,6 +285,7 @@ sealed interface ShownBottomSheet {
     ) : ShownBottomSheet {
         override val position get() = quest.position
         override val geometry get() = quest.geometry
+        override val icon get() = quest.type.icon
     }
 
     data class Overlay(
@@ -289,6 +294,7 @@ sealed interface ShownBottomSheet {
         override val geometry: ElementGeometry?,
     ) : ShownBottomSheet {
         override val position get() = geometry?.center
+        override val icon get() = overlay.icon
     }
 
     data class CreateOsmNote(
@@ -296,6 +302,7 @@ sealed interface ShownBottomSheet {
     ) : ShownBottomSheet {
         override val position get() = null
         override val geometry get() = null
+        override val icon get() = Res.drawable.quest_create_note
     }
 
     data class AddPoi(
@@ -303,14 +310,17 @@ sealed interface ShownBottomSheet {
         val feature: Feature,
     ) : ShownBottomSheet {
         override val geometry get() = null
+        override val icon get() = Res.drawable.ic_add_poi
     }
 
     data class InsertNode(
         override val position: LatLon,
     ) : ShownBottomSheet {
         override val geometry get() = null
+        override val icon get() = Res.drawable.crosshair
     }
 
     val position: LatLon?
     val geometry: ElementGeometry?
+    val icon: DrawableResource
 }

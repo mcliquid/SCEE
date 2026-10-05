@@ -32,13 +32,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.quests.questPrefix
+import de.westnordost.streetcomplete.ui.theme.sceeAccent
 import de.westnordost.streetcomplete.quests.surface.AddRoadSurface
 import de.westnordost.streetcomplete.resources.*
 import org.koin.compose.koinInject
@@ -121,7 +120,7 @@ fun QuestSelectionRow(
 private fun insideColor(item: QuestSelection): Color {
     val start = questPrefix(item.prefs) + "qs_" + item.questType.name + "_"
     return if (item.prefs.prefs.keys.any { it.startsWith(start) })
-        colorResource(id = R.color.accent)
+        MaterialTheme.colors.sceeAccent
     else Color.Transparent
 }
 

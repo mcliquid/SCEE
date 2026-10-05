@@ -26,10 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.BlendModeColorFilter
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.Prefs
-import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
@@ -66,7 +64,7 @@ fun OverlayQuickSelector(
             val selected = if (selectedOverlay !is CustomOverlay) it == selectedOverlay
                 else it.wikiLink?.toIntOrNull() == prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, 0)
             val modifier = if (!selected) Modifier
-            else Modifier.border(3.dp, colorResource(R.color.quest_selection_frame), CircleShape)
+            else Modifier.border(3.dp, Color(0xBBFF5722), CircleShape)
                 .bringIntoViewRequester(bringIntoViewRequester)
             Box(modifier) {
                 Image(

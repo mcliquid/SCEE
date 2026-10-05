@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.ui.common.quest
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.DropdownMenu
@@ -56,7 +57,9 @@ fun QuestAnswerButtonBar(
             }
             TextButton(
                 onClick = item.action,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .defaultMinSize(minWidth = 80.dp, minHeight = 48.dp),
             ) {
                 Text(
                     text = item.text,
@@ -80,7 +83,9 @@ private fun OtherAnswersTextButton(
     Box(modifier) {
         TextButton(
             onClick = { expanded = true },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .defaultMinSize(minWidth = 80.dp, minHeight = 48.dp),
         ) {
             Text(
                 text = stringResource(Res.string.quest_generic_otherAnswers2),
@@ -126,6 +131,9 @@ private fun QuestAnswerButtonBarManyAnswersPreview() {
             AnswerItem("Perhaps") {},
             AnswerItem("Depends how you define \"No\"") {},
             AnswerItem("Yes") {},
+            AnswerItem("Only") {},
+            AnswerItem("Depends how you define \"No\"") {},
+            AnswerItem("Perhaps") {},
         ),
         otherAnswers = { listOf(
             AnswerItem("Depends how you define \"Yes\"") {},

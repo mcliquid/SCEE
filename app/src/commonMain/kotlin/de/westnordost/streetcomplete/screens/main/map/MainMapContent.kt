@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.screens.main.map
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -46,8 +47,8 @@ import kotlinx.serialization.json.JsonObject
 import org.koin.compose.koinInject
 import org.maplibre.compose.camera.CameraUpdate
 import org.maplibre.compose.interaction.ClickResult
-import org.maplibre.compose.map.LocalMapState
 import org.maplibre.compose.location.LocationMeasurement
+import org.maplibre.compose.map.LocalMapState
 import org.maplibre.compose.sources.GeoJsonData
 import org.maplibre.compose.sources.rememberGeoJsonSource
 import org.maplibre.compose.util.MaplibreComposable
@@ -101,12 +102,18 @@ internal fun MainMapContent(
     }
     val styledElements: Collection<StyledElement> = if (showOverlay && showOverlayAtZoom) {
         viewModel.styleableElements.collectAsStateWithLifecycle().value
-    } else emptyList()
+    } else {
+        emptyList()
+    }
 
     val scope = rememberCoroutineScope()
     fun <T : Any> select(key: T?, onSelect: (T) -> Unit): ClickResult =
-        if (key == null || !isSelectable) ClickResult.Pass
-        else { onSelect(key); ClickResult.Consume }
+        if (key == null || !isSelectable) {
+            ClickResult.Pass
+        } else {
+            onSelect(key)
+            ClickResult.Consume
+        }
     val onClickPin: (JsonObject) -> ClickResult = when (pinsMode) {
         PinsMode.Quests -> { properties -> select(viewModel.getQuestKey(properties), onClickQuest) }
         PinsMode.EditHistory -> { properties -> select(viewModel.getEditKey(properties), onClickEdit) }

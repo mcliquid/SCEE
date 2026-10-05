@@ -1,32 +1,12 @@
 package de.westnordost.streetcomplete.util.ktx
 
+import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
-import android.os.Build
-import android.view.Display
-import android.view.WindowManager
-import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.annotation.StringRes
-import androidx.core.content.getSystemService
 import androidx.core.net.toUri
-
-fun Context.toast(text: CharSequence, duration: Int = Toast.LENGTH_SHORT) {
-    Toast.makeText(this, text, duration).show()
-}
-
-fun Context.toast(@StringRes resId: Int, duration: Int = Toast.LENGTH_SHORT) {
-    Toast.makeText(this, resId, duration).show()
-}
-
-val Context.currentDisplay: Display get() =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        display!!
-    } else {
-        getSystemService<WindowManager>()!!.defaultDisplay
-    }
 
 fun Context.openUri(uri: String): Boolean =
     try {
@@ -36,11 +16,10 @@ fun Context.openUri(uri: String): Boolean =
         false
     }
 
-fun Context.getActivity(): ComponentActivity? {
-    val componentActivity = when (this) {
-        is ComponentActivity -> this
-        is ContextWrapper -> baseContext.getActivity()
-        else -> null
-    }
-    return componentActivity
+tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
+
+fun Context.getActivity(): ComponentActivity? = findActivity() as? ComponentActivity

@@ -193,8 +193,7 @@ fun StreetCyclewayOverlayForm(
             originalBicycleInPedestrianStreet != bicycleInPedestrianStreet ||
             originalHasConfirmedNoBicycleSign != isNoBicycleSignConfirmed,
         hasChanges =
-            cycleways.left != originalCycleway.left ||
-            cycleways.right != originalCycleway.right ||
+            cycleways != originalCycleway ||
             originalBicycleBoulevard != bicycleBoulevard ||
             originalBicycleInPedestrianStreet != bicycleInPedestrianStreet ||
             originalHasConfirmedNoBicycleSign != isNoBicycleSignConfirmed,

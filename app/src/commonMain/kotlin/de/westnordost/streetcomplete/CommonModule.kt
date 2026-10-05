@@ -238,10 +238,12 @@ val OSM_API_URL = if (USE_TEST_API) OSM_API_URL_TEST else OSM_API_URL_LIVE
 private const val STATISTICS_BACKEND_URL = "https://streetcomplete.app/statistics/"
 
 val commonModule = module {
+    viewModel { AppViewModel(get(), get()) }
+    single { AppLocaleUpdater(get()) }
 
     //region basic configuration
 
-    factory { ApplicationInitializer(get(), get(), get(), get(), get(), get(), get()) }
+    factory { ApplicationInitializer(get(), get(), get(), get(), get(), get(), get(), get()) }
 
     single { HttpClient {
         defaultRequest {
@@ -259,7 +261,7 @@ val commonModule = module {
 
     factory { Cleaner(get(), get(), get(), get(), get(), get(), get(), get()) }
     factory { CacheTrimmer(get(), get()) }
-    factory { Preloader(get(named("CountryBoundariesLazy")), get(named("FeatureDictionaryLazy"))) }
+    factory { Preloader(get(named("CountryBoundariesLazy")), get(named("FeatureDictionaryLazy")), get(), get()) }
 
     //endregion
 

@@ -46,6 +46,7 @@ import de.westnordost.osmfeatures.Feature
 import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.osmfeatures.GeometryType
 import de.westnordost.streetcomplete.resources.*
+import de.westnordost.streetcomplete.ui.LocalAppLocale
 import de.westnordost.streetcomplete.ui.ktx.id
 import de.westnordost.streetcomplete.ui.common.CenteredLargeTitleHint
 import de.westnordost.streetcomplete.ui.common.ClearIcon
@@ -78,7 +79,7 @@ fun FeatureSearch(
     }
 
     var search by remember { mutableStateOf("") }
-    val languages = remember { getLanguagesForFeatureDictionary() }
+    val languages = remember(LocalAppLocale.current) { getLanguagesForFeatureDictionary() }
     val additionalLanguages = remember(languages, officialLanguages) {
         languages.drop(1).filterNotNull() + officialLanguages
     }

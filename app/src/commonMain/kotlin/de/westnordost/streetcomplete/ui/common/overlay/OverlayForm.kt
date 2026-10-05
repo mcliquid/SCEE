@@ -4,9 +4,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
@@ -18,15 +21,14 @@ import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
@@ -42,10 +44,13 @@ import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.DropdownMenuItem
 import de.westnordost.streetcomplete.ui.common.FloatingOkButton
 import de.westnordost.streetcomplete.ui.common.MoreIcon
+import de.westnordost.streetcomplete.ui.common.NonPredictiveBackHandler
 import de.westnordost.streetcomplete.ui.common.bottom_sheet.BottomSheetFormScaffold
 import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmDiscardDialog
 import de.westnordost.streetcomplete.ui.common.quest.AnswerItem
 import de.westnordost.streetcomplete.ui.common.quest.LocalElement
+import de.westnordost.streetcomplete.ui.common.quest.LocalLastMapClick
+import de.westnordost.streetcomplete.ui.common.quest.MapClick
 import de.westnordost.streetcomplete.ui.common.quest.elementWithoutAccessTagsFilter
 import de.westnordost.streetcomplete.ui.common.quest.pathsAndRoadsFilter
 import de.westnordost.streetcomplete.ui.theme.Dimensions
@@ -68,7 +73,6 @@ import org.koin.compose.koinInject
  *  Floating in the lower end corner, an OK button for confirmation. [isComplete] should be true
  *  when the form is complete, while [hasChanges] should be true when any changes have been made.
  *  */
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun OverlayForm(
     on: (Action) -> Unit,
@@ -84,12 +88,13 @@ fun OverlayForm(
     otherAnswers: @Composable () -> List<AnswerItem> = { emptyList() },
     contentPadding: PaddingValues = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
     pinContent: @Composable (() -> Unit)? = null,
-    content: @Composable BoxScope.() -> Unit
+    onClickMap: ((MapClick) -> Boolean) = { false },
+    content: @Composable BoxScope.() -> Unit,
 ) {
     var confirmDiscard by remember { mutableStateOf(false) }
     val prefs: Preferences = koinInject()
 
-    BackHandler {
+    NonPredictiveBackHandler {
         if (hasChanges) {
             confirmDiscard = true
         } else {
@@ -133,10 +138,14 @@ fun OverlayForm(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
+        val openFormPadding = Dimensions.getOpenQuestFormMapPadding(
+            LocalWindowInfo.current,
+            WindowInsets.safeDrawing.asPaddingValues()
+        )
         if (pinContent != null) {
             Box(Modifier
+                .padding(openFormPadding)
                 .align(Alignment.Center)
-                .padding(Dimensions.getOpenQuestFormMapPadding(LocalWindowInfo.current))
             ) {
                 pinContent()
             }
@@ -169,6 +178,21 @@ fun OverlayForm(
                 )
             },
         )
+    }
+
+    val lastMapClick = LocalLastMapClick.current
+    LaunchedEffect(lastMapClick) {
+        if (lastMapClick != null) {
+            // Check if the map click event has already been consumed by the overlay form
+            if (!onClickMap(lastMapClick)) {
+                // User has tapped the map. Dismiss changes.
+                if (hasChanges) {
+                    confirmDiscard = true
+                } else {
+                    on(Action.Dismiss)
+                }
+            }
+        }
     }
 
     if (confirmDiscard) {

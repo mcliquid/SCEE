@@ -11,7 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.backhandler.BackHandler
+import de.westnordost.streetcomplete.ui.common.NonPredictiveBackHandler
 import androidx.compose.ui.unit.dp
 import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
@@ -189,7 +189,7 @@ private fun ChooseRoadForm(
     }
 
     // After QuestForm so this takes precedence over form dismiss / discard.
-    BackHandler { clearAndGoBack() }
+    NonPredictiveBackHandler { clearAndGoBack() }
 }
 
 @Composable

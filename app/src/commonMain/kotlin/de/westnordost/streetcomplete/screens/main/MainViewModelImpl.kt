@@ -161,6 +161,10 @@ class MainViewModelImpl(
 
     override val urlConfig = MutableStateFlow<ShownUrlConfig?>(null)
 
+    override fun consumeUrlConfig() {
+        urlConfig.value = null
+    }
+
     override fun applyUrlConfig(config: UrlConfig) {
         launch(Dispatchers.IO) {
             urlConfigController.apply(config)
@@ -284,7 +288,9 @@ class MainViewModelImpl(
         val bbox = if (areaInSqKm < ApplicationConstants.MIN_DOWNLOADABLE_AREA_IN_SQKM) {
             val radius = sqrt(1_000_000 * ApplicationConstants.MIN_DOWNLOADABLE_AREA_IN_SQKM / PI)
             center.enclosingBoundingBox(radius)
-        } else tilesBounds
+        } else {
+            tilesBounds
+        }
         downloadController.download(bbox, true, enqueue)
         return true
     }

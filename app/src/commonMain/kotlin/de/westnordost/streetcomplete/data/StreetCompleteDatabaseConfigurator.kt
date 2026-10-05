@@ -266,9 +266,9 @@ object StreetCompleteDatabaseConfigurator : DatabaseConfigurator {
             db.exec(CalendarEventsTable.CREATE)
         }
         if (oldVersion < 21) {
-            db.deleteQuest("AddPlaygroundAccess");
+            db.deleteQuest("AddPlaygroundAccess")
             db.deleteQuest("AddProhibitedForPedestrians")
-            db.deleteQuest("AddTowerAccess");
+            db.deleteQuest("AddTowerAccess")
         }
 
         createSceeTables(db)

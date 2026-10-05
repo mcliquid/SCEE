@@ -92,6 +92,7 @@ fun MainBottomSheet(
                 onDismiss = onDismiss,
                 trackpoints = shownBottomSheet.trackpoints,
                 position = mapPosition,
+                lastMapClick = lastMapClick,
                 modifier = modifier,
             )
         }
@@ -115,6 +116,7 @@ fun MainBottomSheet(
                 },
                 quest = shownBottomSheet.quest,
                 note = shownBottomSheet.note,
+                lastMapClick = lastMapClick,
                 modifier = modifier,
             )
         }

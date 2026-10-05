@@ -28,7 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.AbsoluteAlignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
+import de.westnordost.streetcomplete.ui.common.NonPredictiveBackHandler
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.LayoutDirection
@@ -114,7 +114,7 @@ fun InsertNodeForm(
             way to positions
         }
     }
-    BackHandler {
+    NonPredictiveBackHandler {
         if (prefs.getString(Prefs.THEME_BACKGROUND, "MAP") != initialBackground)
             prefs.putString(Prefs.THEME_BACKGROUND, initialBackground)
         onDismiss()

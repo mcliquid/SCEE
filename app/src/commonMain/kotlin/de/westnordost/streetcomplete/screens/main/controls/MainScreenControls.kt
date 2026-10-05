@@ -58,6 +58,8 @@ fun MainScreenControls(
     overlays: List<Overlay>,
     selectedOverlay: Overlay?,
     onSelectOverlay: (Overlay?) -> Unit,
+    // Null once the tutorial is completed; the button then opens the overlay dropdown.
+    onShowOverlaysTutorial: (() -> Unit)?,
 
     // main menu button
     shownUnsyncedEdits: Int,
@@ -155,7 +157,10 @@ fun MainScreenControls(
                         if (overlays.isNotEmpty()) {
                             Box {
                                 OverlaySelectionButton(
-                                    onClick = { showOverlaysDropdown = true },
+                                    onClick = {
+                                        if (onShowOverlaysTutorial != null) onShowOverlaysTutorial()
+                                        else showOverlaysDropdown = true
+                                    },
                                     overlay = selectedOverlay
                                 )
                                 OverlaySelectionDropdownMenu(

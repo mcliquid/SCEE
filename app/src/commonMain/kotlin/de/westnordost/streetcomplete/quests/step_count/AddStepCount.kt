@@ -33,7 +33,6 @@ class AddStepCount : OsmElementQuestType<Int> {
           and access !~ private|no
           and !step_count
           and !steps
-          and !flat_steps
     """.toElementFilterExpression() }
     override val changesetComment = "Specify step counts"
     override val wikiLink = "Key:step_count"

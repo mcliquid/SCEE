@@ -89,3 +89,7 @@ val Colors.logWarning @ReadOnlyComposable @Composable get() =
 
 val Colors.logError @ReadOnlyComposable @Composable get() =
     if (isLight) Color(0xfff44336) else Color(0xffef9a9a)
+
+/** SCEE accent (formerly `R.color.accent`: light `#D14000`, night `#ff6600`). */
+val Colors.sceeAccent @ReadOnlyComposable @Composable get() =
+    if (isLight) Color(0xFFD14000) else Color(0xFFFF6600)

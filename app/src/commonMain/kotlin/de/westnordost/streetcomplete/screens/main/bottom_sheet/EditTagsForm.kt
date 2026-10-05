@@ -28,7 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
+import de.westnordost.streetcomplete.ui.common.NonPredictiveBackHandler
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -102,7 +102,7 @@ fun EditTagsForm(
     val questElement = remember(updatedTags) { originalElement.copy(tags = updatedTags, timestampEdited = nowAsEpochMilliseconds()) }
     var confirmDiscard by remember { mutableStateOf(false) }
     var shownQuest by remember { mutableStateOf<OsmQuest?>(null) }
-    BackHandler {
+    NonPredictiveBackHandler {
         if (updatedTags != originalElement.tags) {
             confirmDiscard = true
         } else {

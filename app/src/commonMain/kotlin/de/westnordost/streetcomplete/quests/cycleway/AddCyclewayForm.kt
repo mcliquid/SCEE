@@ -82,10 +82,6 @@ fun AddCyclewayForm(
     }
     val isOneway = remember(element) { isOneway(element.tags) }
 
-    var isDisplayingPrevious by rememberSaveable(originalCycleway) {
-        // only show as re-survey (yes/no button) if the previous tagging was complete
-        mutableStateOf(sideRelevance.isComplete(originalCycleway))
-    }
     var cycleways by rememberSerializable(originalCycleway) { mutableStateOf(originalCycleway) }
     var isLeftSideVisible by rememberSerializable(sideRelevance) {
         mutableStateOf(sideRelevance.left)
@@ -93,6 +89,14 @@ fun AddCyclewayForm(
     var isRightSideVisible by rememberSerializable(sideRelevance) {
         mutableStateOf(sideRelevance.right)
     }
+    var isDisplayingPrevious by rememberSaveable(originalCycleway) {
+        // only show as re-survey (yes/no button) if the previous tagging was complete
+        mutableStateOf(
+            (originalCycleway.left != null || !isLeftSideVisible) &&
+            (originalCycleway.right != null || !isRightSideVisible)
+        )
+    }
+
     var selectionMode by rememberSerializable { mutableStateOf(CyclewayFormSelectionMode.SELECT) }
 
     var confirmNotOnewayForCyclists by remember { mutableStateOf(false) }
@@ -155,7 +159,7 @@ fun AddCyclewayForm(
                     (cycleways.left != null || !isLeftSideVisible) &&
                     (cycleways.right != null || !isRightSideVisible),
                 hasChanges =
-                    cycleways.left != null || cycleways.right != null,
+                    cycleways != originalCycleway,
                 onClickOk = {
                     if (cycleways.wasNoOnewayForCyclistsButNowItIs(element.tags, countryInfo.isLeftHandTraffic)) {
                         confirmNotOnewayForCyclists = true

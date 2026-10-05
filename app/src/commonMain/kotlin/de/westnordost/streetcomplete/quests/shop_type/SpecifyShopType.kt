@@ -22,23 +22,26 @@ class SpecifyShopType : OsmFilterQuestType<ShopTypeAnswer>() {
     override val elementFilter = """
         nodes, ways with
           (
-            shop ~ yes|hobby|fixme|retail
-            and !man_made
-            and !historic
-            and !military
-            and !power
-            and !tourism
-            and !attraction
-            and !amenity
-            and !leisure
-            and !aeroway
-            and !railway
-            and !craft
-            and !healthcare
-            and !office
-          ) or (
-            amenity ~ shop|shopping and !shop
+            (
+              shop ~ yes|hobby|fixme|retail
+              and !man_made
+              and !historic
+              and !military
+              and !power
+              and !tourism
+              and !attraction
+              and !amenity
+              and !leisure
+              and !aeroway
+              and !railway
+              and !craft
+              and !healthcare
+              and !office
+            ) or (
+              amenity ~ shop|shopping and !shop
+            )
           )
+          and access !~ private|no
     """
     override val changesetComment = "Survey shop types"
     override val wikiLink = "Key:shop"

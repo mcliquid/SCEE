@@ -31,6 +31,10 @@ fun BuildingType.applyTo(tags: Tags) {
         tags["building"] = "yes"
     }
 
+    if (this == TERRACED_HOUSE) {
+        tags["building"] = "house"
+    }
+
     tags[osmKey] = osmValue
 
     if (this == TRANSIT_SHELTER) {

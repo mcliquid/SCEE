@@ -14,7 +14,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -34,6 +33,7 @@ import de.westnordost.streetcomplete.resources.general_warning
 import de.westnordost.streetcomplete.resources.move_node_of_other_relation
 import de.westnordost.streetcomplete.resources.move_node_with_geometry
 import de.westnordost.streetcomplete.ui.common.FloatingOkButton
+import de.westnordost.streetcomplete.ui.common.NonPredictiveBackHandler
 import de.westnordost.streetcomplete.ui.common.bottom_sheet.BottomSheetFormScaffold
 import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmDiscardDialog
 import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmationDialog
@@ -93,7 +93,7 @@ fun MoveNodeForm(
 
     var confirmDiscard by remember { mutableStateOf(false) }
 
-    BackHandler {
+    NonPredictiveBackHandler {
         if (mapPosition != node.position) {
             confirmDiscard = true
         } else {

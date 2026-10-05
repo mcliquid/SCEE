@@ -4,32 +4,26 @@ import android.app.ActivityManager
 import android.app.ActivityManager.MemoryInfo
 import android.app.Application
 import android.content.ComponentCallbacks2
-import android.os.LocaleList
-import androidx.appcompat.app.AppCompatDelegate
+import android.content.res.Configuration
 import androidx.core.content.getSystemService
-import com.russhwolf.settings.SettingsListener
 import de.westnordost.streetcomplete.data.CacheTrimmer
 import de.westnordost.streetcomplete.data.StreetCompleteDatabaseConfigurator
-import de.westnordost.streetcomplete.data.preferences.Preferences
-import de.westnordost.streetcomplete.data.preferences.Theme
 import de.westnordost.streetcomplete.screens.settings.LAST_KNOWN_DB_VERSION
 import de.westnordost.streetcomplete.util.error_reporting.CrashReportsUncaughtExceptionHandler
-import de.westnordost.streetcomplete.util.getSelectedLocales
 import de.westnordost.streetcomplete.util.logs.Log
+import de.westnordost.streetcomplete.data.preferences.Preferences
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.context.startKoin
-import java.util.Locale
 
 class StreetCompleteApplication : Application() {
 
     private val crashReportsUncaughtExceptionHandler: CrashReportsUncaughtExceptionHandler by inject()
-    private val prefs: Preferences by inject()
     private val cacheTrimmer: CacheTrimmer by inject()
     private val applicationInitializer: ApplicationInitializer by inject()
-
-    private val settingsListeners = mutableListOf<SettingsListener>()
+    private val appLocaleUpdater: AppLocaleUpdater by inject()
+    private val preferences: Preferences by inject()
 
     override fun onCreate() {
         super.onCreate()
@@ -45,18 +39,18 @@ class StreetCompleteApplication : Application() {
             modules(androidModule, commonModule)
         }
 
-        Prefs.preferences = prefs
+        Prefs.preferences = preferences
         require(StreetCompleteDatabaseConfigurator.version == LAST_KNOWN_DB_VERSION.toInt()) { "update database import/export" }
 
         crashReportsUncaughtExceptionHandler.install()
 
         applicationInitializer.initialize()
+    }
 
-        updateDefaultLocales()
-        updateTheme(prefs.theme)
-
-        settingsListeners += prefs.onLocaleChanged { updateDefaultLocales() }
-        settingsListeners += prefs.onThemeChanged { updateTheme(it) }
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // the system resets the default locales to the new configuration
+        appLocaleUpdater.update()
     }
 
     override fun onTrimMemory(level: Int) {
@@ -78,28 +72,9 @@ class StreetCompleteApplication : Application() {
         }
     }
 
-    private fun updateDefaultLocales() {
-        val locales = getSelectedLocales(prefs)
-        Locale.setDefault(locales.get(0))
-        LocaleList.setDefault(getSelectedLocales(prefs))
-    }
-
     private fun getMemString(): String {
         val memInfo = MemoryInfo()
         getSystemService<ActivityManager>()?.getMemoryInfo(memInfo)
         return "${memInfo.availMem / 0x100000L} MB of ${memInfo.totalMem / 0x100000L} available, mem low: ${memInfo.lowMemory}, mem low threshold: ${memInfo.threshold / 0x100000L} MB"
     }
-
-    private fun updateTheme(theme: Theme) {
-        if (theme == Theme.DARK_CONTRAST || theme == Theme.DARK)
-            // night mode off to trigger reload (maybe there is a way to do it without this, but at least ir works...)
-            AppCompatDelegate.setDefaultNightMode(Theme.LIGHT.appCompatNightMode)
-        AppCompatDelegate.setDefaultNightMode(theme.appCompatNightMode)
-    }
-}
-
-private val Theme.appCompatNightMode: Int get() = when (this) {
-    Theme.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
-    Theme.DARK, Theme.DARK_CONTRAST -> AppCompatDelegate.MODE_NIGHT_YES
-    Theme.SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
 }

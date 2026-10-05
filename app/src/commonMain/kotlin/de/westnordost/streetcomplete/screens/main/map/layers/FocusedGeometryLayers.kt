@@ -18,14 +18,12 @@ import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.map_oneway_arrow
 import de.westnordost.streetcomplete.screens.main.map.has
 import de.westnordost.streetcomplete.screens.main.map.isArea
-import de.westnordost.streetcomplete.screens.main.map.isLines
 import de.westnordost.streetcomplete.screens.main.map.isPoint
 import de.westnordost.streetcomplete.screens.main.map.toGeometry
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
-import org.maplibre.compose.expressions.dsl.any
 import org.maplibre.compose.expressions.dsl.const
 import org.maplibre.compose.expressions.dsl.feature
 import org.maplibre.compose.expressions.dsl.image

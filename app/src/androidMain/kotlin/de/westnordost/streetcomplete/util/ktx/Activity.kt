@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.util.ktx
 
+import androidx.activity.ComponentActivity
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -21,3 +22,5 @@ fun <T> AppCompatActivity.observe(flow: Flow<T>, collector: FlowCollector<T>) {
 }
 
 fun AppCompatActivity.loadFileKit() = FileKit.init(this)
+
+fun ComponentActivity.loadFileKit() = FileKit.init(this)

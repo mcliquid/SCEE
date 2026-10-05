@@ -7,6 +7,8 @@ plugins {
 }
 
 repositories {
+    // SPIKE: locally published osmfeatures that reads the NSI format
+    mavenLocal { content { includeGroup("de.westnordost") } }
     google()
     mavenCentral()
     // for com.github.ticofab:android-gpx-parser
@@ -140,7 +142,7 @@ dependencies {
     implementation("io.ktor:ktor-client-android:3.5.2")
 
     // finding OSM features
-    implementation("de.westnordost:osmfeatures:8.0.0")
+    implementation("de.westnordost:osmfeatures:8.1.0-SNAPSHOT")
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
 }

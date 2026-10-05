@@ -8,7 +8,8 @@ import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.net.URI
 
-/** Download and split the brand presets from the name suggestion index by countries they are in:
+/** Download and split the name suggestion index (in its own format, not as iD presets) by countries
+ *  the brands are in:
  *  Instead of one big presets file, sort those brands that only exist in certain countries into own
  *  files (presets-DE.json etc.).
  *
@@ -26,16 +27,27 @@ open class UpdateNsiPresetsTask : DefaultTask() {
         targetDir.mkdirs()
         targetDir.listFiles()?.forEach { it.delete() }
 
-        val presetsUrl = URI("https://cdn.jsdelivr.net/npm/name-suggestion-index@$version/dist/presets/nsi-id-presets.min.json").toURL()
-        val nsiPresetsJson = Parser.default().parse(presetsUrl.openStream()) as JsonObject
-        /* NSI uses (atm) a slightly different format than the normal presets: The presets are in
-           a sub-object called "presets" */
-        val presets = nsiPresetsJson.obj("presets")!!
+        val nsiUrl = URI("https://cdn.jsdelivr.net/npm/name-suggestion-index@$version/dist/json/nsi.min.json").toURL()
+        val nsi = (Parser.default().parse(nsiUrl.openStream()) as JsonObject).obj("nsi")!!
+        val dissolvedUrl = URI("https://cdn.jsdelivr.net/npm/name-suggestion-index@$version/dist/wikidata/dissolved.min.json").toURL()
+        val dissolved = (Parser.default().parse(dissolvedUrl.openStream()) as JsonObject).obj("dissolved")!!
+        /* The NSI items are grouped by category ("brands/shop/supermarket" etc.). Collect them all
+           into one object, keyed by "<category>/<item id>" */
+        val presets = JsonObject()
+        for ((path, category) in nsi) {
+            for (item in (category as JsonObject).array<JsonObject>("items")!!) {
+                presets["$path/${item.string("id")}"] = item
+            }
+        }
         /* since we already read the JSON and it is so large, let's drop some properties that are
-           (currently) not used, to make it a bit smaller: icon, imageURL */
+           not used */
         for (preset in presets.values.filterIsInstance<JsonObject>()) {
-            preset.remove("icon")
-            preset.remove("imageURL")
+            preset.remove("fromTemplate")
+            preset.remove("note")
+            preset.remove("matchTags")
+            preset.remove("issues")
+            // NSI's buildIDPresets() makes presets of dissolved brands non-searchable
+            if (preset.string("id") in dissolved) preset["searchable"] = false
         }
 
         // remove presets with locationSets that cannot be parsed by osmfeatures library
@@ -75,8 +87,19 @@ open class UpdateNsiPresetsTask : DefaultTask() {
             }
         }
 
-        // sort into separate files
+        // sort into separate files, each in the same format as nsi.json's "nsi" object
         val byCountryMap = mutableMapOf<String?, JsonObject>()
+        fun JsonObject.addItem(key: String, preset: JsonObject) {
+            val path = key.substringBeforeLast('/')
+            val category = getOrPut(path) {
+                val preserveTags = nsi.obj(path)!!.obj("properties")?.array<String>("preserveTags")
+                JsonObject().apply {
+                    if (preserveTags != null) set("properties", JsonObject(mapOf("preserveTags" to preserveTags)))
+                    set("items", JsonArray<JsonObject>())
+                }
+            } as JsonObject
+            category.array<JsonObject>("items")!!.add(preset)
+        }
         for (entry in presets.entries) {
             val key = entry.key
             val preset = entry.value as JsonObject
@@ -85,10 +108,10 @@ open class UpdateNsiPresetsTask : DefaultTask() {
             val includeContains001 = include?.any { it as? String == "001" || it as? String == "Planet" } == true
             if (include != null && !includeContains001) {
                 for (country in include) {
-                    byCountryMap.getOrPut(country as String) { JsonObject() }[key] = preset
+                    byCountryMap.getOrPut(country as String) { JsonObject() }.addItem(key, preset)
                 }
             } else {
-                byCountryMap.getOrPut(null) { JsonObject() }[key] = preset
+                byCountryMap.getOrPut(null) { JsonObject() }.addItem(key, preset)
             }
         }
 

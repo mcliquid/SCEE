@@ -511,7 +511,6 @@ fun getQuestTypeList(
     186 to AddChargingStationBicycles(),
     87 to AddChargingStationCapacity(),  // after question for bicycles because user has possibility to answer that it is only for bicycles
     179 to AddChargingStationBicycleCapacity(),
-    200 to AddChargingStationSocket(getCountryInfoByLocation),
     88 to AddChargingStationOperator(),
 
     194 to AddVendingMachineType(), // May take some time to find the machine in building with multiple levels
@@ -713,6 +712,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 201 to AddIsSidepath(),
     EE_QUEST_OFFSET + 62 to AddToiletsDisposal(),
     EE_QUEST_OFFSET + 63 to AddEvseId(),
+    EE_QUEST_OFFSET + 70 to AddChargingStationSocket(getCountryInfoByLocation),
     EE_QUEST_OFFSET + 66 to AddServiceTimes(),
     EE_QUEST_OFFSET + 64 to AddOrchardType(), // need to look around the orchard to tell apart meadow orchard and plantation
     EE_QUEST_OFFSET + 10 to OsmoseQuest(osmoseDao),

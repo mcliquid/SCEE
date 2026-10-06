@@ -70,6 +70,7 @@ import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.messages.Message
 import de.westnordost.streetcomplete.data.osmtracks.Trackpoint
 import de.westnordost.streetcomplete.resources.*
+import de.westnordost.streetcomplete.screens.MainNavViewModel
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.AddPoiForm
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.MainBottomSheet
 import de.westnordost.streetcomplete.screens.main.controls.LocationState
@@ -141,8 +142,8 @@ fun MainScreen(
     onClickProfile: () -> Unit,
     onClickLogin: () -> Unit,
     onClickEnterTeamMode: () -> Unit,
-    onShowIntroTutorial: () -> Unit,
     onShowOverlaysTutorial: () -> Unit,
+    navViewModel: MainNavViewModel,
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = koinViewModel(),
     editHistoryViewModel: EditHistoryViewModel = koinViewModel(),
@@ -196,7 +197,7 @@ fun MainScreen(
     val isUploading by viewModel.isUploading.collectAsState()
     val isUploadingOrDownloading by viewModel.isUploadingOrDownloading.collectAsState()
 
-    val urlConfig by viewModel.urlConfig.collectAsState()
+    val urlConfig by navViewModel.urlConfig.collectAsState()
 
     val lastCrashReport by viewModel.lastCrashReport.collectAsState()
     val lastDownloadError by viewModel.lastDownloadError.collectAsState()
@@ -206,7 +207,7 @@ fun MainScreen(
 
     val isRequestingLogin by viewModel.isRequestingLogin.collectAsState()
 
-    val geoUri by viewModel.geoUri.collectAsState()
+    val geoUri by navViewModel.geoUri.collectAsState()
 
     var confirmReplaceDownload by remember { mutableStateOf(false) }
     var showMainMenuDialog by remember { mutableStateOf(false) }
@@ -419,7 +420,7 @@ fun MainScreen(
     LaunchedEffect(geoUri) {
         geoUri?.let {
             cameraState.moveTo(it)
-            viewModel.consumeGeoUri()
+            navViewModel.consumeGeoUri()
         }
     }
 
@@ -510,10 +511,6 @@ fun MainScreen(
     }
     LaunchedEffect(reversedQuestOrder) {
         mapViewModel.setReversedQuestOrder(reversedQuestOrder)
-    }
-
-    LaunchedEffect(Unit) {
-        if (!viewModel.hasShownTutorial && !isLoggedIn) onShowIntroTutorial()
     }
 
     LaunchedEffect(isTeamMode) {
@@ -848,6 +845,7 @@ fun MainScreen(
         MainMenuDialog(
             onDismissRequest = { showMainMenuDialog = false },
             onClickProfile = onClickProfile,
+            onClickLogin = onClickLogin,
             onClickSettings = onClickSettings,
             onClickAbout = onClickAbout,
             onClickDownload = ::onClickDownload,
@@ -865,8 +863,8 @@ fun MainScreen(
         ApplyUrlConfigDialog(
             presetName = config.urlConfig.presetName,
             presetNameAlreadyExists = config.alreadyExists,
-            onDismissRequest = viewModel::consumeUrlConfig,
-            onConfirmed = { viewModel.applyUrlConfig(config.urlConfig) },
+            onDismissRequest = navViewModel::consumeUrlConfig,
+            onConfirmed = { navViewModel.applyUrlConfig(config.urlConfig) },
         )
     }
 

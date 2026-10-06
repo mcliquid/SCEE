@@ -67,6 +67,7 @@ import org.jetbrains.compose.resources.stringResource
 fun MainMenuDialog(
     onDismissRequest: () -> Unit,
     onClickProfile: () -> Unit,
+    onClickLogin: () -> Unit,
     onClickSettings: () -> Unit,
     onClickAbout: () -> Unit,
     onClickDownload: () -> Unit,
@@ -92,18 +93,25 @@ fun MainMenuDialog(
             contentColor = contentColor
         ) {
             Column {
+                val aboutTitle = stringResource(Res.string.action_about2, ApplicationConstants.NAME) + " SCEE"
                 if (!prefs.getBoolean(Prefs.MAIN_MENU_FULL_GRID, false)) {
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        BigMenuButton(
-                            onClick = { onDismissRequest(); onClickProfile() },
-                            icon = { Icon(painterResource(Res.drawable.ic_profile_48), null) },
-                            text = stringResource(
-                                if (isLoggedIn) Res.string.user_profile else Res.string.user_login
-                            ),
-                        )
+                        if (isLoggedIn) {
+                            BigMenuButton(
+                                onClick = { onDismissRequest(); onClickProfile() },
+                                icon = { Icon(painterResource(Res.drawable.ic_profile_48), null) },
+                                text = stringResource(Res.string.user_profile),
+                            )
+                        } else {
+                            BigMenuButton(
+                                onClick = { onDismissRequest(); onClickLogin() },
+                                icon = { Icon(painterResource(Res.drawable.ic_profile_48), null) },
+                                text = stringResource(Res.string.user_login),
+                            )
+                        }
                         BigMenuButton(
                             onClick = { onDismissRequest(); onClickSettings() },
                             icon = { Icon(painterResource(Res.drawable.ic_settings_48), null) },
@@ -112,7 +120,7 @@ fun MainMenuDialog(
                         BigMenuButton(
                             onClick = { onDismissRequest(); onClickAbout() },
                             icon = { Icon(painterResource(Res.drawable.ic_info_outline_48), null) },
-                            text = stringResource(Res.string.action_about2, ApplicationConstants.NAME) + " SCEE",
+                            text = aboutTitle,
                         )
                     }
                     Divider()
@@ -154,24 +162,31 @@ fun MainMenuDialog(
                             text = stringResource(Res.string.team_mode_exit)
                         )
                     }
-                    if (prefs.getBoolean(Prefs.MAIN_MENU_SWITCH_PRESETS, false))
+                    if (prefs.getBoolean(Prefs.MAIN_MENU_SWITCH_PRESETS, false)) {
                         CompactMenuButton(
                             onClick = { showProfileSelectionDialog = true },
                             icon = { },
                             text = stringResource(Res.string.quick_switch_preset)
                         )
+                    }
                 } else {
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        BigMenuButton(
-                            onClick = { onDismissRequest(); onClickProfile() },
-                            icon = { Icon(painterResource(Res.drawable.ic_profile_48), null) },
-                            text = stringResource(
-                                if (isLoggedIn) Res.string.user_profile else Res.string.user_login
-                            ),
-                        )
+                        if (isLoggedIn) {
+                            BigMenuButton(
+                                onClick = { onDismissRequest(); onClickProfile() },
+                                icon = { Icon(painterResource(Res.drawable.ic_profile_48), null) },
+                                text = stringResource(Res.string.user_profile),
+                            )
+                        } else {
+                            BigMenuButton(
+                                onClick = { onDismissRequest(); onClickLogin() },
+                                icon = { Icon(painterResource(Res.drawable.ic_profile_48), null) },
+                                text = stringResource(Res.string.user_login),
+                            )
+                        }
                         BigMenuButton(
                             onClick = { onDismissRequest(); onClickSettings() },
                             icon = { Icon(painterResource(Res.drawable.ic_settings_48), null) },
@@ -180,7 +195,7 @@ fun MainMenuDialog(
                         BigMenuButton(
                             onClick = { onDismissRequest(); onClickAbout() },
                             icon = { Icon(painterResource(Res.drawable.ic_info_outline_48), null) },
-                            text = stringResource(Res.string.action_about2, ApplicationConstants.NAME) + " SCEE",
+                            text = aboutTitle,
                         )
                         BigMenuButton(
                             onClick = { onDismissRequest(); onClickDownload() },
@@ -220,12 +235,13 @@ fun MainMenuDialog(
                                 text = stringResource(Res.string.team_mode_exit)
                             )
                         }
-                        if (prefs.getBoolean(Prefs.MAIN_MENU_SWITCH_PRESETS, false))
+                        if (prefs.getBoolean(Prefs.MAIN_MENU_SWITCH_PRESETS, false)) {
                             BigMenuButton(
                                 onClick = { showProfileSelectionDialog = true },
                                 icon = { },
                                 text = stringResource(Res.string.quick_switch_preset)
                             )
+                        }
                     }
                 }
             }
@@ -304,6 +320,7 @@ private fun PreviewMainMenuDialog() {
     MainMenuDialog(
         onDismissRequest = {},
         onClickProfile = {},
+        onClickLogin = {},
         onClickSettings = {},
         onClickAbout = {},
         onClickDownload = {},

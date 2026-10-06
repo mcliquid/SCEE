@@ -2,7 +2,6 @@ package de.westnordost.streetcomplete.screens.about.logs
 
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.BuildConfig
 import de.westnordost.streetcomplete.Prefs
@@ -13,36 +12,25 @@ import de.westnordost.streetcomplete.data.logs.format
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.util.TempLogger
 import de.westnordost.streetcomplete.util.ktx.now
-import de.westnordost.streetcomplete.util.ktx.systemTimeNow
 import de.westnordost.streetcomplete.util.ktx.toEpochMilli
-import de.westnordost.streetcomplete.util.ktx.toLocalDate
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.cacheDir
 import io.github.vinceglb.filekit.writeString
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.transformLatest
-import kotlinx.coroutines.plus
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.LocalTime
 
 @Stable
 abstract class LogsViewModel : ViewModel() {
-    abstract val filters: StateFlow<LogsFilters>
-    abstract val logs: StateFlow<List<LogMessage>>
+    /** Logs matching the given [filters], updated when new logs come in */
+    abstract fun getLogs(filters: LogsFilters): Flow<List<LogMessage>>
 
-    abstract fun setFilters(filters: LogsFilters)
-
-    abstract suspend fun createLogsFile(): PlatformFile
+    abstract suspend fun createLogsFile(logs: List<LogMessage>): PlatformFile
 }
 
 @Stable
@@ -51,33 +39,13 @@ class LogsViewModelImpl(
     private val prefs: Preferences
 ) : LogsViewModel() {
 
-    private val source get() = if (prefs.getBoolean(Prefs.TEMP_LOGGER, false)) TempLogger else logsSource
+    private fun activeSource(): LogsSource =
+        if (prefs.getBoolean(Prefs.TEMP_LOGGER, false)) TempLogger else logsSource
 
-    override val filters = MutableStateFlow(LogsFilters(
-        timestampNewerThan = LocalDateTime(systemTimeNow().toLocalDate(), LocalTime(0, 0, 0))
-    ))
-
-    /**
-     * Produce a call back flow of all incoming logs matching the given [filters].
-     */
-    private fun getIncomingLogs(filters: LogsFilters) = callbackFlow {
-        // Listener that sends the messages matching the filters to the observer
-        val listener = object : LogsSource.Listener {
-            override fun onAdded(message: LogMessage) {
-                if (filters.matches(message)) {
-                    trySend(message) // Send it to the observer
-                }
-            }
-        }
-        val source = source
-        source.addListener(listener)
-        awaitClose { source.removeListener(listener) }
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    override val logs: StateFlow<List<LogMessage>> =
-        filters.transformLatest { filters ->
-            val logs = source
+    override fun getLogs(filters: LogsFilters): Flow<List<LogMessage>> = callbackFlow {
+        val source = activeSource()
+        val logs = withContext(Dispatchers.IO) {
+            source
                 .getLogs(
                     levels = filters.levels,
                     messageContains = filters.messageContains,
@@ -85,25 +53,28 @@ class LogsViewModelImpl(
                     olderThan = filters.timestampOlderThan?.toEpochMilli()
                 )
                 .toMutableList()
+        }
 
-            emit(UniqueList(logs))
+        trySend(UniqueList(logs))
 
-            getIncomingLogs(filters).collect {
-                logs.add(it)
-                emit(UniqueList(logs))
+        val listener = object : LogsSource.Listener {
+            override fun onAdded(message: LogMessage) {
+                if (filters.matches(message)) {
+                    logs.add(message)
+                    trySend(UniqueList(logs))
+                }
             }
-        }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, UniqueList(emptyList()))
-
-    override fun setFilters(filters: LogsFilters) {
-        this.filters.value = filters
+        }
+        source.addListener(listener)
+        awaitClose { source.removeListener(listener) }
     }
 
-    override suspend fun createLogsFile(): PlatformFile {
+    override suspend fun createLogsFile(logs: List<LogMessage>): PlatformFile {
         val logTimestamp = LocalDateTime.now().toString()
         val logTitle = "${ApplicationConstants.NAME}_${BuildConfig.VERSION_NAME}_$logTimestamp.log"
         val file = PlatformFile(FileKit.cacheDir, logTitle)
         withContext(Dispatchers.IO) {
-            file.writeString(logs.value.format())
+            file.writeString(logs.format())
         }
         return file
     }

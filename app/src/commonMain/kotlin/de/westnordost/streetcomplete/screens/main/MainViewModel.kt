@@ -7,7 +7,6 @@ import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.quest.Quest
 import de.westnordost.streetcomplete.data.quest.QuestType
-import de.westnordost.streetcomplete.data.urlconfig.UrlConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import org.maplibre.compose.camera.CameraPosition
@@ -24,21 +23,10 @@ abstract class MainViewModel : ViewModel() {
     abstract suspend fun createErrorReport(error: Exception): String
 
     /* start parameters */
-    abstract fun setUri(uri: String)
-
-    abstract val urlConfig: StateFlow<ShownUrlConfig?>
-    abstract fun consumeUrlConfig()
-    abstract fun applyUrlConfig(config: UrlConfig)
-    abstract val geoUri: StateFlow<CameraPosition?>
-    abstract fun consumeGeoUri()
-
     abstract val initialCamera: CameraPosition
     abstract val initiallyFollowing: Boolean
     abstract val initiallyNavigating: Boolean
     abstract fun saveCamera(camera: CameraPosition, following: Boolean, navigating: Boolean)
-
-    /* intro */
-    abstract var hasShownTutorial: Boolean
 
     /* HUD */
     abstract var showZoomButtons: StateFlow<Boolean>
@@ -53,7 +41,7 @@ abstract class MainViewModel : ViewModel() {
     abstract val selectedOverlay: StateFlow<Overlay?>
     abstract val overlays: StateFlow<List<Overlay>>
 
-    abstract var hasShownOverlaysTutorial: Boolean
+    abstract val hasShownOverlaysTutorial: Boolean
 
     abstract fun selectOverlay(overlay: Overlay?)
 
@@ -61,7 +49,6 @@ abstract class MainViewModel : ViewModel() {
     abstract val isTeamMode: StateFlow<Boolean>
     abstract var teamModeChanged: Boolean
     abstract val indexInTeam: StateFlow<Int>
-    abstract fun enableTeamMode(teamSize: Int, indexInTeam: Int)
     abstract fun disableTeamMode()
 
     /* uploading, downloading */
@@ -104,5 +91,3 @@ abstract class MainViewModel : ViewModel() {
     abstract fun consumeReloadGpxTrack()
     abstract fun consumeReloadCustomGeometry()
 }
-
-data class ShownUrlConfig(val urlConfig: UrlConfig, val alreadyExists: Boolean)

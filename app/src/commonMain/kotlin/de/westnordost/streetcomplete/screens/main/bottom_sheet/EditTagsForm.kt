@@ -102,18 +102,22 @@ fun EditTagsForm(
     val questElement = remember(updatedTags) { originalElement.copy(tags = updatedTags, timestampEdited = nowAsEpochMilliseconds()) }
     var confirmDiscard by remember { mutableStateOf(false) }
     var shownQuest by remember { mutableStateOf<OsmQuest?>(null) }
-    NonPredictiveBackHandler {
+
+    fun dismiss() {
         if (updatedTags != originalElement.tags) {
             confirmDiscard = true
         } else {
             onDismiss()
         }
     }
+
+    NonPredictiveBackHandler { dismiss() }
     val lastFeature = remember { featureDictionary.byTags(updatedTags).isSuggestion(false).find().firstOrNull() }
     val keySuggestions = remember { getKeySuggestions(lastFeature?.id, updatedTags, prefs, resources).toList() }
 
     if (shownQuest == null) // better don't show behind the quest form, can still interact with some parts!
     BottomSheetFormScaffold(
+        onDismissRequest = ::dismiss,
         content = {
             ProvideTextStyle(MaterialTheme.typography.body1) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) { // lazy column has infinite height, so we need a normal column

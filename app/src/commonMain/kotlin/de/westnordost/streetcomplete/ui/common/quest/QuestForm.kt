@@ -182,7 +182,7 @@ private fun QuestForm(
 
     var confirmDiscard by remember { mutableStateOf(false) }
 
-    NonPredictiveBackHandler {
+    fun dismiss() {
         if (hasChanges) {
             confirmDiscard = true
         } else {
@@ -190,18 +190,12 @@ private fun QuestForm(
         }
     }
 
+    NonPredictiveBackHandler { dismiss() }
+
     val lastMapClick = LocalLastMapClick.current
     LaunchedEffect(lastMapClick) {
         if (lastMapClick != null) {
-            // Check if the map click event has already been consumed by the quest form
-            if (!onClickMap(lastMapClick)) {
-                // User has tapped the map. Dismiss changes.
-                if (hasChanges) {
-                    confirmDiscard = true
-                } else {
-                    on(Action.Dismiss)
-                }
-            }
+            if (!onClickMap(lastMapClick)) dismiss()
         }
     }
 
@@ -250,6 +244,7 @@ private fun QuestForm(
     }
 
     BottomSheetFormScaffold(
+        onDismissRequest = ::dismiss,
         header = {
             if (isResurvey) {
                 CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.titleLarge) {
@@ -262,7 +257,7 @@ private fun QuestForm(
         note = if (note != null || isResurvey) {
             {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    questHeader()
+                    if (isResurvey) questHeader()
                     if (note != null) ObjectNote(text = note)
                 }
             }

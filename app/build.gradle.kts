@@ -124,7 +124,13 @@ kotlin {
         }
     }
 
+    applyDefaultHierarchyTemplate()
+
     sourceSets {
+        val jvmAndroidMain = create("jvmAndroidMain") { dependsOn(commonMain.get()) }
+        val nonAndroidMain = create("nonAndroidMain") { dependsOn(commonMain.get()) }
+        val mobileMain = create("mobileMain") { dependsOn(commonMain.get()) }
+
         commonMain {
             dependencies {
                 // Kotlin
@@ -229,6 +235,8 @@ kotlin {
             }
         }
         androidMain {
+            dependsOn(jvmAndroidMain)
+            dependsOn(mobileMain)
             dependencies {
                 // Dependency injection
                 implementation("io.insert-koin:koin-android")
@@ -266,6 +274,8 @@ kotlin {
             }
         }
         iosMain {
+            dependsOn(nonAndroidMain)
+            dependsOn(mobileMain)
             dependencies {
                 // HTTP client
                 implementation("io.ktor:ktor-client-darwin:3.5.2")

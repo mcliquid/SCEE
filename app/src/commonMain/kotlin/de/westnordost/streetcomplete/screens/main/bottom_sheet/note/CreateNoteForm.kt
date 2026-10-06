@@ -65,6 +65,8 @@ fun CreateNoteForm(
     val swapGpxOsm = hasGpxButton && prefs.getBoolean(Prefs.SWAP_GPX_NOTE_BUTTONS, false)
     var answer: (() -> Unit)? by remember { mutableStateOf(null) }
 
+    var requestDismiss by remember { mutableStateOf(false) }
+
     val trackpoints = if (trackpointsDeleted) null else trackpoints
     val openFormPadding = Dimensions.getOpenQuestFormMapPadding(
         LocalWindowInfo.current,
@@ -86,6 +88,7 @@ fun CreateNoteForm(
             )
 
             BottomSheetFormScaffold(
+                onDismissRequest = { requestDismiss = true },
                 header = {
                     QuestHeader(
                         title = stringResource(Res.string.map_btn_create_note),
@@ -101,6 +104,7 @@ fun CreateNoteForm(
                     ProvideTextStyle(MaterialTheme.typography.body1) {
                         NoteForm(
                             onDismiss = onDismiss,
+                            requestDismiss = requestDismiss,
                             text = noteText,
                             onTextChange = { noteText = it },
                             imagePaths = noteImagePaths,

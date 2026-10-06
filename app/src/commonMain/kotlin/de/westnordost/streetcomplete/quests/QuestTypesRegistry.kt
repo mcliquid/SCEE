@@ -234,6 +234,7 @@ import de.westnordost.streetcomplete.quests.summit.AddSummitRegister
 import de.westnordost.streetcomplete.quests.surface.AddBeachSurface
 import de.westnordost.streetcomplete.quests.surface.AddCyclewayPartSurface
 import de.westnordost.streetcomplete.quests.surface.AddFootwayPartSurface
+import de.westnordost.streetcomplete.quests.surface.AddMotorcycleParkingSurface
 import de.westnordost.streetcomplete.quests.surface.AddPathSurface
 import de.westnordost.streetcomplete.quests.surface.AddPitchSurface
 import de.westnordost.streetcomplete.quests.surface.AddRoadSurface
@@ -388,6 +389,7 @@ fun getQuestTypeList(
     // motorcycle parking
     30 to AddMotorcycleParkingCover(),
     31 to AddMotorcycleParkingCapacity(), // counting + number input required but usually well visible
+    200 to AddMotorcycleParkingSurface(),
     180 to AddMotorcycleParkingFee(),
 
     // air pump, may require some checking within a garage forecourt

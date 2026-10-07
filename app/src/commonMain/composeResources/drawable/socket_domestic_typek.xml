@@ -1,19 +1,6 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="106dp"
-    android:height="100dp"
-    android:viewportWidth="106"
-    android:viewportHeight="100">
-    <!-- Type K: two round holes + earth hole at bottom -->
-    <path
-        android:fillColor="#FF000000"
-        android:pathData="M53,6C31.5,6 14,23.5 14,45s17.5,39 39,39 39,-17.5 39,-39S74.5,6 53,6zM53,14c17.1,0 31,13.9 31,31S70.1,76 53,76 22,62.1 22,45 35.9,14 53,14z"/>
-    <path
-        android:fillColor="#FF000000"
-        android:pathData="M34,36m-7.5,0a7.5,7.5 0,1 1,15 0a7.5,7.5 0,1 1,-15 0"/>
-    <path
-        android:fillColor="#FF000000"
-        android:pathData="M72,36m-7.5,0a7.5,7.5 0,1 1,15 0a7.5,7.5 0,1 1,-15 0"/>
-    <path
-        android:fillColor="#FF000000"
-        android:pathData="M50,58h6v14h-6z"/>
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:height="30dp" android:viewportHeight="15" android:viewportWidth="15" android:width="30dp">
+    <path android:fillColor="#00000000" android:pathData="M7.5,7.5m-7,0a7,7 0,1 1,14 0a7,7 0,1 1,-14 0" android:strokeColor="#000" android:strokeWidth="1"/>
+    <path android:fillColor="#000" android:pathData="M4.5,7.5m-1,0a1,1 0,1 1,2 0a1,1 0,1 1,-2 0"/>
+    <path android:fillColor="#000" android:pathData="M10.5,7.5m-1,0a1,1 0,1 1,2 0a1,1 0,1 1,-2 0"/>
+    <path android:fillColor="#000" android:pathData="M6.086,11A1.5,1.5 0,0 0,6 11.5,1.5 1.5,0 0,0 7.5,13 1.5,1.5 0,0 0,9 11.5,1.5 1.5,0 0,0 8.914,11Z"/>
 </vector>

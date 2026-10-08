@@ -2,6 +2,8 @@ package de.westnordost.streetcomplete.quests.crossing_markings
 
 import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.allDrawableResources
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryModify
 import de.westnordost.streetcomplete.data.preferences.Preferences
@@ -17,6 +19,7 @@ import dev.mokkery.matcher.any
 import dev.mokkery.mock
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class AddCrossingMarkingsTest {
@@ -138,6 +141,20 @@ class AddCrossingMarkingsTest {
                 mapOf("highway" to "crossing", "crossing" to "marked")
             )
         )
+    }
+
+    @Test fun `every selectable crossing markings option has compose drawable and title`() {
+        for (marking in CrossingMarkings.entries) {
+            if (marking == CrossingMarkings.YES) {
+                assertNull(marking.imageRes)
+                assertNull(marking.titleRes)
+            } else {
+                assertNotNull(marking.imageRes)
+                assertNotNull(marking.titleRes)
+                val drawableName = Res.allDrawableResources.entries.first { it.value == marking.imageRes }.key
+                assertEquals(marking.imageRes, Res.allDrawableResources[drawableName])
+            }
+        }
     }
 
     @Test fun `apply non-zebra markings replaces crossing=zebra with marked`() {

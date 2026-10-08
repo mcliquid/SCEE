@@ -64,7 +64,7 @@ fun hasSupportedSocketTypes(countryInfo: CountryInfo): Boolean =
 /**
  * Socket types shown in the form for [countryInfo].
  * Empty when the country has no implemented motorcar connector in metadata (quest not applicable).
- * [SocketType.DOMESTIC] is appended only when usable [CountryInfo.domesticSocketType] metadata exists.
+ * [SocketType.DOMESTIC] is appended only when usable [CountryInfo.domesticSocketTypes] metadata exists.
  */
 fun socketTypesForCountry(countryInfo: CountryInfo): List<SocketType> {
     val specificTypes = specificSocketTypesForCountry(countryInfo)

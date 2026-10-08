@@ -34,7 +34,7 @@ class AddChargingStationSocketTest {
         "DE",
         listOf(IncompleteCountryInfo(
             chargingStationSocketTypes = listOf("type2", "type2_cable", "type2_combo", "chademo"),
-            domesticSocketType = listOf("typec", "schuko")
+            domesticSocketTypes = listOf("typec", "schuko")
         ))
     )
     private val countryInfoEmpty = CountryInfo(
@@ -51,14 +51,14 @@ class AddChargingStationSocketTest {
         "GB",
         listOf(IncompleteCountryInfo(
             chargingStationSocketTypes = listOf("type2", "type2_cable", "type2_combo", "chademo"),
-            domesticSocketType = listOf("bs1363")
+            domesticSocketTypes = listOf("bs1363")
         ))
     )
     private val countryInfoCh = CountryInfo(
         "CH",
         listOf(IncompleteCountryInfo(
             chargingStationSocketTypes = listOf("type2", "type2_cable", "type2_combo", "chademo"),
-            domesticSocketType = listOf("typec", "sev1011_t13")
+            domesticSocketTypes = listOf("typec", "sev1011_t13")
         ))
     )
     private val countryInfoIlNoDomestic = CountryInfo(
@@ -71,7 +71,7 @@ class AddChargingStationSocketTest {
         "CN",
         listOf(IncompleteCountryInfo(
             chargingStationSocketTypes = listOf("gb_ac", "gb_dc"),
-            domesticSocketType = listOf("gb1002")
+            domesticSocketTypes = listOf("gb1002")
         ))
     )
 
@@ -216,7 +216,7 @@ class AddChargingStationSocketTest {
             "XX",
             listOf(IncompleteCountryInfo(
                 chargingStationSocketTypes = listOf("type2"),
-                domesticSocketType = listOf("not_a_real_plug", "schuko")
+                domesticSocketTypes = listOf("not_a_real_plug", "schuko")
             ))
         )
         assertEquals(listOf(DomesticPlugType.SCHUKO), domesticPlugTypesForCountry(country))

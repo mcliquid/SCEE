@@ -713,7 +713,6 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 201 to AddIsSidepath(),
     EE_QUEST_OFFSET + 62 to AddToiletsDisposal(),
     EE_QUEST_OFFSET + 63 to AddEvseId(),
-    EE_QUEST_OFFSET + 70 to AddChargingStationSocket(getCountryInfoByLocation),
     EE_QUEST_OFFSET + 66 to AddServiceTimes(),
     EE_QUEST_OFFSET + 64 to AddOrchardType(), // need to look around the orchard to tell apart meadow orchard and plantation
     EE_QUEST_OFFSET + 10 to OsmoseQuest(osmoseDao),

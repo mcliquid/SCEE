@@ -195,8 +195,10 @@ class MainBottomSheetViewModelImpl(
         val levels = parseLevelsOrNull(element.tags)
         quest.type.getHighlightedElements(element, mapData).mapNotNull { other ->
             if (element == other) return@mapNotNull null
-            if (!levels.levelsIntersect(parseLevelsOrNull(other.tags))) return@mapNotNull null
-            if (element.tags["layer"] != other.tags["layer"]) return@mapNotNull null
+            if(quest.type.hideHighlightedElementsOnDifferentLevel) {
+                if (!levels.levelsIntersect(parseLevelsOrNull(other.tags))) return@mapNotNull null
+                if (element.tags["layer"] != other.tags["layer"]) return@mapNotNull null
+            }
             val geometry = mapData.getGeometry(other.type, other.id) ?: return@mapNotNull null
             Marker(geometry, getIcon(featureDictionary.value, other), getTitle(other.tags))
         }.toList()

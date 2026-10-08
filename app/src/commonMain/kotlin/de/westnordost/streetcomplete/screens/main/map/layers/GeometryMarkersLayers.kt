@@ -7,7 +7,6 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.location_view_direction
@@ -15,6 +14,7 @@ import de.westnordost.streetcomplete.resources.preset_maki_circle
 import de.westnordost.streetcomplete.screens.main.map.MapImages
 import de.westnordost.streetcomplete.screens.main.map.byZoom
 import de.westnordost.streetcomplete.screens.main.map.has
+import de.westnordost.streetcomplete.screens.main.map.iconNamePrefix
 import de.westnordost.streetcomplete.screens.main.map.isArea
 import de.westnordost.streetcomplete.screens.main.map.isPoint
 import de.westnordost.streetcomplete.ui.common.quest.Marker
@@ -31,6 +31,7 @@ import org.maplibre.compose.expressions.dsl.convertToString
 import org.maplibre.compose.expressions.dsl.feature
 import org.maplibre.compose.expressions.dsl.image
 import org.maplibre.compose.expressions.dsl.not
+import org.maplibre.compose.expressions.dsl.plus
 import org.maplibre.compose.expressions.dsl.textOffset
 import org.maplibre.compose.expressions.value.IconRotationAlignment
 import org.maplibre.compose.expressions.value.LineCap
@@ -53,7 +54,9 @@ import org.maplibre.spatialk.geojson.Geometry
 fun GeometryMarkersLayers(markers: Collection<Marker>, haloColor: Color, mapImages: MapImages) {
     val icons = remember(markers) { markers.mapTo(LinkedHashSet()) { it.icon ?: Res.drawable.preset_maki_circle } }
     val painters = icons.associateWith { painterResource(it) }
-    LaunchedEffect(mapImages, painters) { mapImages.addIcons(painters) }
+    LaunchedEffect(mapImages, painters, haloColor) {
+        mapImages.addIcons(painters, Color.GeometryMarker, haloColor)
+    }
 
     val features by produceState<List<Feature<Geometry, JsonObject>>>(emptyList(), markers) {
         value = withContext(Dispatchers.Default) { markers.flatMap { it.toGeoJsonFeature() } }
@@ -61,6 +64,7 @@ fun GeometryMarkersLayers(markers: Collection<Marker>, haloColor: Color, mapImag
     val source = rememberGeoJsonSource(
         data = GeoJsonData.Features(FeatureCollection(features))
     )
+    val iconNamePrefix = iconNamePrefix(Color.GeometryMarker, haloColor)
 
     FillLayer(
         id = "geo-fill",
@@ -83,11 +87,8 @@ fun GeometryMarkersLayers(markers: Collection<Marker>, haloColor: Color, mapImag
         id = "geo-symbols",
         source = source,
         filter = feature.isPoint(),
-        iconImage = image(feature["icon"].convertToString()),
-        iconColor = feature["color"].convertToColor(const(Color.GeometryMarker)),
-        iconHaloColor = const(haloColor),
-        iconHaloWidth = const(2.5.dp),
-        iconSize = byZoom(17 to 0.5f, 19 to 1f),
+        iconImage = image(const(iconNamePrefix) + feature["icon"].convertToString()),
+        iconSize = byZoom(17 to 0.66f, 19 to 1f),
         iconAllowOverlap = const(true),
         iconRotate = feature["rotation"].convertToNumber(const(0)),
         textField = feature["label"].convertToString(),
@@ -95,7 +96,7 @@ fun GeometryMarkersLayers(markers: Collection<Marker>, haloColor: Color, mapImag
         textSize = const(16.sp),
         textFont = const(listOf("Roboto Bold")),
         textAnchor = const(SymbolAnchor.Top),
-        textOffset = textOffset(0.em, 1.em),
+        textOffset = textOffset(0.dp, 19.dp),
         textOptional = const(true),
     )
     SymbolLayer(

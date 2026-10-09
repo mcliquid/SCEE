@@ -227,6 +227,8 @@ fun MainScreen(
 
     val sheet = rememberMainSheetState(mainBottomSheetViewModel, editHistoryViewModel)
 
+    var pendingSheetSelection by remember { mutableStateOf<MainSheetSelection?>(null) }
+
     val sheetSelection = sheet.selection
     val shownBottomSheet = sheet.shownBottomSheet
     //endregion
@@ -275,11 +277,11 @@ fun MainScreen(
             showOverlay = showOverlay,
             downloadedTiles = downloadedTiles,
             pinsMode = pinsMode,
-            isSelectable = !sheet.isFormOpen,
-            onClickQuest = { sheet.show(MainSheetSelection.Quest(it)) },
-            onClickEdit = { sheet.show(MainSheetSelection.EditHistory(it)) },
+            consumeClick = !sheet.isOpen,
+            onClickQuest = { pendingSheetSelection = MainSheetSelection.Quest(it) },
+            onClickEdit = { pendingSheetSelection = MainSheetSelection.EditHistory(it) },
             onClickElement = { key ->
-                selectedOverlay?.let { sheet.show(MainSheetSelection.Overlay(it.name, key)) }
+                pendingSheetSelection = selectedOverlay?.let { MainSheetSelection.Overlay(it.name, key) }
             },
         )
     }
@@ -416,6 +418,16 @@ fun MainScreen(
     //endregion
 
     //region effects
+
+    LaunchedEffect(pendingSheetSelection, sheet.isOpen) {
+        val selection = pendingSheetSelection
+        if (selection != null) {
+            if (!sheet.isOpen) {
+                pendingSheetSelection = null
+                sheet.show(selection)
+            }
+        }
+    }
 
     LaunchedEffect(geoUri) {
         geoUri?.let {

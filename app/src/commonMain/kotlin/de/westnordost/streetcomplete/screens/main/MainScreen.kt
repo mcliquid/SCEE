@@ -304,7 +304,7 @@ fun MainScreen(
         mapState.positionAtCenter(sheetPadding)
 
     fun getMetersPerDp(): Double =
-        mapState.metersPerDpAtLatitude(mapState.cameraPosition.target.latitude) ?: 0.0
+        mapState.metersPerDpAtLatitude(mapState.cameraPosition.center.latitude) ?: 0.0
 
     fun ClickEvent.toMapClick(): MapClick? =
         position?.let { MapClick(it.toLatLon(), screenOffset, clickAreaSizeInMeters = getMetersPerDp() * 20) }
@@ -351,7 +351,7 @@ fun MainScreen(
         val displayedArea = mapState.viewport?.visibleBounds?.toStreetCompleteBoundingBox()
         if (displayedArea == null) {
             showToast = Toast.CannotFindBounds
-        } else if (!viewModel.download(displayedArea, mapState.cameraPosition.target.toLatLon(), enqueue)) {
+        } else if (!viewModel.download(displayedArea, mapState.cameraPosition.center.toLatLon(), enqueue)) {
             showToast = Toast.DownloadAreaTooBig
         }
     }
@@ -451,7 +451,8 @@ fun MainScreen(
     }
 
     LaunchedEffect(headingProvider) {
-        headingProvider.updates(HeadingRequest(33.milliseconds)).collect { headingMeasurement ->
+        val request = HeadingRequest { minimumInterval = 33.milliseconds }
+        headingProvider.updates(request).collect { headingMeasurement ->
             heading = (headingMeasurement.bearing - Bearing.North).inDegrees.toFloat()
         }
     }
@@ -479,13 +480,13 @@ fun MainScreen(
                         LocationUnavailableReason.ServicesDisabled -> LocationState.ALLOWED
                         LocationUnavailableReason.TemporarilyUnavailable -> LocationState.SEARCHING
                         LocationUnavailableReason.PermissionDenied -> LocationState.DENIED
-                        LocationUnavailableReason.Unsupported,
-                        LocationUnavailableReason.UnexpectedFailure -> null
+                        else -> null // unsupported or unclassified
                     }
 
                     tracks.clear()
                     launch { cameraState.setNavigationMode(false, null, null) }
                 }
+                else -> Unit
             }
         }
     }
@@ -635,7 +636,7 @@ fun MainScreen(
                     onZoomDrag = { zoomBy(it / 20.0) },
 
                     mapRotation = { mapState.cameraPosition.bearing.toFloat() },
-                    mapTilt = { mapState.cameraPosition.tilt.toFloat() },
+                    mapTilt = { mapState.cameraPosition.pitch.toFloat() },
                     onClickCompass = { scope.launch { cameraState.resetCompass() } },
 
                     locationState = locationState,
@@ -727,8 +728,8 @@ fun MainScreen(
                         onCreateNote = { pos, text, images, tracks, isGpx -> mainBottomSheetViewModel.createNote(pos, text, images, tracks, isGpx) },
                         shownBottomSheet = shownBottomSheet,
                         mapRotation = mapCamera.bearing.toFloat(),
-                        mapTilt = mapCamera.tilt.toFloat(),
-                        mapPosition = getCrosshairPosition() ?: mapCamera.target.toLatLon(),
+                        mapTilt = mapCamera.pitch.toFloat(),
+                        mapPosition = getCrosshairPosition() ?: mapCamera.center.toLatLon(),
                         mapMetersPerDp = getMetersPerDp(),
                         onSetMapMarkers = { if (id == sheet.id) sheet.formMarkers = it?.toList() },
                         onSetMapOverlay = { if (id == sheet.id) sheet.formMapOverlay = it },

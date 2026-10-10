@@ -58,9 +58,7 @@ import org.maplibre.compose.layers.LineLayer
 import org.maplibre.compose.layers.SymbolLayer
 import org.maplibre.compose.map.LocalMapState
 import org.maplibre.compose.sources.GeoJsonData
-import org.maplibre.compose.sources.GeoJsonOptions
 import org.maplibre.compose.sources.rememberGeoJsonSource
-import org.maplibre.compose.style.StyleHandleException
 import org.maplibre.compose.util.DpPadding
 import org.maplibre.compose.util.MaplibreComposable
 import org.maplibre.spatialk.geojson.Feature
@@ -123,12 +121,10 @@ fun PinsLayers(
             dotFeatures = dotFeatures.size,
         )
     }
-    val options = remember {
-        GeoJsonOptions(
-            cluster = true,
-            clusterMaxZoom = CLUSTER_MAX_ZOOM,
-            clusterRadius = 55,
-        )
+    val source = rememberGeoJsonSource(GeoJsonData.Features(FeatureCollection(features))) {
+        cluster = true
+        clusterMaxZoom = CLUSTER_MAX_ZOOM
+        clusterRadius = 55
     }
 
     val source = rememberGeoJsonSource(
@@ -147,14 +143,9 @@ fun PinsLayers(
 
     fun ClickEvent.onClickClusterFeature(features: List<Feature<Geometry, JsonObject?>>): ClickResult {
         val feature = features.firstOrNull() ?: return ClickResult.Pass
-        val currentHandle = mapState.style.sources[source] ?: return ClickResult.Pass
+        val handle = mapState.style.sources[source] ?: return ClickResult.Pass
         coroutineScope.launch {
-            val zoom = try {
-                currentHandle.getClusterExpansionZoom(feature)
-            } catch (e: StyleHandleException) {
-                if (mapState.style.sources[source] !== currentHandle) return@launch
-                throw e
-            }
+            val zoom = handle.getClusterExpansionZoom(feature) ?: return@launch
             currentOnZoomToCluster(zoom)
         }
         return ClickResult.Consume

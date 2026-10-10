@@ -149,10 +149,9 @@ fun MapStyle(
     val roads = listOf(pedestrian, serviceRoads, minorRoads, majorRoads, motorways, motorwayLinks)
 
     if (rasterTiles != null) {
-        val rasterSource = rememberRasterTileSource(
-            tiles = listOf(rasterTiles),
-            options = TileSetOptions(maxZoom = rasterMaxZoom),
-        )
+        val rasterSource = rememberRasterTileSource(listOf(rasterTiles)) {
+            maxZoom = rasterMaxZoom
+        }
         RasterLayer(id = "raster-background", source = rasterSource)
     }
 

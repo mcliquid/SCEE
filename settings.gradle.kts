@@ -17,6 +17,10 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        // SCEE: locally published osmfeatures that reads the NSI format
+        mavenLocal {
+            content { includeGroup("de.westnordost") }
+        }
         google {
             mavenContent {
                 includeGroupAndSubgroups("androidx")
@@ -25,6 +29,8 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        // SCEE: com.github.ticofab:android-gpx-parser
+        maven { url = uri("https://www.jitpack.io") }
     }
 }
 

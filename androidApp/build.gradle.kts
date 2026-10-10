@@ -6,15 +6,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-repositories {
-    // SPIKE: locally published osmfeatures that reads the NSI format
-    mavenLocal { content { includeGroup("de.westnordost") } }
-    google()
-    mavenCentral()
-    // for com.github.ticofab:android-gpx-parser
-    maven { url = uri("https://www.jitpack.io") }
-}
-
 android {
     namespace = "de.westnordost.streetcomplete.app"
     compileSdk = 37

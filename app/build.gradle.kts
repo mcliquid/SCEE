@@ -43,15 +43,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.allopen") version "2.4.20"
 }
 
-repositories {
-    // SPIKE: locally published osmfeatures that reads the NSI format
-    mavenLocal { content { includeGroup("de.westnordost") } }
-    google()
-    mavenCentral()
-    // for com.github.ticofab:android-gpx-parser
-    maven { url = uri("https://www.jitpack.io") }
-}
-
 buildkonfig {
     packageName = "de.westnordost.streetcomplete"
     objectName = "BuildConfig"

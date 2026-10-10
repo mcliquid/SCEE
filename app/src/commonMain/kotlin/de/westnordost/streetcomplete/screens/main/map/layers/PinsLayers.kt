@@ -126,11 +126,6 @@ fun PinsLayers(
         clusterMaxZoom = CLUSTER_MAX_ZOOM
         clusterRadius = 55
     }
-
-    val source = rememberGeoJsonSource(
-        data = GeoJsonData.Features(FeatureCollection(features)),
-        options = options
-    )
     val dotSource = rememberGeoJsonSource(
         data = GeoJsonData.Features(FeatureCollection(dotFeatures)),
     )

@@ -10,12 +10,12 @@ import kotlinx.coroutines.launch
  * retain the route when the map returns. */
 class RoutePlannerViewModel(client: PedestrianRoutingClient, source: RouteQuestService) : ViewModel() {
     val quests = RouteQuestState(viewModelScope, source)
-    val routing = PedestrianRouteState(viewModelScope, client::route)
+    val routing = PedestrianRouteState(viewModelScope, client::routes)
 
     init {
         viewModelScope.launch {
             routing.state.collect { state ->
-                quests.setRoute(if (state.loading) emptyList() else state.route?.points.orEmpty())
+                quests.setRoutes(state.routes.map { it.points }, state.selectedIndex)
             }
         }
     }

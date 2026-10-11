@@ -20,6 +20,54 @@ class PedestrianRoutingClientTest {
     private val positions = listOf(LatLon(52.5, 13.3), LatLon(52.6, 13.4))
     private val success = """{"code":"Ok","routes":[{"distance":100,"duration":80,"geometry":{"type":"LineString","coordinates":[[13.3,52.5],[13.4,52.6]]}}]}"""
 
+    private fun response(vararg routes: String) = """{"code":"Ok","routes":[${routes.joinToString(",")}]}"""
+    private val standardJson = """{"distance":100,"duration":80,"geometry":{"type":"LineString","coordinates":[[13.3,52.5],[13.4,52.6]]}}"""
+    private val alternativeJson = """{"distance":120,"duration":95,"geometry":{"type":"LineString","coordinates":[[13.3,52.5],[13.3,52.6],[13.4,52.6]]}}"""
+
+    @Test fun `one request yields all valid alternatives with ordered metadata`() = runBlocking {
+        var calls = 0
+        val http = HttpClient(MockEngine { request ->
+            calls++
+            assertEquals("2", request.url.parameters["alternatives"])
+            respond(response(standardJson, alternativeJson))
+        })
+        try {
+            val routes = PedestrianRoutingClient(http).routes(positions)
+            assertEquals(2, routes.size)
+            assertEquals(listOf(100.0, 120.0), routes.map { it.distanceMeters })
+            assertEquals(listOf(80.0, 95.0), routes.map { it.durationSeconds })
+            assertEquals(LatLon(52.6, 13.3), routes[1].points[1])
+            assertEquals(1, calls)
+        } finally { http.close() }
+    }
+
+    @Test fun `malformed individual routes do not discard valid siblings`() = runBlocking {
+        val http = HttpClient(MockEngine {
+            respond(response("{}", """{"distance":"bad"}""", standardJson, alternativeJson.replace("LineString", "Polygon")))
+        })
+        try {
+            assertEquals(listOf(100.0), PedestrianRoutingClient(http).routes(positions).map { it.distanceMeters })
+        } finally { http.close() }
+    }
+
+    @Test fun `duplicate and near identical routes are removed`() = runBlocking {
+        val near = standardJson.replace("52.5", "52.50002").replace("52.6", "52.60002")
+        val http = HttpClient(MockEngine { respond(response(standardJson, standardJson, near,
+                standardJson.replace("[13.4,52.6]", "[13.35,52.55],[13.4,52.6]"), alternativeJson)) })
+        try {
+            assertEquals(listOf(100.0, 120.0), PedestrianRoutingClient(http).routes(positions).map { it.distanceMeters })
+        } finally { http.close() }
+    }
+
+    @Test fun `at most three routes remain in recommendation order`() = runBlocking {
+        val third = alternativeJson.replace("13.3,52.6", "13.4,52.5").replace("120", "140")
+        val fourth = third.replace("140", "160").replace("13.4,52.5", "13.5,52.5")
+        val http = HttpClient(MockEngine { respond(response(standardJson, alternativeJson, third, fourth)) })
+        try {
+            assertEquals(listOf(100.0, 120.0, 140.0), PedestrianRoutingClient(http).routes(positions).map { it.distanceMeters })
+        } finally { http.close() }
+    }
+
     @Test fun `foot request preserves ordered coordinates and parses GeoJSON`() = runBlocking {
         val http = HttpClient(MockEngine { request ->
             assertTrue(request.url.encodedPath.endsWith("/route/v1/foot/13.3,52.5;13.4,52.6"))

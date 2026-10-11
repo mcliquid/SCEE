@@ -51,6 +51,7 @@ interface RouteQuestDataSource {
     suspend fun load(corridor: RouteQuestCorridor)
     suspend fun isCovered(corridor: RouteQuestCorridor): Boolean
     suspend fun quests(corridor: RouteQuestCorridor): Set<QuestKey>
+    suspend fun questsFor(corridors: List<RouteQuestCorridor>): List<Set<QuestKey>> = corridors.map { quests(it) }
 }
 
 class RouteQuestService(
@@ -99,28 +100,41 @@ class RouteQuestService(
         }
     }
 
-    override suspend fun quests(corridor: RouteQuestCorridor): Set<QuestKey> = withContext(Dispatchers.IO) {
+    override suspend fun quests(corridor: RouteQuestCorridor): Set<QuestKey> = questsFor(listOf(corridor)).single()
+
+    override suspend fun questsFor(corridors: List<RouteQuestCorridor>): List<Set<QuestKey>> = withContext(Dispatchers.IO) {
         val start = nowAsEpochMilliseconds()
         val activeTypes = visibleTypes.getVisible().mapTo(hashSetOf()) { it.name }
-        val counter = RouteQuestCounter(corridor.points, activeTypes)
-        for (tile in corridor.tiles) {
-            currentCoroutineContext().ensureActive()
-            // One z16 tile per query stays below SpatialCache's 128-tile limit.
-            // This cache indexes Quest.position, not geometry. A long way/polygon may
-            // intersect the route with its position outside every corridor tile, so the
-            // UI reports a minimum even when all download tiles are fresh. MapDataSource
-            // also selects by contained nodes and cannot reliably fill this gap.
-            for (quest in visibleQuests.getAll(tile.asBoundingBox(ZOOM))) {
-                currentCoroutineContext().ensureActive()
-                // Also reapply live visibility (notably Notes/overlay and day/night) to cached data.
-                visibleQuests.get(quest.key)?.let { counter.add(it) }
-            }
-        }
-        Log.i("RouteQuests", "Quest counting took ${nowAsEpochMilliseconds() - start} ms (${counter.keys.size} quests)")
-        counter.keys.toSet()
+        val keys = queryRouteQuestCandidates(corridors, activeTypes,
+            fetch = { tile -> visibleQuests.getAll(tile.asBoundingBox(ZOOM)) },
+            resolve = visibleQuests::get)
+        Log.i("RouteQuests", "Quest comparison took ${nowAsEpochMilliseconds() - start} ms (${keys.map { it.size }})")
+        keys
     }
 
     private fun freshSince() = (nowAsEpochMilliseconds() - ApplicationConstants.REFRESH_DATA_AFTER).coerceAtLeast(0)
+}
+
+/** Query shared tiles once, while retaining each route's position-index and geometry rules. */
+internal suspend fun queryRouteQuestCandidates(
+    corridors: List<RouteQuestCorridor>,
+    activeTypes: Set<String>,
+    fetch: (TilePos) -> Collection<Quest>,
+    resolve: (QuestKey) -> Quest?,
+): List<Set<QuestKey>> {
+    val counters = corridors.map { RouteQuestCounter(it.points, activeTypes) }
+    // This remains a minimum count: long ways/polygons with their quest position outside
+    // the corridor tiles can be omitted even when all download tiles are fresh.
+    for (tile in corridors.flatMap { it.tiles }.toSet()) {
+        currentCoroutineContext().ensureActive()
+        val relevant = corridors.indices.filter { tile in corridors[it].tiles }
+        for (candidate in fetch(tile)) {
+            currentCoroutineContext().ensureActive()
+            val quest = resolve(candidate.key) ?: continue
+            for (index in relevant) counters[index].add(quest)
+        }
+    }
+    return counters.map { it.keys.toSet() }
 }
 
 /** Small adjoining runs of missing tiles; never fill gaps with already fresh tiles. */

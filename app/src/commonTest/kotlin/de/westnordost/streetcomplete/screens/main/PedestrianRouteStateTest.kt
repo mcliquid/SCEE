@@ -20,12 +20,40 @@ class PedestrianRouteStateTest {
     private val end = LatLon(52.6, 13.4)
     private val route = PedestrianRoute(listOf(start, end), 100.0, 80.0)
 
+    @Test fun `selection preserves alternative metadata colors and needs no new request`() = runBlocking {
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        val other = route.copy(points = listOf(start, LatLon(52.55, 13.3), end), distanceMeters = 110.0, durationSeconds = 95.0)
+        var calls = 0
+        val state = PedestrianRouteState(scope) {
+            if (++calls == 1) listOf(route, other) else throw RoutingException(RoutingError.Network)
+        }
+        try {
+            state.start(start, end)
+            val color = de.westnordost.streetcomplete.screens.main.map.layers.pedestrianRouteColor(1)
+            state.select(1)
+            assertEquals(other, state.state.value.route)
+            assertEquals(110.0, state.state.value.route!!.distanceMeters)
+            assertEquals(95.0, state.state.value.route!!.durationSeconds)
+            assertEquals(color, de.westnordost.streetcomplete.screens.main.map.layers.pedestrianRouteColor(state.state.value.selectedIndex))
+            assertTrue(color != de.westnordost.streetcomplete.screens.main.map.layers.pedestrianRouteColor(0))
+            assertEquals(1, calls)
+            state.select(9)
+            assertEquals(1, state.state.value.selectedIndex)
+            state.start(start, end)
+            assertEquals(listOf(route, other), state.state.value.routes)
+            assertEquals(1, state.state.value.selectedIndex)
+            assertEquals(RoutingError.Network, state.state.value.error)
+            state.clear()
+            assertTrue(state.state.value.routes.isEmpty())
+        } finally { scope.cancel() }
+    }
+
     @Test fun `new request wins and removal cancels pending result`() = runBlocking {
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
         val pending = mutableListOf<CompletableDeferred<PedestrianRoute>>()
         val state = PedestrianRouteState(scope) { points ->
             assertEquals(listOf(start, end), points)
-            CompletableDeferred<PedestrianRoute>().also { pending.add(it) }.await()
+            listOf(CompletableDeferred<PedestrianRoute>().also { pending.add(it) }.await())
         }
         try {
             state.start(start, end)
@@ -47,9 +75,9 @@ class PedestrianRouteStateTest {
         val pending = CompletableDeferred<PedestrianRoute>()
         val state = PedestrianRouteState(scope) {
             when (++calls) {
-                1 -> route
+                1 -> listOf(route)
                 2 -> throw RoutingException(RoutingError.Network)
-                else -> pending.await()
+                else -> listOf(pending.await())
             }
         }
         state.start(start, end)

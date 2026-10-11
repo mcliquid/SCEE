@@ -25,6 +25,12 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.decodeFromJsonElement
+import de.westnordost.streetcomplete.util.math.distanceToArcs
+import de.westnordost.streetcomplete.util.math.distanceTo
+import de.westnordost.streetcomplete.util.math.initialBearingTo
+import de.westnordost.streetcomplete.util.math.translate
 import kotlin.time.TimeSource
 
 data class PedestrianRoute(val points: List<LatLon>, val distanceMeters: Double, val durationSeconds: Double)
@@ -45,10 +51,15 @@ class PedestrianRoutingClient(
 
     /** Ordered positions: start, optional intermediate points, destination. */
     suspend fun route(positions: List<LatLon>): PedestrianRoute = withContext(Dispatchers.IO) {
+        requestRoute(positions).first()
+    }
+
+    /** The recommended route and up to two alternatives, in server recommendation order. */
+    suspend fun routes(positions: List<LatLon>): List<PedestrianRoute> = withContext(Dispatchers.IO) {
         requestRoute(positions)
     }
 
-    private suspend fun requestRoute(positions: List<LatLon>): PedestrianRoute = mutex.withLock {
+    private suspend fun requestRoute(positions: List<LatLon>): List<PedestrianRoute> = mutex.withLock {
         require(positions.size >= 2 && positions.all { it.isRoutingCoordinateValid() })
         lastRequest?.let { delay((1000 - it.elapsedNow().inWholeMilliseconds).coerceAtLeast(0)) }
         try {
@@ -60,6 +71,7 @@ class PedestrianRoutingClient(
                     parameter("overview", "full")
                     parameter("geometries", "geojson")
                     parameter("steps", "false")
+                    parameter("alternatives", "2")
                 }
                 val body = response.bodyAsText()
                 if (response.status.value !in 200..299) {
@@ -88,22 +100,33 @@ class PedestrianRoutingClient(
         }
     }
 
-    private fun parse(body: String): PedestrianRoute {
+    private suspend fun parse(body: String): List<PedestrianRoute> {
         try {
             val response = json.decodeFromString<Response>(body)
             if (response.code == "NoRoute" || response.code == "NoSegment") throw RoutingException(RoutingError.NoRoute)
             if (response.code != "Ok") throw RoutingException(RoutingError.Server)
-            val route = response.routes.firstOrNull() ?: throw RoutingException(RoutingError.InvalidResponse)
-            if (route.geometry.type != "LineString") throw RoutingException(RoutingError.InvalidResponse)
-            val points = route.geometry.coordinates.map {
-                if (it.size != 2) throw RoutingException(RoutingError.InvalidResponse)
-                LatLon(it[1], it[0])
+            val routes = mutableListOf<PedestrianRoute>()
+            for (element in response.routes) {
+                currentCoroutineContext().ensureActive()
+                // Decode separately: one malformed route must not discard valid siblings.
+                val candidate = runCatching {
+                    val route = json.decodeFromJsonElement<Route>(element)
+                    require(route.geometry.type == "LineString")
+                    val points = route.geometry.coordinates.map {
+                        require(it.size == 2)
+                        LatLon(it[1], it[0])
+                    }
+                    require(points.size >= 2 && points.distinct().size >= 2 && points.all { it.isRoutingCoordinateValid() })
+                    require(route.distance.isFinite() && route.distance > 0 && route.duration.isFinite() && route.duration >= 0)
+                    PedestrianRoute(points, route.distance, route.duration)
+                }.getOrNull() ?: continue
+                if (routes.none { similarRoutes(it, candidate) }) routes.add(candidate)
+                if (routes.size == 3) break
             }
-            if (points.size < 2 || points.distinct().size < 2 || points.any { !it.isRoutingCoordinateValid() }
-                || !route.distance.isFinite() || route.distance <= 0
-                || !route.duration.isFinite() || route.duration < 0
-            ) throw RoutingException(RoutingError.InvalidResponse)
-            return PedestrianRoute(points, route.distance, route.duration)
+            if (routes.isEmpty()) throw RoutingException(RoutingError.InvalidResponse)
+            return routes
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: RoutingException) {
             throw e
         } catch (e: Exception) {
@@ -111,10 +134,45 @@ class PedestrianRoutingClient(
         }
     }
 
-    @Serializable private data class Response(val code: String, val routes: List<Route> = emptyList())
+    @Serializable private data class Response(val code: String, val routes: List<JsonElement> = emptyList())
     @Serializable private data class Route(val geometry: Geometry, val distance: Double, val duration: Double)
     @Serializable private data class Geometry(val type: String, val coordinates: List<List<Double>>)
 }
 
 fun LatLon.isRoutingCoordinateValid(): Boolean =
     latitude.isFinite() && longitude.isFinite() && latitude in -90.0..90.0 && longitude in -180.0..180.0
+
+/** Preserve server order, removing routes that follow essentially the same line in both
+ * directions of comparison. Bounded sampling also handles different vertex densities. */
+private suspend fun similarRoutes(a: PedestrianRoute, b: PedestrianRoute): Boolean {
+    if (a.points == b.points) return true
+    if (kotlin.math.abs(a.distanceMeters - b.distanceMeters) > minOf(a.distanceMeters, b.distanceMeters) * 0.03) return false
+    suspend fun follows(points: List<LatLon>, other: List<LatLon>): Boolean {
+        val samples = routeComparisonSamples(points)
+        var near = 0
+        for (point in samples) {
+            currentCoroutineContext().ensureActive()
+            if (point.distanceToArcs(other) <= 15.0) near++
+        }
+        return near >= kotlin.math.ceil(samples.size * 0.95).toInt()
+    }
+    return follows(a.points, b.points) && follows(b.points, a.points)
+}
+
+/** Sample by distance, so a dense common section cannot hide a different sparse section. */
+private fun routeComparisonSamples(points: List<LatLon>): List<LatLon> {
+    val lengths = points.zipWithNext().map { (a, b) -> a.distanceTo(b) }
+    val total = lengths.sum()
+    if (total == 0.0) return listOf(points.first())
+    var segment = 0
+    var progress = 0.0
+    return (0..64).map { sample ->
+        val target = total * sample / 64
+        while (segment < lengths.lastIndex && progress + lengths[segment] < target) {
+            progress += lengths[segment++]
+        }
+        val start = points[segment]
+        if (lengths[segment] == 0.0) start else start.translate(
+            (target - progress).coerceIn(0.0, lengths[segment]), start.initialBearingTo(points[segment + 1]))
+    }
+}

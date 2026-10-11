@@ -17,7 +17,17 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
+import de.westnordost.streetcomplete.screens.main.map.layers.pedestrianRouteColor
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -167,7 +177,7 @@ fun MainScreen(
     val routing = routePlanner.routing
     val routingState by routing.state.collectAsState()
     val routeQuests = routePlanner.quests
-    val routeQuestState by routeQuests.state.collectAsState()
+    val routeQuestStates by routeQuests.alternatives.collectAsState()
 
     val headingProvider = rememberDefaultHeadingProvider()
     val locationProvider = rememberDefaultLocationProvider()
@@ -178,6 +188,14 @@ fun MainScreen(
 
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
+    // The upper controls are 48dp high with 4dp outer padding; leave a clear gap below.
+    val routeInfoTop = 76.dp
+    val routeInfoMaxHeight = minOf(
+        with(density) { LocalWindowInfo.current.containerSize.height.toDp() } * 0.35f,
+        if (routingState.routes.size > 1) 160.dp else 80.dp,
+    )
+    val routeCameraTop = routeInfoTop + routeInfoMaxHeight + 12.dp +
+        with(density) { WindowInsets.safeDrawing.getTop(density).toDp() }
 
     val starsCount by viewModel.starsCount.collectAsState()
     val isShowingStarsCurrentWeek by viewModel.isShowingStarsCurrentWeek.collectAsState()
@@ -285,7 +303,8 @@ fun MainScreen(
             trackpoints = tracks.recentTrackPositions,
             oldTrackpointsLists = tracks.olderTrackPositions,
             gpxTrack = gpxTrack,
-            pedestrianRoute = routingState.route?.points.orEmpty(),
+            pedestrianRoutes = routingState.routes,
+            selectedPedestrianRoute = routingState.selectedIndex,
             customGeoJson = customGeoJson,
             shownBottomSheet = shownBottomSheet,
             selectedEdit = sheet.shownEdit,
@@ -304,11 +323,11 @@ fun MainScreen(
     }
 
     val cameraState = rememberMainMapCameraState(mapState, viewModel.initiallyFollowing, viewModel.initiallyNavigating)
-    LaunchedEffect(routingState.route) {
-        routingState.route?.let { route ->
+    LaunchedEffect(routingState.routes) {
+        routingState.routes.firstOrNull()?.let { route ->
             cameraState.showRoute(
-                ElementPolylinesGeometry(listOf(route.points), route.points.first()),
-                DpPadding(left = 48.dp, right = 48.dp, top = 100.dp, bottom = 100.dp),
+                ElementPolylinesGeometry(routingState.routes.map { it.points }, route.points.first()),
+                DpPadding(left = 48.dp, right = 48.dp, top = routeCameraTop, bottom = 100.dp),
             )
         }
     }
@@ -725,29 +744,50 @@ fun MainScreen(
         if (!sheet.isOpen && (routingState.loading || routingState.route != null)) {
             Surface(
                 modifier = Modifier.align(Alignment.TopCenter)
-                    .windowInsetsPadding(WindowInsets.safeDrawing).padding(top = 48.dp),
+                    .windowInsetsPadding(WindowInsets.safeDrawing).padding(top = routeInfoTop),
                 elevation = 4.dp,
                 shape = MaterialTheme.shapes.small,
             ) {
-                Column(Modifier.padding(horizontal = 12.dp, vertical = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(Modifier.heightIn(max = routeInfoMaxHeight)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 12.dp, vertical = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                     if (routingState.loading) {
                         LinearProgressIndicator()
                         Text(stringResource(Res.string.route_loading))
-                    } else routingState.route?.let { route ->
-                        Text(stringResource(Res.string.route_summary, routeDistance(route.distanceMeters), routeMinutes(route.durationSeconds)))
                     }
-                    if (!routingState.loading && routeQuestState.points == routingState.route?.points) {
-                        val message = when (routeQuestState.status) {
-                            RouteQuestStatus.Loading -> Res.string.route_quests_loading
-                            RouteQuestStatus.Counting -> Res.string.route_quests_counting
-                            RouteQuestStatus.Complete -> Res.string.route_quests_count
-                            RouteQuestStatus.Incomplete -> Res.string.route_quests_incomplete
-                            RouteQuestStatus.Error -> Res.string.route_quests_error
-                            RouteQuestStatus.TooLarge -> Res.string.route_quests_too_large
-                        }
-                        Text(stringResource(message, routeQuestState.keys.size), style = MaterialTheme.typography.caption)
-                        if (routeQuestState.status == RouteQuestStatus.Incomplete || routeQuestState.status == RouteQuestStatus.Error) {
-                            TextButton(onClick = { routeQuests.retry() }) { Text(stringResource(Res.string.route_quests_retry)) }
+                    for ((index, route) in routingState.routes.withIndex()) {
+                        val questState = routeQuestStates.getOrNull(index)?.takeIf { it.points == route.points }
+                        val multiple = routingState.routes.size > 1
+                        val selected = index == routingState.selectedIndex
+                        Column(if (multiple) Modifier.selectable(selected, role = Role.RadioButton,
+                            onClick = { routing.select(index) })
+                            .background(if (selected) MaterialTheme.colors.primary.copy(alpha = 0.12f) else androidx.compose.ui.graphics.Color.Transparent)
+                            .padding(horizontal = 6.dp, vertical = 4.dp) else Modifier) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (multiple) {
+                                    Box(Modifier.size(10.dp).background(pedestrianRouteColor(index)))
+                                    Spacer(Modifier.size(6.dp))
+                                    Text(stringResource(Res.string.route_alternative, index + 1),
+                                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+                                    Spacer(Modifier.size(6.dp))
+                                }
+                                Text(stringResource(Res.string.route_summary, routeDistance(route.distanceMeters), routeMinutes(route.durationSeconds)),
+                                    fontWeight = if (multiple && selected) FontWeight.Bold else FontWeight.Normal)
+                            }
+                            if (questState != null) {
+                                val message = when (questState.status) {
+                                    RouteQuestStatus.Loading -> Res.string.route_quests_loading
+                                    RouteQuestStatus.Counting -> Res.string.route_quests_counting
+                                    RouteQuestStatus.Complete -> Res.string.route_quests_count
+                                    RouteQuestStatus.Incomplete -> Res.string.route_quests_incomplete
+                                    RouteQuestStatus.Error -> Res.string.route_quests_error
+                                    RouteQuestStatus.TooLarge -> Res.string.route_quests_too_large
+                                }
+                                Text(stringResource(message, questState.keys.size), style = MaterialTheme.typography.caption)
+                                if (selected && (questState.status == RouteQuestStatus.Incomplete || questState.status == RouteQuestStatus.Error)) {
+                                    TextButton(onClick = { routeQuests.retry() }) { Text(stringResource(Res.string.route_quests_retry)) }
+                                }
+                            }
                         }
                     }
                 }
@@ -818,7 +858,6 @@ fun MainScreen(
                 showToast = Toast.RouteStaleLocation
             } else if (!viewModel.isConnected) showToast = Toast.Offline
             else if (destination != null && destination.isRoutingCoordinateValid()) {
-                routeQuests.setRoute(emptyList())
                 routing.start(start, destination)
             }
         },

@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.screens.main
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.quest.OsmNoteQuestKey
 import de.westnordost.streetcomplete.data.quest.QuestKey
+import de.westnordost.streetcomplete.data.download.tiles.TilePos
 import de.westnordost.streetcomplete.data.routing.PedestrianRoute
 import de.westnordost.streetcomplete.data.routing.RouteQuestCorridor
 import de.westnordost.streetcomplete.data.routing.RouteQuestDataSource
@@ -24,17 +25,114 @@ class RouteQuestStateTest {
     private val route = listOf(LatLon(52.5, 13.3), LatLon(52.6, 13.4))
     private val other = listOf(route.first(), LatLon(52.7, 13.5))
 
+    @Test fun `overlapping alternatives share one corridor download and independent counts`() = runBlocking {
+        val source = AlternativeQuestSource(route, other, smallUnion = true)
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        try {
+            val state = RouteQuestState(scope, source)
+            state.setRoutes(listOf(route, other))
+            assertEquals(1, source.downloads.size)
+            assertEquals(6, source.downloads.single().tiles.size)
+            assertEquals(listOf(1, 2), state.alternatives.value.map { it.keys.size })
+            assertTrue(state.alternatives.value.all { it.status == RouteQuestStatus.Complete })
+            state.select(1)
+            assertEquals(other, state.state.value.points)
+            assertEquals(2, state.state.value.keys.size)
+            assertEquals(1, source.downloads.size)
+            state.setRoutes(listOf(route, other), 1)
+            assertEquals(1, source.downloads.size)
+            assertEquals(2, source.preparations)
+        } finally { scope.cancel() }
+    }
+
+    @Test fun `large union loads selected only and another selection reuses shared tiles`() = runBlocking {
+        val source = AlternativeQuestSource(route, other, smallUnion = false)
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        try {
+            val state = RouteQuestState(scope, source)
+            state.setRoutes(listOf(route, other))
+            assertEquals(source.firstTiles, source.downloads.single().tiles)
+            assertEquals(RouteQuestStatus.Complete, state.alternatives.value[0].status)
+            assertEquals(RouteQuestStatus.Incomplete, state.alternatives.value[1].status)
+            assertTrue(state.alternatives.value[1].keys.isEmpty())
+            state.select(1)
+            assertEquals(2, source.downloads.size)
+            assertTrue(source.missingDownloads[0].intersect(source.missingDownloads[1]).isEmpty())
+            assertEquals(listOf(1, 2), state.alternatives.value.map { it.keys.size })
+        } finally { scope.cancel() }
+    }
+
+    @Test fun `profile and answers update all alternatives without downloading or changing selection`() = runBlocking {
+        val source = AlternativeQuestSource(route, other, smallUnion = true).apply { coverage.addAll(firstTiles + secondTiles) }
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        try {
+            val state = RouteQuestState(scope, source)
+            state.setRoutes(listOf(route, other), 1)
+            assertEquals(listOf(1, 2), state.alternatives.value.map { it.keys.size })
+            source.secondKeys = setOf(OsmNoteQuestKey(3))
+            source.changes.emit(Unit)
+            withTimeout(2000) { while (state.alternatives.value.any { it.status != RouteQuestStatus.Complete }) delay(10) }
+            assertEquals(listOf(1, 1), state.alternatives.value.map { it.keys.size })
+            source.firstKeys = emptySet()
+            source.changes.emit(Unit)
+            withTimeout(2000) { while (state.alternatives.value.any { it.status != RouteQuestStatus.Complete }) delay(10) }
+            assertEquals(listOf(0, 1), state.alternatives.value.map { it.keys.size })
+            assertEquals(other, state.state.value.points)
+            assertTrue(source.downloads.isEmpty())
+            assertEquals(2, source.preparations)
+        } finally { scope.cancel() }
+    }
+
+    @Test fun `replacing and removing alternatives cancels pending shared data work`() = runBlocking {
+        val source = AlternativeQuestSource(route, other, smallUnion = true).apply { pending = CompletableDeferred() }
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        try {
+            val state = RouteQuestState(scope, source)
+            state.setRoutes(listOf(route, other))
+            val previous = source.pending!!
+            source.pending = null
+            state.setRoutes(listOf(other))
+            previous.complete(Unit)
+            assertEquals(listOf(other), state.alternatives.value.map { it.points })
+            assertEquals(2, state.state.value.keys.size)
+            source.coverage.clear()
+            source.pending = CompletableDeferred()
+            state.retry()
+            state.setRoutes(emptyList())
+            source.pending!!.complete(Unit)
+            assertTrue(state.alternatives.value.isEmpty())
+            assertTrue(state.state.value.points.isEmpty())
+        } finally { scope.cancel() }
+    }
+
+    @Test fun `download failure keeps independent alternatives incomplete and selectable`() = runBlocking {
+        val source = AlternativeQuestSource(route, other, smallUnion = false).apply { fail = true }
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        try {
+            val state = RouteQuestState(scope, source)
+            state.setRoutes(listOf(route, other))
+            assertTrue(state.alternatives.value.all { it.status == RouteQuestStatus.Incomplete })
+            state.select(1)
+            assertEquals(other, state.state.value.points)
+            assertTrue(state.state.value.keys.isEmpty())
+            source.fail = false
+            state.retry()
+            assertEquals(RouteQuestStatus.Complete, state.state.value.status)
+            assertEquals(2, state.state.value.keys.size)
+        } finally { scope.cancel() }
+    }
+
     @Test fun `standard route stays visible during corridor download and removal prevents late work`() = runBlocking {
         val pending = CompletableDeferred<Unit>()
         val source = FakeRouteQuests().apply { covered = false; pendingDownload = pending }
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
         val standard = PedestrianRoute(route, 800.0, 600.0)
         var requests = 0
-        val routing = PedestrianRouteState(scope) { requests++; standard }
+        val routing = PedestrianRouteState(scope) { requests++; listOf(standard) }
         val quests = RouteQuestState(scope, source)
         scope.launch {
             routing.state.collect { state ->
-                quests.setRoute(if (state.loading) emptyList() else state.route?.points.orEmpty())
+                quests.setRoutes(state.routes.map { it.points }, state.selectedIndex)
             }
         }
         try {
@@ -63,6 +161,12 @@ class RouteQuestStateTest {
             assertEquals(RouteQuestStatus.Complete, state.state.value.status)
             assertEquals(source.keys, state.state.value.keys)
             state.setRoute(route)
+            val equalPoints = route.map { it.copy() }
+            state.setRoute(equalPoints)
+            // Equal new geometry retains the existing count and its original list reference.
+            // The map must therefore match points by value, not by reference.
+            assertTrue(state.state.value.points !== equalPoints)
+            assertEquals(equalPoints, state.state.value.points)
             assertEquals(1, source.counts)
             assertEquals(0, source.downloads)
         } finally { scope.cancel() }
@@ -193,4 +297,33 @@ private class FakeRouteQuests : RouteQuestDataSource {
         counts++
         return pending?.await() ?: keys
     }
+}
+
+private class AlternativeQuestSource(
+    private val first: List<LatLon>, private val second: List<LatLon>, smallUnion: Boolean,
+) : RouteQuestDataSource {
+    override val changes = MutableSharedFlow<Unit>()
+    val firstTiles = (10..14).mapTo(hashSetOf()) { TilePos(it, 100) }
+    val secondTiles = (if (smallUnion) 11..15 else 14..18).mapTo(hashSetOf()) { TilePos(it, 100) }
+    val coverage = hashSetOf<TilePos>()
+    val downloads = mutableListOf<RouteQuestCorridor>()
+    val missingDownloads = mutableListOf<Set<TilePos>>()
+    var firstKeys: Set<QuestKey> = setOf(OsmNoteQuestKey(1))
+    var secondKeys: Set<QuestKey> = setOf(OsmNoteQuestKey(2), OsmNoteQuestKey(3))
+    var pending: CompletableDeferred<Unit>? = null
+    var fail = false
+    var preparations = 0
+    override suspend fun prepare(points: List<LatLon>): RouteQuestCorridor {
+        preparations++
+        return RouteQuestCorridor(points, if (points == first) firstTiles else secondTiles)
+    }
+    override suspend fun isCovered(corridor: RouteQuestCorridor) = coverage.containsAll(corridor.tiles)
+    override suspend fun load(corridor: RouteQuestCorridor) {
+        downloads.add(corridor)
+        missingDownloads.add(corridor.tiles - coverage)
+        if (fail) error("Offline")
+        pending?.await()
+        coverage.addAll(corridor.tiles)
+    }
+    override suspend fun quests(corridor: RouteQuestCorridor) = if (corridor.points == first) firstKeys else secondKeys
 }

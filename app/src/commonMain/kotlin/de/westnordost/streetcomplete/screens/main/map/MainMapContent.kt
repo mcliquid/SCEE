@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import de.westnordost.streetcomplete.data.routing.PedestrianRoute
 import de.westnordost.streetcomplete.data.download.tiles.TilePos
 import de.westnordost.streetcomplete.data.edithistory.EditKey
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
@@ -78,7 +79,8 @@ internal fun MainMapContent(
     trackpoints: List<LatLon>,
     oldTrackpointsLists: List<List<LatLon>>,
     gpxTrack: List<LatLon> = emptyList(),
-    pedestrianRoute: List<LatLon> = emptyList(),
+    pedestrianRoutes: List<PedestrianRoute> = emptyList(),
+    selectedPedestrianRoute: Int = 0,
     customGeoJson: String? = null,
     shownBottomSheet: ShownBottomSheet?,
     /** the edit selected in the edit history, highlighted on the map */
@@ -202,7 +204,7 @@ internal fun MainMapContent(
                 )
             }
             TracksLayers(trackpoints, isRecording, oldTrackpointsLists, gpxTrack)
-            PedestrianRouteLayer(pedestrianRoute)
+            PedestrianRouteLayer(pedestrianRoutes, selectedPedestrianRoute)
             customGeoJson?.let { CustomGeometryLayers(it) }
         },
         aboveLabelsContent = {

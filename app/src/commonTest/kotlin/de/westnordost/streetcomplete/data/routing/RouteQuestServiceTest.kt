@@ -121,6 +121,22 @@ class RouteQuestServiceTest {
         assertTrue(disabled.keys.isEmpty())
     }
 
+    @Test fun `shared tile candidates fetched once and counted per route with live filters`() = runBlocking {
+        val tile = start.enclosingTilePos(ApplicationConstants.DOWNLOAD_TILE_ZOOM)
+        val near = osmNoteQuest(id = 1, pos = start)
+        val hidden = osmNoteQuest(id = 2, pos = start)
+        val inactive = osmQuest(geometry = ElementPointGeometry(start))
+        val shifted = route.map { it.translate(100.0, 0.0) }
+        val plans = listOf(RouteQuestCorridor(route, setOf(tile)), RouteQuestCorridor(shifted, setOf(tile)))
+        var fetches = 0
+        val keys = queryRouteQuestCandidates(plans, setOf(near.type.name),
+            fetch = { fetches++; listOf(near, near, hidden, inactive) },
+            resolve = { key -> if (key == hidden.key) null else listOf(near, inactive).first { it.key == key } })
+        assertEquals(1, fetches)
+        assertEquals<Set<QuestKey>>(setOf(near.key), keys[0])
+        assertTrue(keys[1].isEmpty())
+    }
+
     @Test fun `download batches contain only missing tiles and stay small`() {
         val missing = (0..18).filter { it != 5 }.map { TilePos(it, 1) } + TilePos(0, 2)
         val batches = routeDownloadBatches(missing)

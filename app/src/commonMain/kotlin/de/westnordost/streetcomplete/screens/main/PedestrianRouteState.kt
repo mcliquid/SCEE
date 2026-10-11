@@ -13,15 +13,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class PedestrianRouteUiState(
-    val route: PedestrianRoute? = null,
+    val routes: List<PedestrianRoute> = emptyList(),
+    val selectedIndex: Int = 0,
     val loading: Boolean = false,
     val error: RoutingError? = null,
-)
+) {
+    val route: PedestrianRoute? get() = routes.getOrNull(selectedIndex)
+}
 
 /** Owned by the navigation host's ViewModel scope; survives a settings/preset round trip. */
 class PedestrianRouteState(
     private val scope: CoroutineScope,
-    private val request: suspend (List<LatLon>) -> PedestrianRoute,
+    private val request: suspend (List<LatLon>) -> List<PedestrianRoute>,
 ) {
     private val mutableState = MutableStateFlow(PedestrianRouteUiState())
     val state = mutableState.asStateFlow()
@@ -34,10 +37,11 @@ class PedestrianRouteState(
         mutableState.value = mutableState.value.copy(loading = true, error = null)
         job = scope.launch {
             try {
-                val route = request(listOf(start, destination))
+                val routes = request(listOf(start, destination))
+                require(routes.isNotEmpty())
                 ensureActive()
                 if (generation == current) {
-                    mutableState.value = PedestrianRouteUiState(route)
+                    mutableState.value = PedestrianRouteUiState(routes)
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -48,6 +52,10 @@ class PedestrianRouteState(
                 )
             }
         }
+    }
+
+    fun select(index: Int) {
+        if (index in mutableState.value.routes.indices) mutableState.value = mutableState.value.copy(selectedIndex = index)
     }
 
     fun clear() {

@@ -139,20 +139,37 @@ private val roadsFilter by lazy { """
 private val initialSurveyRoadsFilter by lazy { """
     ways with
       (
-        highway ~ primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|unclassified
-        or highway = residential and (maxspeed > 33 or $FILTER_IS_IMPLICIT_MAX_SPEED_BUT_NOT_SLOW_ZONE)
+        (
+          highway ~ primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|unclassified
+          or highway = residential and (maxspeed > 33 or $FILTER_IS_IMPLICIT_MAX_SPEED_BUT_NOT_SLOW_ZONE)
+        )
+        and !sidewalk:bicycle
+        and !sidewalk:left:bicycle
+        and !sidewalk:right:bicycle
+        and !sidewalk:both:bicycle
+        and (
+          !maxspeed
+          or maxspeed > 20
+          or $FILTER_IS_IMPLICIT_MAX_SPEED_BUT_NOT_SLOW_ZONE
+        )
+        and surface !~ ${UNPAVED_SURFACES.joinToString("|")}
+        and ~bicycle|bicycle:backward|bicycle:forward !~ use_sidepath
       )
-      and !sidewalk:bicycle
-      and !sidewalk:left:bicycle
-      and !sidewalk:right:bicycle
-      and !sidewalk:both:bicycle
-      and (
-        !maxspeed
-        or maxspeed > 20
-        or $FILTER_IS_IMPLICIT_MAX_SPEED_BUT_NOT_SLOW_ZONE
+      or (
+        (
+          highway ~ residential|living_street
+          or highway = service and service !~ driveway|parking_aisle|slipway
+        )
+        and oneway ~ yes|1|true|-1
+        and !oneway:bicycle
+        and !bicycle:forward and !bicycle:backward
+        and !sidewalk:bicycle
+        and !sidewalk:left:bicycle
+        and !sidewalk:right:bicycle
+        and !sidewalk:both:bicycle
+        and surface !~ ${UNPAVED_SURFACES.joinToString("|")}
+        and ~bicycle|bicycle:backward|bicycle:forward !~ use_sidepath
       )
-      and surface !~ ${UNPAVED_SURFACES.joinToString("|")}
-      and ~bicycle|bicycle:backward|bicycle:forward !~ use_sidepath
 """.toElementFilterExpression() }
 
 private val likelyNoBicycleContraflow by lazy { """
@@ -162,6 +179,16 @@ private val likelyNoBicycleContraflow by lazy { """
         or dual_carriageway = yes
         or junction = roundabout and !oneway
         or junction ~ roundabout|circular and oneway ~ yes|1|true|-1
+      )
+      and oneway !~ no|0|false
+""".toElementFilterExpression() }
+
+// Same assumption as for major roads, but only while no cycleway has been tagged yet.
+private val untaggedMinorOnewayLikelyNoBicycleContraflow by lazy { """
+    ways with
+      (
+        oneway ~ yes|1|true|-1 and highway ~ residential|living_street
+        or oneway ~ yes|1|true|-1 and highway = service and service !~ driveway|parking_aisle|slipway
       )
       and oneway !~ no|0|false
 """.toElementFilterExpression() }
@@ -178,10 +205,14 @@ internal fun getCyclewaySideRelevance(
 ): CyclewaySideRelevance {
     val contraflowSideIsRight = isReversedOneway(element.tags) xor isLeftHandTraffic
     val contraflowSide = if (contraflowSideIsRight) cycleways.right else cycleways.left
+    val hasCyclewayTagging = parseCyclewaySides(element.tags, isLeftHandTraffic) != null
+    val assumeNoContraflow =
+        likelyNoBicycleContraflow.matches(element) ||
+        (untaggedMinorOnewayLikelyNoBicycleContraflow.matches(element) && !hasCyclewayTagging)
     val bothSidesAreRelevant =
         contraflowSide != null ||
         isNotOnewayForCyclists(element.tags, isLeftHandTraffic) ||
-        !likelyNoBicycleContraflow.matches(element)
+        !assumeNoContraflow
     if (bothSidesAreRelevant) return CyclewaySideRelevance(left = true, right = true)
 
     return CyclewaySideRelevance(

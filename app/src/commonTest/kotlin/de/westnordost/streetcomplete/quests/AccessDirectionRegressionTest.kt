@@ -197,7 +197,8 @@ class AccessDirectionRegressionTest {
 
     @Test fun `optional road and bicycle path extensions remain excluded`() {
         val cycleway = AddCycleway { CountryInfo(null, emptyList()) }
-        assertEquals(false, cycleway.isApplicableTo(way(tags = mapOf("highway" to "residential", "maxspeed" to "30", "oneway" to "yes"))))
+        assertNotEquals(false, cycleway.isApplicableTo(way(tags = mapOf("highway" to "residential", "maxspeed" to "30", "oneway" to "yes"))))
+        assertEquals(false, cycleway.isApplicableTo(way(tags = mapOf("highway" to "residential", "maxspeed" to "30"))))
         assertEquals(false, cycleway.isApplicableTo(way(tags = mapOf("highway" to "trunk", "bicycle" to "yes"))))
         assertEquals(false, AddOnewayBicycle().isApplicableTo(way(tags = mapOf("highway" to "path", "bicycle" to "permissive"))))
     }

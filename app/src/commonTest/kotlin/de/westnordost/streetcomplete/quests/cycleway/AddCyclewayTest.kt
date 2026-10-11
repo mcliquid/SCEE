@@ -2,9 +2,15 @@ package de.westnordost.streetcomplete.quests.cycleway
 
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.meta.IncompleteCountryInfo
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
 import de.westnordost.streetcomplete.osm.Sides
+import de.westnordost.streetcomplete.osm.cycleway.Cycleway
+import de.westnordost.streetcomplete.osm.cycleway.CyclewayAndDirection
 import de.westnordost.streetcomplete.osm.cycleway.parseCyclewaySides
 import de.westnordost.streetcomplete.osm.cycleway.selectableOrNullValues
+import de.westnordost.streetcomplete.osm.oneway.Direction.BACKWARD
+import de.westnordost.streetcomplete.osm.oneway.Direction.FORWARD
+import de.westnordost.streetcomplete.quests.answerAppliedTo
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
 import de.westnordost.streetcomplete.testutils.pGeom
 import de.westnordost.streetcomplete.testutils.way
@@ -46,6 +52,80 @@ class AddCyclewayTest {
             bulk = true,
             single = true,
         )
+    }
+
+    @Test fun `oneway minor road without cycleway tags is applicable`() {
+        assertMinorOnewayApplicability(mapOf("highway" to "residential", "maxspeed" to "30", "oneway" to "yes"), true)
+        assertMinorOnewayApplicability(mapOf("highway" to "living_street", "oneway" to "yes"), true)
+        assertMinorOnewayApplicability(mapOf("highway" to "service", "service" to "alley", "oneway" to "yes"), true)
+    }
+
+    @Test fun `oneway minor road contraflow survey stays narrowly filtered`() {
+        assertMinorOnewayApplicability(mapOf("highway" to "residential", "maxspeed" to "30"), false)
+        assertMinorOnewayApplicability(mapOf("highway" to "residential", "maxspeed" to "30", "oneway" to "yes", "oneway:bicycle" to "no"), false)
+        assertMinorOnewayApplicability(mapOf("highway" to "residential", "maxspeed" to "30", "oneway" to "yes", "bicycle:backward" to "no"), false)
+        assertMinorOnewayApplicability(mapOf("highway" to "service", "service" to "driveway", "oneway" to "yes"), false)
+        assertMinorOnewayApplicability(mapOf("highway" to "residential", "maxspeed" to "30", "oneway" to "yes", "surface" to "gravel"), false)
+        assertMinorOnewayApplicability(mapOf("highway" to "residential", "maxspeed" to "30", "oneway" to "yes", "bicycle" to "use_sidepath"), false)
+    }
+
+    @Test fun `oneway minor road only requires flow side until contraflow is surveyed`() {
+        val way = way(tags = mapOf("highway" to "residential", "oneway" to "yes"))
+        assertEquals(
+            CyclewaySideRelevance(left = false, right = true),
+            getCyclewaySideRelevance(way, Sides(null, null), false),
+        )
+    }
+
+    @Test fun `oneway minor road with partial cycleway tagging still surveys missing side`() {
+        for (highway in listOf("residential", "living_street")) {
+            val tags = mapOf("highway" to highway, "oneway" to "yes", "cycleway:right" to "track")
+            val element = way(tags = tags)
+            val cycleways = parseCyclewaySides(tags, false)!!.selectableOrNullValues(countryInfo)
+            assertEquals(
+                CyclewaySideRelevance(left = true, right = true),
+                getCyclewaySideRelevance(element, cycleways, false),
+                highway,
+            )
+            assertMinorOnewayApplicability(tags, true)
+        }
+        val serviceTags = mapOf("highway" to "service", "service" to "alley", "oneway" to "-1", "cycleway:left" to "track")
+        val serviceWay = way(tags = serviceTags)
+        val serviceCycleways = parseCyclewaySides(serviceTags, false)!!.selectableOrNullValues(countryInfo)
+        assertEquals(
+            CyclewaySideRelevance(left = true, right = true),
+            getCyclewaySideRelevance(serviceWay, serviceCycleways, false),
+        )
+        assertMinorOnewayApplicability(serviceTags, true)
+    }
+
+    @Test fun `confirmed bicycle contraflow on oneway minor road sets oneway bicycle no`() {
+        val original = mapOf("highway" to "residential", "oneway" to "yes")
+        val answer = Sides(
+            left = CyclewayAndDirection(Cycleway.NONE_NO_ONEWAY, BACKWARD),
+            right = CyclewayAndDirection(Cycleway.NONE, FORWARD),
+        )
+        val changes = questType.answerAppliedTo(answer, original)
+        assertTrue(changes.contains(StringMapEntryAdd("oneway:bicycle", "no")))
+        assertTrue(
+            changes.contains(StringMapEntryAdd("cycleway:both", "no")) ||
+                changes.containsAll(
+                    listOf(
+                        StringMapEntryAdd("cycleway:left", "no"),
+                        StringMapEntryAdd("cycleway:right", "no"),
+                    )
+                )
+        )
+    }
+
+    @Test fun `no bicycle contraflow on oneway minor road does not set oneway bicycle`() {
+        val original = mapOf("highway" to "residential", "oneway" to "yes")
+        val answer = Sides(
+            left = CyclewayAndDirection(Cycleway.NONE, BACKWARD),
+            right = CyclewayAndDirection(Cycleway.NONE, FORWARD),
+        )
+        val changes = questType.answerAppliedTo(answer, original).map { it.key }.toSet()
+        assertFalse("oneway:bicycle" in changes)
     }
 
     private var countryInfo = CountryInfo(
@@ -506,5 +586,14 @@ class AddCyclewayTest {
 
         assertEquals(bulk, questType.getApplicableElements(mapData).any())
         assertEquals(single, questType.isApplicableTo(way))
+    }
+
+    private fun assertMinorOnewayApplicability(tags: Map<String, String>, applicable: Boolean) {
+        val way = way(1L, listOf(1, 2, 3), tags)
+        val mapData = TestMapDataWithGeometry(listOf(way))
+        mapData.wayGeometriesById[1L] = pGeom(0.0, 0.0)
+
+        assertEquals(applicable, questType.getApplicableElements(mapData).any(), tags.toString())
+        assertEquals(applicable, questType.isApplicableTo(way)!!, tags.toString())
     }
 }

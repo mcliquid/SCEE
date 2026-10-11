@@ -8,15 +8,16 @@ import org.gradle.api.tasks.TaskAction
 import java.io.File
 import java.net.URI
 
-/** Download and split the name suggestion index (in its own format, not as iD presets) by countries
- *  the brands are in:
- *  Instead of one big presets file, sort those brands that only exist in certain countries into own
+/** Download the name suggestion index (in its own format) and split it by the countries the brands
+ *  are in: Instead of one big file, sort those brands that only exist in certain countries into own
  *  files (presets-DE.json etc.).
  *
- *  This is done because the name suggestion index presets JSON became so big (10MB and growing)
- *  that it really slows down startup time. Many brand presets do not actually need to be loaded at
- *  all because they exist only in select countries and the user will only be editing usually in one
- *  country per session anyways. */
+ *  The items themselves are copied as they are, i.e. the osmfeatures library interprets the
+ *  name suggestion index data (location sets, dissolved brands, ...) itself. The files are only
+ *  split to not load more than necessary: The name suggestion index JSON is so big (12MB and
+ *  growing) that it really slows down startup time. Many brand presets do not actually need to be
+ *  loaded at all because they exist only in select countries and the user will only be editing
+ *  usually in one country per session anyways. */
 open class UpdateNsiPresetsTask : DefaultTask() {
     @get:OutputDirectory lateinit var targetDir: File
     @get:Input lateinit var version: String
@@ -27,91 +28,27 @@ open class UpdateNsiPresetsTask : DefaultTask() {
         targetDir.mkdirs()
         targetDir.listFiles()?.forEach { it.delete() }
 
-        val nsiUrl = URI("https://cdn.jsdelivr.net/npm/name-suggestion-index@$version/dist/json/nsi.min.json").toURL()
+        val baseUrl = "https://cdn.jsdelivr.net/npm/name-suggestion-index@$version/dist"
+        val dissolvedUrl = URI("$baseUrl/wikidata/dissolved.min.json").toURL()
+        File(targetDir, "dissolved.json").writeBytes(dissolvedUrl.readBytes())
+
+        val nsiUrl = URI("$baseUrl/json/nsi.min.json").toURL()
         val nsi = (Parser.default().parse(nsiUrl.openStream()) as JsonObject).obj("nsi")!!
-        val dissolvedUrl = URI("https://cdn.jsdelivr.net/npm/name-suggestion-index@$version/dist/wikidata/dissolved.min.json").toURL()
-        val dissolved = (Parser.default().parse(dissolvedUrl.openStream()) as JsonObject).obj("dissolved")!!
-        /* The NSI items are grouped by category ("brands/shop/supermarket" etc.). Collect them all
-           into one object, keyed by "<category>/<item id>" */
-        val presets = JsonObject()
-        for ((path, category) in nsi) {
-            for (item in (category as JsonObject).array<JsonObject>("items")!!) {
-                presets["$path/${item.string("id")}"] = item
-            }
-        }
-        /* since we already read the JSON and it is so large, let's drop some properties that are
-           not used */
-        for (preset in presets.values.filterIsInstance<JsonObject>()) {
-            preset.remove("fromTemplate")
-            preset.remove("note")
-            preset.remove("matchTags")
-            preset.remove("issues")
-            // NSI's buildIDPresets() makes presets of dissolved brands non-searchable
-            if (preset.string("id") in dissolved) preset["searchable"] = false
-        }
-
-        // remove presets with locationSets that cannot be parsed by osmfeatures library
-        presets.values.retainAll { value ->
-            val locationSet = (value as JsonObject)["locationSet"] as? JsonObject
-            val include = locationSet?.get("include") as? JsonArray<Any?>
-            val exclude = locationSet?.get("exclude") as? JsonArray<Any?>
-            // remove unsupported includes. This ensures that presets that are *also* shown in
-            // unsupported regions are at least shown in those that are supported (see #6267).
-            // But only if then at least one include is left (because no includes would mean
-            // "available everywhere").
-            if (include != null) {
-                val validIncludes = include.filter { countryCodeIsParsable(it) }
-                if (validIncludes != include && validIncludes.isNotEmpty()) {
-                    include.clear()
-                    include.addAll(validIncludes)
-                }
-            }
-            // ALL (remaining) includes and excludes must be parsable. E.g. a preset that should be
-            // available in all of USA except in a 50km radius around Whateverdale should be
-            // excluded completely, as the alternative would be to also show it in Whateverdale and
-            // that would be a problem (cause there is usually good reason why it was excluded)
-            return@retainAll include.orEmpty().all { countryCodeIsParsable(it) }
-                && exclude.orEmpty().all { countryCodeIsParsable(it) }
-        }
-
-        // expand M49 codes and transform US-NY.geojson etc. strings to US-NY etc.
-        for (value in presets.values) {
-            val locationSet = (value as JsonObject)["locationSet"] as? JsonObject ?: continue
-            val include = locationSet["include"] as? JsonArray<String>
-            val exclude = locationSet["exclude"] as? JsonArray<String>
-            if (include != null) transform(include)
-            if (exclude != null) transform(exclude)
-            // remove "locationSet": { "include": "001" } because that's the default
-            if ((include?.singleOrNull() == "001" || include?.singleOrNull() == "Planet") && exclude == null) {
-                value.remove("locationSet")
-            }
-        }
 
         // sort into separate files, each in the same format as nsi.json's "nsi" object
         val byCountryMap = mutableMapOf<String?, JsonObject>()
-        fun JsonObject.addItem(key: String, preset: JsonObject) {
-            val path = key.substringBeforeLast('/')
-            val category = getOrPut(path) {
-                val preserveTags = nsi.obj(path)!!.obj("properties")?.array<String>("preserveTags")
-                JsonObject().apply {
-                    if (preserveTags != null) set("properties", JsonObject(mapOf("preserveTags" to preserveTags)))
-                    set("items", JsonArray<JsonObject>())
+        for ((path, category) in nsi) {
+            val preserveTags = (category as JsonObject).obj("properties")?.array<String>("preserveTags")
+            for (item in category.array<JsonObject>("items")!!) {
+                for (country in item.shardCountries()) {
+                    val shardCategory = byCountryMap.getOrPut(country) { JsonObject() }.getOrPut(path) {
+                        JsonObject().apply {
+                            if (preserveTags != null) set("properties", JsonObject(mapOf("preserveTags" to preserveTags)))
+                            set("items", JsonArray<JsonObject>())
+                        }
+                    } as JsonObject
+                    shardCategory.array<JsonObject>("items")!!.add(item)
                 }
-            } as JsonObject
-            category.array<JsonObject>("items")!!.add(preset)
-        }
-        for (entry in presets.entries) {
-            val key = entry.key
-            val preset = entry.value as JsonObject
-            val locationSet = preset["locationSet"] as? JsonObject
-            val include = locationSet?.get("include") as? JsonArray<*>
-            val includeContains001 = include?.any { it as? String == "001" || it as? String == "Planet" } == true
-            if (include != null && !includeContains001) {
-                for (country in include) {
-                    byCountryMap.getOrPut(country as String) { JsonObject() }.addItem(key, preset)
-                }
-            } else {
-                byCountryMap.getOrPut(null) { JsonObject() }.addItem(key, preset)
             }
         }
 
@@ -122,56 +59,19 @@ open class UpdateNsiPresetsTask : DefaultTask() {
     }
 }
 
-private fun countryCodeIsParsable(code: Any?): Boolean =
-    code is String
-        && (ISO3166_1_ALPHA2_REGEX.matches(code)
-            || ISO3166_2_REGEX.matches(code)
-            || UN_M49_REGEX.matches(code)
-        )
-
-private fun transform(codes: MutableList<String>) {
-    expandM49Codes(codes)
-    transformSubdivisions(codes)
-    removeDuplicates(codes)
+/** The countries whose file the item belongs to, null for the file with the brands that are loaded
+ *  for every country.
+ *
+ *  Only items that are included in just plain countries and subdivisions go into the files of
+ *  these countries. All other items (included everywhere, M49 regions, GeoJSON files, circles,
+ *  ...) go into the file that is always loaded. Items that osmfeatures cannot interpret don't hurt
+ *  there, as they are dropped anyway.
+ *
+ *  The pattern must match what the osmfeatures NsiJsonParser takes as country or subdivision. */
+private fun JsonObject.shardCountries(): Set<String?> {
+    val include = obj("locationSet")?.array<Any?>("include").orEmpty()
+    val countries = include.map { (it as? String)?.let { code -> COUNTRY_OR_SUBDIVISION.matchEntire(code)?.groupValues?.get(1) } }
+    return if (countries.isEmpty() || countries.any { it == null }) setOf(null) else countries.toSet()
 }
 
-private fun transformSubdivisions(codes: MutableList<String>) {
-    for (i in 0 until codes.size) {
-        codes[i] = transformSubdivision(codes[i])
-    }
-}
-
-/** transform "us-ny.geojson" to "us-ny" */
-private fun transformSubdivision(code: String): String {
-    val match = ISO3166_2_REGEX.matchEntire(code) ?: return code
-    val iso3166_1_alpha2 = match.groupValues[1]
-    val iso3166_2 = match.groupValues[2]
-    return if (iso3166_1_alpha2 in SUPPORTED_SUBDIVISIONS) "$iso3166_1_alpha2-$iso3166_2" else iso3166_1_alpha2
-}
-
-val UN_M49_REGEX = Regex("[0-9]{3}")
-val ISO3166_1_ALPHA2_REGEX = Regex("([a-z]{2})")
-val ISO3166_2_REGEX = Regex("([a-z]{2})-([a-z0-9]{1,3})(\\.geojson)?")
-
-val SUPPORTED_SUBDIVISIONS = setOf("us", "ca", "in", "au", "cn")
-
-/** resolve M49 codes to country codes */
-private fun expandM49Codes(codes: MutableList<String>) {
-    var i = 0
-    while (i < codes.size) {
-        val cc = codes[i]
-        val expandedCodes = M49Codes[cc]
-        if (expandedCodes != null) {
-            codes.removeAt(i)
-            codes.addAll(i, expandedCodes.map { it.lowercase() })
-        } else {
-            ++i
-        }
-    }
-}
-
-private fun removeDuplicates(codes: MutableList<String>) {
-    val set = codes.toSet()
-    codes.clear()
-    codes.addAll(set)
-}
+private val COUNTRY_OR_SUBDIVISION = Regex("([a-z]{2})(-[a-z0-9]{1,3}(\\.geojson)?)?")

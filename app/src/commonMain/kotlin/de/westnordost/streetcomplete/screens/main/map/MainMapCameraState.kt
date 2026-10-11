@@ -203,6 +203,14 @@ class MainMapCameraState internal constructor(
         }
     }
 
+    /** Fit a manually requested route, without subsequent GPS updates moving the camera back. */
+    suspend fun showRoute(geometry: ElementGeometry, padding: DpPadding) {
+        if (mode !is CameraMode.Browsing) return
+        isFollowingPosition = false
+        isNavigationMode = false
+        map.animateTo(geometry, padding)
+    }
+
     /** Move the camera immediately to the given [position]. */
     fun moveTo(position: CameraPosition) {
         isNavigationMode = false

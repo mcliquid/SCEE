@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.screens.main
 
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
+import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.edits.create.CreateNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.addNodeEdit
@@ -18,13 +19,18 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -38,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -63,6 +70,8 @@ import androidx.compose.material.TextButton
 import de.westnordost.streetcomplete.ui.common.feature.FeatureSearchDialog
 import de.westnordost.streetcomplete.ui.common.dialogs.AlertDialog
 import de.westnordost.streetcomplete.data.quest.VisibleQuestsSource
+import de.westnordost.streetcomplete.data.routing.RoutingError
+import de.westnordost.streetcomplete.data.routing.isRoutingCoordinateValid
 import de.westnordost.streetcomplete.quests.tree.AddTreeGenus
 import de.westnordost.streetcomplete.quests.custom.CustomQuestList
 import de.westnordost.streetcomplete.data.preferences.Preferences
@@ -131,11 +140,13 @@ import org.maplibre.compose.util.DpPadding
 import org.maplibre.spatialk.units.Bearing
 import org.maplibre.spatialk.units.extensions.inDegrees
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeMark
 
 /** The map and its controls, forms, and sidebars. */
 @Composable
 fun MainScreen(
     tracks: MainMapTrackState,
+    routePlanner: RoutePlannerViewModel,
     onClickSettings: () -> Unit,
     onClickQuestSettings: () -> Unit,
     onClickAbout: () -> Unit,
@@ -153,6 +164,10 @@ fun MainScreen(
 ) {
     //region state
     val scope = rememberCoroutineScope()
+    val routing = routePlanner.routing
+    val routingState by routing.state.collectAsState()
+    val routeQuests = routePlanner.quests
+    val routeQuestState by routeQuests.state.collectAsState()
 
     val headingProvider = rememberDefaultHeadingProvider()
     val locationProvider = rememberDefaultLocationProvider()
@@ -222,6 +237,7 @@ fun MainScreen(
     var lastQuestSolved by remember { mutableStateOf<QuestSolvedEvent?>(null) }
 
     var location by rememberSerializable { mutableStateOf<LocationMeasurement?>(null) }
+    var routingLocationMark by remember { mutableStateOf<TimeMark?>(null) }
     var heading by remember { mutableStateOf<Float?>(null) }
     var locationState by remember { mutableStateOf<LocationState?>(null) }
 
@@ -269,6 +285,7 @@ fun MainScreen(
             trackpoints = tracks.recentTrackPositions,
             oldTrackpointsLists = tracks.olderTrackPositions,
             gpxTrack = gpxTrack,
+            pedestrianRoute = routingState.route?.points.orEmpty(),
             customGeoJson = customGeoJson,
             shownBottomSheet = shownBottomSheet,
             selectedEdit = sheet.shownEdit,
@@ -287,6 +304,14 @@ fun MainScreen(
     }
 
     val cameraState = rememberMainMapCameraState(mapState, viewModel.initiallyFollowing, viewModel.initiallyNavigating)
+    LaunchedEffect(routingState.route) {
+        routingState.route?.let { route ->
+            cameraState.showRoute(
+                ElementPolylinesGeometry(listOf(route.points), route.points.first()),
+                DpPadding(left = 48.dp, right = 48.dp, top = 100.dp, bottom = 100.dp),
+            )
+        }
+    }
 
     val sheetPadding = Dimensions.getOpenQuestFormMapPadding(
         LocalWindowInfo.current,
@@ -465,6 +490,7 @@ fun MainScreen(
                     if (event.measurementMark.elapsedNow() > 10.minutes) return@collect
                     val measurement = event.measurement
                     location = measurement
+                    routingLocationMark = event.measurementMark
                     locationState = LocationState.UPDATING
                     tracks.addLocation(measurement)
                     launch {
@@ -476,6 +502,7 @@ fun MainScreen(
                 }
                 is LocationEvent.Unavailable -> {
                     location = null
+                    routingLocationMark = null
                     locationState = when (event.reason) {
                         LocationUnavailableReason.ServicesDisabled -> LocationState.ALLOWED
                         LocationUnavailableReason.TemporarilyUnavailable -> LocationState.SEARCHING
@@ -695,6 +722,38 @@ fun MainScreen(
             )
         }
 
+        if (!sheet.isOpen && (routingState.loading || routingState.route != null)) {
+            Surface(
+                modifier = Modifier.align(Alignment.TopCenter)
+                    .windowInsetsPadding(WindowInsets.safeDrawing).padding(top = 48.dp),
+                elevation = 4.dp,
+                shape = MaterialTheme.shapes.small,
+            ) {
+                Column(Modifier.padding(horizontal = 12.dp, vertical = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    if (routingState.loading) {
+                        LinearProgressIndicator()
+                        Text(stringResource(Res.string.route_loading))
+                    } else routingState.route?.let { route ->
+                        Text(stringResource(Res.string.route_summary, routeDistance(route.distanceMeters), routeMinutes(route.durationSeconds)))
+                    }
+                    if (!routingState.loading && routeQuestState.points == routingState.route?.points) {
+                        val message = when (routeQuestState.status) {
+                            RouteQuestStatus.Loading -> Res.string.route_quests_loading
+                            RouteQuestStatus.Counting -> Res.string.route_quests_counting
+                            RouteQuestStatus.Complete -> Res.string.route_quests_count
+                            RouteQuestStatus.Incomplete -> Res.string.route_quests_incomplete
+                            RouteQuestStatus.Error -> Res.string.route_quests_error
+                            RouteQuestStatus.TooLarge -> Res.string.route_quests_too_large
+                        }
+                        Text(stringResource(message, routeQuestState.keys.size), style = MaterialTheme.typography.caption)
+                        if (routeQuestState.status == RouteQuestStatus.Incomplete || routeQuestState.status == RouteQuestStatus.Error) {
+                            TextButton(onClick = { routeQuests.retry() }) { Text(stringResource(Res.string.route_quests_retry)) }
+                        }
+                    }
+                }
+            }
+        }
+
         AnimatedContent(
             targetState = shownBottomSheet?.let { sheet.id to it },
             contentKey = { it?.first },
@@ -751,6 +810,20 @@ fun MainScreen(
             else lastMapLongClick?.let { composeNote(it.position) }
         },
         onClickCreateTrack = { tracks.startRecording() },
+        onClickRouteHere = {
+            val start = runCatching { location?.position?.toLatLon() }.getOrNull()
+            val destination = lastMapLongClick?.position
+            if (location == null) showToast = Toast.RouteNoLocation
+            else if (start == null || !start.isRoutingCoordinateValid() || routingLocationMark?.elapsedNow()?.let { it < 0.milliseconds || it > 2.minutes } != false) {
+                showToast = Toast.RouteStaleLocation
+            } else if (!viewModel.isConnected) showToast = Toast.Offline
+            else if (destination != null && destination.isRoutingCoordinateValid()) {
+                routeQuests.setRoute(emptyList())
+                routing.start(start, destination)
+            }
+        },
+        onClickRemoveRoute = { routeQuests.setRoute(emptyList()); routing.clear() },
+        canRemoveRoute = routingState.route != null || routingState.loading,
         isOpenLocationAvailable = mapAppLauncher.isAvailable(),
         onClickOpenLocation = {
             lastMapLongClick?.let { mapAppLauncher.openAt(it.position, mapState.cameraPosition.zoom) }
@@ -903,6 +976,19 @@ fun MainScreen(
         )
     }
 
+    routingState.error?.let { error ->
+        ToastPopup(
+            onDismissRequest = { routing.dismissError() },
+            text = stringResource(when (error) {
+                RoutingError.Network -> Res.string.route_error_network
+                RoutingError.Timeout -> Res.string.route_error_timeout
+                RoutingError.Server -> Res.string.route_error_server
+                RoutingError.NoRoute -> Res.string.route_error_no_route
+                RoutingError.InvalidResponse -> Res.string.route_error_response
+            }),
+        )
+    }
+
     //endregion
 }
 
@@ -931,12 +1017,16 @@ private enum class Toast {
     NoEmailClient,
     CannotFindBounds,
     NoLocation,
+    RouteNoLocation,
+    RouteStaleLocation,
     ImpreciseNote
 }
 
 private val Toast.messageResource: StringResource get() =  when (this) {
     Toast.CannotFindBounds -> Res.string.cannot_find_bbox_or_reduce_tilt
     Toast.NoLocation -> Res.string.no_gps_no_quests
+    Toast.RouteNoLocation -> Res.string.route_no_location
+    Toast.RouteStaleLocation -> Res.string.route_stale_location
     Toast.ImpreciseNote -> Res.string.create_new_note_unprecise
     Toast.Offline -> Res.string.offline
     Toast.TeamModeActive -> Res.string.team_mode_active

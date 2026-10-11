@@ -113,6 +113,8 @@ import de.westnordost.streetcomplete.data.presets.EditTypePresetsSource
 import de.westnordost.streetcomplete.data.quest.AutoSyncer
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.data.quest.VisibleQuestsSource
+import de.westnordost.streetcomplete.data.routing.PedestrianRoutingClient
+import de.westnordost.streetcomplete.data.routing.RouteQuestService
 import de.westnordost.streetcomplete.data.upload.UploadProgressSource
 import de.westnordost.streetcomplete.data.upload.Uploader
 import de.westnordost.streetcomplete.data.upload.VersionIsBannedChecker
@@ -180,6 +182,7 @@ import de.westnordost.streetcomplete.screens.about.logs.LogsViewModelImpl
 import de.westnordost.streetcomplete.screens.main.MainBottomSheetViewModel
 import de.westnordost.streetcomplete.screens.main.MainBottomSheetViewModelImpl
 import de.westnordost.streetcomplete.screens.main.MainViewModel
+import de.westnordost.streetcomplete.screens.main.RoutePlannerViewModel
 import de.westnordost.streetcomplete.screens.main.MainViewModelImpl
 import de.westnordost.streetcomplete.screens.main.edithistory.EditHistoryViewModel
 import de.westnordost.streetcomplete.screens.main.edithistory.EditHistoryViewModelImpl
@@ -263,6 +266,8 @@ val commonModule = module {
         }
     } }
     single<Res> { Res }
+    single { PedestrianRoutingClient(get()) }
+    single { RouteQuestService(get(), get(), get(), get()) }
     single<FileSystem> { SystemFileSystem }
 
     factory { Cleaner(get(), get(), get(), get(), get(), get(), get(), get()) }
@@ -629,6 +634,7 @@ val commonModule = module {
         )
     }
 
+    viewModel { RoutePlannerViewModel(get(), get()) }
     viewModel<MainNavViewModel> { MainNavViewModelImpl(get(), get(), get()) }
 
     viewModel<EditHistoryViewModel> {

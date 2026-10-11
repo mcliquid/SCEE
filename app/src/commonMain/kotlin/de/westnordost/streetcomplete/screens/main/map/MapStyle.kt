@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.map_attribution_osm
+import de.westnordost.streetcomplete.resources.route_fix_map
 import de.westnordost.streetcomplete.resources.map_oneway_arrow
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -69,11 +70,14 @@ fun MapStyle(
 ) {
     // unicode 00a0 = no break space
     val osmAttribution = stringResource(Res.string.map_attribution_osm).replaceFirst("© ", "©\u00a0")
+    val fixMap = stringResource(Res.string.route_fix_map)
     val source = rememberVectorTileSource(listOf(MapTiles.URL_TEMPLATE)) {
         maxZoom = MapTiles.MAX_ZOOM
         attributionHtml =
             "<a href='https://www.openstreetmap.org/copyright'>$osmAttribution</a> " +
-            "<a href='https://jawg.io?utm_medium=map&utm_source=attribution'>©\u00a0JawgMaps</a>"
+            "<a href='https://jawg.io?utm_medium=map&utm_source=attribution'>©\u00a0JawgMaps</a> " +
+            "<a href='https://routing.openstreetmap.de/about.html'>OSRM · FOSSGIS</a> " +
+            "<a href='https://www.openstreetmap.org/fixthemap'>$fixMap</a>"
     }
 
     val paths = remember(colors) {

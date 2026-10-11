@@ -12,8 +12,12 @@ import de.westnordost.streetcomplete.util.math.distanceTo
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import de.westnordost.streetcomplete.util.math.initialBearingTo
 import de.westnordost.streetcomplete.util.math.translate
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
+import kotlin.math.ceil
 import kotlin.math.sqrt
 
 private const val TAG = "GpxImport"
@@ -68,12 +72,14 @@ suspend fun importGpx(
     val maxSampleDistance = 2 * minDownloadDistance
     val coveringSquareHalfLength = 2 * minDownloadDistance / sqrt(2.0)
 
+    val context = currentCoroutineContext()
     var progress = 0
     val mergedBBoxes = originalTrackPoints
         .asSequence()
         // TODO sgr: just a test how one could decorate sequences with a callback
         //  -> this approach would need orchestration at this level from UI code
         .map {
+            context.ensureActive()
             progress++
             if (progress % 500 == 0) {
                 Log.d(TAG, "updating progress: ${progress / originalTrackPoints.size}")
@@ -81,10 +87,11 @@ suspend fun importGpx(
             it
         }
         .addInterpolatedPoints(maxSampleDistance)
+        .onEach { context.ensureActive() }
         .discardRedundantPoints(maxSampleDistance)
         .mapToCenteredSquares(coveringSquareHalfLength)
-        .determineBBoxesToDownload()
-        .mergeBBoxesToDownload()
+        .determineBBoxesToDownload(context)
+        .mergeBBoxesToDownload(context)
 
     return@withContext Result.success(
         GpxImportData(
@@ -106,13 +113,14 @@ suspend fun importGpx(
  * Iteratively merge bounding boxes to save download calls in trade for a few more unique tiles
  * downloaded
  */
-private fun Sequence<DecoratedBoundingBox>.mergeBBoxesToDownload(): Sequence<DecoratedBoundingBox> {
+private fun Sequence<DecoratedBoundingBox>.mergeBBoxesToDownload(context: CoroutineContext): Sequence<DecoratedBoundingBox> {
     var bBoxes = this.toList()
     val mergedBBoxes = ArrayList<DecoratedBoundingBox>()
     while (mergedBBoxes.size < bBoxes.size) {
         Log.d(TAG, "start a new round of bounding box merging")
         var currentBBox: DecoratedBoundingBox? = null
         for (bBox in bBoxes) {
+            context.ensureActive()
             if (currentBBox == null) {
                 currentBBox = bBox
                 continue
@@ -141,12 +149,13 @@ private fun Sequence<DecoratedBoundingBox>.mergeBBoxesToDownload(): Sequence<Dec
     return mergedBBoxes.asSequence()
 }
 
-private fun Sequence<BoundingBox>.determineBBoxesToDownload(): Sequence<DecoratedBoundingBox> {
+private fun Sequence<BoundingBox>.determineBBoxesToDownload(context: CoroutineContext): Sequence<DecoratedBoundingBox> {
     var currentBBox: DecoratedBoundingBox? = null
     val uniqueTilesToDownload = HashSet<TilePos>()
     val inputIterator = this.map { DecoratedBoundingBox(it.toPolygon()) }.withIndex().iterator()
     return sequence {
         for ((index, newBBox) in inputIterator) {
+            context.ensureActive()
             if (currentBBox == null) {
                 currentBBox = newBBox
                 yield(newBBox)
@@ -210,7 +219,8 @@ private fun Sequence<LatLon>.addInterpolatedPoints(samplingDistance: Double): Se
         candidatePoint = currentPoint
         return@flatMap interpolatedPoints
     }
-    return seq + sequenceOf(candidatePoint).mapNotNull { it }
+    // Read the endpoint after the lazy sequence has run, not while it is still null.
+    return seq + sequence { candidatePoint?.let { yield(it) } }
 }
 
 /**
@@ -219,16 +229,16 @@ private fun Sequence<LatLon>.addInterpolatedPoints(samplingDistance: Double): Se
  * Returned points are samplingDistance away from each other and on the line between start and end.
  * The last returned point is <= samplingDistance away from end.
  */
-private fun interpolate(start: LatLon, end: LatLon, samplingDistance: Double): Sequence<LatLon> =
+internal fun interpolate(start: LatLon, end: LatLon, samplingDistance: Double): Sequence<LatLon> =
     sequence {
+        require(samplingDistance > 0 && samplingDistance.isFinite())
+        val distance = start.distanceTo(end)
         val bearing = start.initialBearingTo(end)
-        var intermediatePoint = start
-        while (true) {
-            yield(intermediatePoint)
-            intermediatePoint = intermediatePoint.translate(samplingDistance, bearing)
-            if (intermediatePoint.distanceTo(end) <= samplingDistance) {
-                break
-            }
+        // Bound the number of samples by the original distance. Walking past a duplicate
+        // endpoint could otherwise never meet the distance-based termination condition.
+        val samples = ceil(distance / samplingDistance).toInt().coerceAtLeast(1)
+        for (sample in 0 until samples) {
+            yield(if (sample == 0) start else start.translate(sample * samplingDistance, bearing))
         }
     }
 
@@ -245,6 +255,7 @@ private fun Sequence<LatLon>.discardRedundantPoints(samplingDistance: Double): S
                 candidatePoint = currentPoint
             } else if (lastRetainedPoint == null) {
                 lastRetainedPoint = candidatePoint
+                yield(lastRetainedPoint!!)
                 candidatePoint = currentPoint
             } else if (lastRetainedPoint!!.distanceTo(candidatePoint!!) < samplingDistance
                 && candidatePoint!!.distanceTo(currentPoint) < samplingDistance
@@ -257,5 +268,5 @@ private fun Sequence<LatLon>.discardRedundantPoints(samplingDistance: Double): S
                 candidatePoint = currentPoint
             }
         }
-    } + sequenceOf(candidatePoint).mapNotNull { it }
+    } + sequence { candidatePoint?.let { yield(it) } }
 }

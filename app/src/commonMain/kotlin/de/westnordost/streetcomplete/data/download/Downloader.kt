@@ -41,12 +41,19 @@ class Downloader(
 ) : DownloadProgressSource {
 
     private val listeners = Listeners<DownloadProgressSource.Listener>()
+    // Also serialize cache checks, coverage writes and progress events. Direct, awaited corridor
+    // downloads must coexist with the worker without replacing its global queue.
+    private val requests = Mutex()
 
     override var isUserInitiatedDownloadInProgress: Boolean = false
 
     override var isDownloadInProgress: Boolean = false
 
-    suspend fun download(bbox: BoundingBox, isUserInitiated: Boolean, ignoreCache: Boolean) {
+    suspend fun download(bbox: BoundingBox, isUserInitiated: Boolean, ignoreCache: Boolean) = requests.withLock {
+        downloadLocked(bbox, isUserInitiated, ignoreCache)
+    }
+
+    private suspend fun downloadLocked(bbox: BoundingBox, isUserInitiated: Boolean, ignoreCache: Boolean) {
         var hasError = false
         try {
             isDownloadInProgress = true
@@ -83,14 +90,16 @@ class Downloader(
                     }
                     launch { mapTilesDownloader.download(tilesBbox) }
                 }
+                // Keep the coverage commit serialized with uploads that invalidate these tiles.
+                putDownloadedAlready(tiles)
             }
-            putDownloadedAlready(tiles)
 
             val seconds = (nowAsEpochMilliseconds() - time) / 1000.0
             Log.i(TAG, "Finished download ($sqkm km², bbox: $bboxString) in ${seconds.format(1)}s")
         } catch (e: CancellationException) {
             hasError = true
             Log.i(TAG, "Download cancelled")
+            throw e
         } catch (e: Exception) {
             hasError = true
             Log.e(TAG, "Unable to download", e)

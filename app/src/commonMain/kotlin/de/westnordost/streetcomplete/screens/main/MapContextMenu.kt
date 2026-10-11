@@ -19,6 +19,9 @@ fun MapContextMenu(
     onClickOpenLocation: () -> Unit,
     onClickAddNode: () -> Unit,
     onClickInsertNode: () -> Unit,
+    onClickRouteHere: () -> Unit,
+    onClickRemoveRoute: () -> Unit,
+    canRemoveRoute: Boolean,
     isOpenLocationAvailable: Boolean,
     isExpertMode: Boolean,
     modifier: Modifier = Modifier,
@@ -30,6 +33,14 @@ fun MapContextMenu(
         modifier = modifier,
         offset = offset,
     ) {
+        DropdownMenuItem(onClick = { onDismissRequest(); onClickRouteHere() }) {
+            Text(stringResource(Res.string.route_here))
+        }
+        if (canRemoveRoute) {
+            DropdownMenuItem(onClick = { onDismissRequest(); onClickRemoveRoute() }) {
+                Text(stringResource(Res.string.route_remove))
+            }
+        }
         DropdownMenuItem(onClick = { onDismissRequest(); onClickCreateNote() }) {
             Text(stringResource(Res.string.map_btn_create_note))
         }

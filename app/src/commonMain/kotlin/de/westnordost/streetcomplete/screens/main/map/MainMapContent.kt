@@ -39,6 +39,7 @@ import de.westnordost.streetcomplete.screens.main.map.layers.StyleableOverlayLay
 import de.westnordost.streetcomplete.screens.main.map.layers.StyleableOverlaySideLayer
 import de.westnordost.streetcomplete.screens.main.map.layers.StyledElement
 import de.westnordost.streetcomplete.screens.main.map.layers.TracksLayers
+import de.westnordost.streetcomplete.screens.main.map.layers.PedestrianRouteLayer
 import de.westnordost.streetcomplete.screens.main.map.layers.getIcon
 import de.westnordost.streetcomplete.screens.main.map.layers.toGeoJsonFeatures
 import de.westnordost.streetcomplete.ui.common.quest.Marker
@@ -77,6 +78,7 @@ internal fun MainMapContent(
     trackpoints: List<LatLon>,
     oldTrackpointsLists: List<List<LatLon>>,
     gpxTrack: List<LatLon> = emptyList(),
+    pedestrianRoute: List<LatLon> = emptyList(),
     customGeoJson: String? = null,
     shownBottomSheet: ShownBottomSheet?,
     /** the edit selected in the edit history, highlighted on the map */
@@ -200,6 +202,7 @@ internal fun MainMapContent(
                 )
             }
             TracksLayers(trackpoints, isRecording, oldTrackpointsLists, gpxTrack)
+            PedestrianRouteLayer(pedestrianRoute)
             customGeoJson?.let { CustomGeometryLayers(it) }
         },
         aboveLabelsContent = {

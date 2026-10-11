@@ -1512,4 +1512,23 @@ Ansonsten kannst du auch eine andere Tastatur im App Store herunterladen. Auf An
     <string name="quest_vending_machine_type">Was für ein Automat ist das?</string>
     <string name="quest_selection_hint_message_open_settings">Einstellungen öffnen</string>
     <string name="quest_barrier_opening_not_wheelchair_accessible">Nicht geeignet für Rollstühle</string>
+    <string name="route_here">Route hierhin</string>
+    <string name="route_remove">Route entfernen</string>
+    <string name="route_loading">Fußgängerroute wird berechnet…</string>
+    <string name="route_summary">Fußgängerroute: %1$s · %2$d min</string>
+    <string name="route_fix_map">Karte korrigieren</string>
+    <string name="route_no_location">Keine GPS-Position verfügbar. Warte vor der Routenberechnung auf eine Standortbestimmung.</string>
+    <string name="route_stale_location">Die GPS-Position ist veraltet oder ungültig. Warte auf eine neue Standortbestimmung.</string>
+    <string name="route_error_network">Routingdienst nicht erreichbar. Prüfe deine Internetverbindung und versuche es erneut.</string>
+    <string name="route_error_timeout">Zeitüberschreitung bei der Routenberechnung. Bitte versuche es erneut.</string>
+    <string name="route_error_server">Der Routingdienst hat einen Fehler gemeldet. Bitte versuche es später erneut.</string>
+    <string name="route_error_no_route">Zwischen diesen Orten wurde keine Fußgängerroute gefunden.</string>
+    <string name="route_error_response">Der Routingdienst hat eine ungültige Route geliefert. Bitte versuche es später erneut.</string>
+    <string name="route_quests_loading">Questdaten werden geladen …</string>
+    <string name="route_quests_counting">Quests werden ermittelt …</string>
+    <string name="route_quests_count">Mindestens %1$d offene Quests entlang der Route</string>
+    <string name="route_quests_incomplete">Questdaten unvollständig</string>
+    <string name="route_quests_error">Quests konnten nicht ermittelt werden</string>
+    <string name="route_quests_too_large">Routenkorridor überschreitet das Downloadlimit</string>
+    <string name="route_quests_retry">Erneut versuchen</string>
 </resources>

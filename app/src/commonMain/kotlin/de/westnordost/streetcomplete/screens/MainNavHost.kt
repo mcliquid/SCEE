@@ -28,6 +28,7 @@ import androidx.navigation3.ui.NavDisplay
 import de.westnordost.streetcomplete.data.logs.LogsFilters
 import de.westnordost.streetcomplete.screens.about.aboutEntries
 import de.westnordost.streetcomplete.screens.main.MainScreen
+import de.westnordost.streetcomplete.screens.main.RoutePlannerViewModel
 import de.westnordost.streetcomplete.screens.main.MainViewModel
 import de.westnordost.streetcomplete.screens.main.map.MainMapTrackState
 import de.westnordost.streetcomplete.screens.settings.settingsEntries
@@ -48,6 +49,7 @@ fun MainNavHost(
     // The main screen is always at the bottom of the back stack, so its view model lives as long
     // as the app and can receive requests while another destination is shown.
     val navViewModel = koinViewModel<MainNavViewModel>()
+    val routePlanner = koinViewModel<RoutePlannerViewModel>()
     val backStack = rememberSerializable(serializer = NavBackStackSerializer(Route.serializer())) {
         if (navViewModel.shouldShowIntroTutorial) {
             NavBackStack(Route.Main, Route.IntroTutorial(onboarding = true))
@@ -89,6 +91,7 @@ fun MainNavHost(
             entry<Route.Main> {
                 MainScreen(
                     tracks = tracks,
+                    routePlanner = routePlanner,
                     onClickSettings = { backStack.add(Route.Settings) },
                     onClickQuestSettings = { backStack.add(Route.QuestSelection) },
                     onClickAbout = { backStack.add(Route.About) },

@@ -121,6 +121,24 @@ fun EditTagsForm(
         content = {
             ProvideTextStyle(MaterialTheme.typography.body1) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) { // lazy column has infinite height, so we need a normal column
+                    val scope = rememberCoroutineScope { Dispatchers.IO }
+                    var questsJob by remember { mutableStateOf<Job?>(null) }
+                    var quests by remember { mutableStateOf<List<OsmQuest>>(emptyList()) }
+                    LaunchedEffect(Unit) { quests = osmQuestController.createNonPoiQuestsForElement(originalElement.copy(tags = updatedTags, timestampEdited = nowAsEpochMilliseconds()), geometry) }
+                    LaunchedEffect(updatedTags) {
+                        questsJob?.cancel()
+                        questsJob = scope.launch {
+                            delay(500.milliseconds)
+                            quests = osmQuestController.createNonPoiQuestsForElement(originalElement.copy(tags = updatedTags, timestampEdited = nowAsEpochMilliseconds()), geometry)
+                        }
+                    }
+                    FlowRow(Modifier.fillMaxWidth(), itemVerticalAlignment = Alignment.CenterVertically) {
+                        quests.forEach {
+                            IconButton({ shownQuest = it }, Modifier.size(56.dp)) {
+                                Image(painterResource(it.type.icon), it.type.name)
+                            }
+                        }
+                    }
                     updatedTags.forEach { (k, v) ->
                         // todo: width is weird, why is 0.4 and 0.8 necessary to have almost equal widths? this has weird effect on AutoCompleteTextField dropdown
                         Row(
@@ -229,23 +247,6 @@ fun EditTagsForm(
                                 IconButton({ updatedTags = previousTagsForFeature.toSortedMap() }, Modifier.size(56.dp)) {
                                     Icon(painterResource(Res.drawable.ic_undo_24), "redo", modifier = Modifier.scale(-0.7f, 0.7f))
                                 }
-                        }
-
-                        val scope = rememberCoroutineScope { Dispatchers.IO }
-                        var questsJob by remember { mutableStateOf<Job?>(null) }
-                        var quests by remember { mutableStateOf<List<OsmQuest>>(emptyList()) }
-                        LaunchedEffect(Unit) { quests = osmQuestController.createNonPoiQuestsForElement(originalElement.copy(tags = updatedTags, timestampEdited = nowAsEpochMilliseconds()), geometry) }
-                        LaunchedEffect(updatedTags) {
-                            questsJob?.cancel()
-                            questsJob = scope.launch {
-                                delay(500.milliseconds)
-                                quests = osmQuestController.createNonPoiQuestsForElement(originalElement.copy(tags = updatedTags, timestampEdited = nowAsEpochMilliseconds()), geometry)
-                            }
-                        }
-                        quests.forEach {
-                            IconButton({ shownQuest = it }, Modifier.size(56.dp)) {
-                                Image(painterResource(it.type.icon), it.type.name)
-                            }
                         }
                     }
                 }

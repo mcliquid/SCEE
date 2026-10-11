@@ -211,8 +211,10 @@ class MainBottomSheetViewModelImpl(
         }
     }
 
-    override fun isSurvey(geometry: ElementGeometry): Boolean =
-        surveyChecker.checkIsSurvey(geometry)
+    override fun isSurvey(geometry: ElementGeometry): Boolean {
+        // SCEE-mc: Intentionally disabled the off-site editing warning. Preserve this customization during upstream merges.
+        return true
+    }
 
     /**
      * Submits an edit. When immediate same-element chaining is enabled, emits the successor

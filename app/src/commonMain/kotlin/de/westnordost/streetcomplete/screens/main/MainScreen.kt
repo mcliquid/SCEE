@@ -6,6 +6,14 @@ import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.edits.create.CreateNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.addNodeEdit
 import de.westnordost.osmfeatures.FeatureDictionary
+import de.westnordost.streetcomplete.data.search.*
+import de.westnordost.streetcomplete.ui.LocalAppLocale
+import de.westnordost.streetcomplete.ui.common.NonPredictiveBackHandler
+import de.westnordost.streetcomplete.screens.main.map.layers.SearchTargetLayer
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -174,9 +182,17 @@ fun MainScreen(
 ) {
     //region state
     val scope = rememberCoroutineScope()
+    val photon: PhotonSearchClient = koinInject()
+    val placeSearch = remember(photon, scope) { PlaceSearchState(scope, photon::search) }
+    val searchState by placeSearch.state.collectAsState()
+    val appLocale = LocalAppLocale.current
+    val searchLanguage = photonLanguage((appLocale.locale ?: appLocale.locales.localeList.firstOrNull())?.language ?: "default")
+    var showSearchTargetActions by remember { mutableStateOf(false) }
+    NonPredictiveBackHandler(isBackEnabled = searchState.open, onBackCompleted = placeSearch::close)
     val routing = routePlanner.routing
     val routingState by routing.state.collectAsState()
     val routeQuests = routePlanner.quests
+    val routeDownloadConfirmation by routeQuests.confirmation.collectAsState()
     val routeQuestStates by routeQuests.alternatives.collectAsState()
 
     val headingProvider = rememberDefaultHeadingProvider()
@@ -260,6 +276,9 @@ fun MainScreen(
     var locationState by remember { mutableStateOf<LocationState?>(null) }
 
     val sheet = rememberMainSheetState(mainBottomSheetViewModel, editHistoryViewModel)
+    LaunchedEffect(sheet.isOpen) {
+        if (sheet.isOpen) { placeSearch.close(); showSearchTargetActions = false }
+    }
 
     var pendingSheetSelection by remember { mutableStateOf<MainSheetSelection?>(null) }
 
@@ -320,6 +339,14 @@ fun MainScreen(
                 pendingSheetSelection = selectedOverlay?.let { MainSheetSelection.Overlay(it.name, key) }
             },
         )
+        searchState.selected?.let { place ->
+            SearchTargetLayer(place.position) {
+                if (!sheet.isOpen && !searchState.open) {
+                    showSearchTargetActions = true
+                    ClickResult.Consume
+                } else ClickResult.Pass
+            }
+        }
     }
 
     val cameraState = rememberMainMapCameraState(mapState, viewModel.initiallyFollowing, viewModel.initiallyNavigating)
@@ -340,6 +367,15 @@ fun MainScreen(
     //endregion
 
     //region actions
+
+    fun routeHere(destination: LatLon?) {
+        val start = runCatching { location?.position?.toLatLon() }.getOrNull()
+        if (location == null) showToast = Toast.RouteNoLocation
+        else if (start == null || !start.isRoutingCoordinateValid() || routingLocationMark?.elapsedNow()?.let { it < 0.milliseconds || it > 2.minutes } != false) {
+            showToast = Toast.RouteStaleLocation
+        } else if (!viewModel.isConnected) showToast = Toast.Offline
+        else if (destination != null && destination.isRoutingCoordinateValid()) routing.start(start, destination)
+    }
 
     fun getOffset(position: LatLon): Offset? =
         mapState.offsetInWindow(position, mapPositionInWindow, density)
@@ -720,6 +756,7 @@ fun MainScreen(
                     showQuickSettings = showQuickSettings,
                     viewModel = viewModel,
                     camera = mapState.cameraPosition,
+                    onClickSearch = if (!sheet.isOpen) ({ showSearchTargetActions = false; placeSearch.open() }) else null,
                 )
             },
         )
@@ -741,7 +778,7 @@ fun MainScreen(
             )
         }
 
-        if (!sheet.isOpen && (routingState.loading || routingState.route != null)) {
+        if (!sheet.isOpen && !searchState.open && !showSearchTargetActions && (routingState.loading || routingState.route != null)) {
             Surface(
                 modifier = Modifier.align(Alignment.TopCenter)
                     .windowInsetsPadding(WindowInsets.safeDrawing).padding(top = routeInfoTop),
@@ -781,13 +818,53 @@ fun MainScreen(
                                     RouteQuestStatus.Complete -> Res.string.route_quests_count
                                     RouteQuestStatus.Incomplete -> Res.string.route_quests_incomplete
                                     RouteQuestStatus.Error -> Res.string.route_quests_error
+                                    RouteQuestStatus.AwaitingConfirmation -> Res.string.route_quests_confirmation_pending
                                     RouteQuestStatus.TooLarge -> Res.string.route_quests_too_large
                                 }
                                 Text(stringResource(message, questState.keys.size), style = MaterialTheme.typography.caption)
+                                if (selected && questState.status == RouteQuestStatus.Loading) {
+                                    TextButton(onClick = routeQuests::cancelDownload) { Text(stringResource(Res.string.cancel)) }
+                                }
                                 if (selected && (questState.status == RouteQuestStatus.Incomplete || questState.status == RouteQuestStatus.Error)) {
                                     TextButton(onClick = { routeQuests.retry() }) { Text(stringResource(Res.string.route_quests_retry)) }
                                 }
                             }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (searchState.open && !sheet.isOpen) {
+            Box(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).imePadding().padding(horizontal = 8.dp, vertical = 4.dp), contentAlignment = Alignment.TopCenter) {
+                PlaceSearchPanel(searchState,
+                    onQuery = { text ->
+                        val camera = mapState.cameraPosition
+                        placeSearch.update(PhotonQuery(text, camera.center.toLatLon(), camera.zoom, searchLanguage))
+                    },
+                    onClose = placeSearch::close,
+                    onRetry = placeSearch::retry,
+                    onSelect = { place ->
+                        placeSearch.select(place)
+                        showSearchTargetActions = true
+                        val camera = mapState.cameraPosition
+                        cameraState.moveTo(camera.copy(center = place.position.toPosition(), zoom = place.zoom,
+                            pitch = 0.0, padding = DpPadding.Zero))
+                    })
+            }
+        }
+        val target = searchState.selected
+        if (target != null && showSearchTargetActions && !searchState.open && !sheet.isOpen) {
+            Surface(Modifier.align(Alignment.TopCenter).windowInsetsPadding(WindowInsets.safeDrawing)
+                .padding(top = routeInfoTop, start = 8.dp, end = 8.dp), elevation = 4.dp, shape = MaterialTheme.shapes.small) {
+                Column(Modifier.heightIn(max = routeInfoMaxHeight + 60.dp).verticalScroll(rememberScrollState()).padding(8.dp)) {
+                    Text(target.name, style = MaterialTheme.typography.subtitle1)
+                    if (target.context.isNotEmpty()) Text(target.context, style = MaterialTheme.typography.caption)
+                    FlowRow {
+                        TextButton(onClick = { showSearchTargetActions = false; routeHere(target.position) }) { Text(stringResource(Res.string.route_here)) }
+                        TextButton(onClick = { placeSearch.removeMarker(); showSearchTargetActions = false }) { Text(stringResource(Res.string.place_search_remove_marker)) }
+                        IconButton(onClick = { showSearchTargetActions = false }) {
+                            Icon(painterResource(Res.drawable.ic_clear_24), stringResource(Res.string.cancel))
                         }
                     }
                 }
@@ -850,17 +927,7 @@ fun MainScreen(
             else lastMapLongClick?.let { composeNote(it.position) }
         },
         onClickCreateTrack = { tracks.startRecording() },
-        onClickRouteHere = {
-            val start = runCatching { location?.position?.toLatLon() }.getOrNull()
-            val destination = lastMapLongClick?.position
-            if (location == null) showToast = Toast.RouteNoLocation
-            else if (start == null || !start.isRoutingCoordinateValid() || routingLocationMark?.elapsedNow()?.let { it < 0.milliseconds || it > 2.minutes } != false) {
-                showToast = Toast.RouteStaleLocation
-            } else if (!viewModel.isConnected) showToast = Toast.Offline
-            else if (destination != null && destination.isRoutingCoordinateValid()) {
-                routing.start(start, destination)
-            }
-        },
+        onClickRouteHere = { routeHere(lastMapLongClick?.position) },
         onClickRemoveRoute = { routeQuests.setRoute(emptyList()); routing.clear() },
         canRemoveRoute = routingState.route != null || routingState.loading,
         isOpenLocationAvailable = mapAppLauncher.isAvailable(),
@@ -930,6 +997,14 @@ fun MainScreen(
 
     //region dialogs and toast popups
 
+    routeDownloadConfirmation?.let { request ->
+        ConfirmationDialog(
+            onDismissRequest = { if (routeQuests.confirmation.value == request) routeQuests.cancelDownload() },
+            onConfirmed = { routeQuests.confirmDownload(request) },
+            title = { Text(stringResource(Res.string.route_quests_download_title)) },
+            text = { Text(stringResource(Res.string.route_quests_download_confirmation, request.tiles, request.areaSqKm, request.batches)) },
+        )
+    }
     if (showLocationPermissionRationaleDialog) {
         ConfirmationDialog(
             onDismissRequest = { showLocationPermissionRationaleDialog = false },

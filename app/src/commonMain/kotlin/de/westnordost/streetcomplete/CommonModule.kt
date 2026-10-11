@@ -267,6 +267,7 @@ val commonModule = module {
     } }
     single<Res> { Res }
     single { PedestrianRoutingClient(get()) }
+    single { de.westnordost.streetcomplete.data.search.PhotonSearchClient(get()) }
     single { RouteQuestService(get(), get(), get(), get()) }
     single<FileSystem> { SystemFileSystem }
 

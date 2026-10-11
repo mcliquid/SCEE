@@ -77,7 +77,8 @@ fun MapStyle(
             "<a href='https://www.openstreetmap.org/copyright'>$osmAttribution</a> " +
             "<a href='https://jawg.io?utm_medium=map&utm_source=attribution'>©\u00a0JawgMaps</a> " +
             "<a href='https://routing.openstreetmap.de/about.html'>OSRM · FOSSGIS</a> " +
-            "<a href='https://www.openstreetmap.org/fixthemap'>$fixMap</a>"
+            "<a href='https://www.openstreetmap.org/fixthemap'>$fixMap</a> " +
+            "<a href='https://photon.komoot.io'>Photon · komoot</a>"
     }
 
     val paths = remember(colors) {

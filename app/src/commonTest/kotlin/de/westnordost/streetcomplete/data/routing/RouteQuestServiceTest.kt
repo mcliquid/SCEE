@@ -12,6 +12,10 @@ import de.westnordost.streetcomplete.testutils.osmNoteQuest
 import de.westnordost.streetcomplete.testutils.osmQuest
 import de.westnordost.streetcomplete.util.math.translate
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.CompletableDeferred
+import de.westnordost.streetcomplete.util.math.area
 import kotlinx.coroutines.withTimeout
 import kotlin.time.TimeSource
 import kotlin.test.Test
@@ -24,6 +28,70 @@ class RouteQuestServiceTest {
     private val start = LatLon(52.5, 13.3)
     private val end = start.translate(1000.0, 90.0)
     private val route = listOf(start, end)
+
+    @Test fun `seventeen kilometer corridor uses bounded unique batches`() = runBlocking {
+        val corridor = prepareRouteQuestCorridor(listOf(start, start.translate(17000.0, 45.0)))
+        assertTrue(routeTileArea(corridor.tiles) > 12.0)
+        val batches = routeDownloadBatches(corridor.tiles)
+        val tiles = batches.flatMap { it.asTilePosSequence().toList() }
+        assertEquals(corridor.tiles, tiles.toSet())
+        assertEquals(tiles.size, tiles.distinct().size)
+        assertTrue(batches.all { it.size <= 8 && it.asBoundingBox(16).area() / 1e6 <= 12.0 })
+        println("17 km: ${corridor.tiles.size} tiles, ${routeTileArea(corridor.tiles)} km², ${batches.size} batches")
+        for (meters in 0..17000 step 100) assertTrue(start.translate(meters.toDouble(), 45.0).enclosingTilePos(16) in corridor.tiles)
+    }
+
+    @Test fun `request budget terminates fragmented corridors`() = runBlocking {
+        var calls = 0
+        assertFailsWith<RouteCorridorTooLargeException> {
+            downloadRouteTilesSequentially((0..128).map { TilePos(100, 20000 + it) }, 0, { false }) { calls++ }
+        }
+        assertEquals(128, calls)
+    }
+
+    @Test fun `fresh and overlapping tiles are not downloaded again`() = runBlocking {
+        val tiles = (0..20).map { TilePos(it, 20000) }
+        val fresh = mutableSetOf(tiles[4], tiles[12])
+        val requested = mutableListOf<TilePos>()
+        suspend fun load() = downloadRouteTilesSequentially(tiles + tiles, 0, { it in fresh }) { batch ->
+            val next = batch.asTilePosSequence().toList()
+            assertTrue(next.none { it in fresh })
+            requested.addAll(next)
+            fresh.addAll(next)
+        }
+        load(); load()
+        assertEquals(19, requested.size)
+        assertEquals(requested.size, requested.distinct().size)
+    }
+
+    @Test fun `error after first committed batch keeps coverage`() = runBlocking {
+        val tiles = (0..20).map { TilePos(it, 20000) }
+        val fresh = mutableSetOf<TilePos>()
+        var calls = 0
+        assertFailsWith<IllegalStateException> {
+            downloadRouteTilesSequentially(tiles, 0, { it in fresh }) { batch ->
+                if (++calls == 2) error("Offline")
+                fresh.addAll(batch.asTilePosSequence().toList())
+            }
+        }
+        assertEquals(8, fresh.size)
+        assertEquals(2, calls)
+    }
+
+    @Test fun `cancellation stops later batches and preserves completed data`() = runBlocking {
+        val fresh = mutableSetOf<TilePos>()
+        val blocked = CompletableDeferred<Unit>()
+        var calls = 0
+        val job = launch {
+            downloadRouteTilesSequentially((0..20).map { TilePos(it, 20000) }, 0, { it in fresh }) { batch ->
+                if (++calls == 2) { blocked.complete(Unit); CompletableDeferred<Unit>().await() }
+                fresh.addAll(batch.asTilePosSequence().toList())
+            }
+        }
+        blocked.await(); job.cancelAndJoin()
+        assertEquals(8, fresh.size)
+        assertEquals(2, calls)
+    }
 
     @Test fun `dense eight hundred meter route with duplicates ends quickly`() = runBlocking {
         val points = (0..800).flatMap { meters ->
@@ -73,7 +141,7 @@ class RouteQuestServiceTest {
 
     @Test fun `oversized corridor is refused before any download`() = runBlocking {
         assertFailsWith<RouteCorridorTooLargeException> {
-            prepareRouteQuestCorridor(listOf(start, start.translate(60000.0, 90.0)))
+            prepareRouteQuestCorridor(listOf(start, start.translate(200000.0, 90.0)))
         }
         Unit
     }

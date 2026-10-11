@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.screens.main.controls
 
+import de.westnordost.streetcomplete.resources.*
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -99,6 +100,8 @@ fun MainScreenControls(
     // scale bar
     metersPerDp: () -> Double,
 
+    onClickSearch: (() -> Unit)? = null,
+
     // SCEE extras
     showOverlaySelector: Boolean = false,
     nearbyQuests: Collection<Pair<Int, List<Quest>>>? = null,
@@ -148,6 +151,13 @@ fun MainScreenControls(
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        if (onClickSearch != null) {
+                            MapButton(onClick = onClickSearch) {
+                                androidx.compose.material.Icon(
+                                    org.jetbrains.compose.resources.painterResource(de.westnordost.streetcomplete.resources.Res.drawable.ic_search_24),
+                                    org.jetbrains.compose.resources.stringResource(de.westnordost.streetcomplete.resources.Res.string.place_search_hint))
+                            }
+                        }
                         AnimatedVisibility(messagesCount > 0) {
                             MessagesButton(
                                 onClick = onClickMessages,

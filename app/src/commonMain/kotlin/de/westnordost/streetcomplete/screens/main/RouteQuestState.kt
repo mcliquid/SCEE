@@ -6,6 +6,8 @@ import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.data.routing.RouteCorridorTooLargeException
 import de.westnordost.streetcomplete.data.routing.RouteQuestCorridor
 import de.westnordost.streetcomplete.data.routing.RouteQuestDataSource
+import de.westnordost.streetcomplete.data.routing.routeTileArea
+import de.westnordost.streetcomplete.data.routing.routeDownloadBatches
 import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.util.math.area
 import kotlinx.coroutines.CoroutineScope
@@ -18,12 +20,14 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.launch
 import kotlin.coroutines.cancellation.CancellationException
 
-enum class RouteQuestStatus { Loading, Counting, Complete, Incomplete, Error, TooLarge }
+enum class RouteQuestStatus { Loading, Counting, Complete, Incomplete, Error, TooLarge, AwaitingConfirmation }
 data class RouteQuestUiState(
     val points: List<LatLon> = emptyList(),
     val status: RouteQuestStatus = RouteQuestStatus.Loading,
     val keys: Set<QuestKey> = emptySet(),
 )
+
+data class RouteDownloadConfirmation(val generation: Long, val selection: Int, val tiles: Int, val areaSqKm: Int, val batches: Int)
 
 /** One owner for shared downloads and per-route counts. Never requests or selects a route. */
 class RouteQuestState(private val scope: CoroutineScope, private val source: RouteQuestDataSource) {
@@ -31,6 +35,8 @@ class RouteQuestState(private val scope: CoroutineScope, private val source: Rou
     val state = mutableState.asStateFlow()
     private val mutableAlternatives = MutableStateFlow<List<RouteQuestUiState>>(emptyList())
     val alternatives = mutableAlternatives.asStateFlow()
+    private val mutableConfirmation = MutableStateFlow<RouteDownloadConfirmation?>(null)
+    val confirmation = mutableConfirmation.asStateFlow()
     private var points: List<List<LatLon>> = emptyList()
     private var plans: MutableList<RouteQuestCorridor?> = mutableListOf()
     private var selected = 0
@@ -40,6 +46,7 @@ class RouteQuestState(private val scope: CoroutineScope, private val source: Rou
     private var generation = 0L
     private var countGeneration = 0L
     private var downloadGeneration = 0L
+    private var refreshPending = false
     private var downloading = emptySet<Int>()
 
     init {
@@ -52,8 +59,10 @@ class RouteQuestState(private val scope: CoroutineScope, private val source: Rou
 
     fun setRoute(newPoints: List<LatLon>) = setRoutes(if (newPoints.isEmpty()) emptyList() else listOf(newPoints))
 
-    fun setRoutes(newPoints: List<List<LatLon>>, selectedIndex: Int = 0) {
-        if (points == newPoints) { select(selectedIndex); return }
+    fun setRoutes(newPoints: List<List<LatLon>>, selectedIndex: Int = 0, force: Boolean = false) {
+        if (!force && points == newPoints) { select(selectedIndex); return }
+        mutableConfirmation.value = null
+        refreshPending = false
         ++generation
         ++countGeneration
         ++downloadGeneration
@@ -87,15 +96,46 @@ class RouteQuestState(private val scope: CoroutineScope, private val source: Rou
 
     fun select(index: Int) {
         if (index !in points.indices || index == selected) return
+        if (downloadJob?.isActive == true && index in downloading) {
+            selected = index
+            publish(mutableAlternatives.value)
+            return
+        }
+        if (preparationJob?.isActive == true) { setRoutes(points, index, force = true); return }
+        cancelDownload()
         selected = index
         publish(mutableAlternatives.value)
         if (preparationJob?.isActive != true) loadSelected()
     }
 
-    fun retry() { if (points.isNotEmpty()) loadSelected(force = true) }
+    fun retry() {
+        if (points.isEmpty()) return
+        if (plans.getOrNull(selected) == null) setRoutes(points, selected, force = true)
+        else loadSelected(force = true)
+    }
 
-    private fun loadSelected(force: Boolean = false) {
+    fun cancelDownload() {
+        preparationJob?.cancel()
+        for (index in plans.indices) if (plans[index] == null && mutableAlternatives.value[index].status == RouteQuestStatus.Loading)
+            update(index, RouteQuestStatus.Incomplete)
+        ++downloadGeneration
+        downloadJob?.cancel()
+        downloading = emptySet()
+        mutableConfirmation.value = null
+        val pending = refreshPending
+        refreshPending = false
+        refresh(debounce = pending)
+    }
+
+    fun confirmDownload(request: RouteDownloadConfirmation) {
+        if (mutableConfirmation.value != request) return
+        mutableConfirmation.value = null
+        loadSelected(approved = request)
+    }
+
+    private fun loadSelected(force: Boolean = false, approved: RouteDownloadConfirmation? = null) {
         val chosen = plans.getOrNull(selected) ?: return
+        mutableConfirmation.value = null
         if (!force && downloadJob?.isActive == true && selected in downloading) return
         val wasDownloading = downloading.isNotEmpty()
         val download = ++downloadGeneration
@@ -110,7 +150,27 @@ class RouteQuestState(private val scope: CoroutineScope, private val source: Rou
                 if (source.isCovered(target)) return@launch
                 ensureActive()
                 if (current != generation || download != downloadGeneration) return@launch
+                val missing = source.missingTiles(target)
+                ensureActive()
+                if (current != generation || download != downloadGeneration) return@launch
+                val batches = routeDownloadBatches(missing).size
+                if (batches > 128) {
+                    update(selectedAtStart, RouteQuestStatus.TooLarge)
+                    return@launch
+                }
+                val area = routeTileArea(missing)
+                val withinApproval = approved != null && missing.size <= approved.tiles &&
+                    kotlin.math.ceil(area).toInt() <= approved.areaSqKm && batches <= approved.batches
+                if (!withinApproval && (area > 5.0 || missing.size > 32 || batches > 12)) {
+                    mutableConfirmation.value = RouteDownloadConfirmation(download, selectedAtStart,
+                        missing.size, kotlin.math.ceil(area).toInt(), batches)
+                    update(selectedAtStart, RouteQuestStatus.AwaitingConfirmation)
+                    return@launch
+                }
                 attempted = true
+                // Stop a count started before the download and defer all batch events.
+                ++countGeneration
+                countJob?.cancel()
                 downloading = plans.indices.filterTo(hashSetOf()) { plans[it]?.tiles?.all { tile -> tile in target.tiles } == true }
                 for (index in downloading) update(index, RouteQuestStatus.Loading)
                 source.load(target)
@@ -119,29 +179,33 @@ class RouteQuestState(private val scope: CoroutineScope, private val source: Rou
             catch (e: Exception) {
                 Log.e("RouteQuests", "Corridor download incomplete", e)
                 attempted = true
+                if (e is RouteCorridorTooLargeException) update(selectedAtStart, RouteQuestStatus.TooLarge)
             } finally {
                 if (current == generation && download == downloadGeneration) {
                     downloading = emptySet()
-                    if (attempted || wasDownloading || force) refresh()
+                    val pending = refreshPending
+                    refreshPending = false
+                    if (attempted || wasDownloading || force || pending) refresh(debounce = pending)
                 }
             }
-            if (current == generation && selected != selectedAtStart) loadSelected()
         }
     }
 
     private fun refresh(debounce: Boolean = false) {
+        if (downloading.isNotEmpty()) { refreshPending = true; return }
         countJob?.cancel()
         val count = ++countGeneration
         val current = generation
         val currentPlans = plans.toList()
         val currentPoints = points
         publish(mutableAlternatives.value.mapIndexed { index, entry ->
-            if (currentPlans.getOrNull(index) != null && entry.status != RouteQuestStatus.Loading)
+            if (currentPlans.getOrNull(index) != null && entry.status != RouteQuestStatus.Loading && entry.status != RouteQuestStatus.AwaitingConfirmation && entry.status != RouteQuestStatus.TooLarge)
                 entry.copy(status = RouteQuestStatus.Counting, keys = emptySet()) else entry
         })
         countJob = scope.launch {
             try {
                 if (debounce) delay(150)
+                if (downloading.isNotEmpty()) { refreshPending = true; return@launch }
                 val covered = currentPlans.indices.filter { index -> currentPlans[index]?.let { source.isCovered(it) } == true }
                 ensureActive()
                 if (current != generation || count != countGeneration) return@launch
@@ -159,7 +223,9 @@ class RouteQuestState(private val scope: CoroutineScope, private val source: Rou
                     ensureActive()
                     if (current != generation || count != countGeneration) return@launch
                     results[index] = RouteQuestUiState(currentPoints[index],
-                        if (complete) RouteQuestStatus.Complete else if (index in downloading) RouteQuestStatus.Loading else RouteQuestStatus.Incomplete,
+                        if (complete) RouteQuestStatus.Complete else if (index in downloading) RouteQuestStatus.Loading else if (mutableConfirmation.value?.selection == index) RouteQuestStatus.AwaitingConfirmation
+                        else if (mutableAlternatives.value[index].status == RouteQuestStatus.TooLarge) RouteQuestStatus.TooLarge
+                        else RouteQuestStatus.Incomplete,
                         if (complete) keys[position] else emptySet())
                 }
                 publish(results)

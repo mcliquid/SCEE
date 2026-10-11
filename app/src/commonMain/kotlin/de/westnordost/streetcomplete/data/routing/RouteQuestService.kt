@@ -31,6 +31,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.withContext
@@ -39,6 +40,10 @@ import kotlin.math.ceil
 
 const val ROUTE_QUEST_DISTANCE_METERS = 25.0
 const val ROUTE_DOWNLOAD_DISTANCE_METERS = 100.0
+// Separate planning budget, not a change to the per-download area limit.
+const val ROUTE_MAX_AREA_SQKM = 60.0
+const val ROUTE_MAX_TILES = 512
+const val ROUTE_MAX_LENGTH_METERS = 100_000.0
 private const val ZOOM = ApplicationConstants.DOWNLOAD_TILE_ZOOM
 
 data class RouteQuestCorridor(val points: List<LatLon>, val tiles: Set<TilePos>)
@@ -50,6 +55,8 @@ interface RouteQuestDataSource {
     suspend fun prepare(points: List<LatLon>): RouteQuestCorridor
     suspend fun load(corridor: RouteQuestCorridor)
     suspend fun isCovered(corridor: RouteQuestCorridor): Boolean
+    suspend fun missingTiles(corridor: RouteQuestCorridor): Set<TilePos> =
+        corridor.tiles.filterTo(linkedSetOf()) { !isCovered(corridor.copy(tiles = setOf(it))) }
     suspend fun quests(corridor: RouteQuestCorridor): Set<QuestKey>
     suspend fun questsFor(corridors: List<RouteQuestCorridor>): List<Set<QuestKey>> = corridors.map { quests(it) }
 }
@@ -86,18 +93,16 @@ class RouteQuestService(
     override suspend fun load(corridor: RouteQuestCorridor) = withContext(Dispatchers.IO) {
         val start = nowAsEpochMilliseconds()
         try {
-            val missing = corridor.tiles.filter { !downloaded.contains(it.toTilesRect(), freshSince()) }
-            for (tiles in routeDownloadBatches(missing)) {
-                currentCoroutineContext().ensureActive()
-                if (!downloaded.contains(tiles, freshSince())) {
-                    // Await the real downloader including quest generation and coverage commit.
-                    // No WorkManager enqueue/REPLACE, no viewport dependency, no cache bypass.
-                    downloader.download(tiles.asBoundingBox(ZOOM), isUserInitiated = false, ignoreCache = false)
-                }
-            }
+            downloadRouteTilesSequentially(corridor.tiles,
+                isFresh = { downloaded.contains(it.toTilesRect(), freshSince()) },
+                download = { downloader.download(it.asBoundingBox(ZOOM), isUserInitiated = false, ignoreCache = false) })
         } finally {
             Log.i("RouteQuests", "Corridor download took ${nowAsEpochMilliseconds() - start} ms")
         }
+    }
+
+    override suspend fun missingTiles(corridor: RouteQuestCorridor): Set<TilePos> = withContext(Dispatchers.IO) {
+        corridor.tiles.filterTo(linkedSetOf()) { !downloaded.contains(it.toTilesRect(), freshSince()) }
     }
 
     override suspend fun quests(corridor: RouteQuestCorridor): Set<QuestKey> = questsFor(listOf(corridor)).single()
@@ -149,6 +154,39 @@ internal fun routeDownloadBatches(tiles: Collection<TilePos>): List<TilesRect> {
     return result
 }
 
+/** Await each committed batch; cancellation/errors leave earlier batches in the database. */
+internal suspend fun downloadRouteTilesSequentially(
+    tiles: Collection<TilePos>,
+    pauseMillis: Long = 1000,
+    isFresh: suspend (TilePos) -> Boolean,
+    download: suspend (TilesRect) -> Unit,
+) {
+    var requests = 0
+    val missing = tiles.distinct().filter { !isFresh(it) }
+    for (batch in routeDownloadBatches(missing)) {
+        currentCoroutineContext().ensureActive()
+        // Coverage can change while queued behind another download. Recheck individual tiles.
+        val remaining = batch.asTilePosSequence().toList().filter { !isFresh(it) }
+        for (part in routeDownloadBatches(remaining)) {
+            currentCoroutineContext().ensureActive()
+            check(part.asBoundingBox(ZOOM).area() / 1e6 <= ApplicationConstants.MAX_DOWNLOADABLE_AREA_IN_SQKM)
+            if (requests >= 128) throw RouteCorridorTooLargeException()
+            if (requests > 0) delay(pauseMillis)
+            // Recheck after the pause, too: another download may have committed fresh tiles.
+            val stillMissing = part.asTilePosSequence().toList().filter { !isFresh(it) }
+            for ((index, actual) in routeDownloadBatches(stillMissing).withIndex()) {
+                if (requests >= 128) throw RouteCorridorTooLargeException()
+                if (index > 0) delay(pauseMillis)
+                download(actual)
+                requests++
+            }
+        }
+    }
+}
+
+internal fun routeTileArea(tiles: Collection<TilePos>): Double =
+    tiles.sumOf { it.asBoundingBox(ZOOM).area() / 1e6 }
+
 internal class RouteQuestCounter(points: List<LatLon>, private val activeTypes: Set<String>) {
     private val matcher = RouteQuestMatcher(points)
     private val examined = hashSetOf<QuestKey>()
@@ -191,10 +229,12 @@ internal suspend fun prepareRouteQuestCorridor(points: List<LatLon>, distance: D
     // The existing tile/corridor implementation does not cover a dateline crossing or poles.
     require(points.all { kotlin.math.abs(it.latitude) < 85.0 } &&
         points.zipWithNext().all { (a, b) -> kotlin.math.abs(a.longitude - b.longitude) < 180.0 })
+    if (points.zipWithNext().sumOf { (a, b) -> a.distanceTo(b) } > ROUTE_MAX_LENGTH_METERS)
+        throw RouteCorridorTooLargeException()
     val tiles = linkedSetOf<TilePos>()
     var area = 0.0
     // GPX's box merging becomes expensive for a long track. Process bounded, overlapping
-    // pieces, and stop at the area limit before processing the rest of an oversized route.
+    // pieces, and stop at the separate total budget before processing an oversized route.
     for (piece in routeCorridorPieces(points)) {
         currentCoroutineContext().ensureActive()
         val imported = importGpx(piece, false, distance).getOrThrow()
@@ -202,7 +242,7 @@ internal suspend fun prepareRouteQuestCorridor(points: List<LatLon>, distance: D
             require(!bbox.crosses180thMeridian)
             for (tile in bbox.enclosingTilesRect(ZOOM).asTilePosSequence()) {
                 if (tiles.add(tile)) area += tile.asBoundingBox(ZOOM).area() / 1e6
-                if (area > ApplicationConstants.MAX_DOWNLOADABLE_AREA_IN_SQKM) throw RouteCorridorTooLargeException()
+                if (area > ROUTE_MAX_AREA_SQKM || tiles.size > ROUTE_MAX_TILES) throw RouteCorridorTooLargeException()
             }
         }
     }

@@ -25,6 +25,148 @@ class RouteQuestStateTest {
     private val route = listOf(LatLon(52.5, 13.3), LatLon(52.6, 13.4))
     private val other = listOf(route.first(), LatLon(52.7, 13.5))
 
+    @Test fun `large download requires confirmation and stale approval cannot start another route`() = runBlocking {
+        val source = FakeRouteQuests().apply {
+            covered = false
+            tiles = (0..40).mapTo(linkedSetOf()) { TilePos(it, 20000) }
+        }
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        try {
+            val state = RouteQuestState(scope, source)
+            state.setRoute(route)
+            val approval = state.confirmation.value!!
+            assertEquals(0, source.downloads)
+            assertEquals(RouteQuestStatus.AwaitingConfirmation, state.state.value.status)
+            state.cancelDownload()
+            assertEquals(RouteQuestStatus.Incomplete, state.state.value.status)
+            assertEquals(route, state.state.value.points)
+            state.retry()
+            state.confirmDownload(state.confirmation.value!!)
+            assertEquals(1, source.downloads)
+            assertEquals(RouteQuestStatus.Complete, state.state.value.status)
+            source.covered = false
+            state.setRoute(other)
+            state.confirmDownload(approval)
+            assertEquals(1, source.downloads)
+            assertEquals(other, state.state.value.points)
+        } finally { scope.cancel() }
+    }
+
+    @Test fun `selection preserves pending shared download and does not request another confirmation`() = runBlocking {
+        val source = AlternativeQuestSource(route, other, smallUnion = true).apply { pending = CompletableDeferred() }
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        try {
+            val state = RouteQuestState(scope, source)
+            state.setRoutes(listOf(route, other))
+            state.select(1)
+            assertEquals(1, source.downloads.size)
+            assertEquals(other, state.state.value.points)
+            assertEquals(RouteQuestStatus.Loading, state.state.value.status)
+            assertEquals(null, state.confirmation.value)
+            source.pending!!.complete(Unit)
+            assertEquals(1, source.downloads.size)
+            assertTrue(source.coverage.containsAll(source.firstTiles + source.secondTiles))
+            assertTrue(state.alternatives.value.all { it.status == RouteQuestStatus.Complete })
+            assertEquals(2, state.state.value.keys.size)
+        } finally { scope.cancel() }
+    }
+
+    @Test fun `selection outside pending plan cancels and loads the newly selected corridor`() = runBlocking {
+        val source = AlternativeQuestSource(route, other, smallUnion = false).apply { pending = CompletableDeferred() }
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        try {
+            val state = RouteQuestState(scope, source)
+            state.setRoutes(listOf(route, other))
+            state.select(1)
+            assertEquals(2, source.downloads.size)
+            source.pending!!.complete(Unit)
+            assertEquals(source.secondTiles, source.coverage)
+            assertEquals(RouteQuestStatus.Incomplete, state.alternatives.value[0].status)
+            assertEquals(RouteQuestStatus.Complete, state.state.value.status)
+        } finally { scope.cancel() }
+    }
+
+    @Test fun `batch events and answered quests produce one final count after shared download`() = runBlocking {
+        val source = AlternativeQuestSource(route, other, smallUnion = true).apply { pending = CompletableDeferred() }
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        try {
+            val state = RouteQuestState(scope, source)
+            state.setRoutes(listOf(route, other))
+            val counts = source.counts
+            val checks = source.coverageChecks
+            source.firstKeys = emptySet() // Answered during download
+            repeat(20) {
+                source.coverage.add(source.firstTiles.first())
+                source.changes.emit(Unit)
+            }
+            delay(200)
+            assertEquals(counts, source.counts)
+            assertEquals(checks, source.coverageChecks)
+            state.select(1)
+            source.pending!!.complete(Unit)
+            withTimeout(2000) { while (state.state.value.status != RouteQuestStatus.Complete) delay(10) }
+            assertEquals(counts + 1, source.counts)
+            assertEquals(listOf(0, 2), state.alternatives.value.map { it.keys.size })
+            assertEquals(1, source.downloads.size)
+            source.secondKeys = emptySet()
+            source.changes.emit(Unit)
+            delay(200)
+            assertEquals(0, state.state.value.keys.size)
+            assertEquals(counts + 2, source.counts)
+        } finally { scope.cancel() }
+    }
+
+    @Test fun `partial download failure recounts covered alternatives once and keeps updates enabled`() = runBlocking {
+        val source = AlternativeQuestSource(route, other, smallUnion = true).apply {
+            pending = CompletableDeferred()
+            failAfterPending = true
+        }
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        try {
+            val state = RouteQuestState(scope, source)
+            state.setRoutes(listOf(route, other))
+            val counts = source.counts
+            source.coverage.addAll(source.firstTiles)
+            source.firstKeys = emptySet()
+            repeat(10) { source.changes.emit(Unit) }
+            assertEquals(counts, source.counts)
+            source.pending!!.complete(Unit)
+            withTimeout(2000) { while (state.alternatives.value[0].status != RouteQuestStatus.Complete) delay(10) }
+            assertEquals(counts + 1, source.counts)
+            assertEquals(RouteQuestStatus.Incomplete, state.alternatives.value[1].status)
+            assertEquals(0, state.alternatives.value[0].keys.size)
+            assertEquals(source.firstTiles, source.coverage)
+            source.coverage.addAll(source.secondTiles)
+            source.changes.emit(Unit)
+            withTimeout(2000) { while (state.alternatives.value[1].status != RouteQuestStatus.Complete) delay(10) }
+            assertEquals(counts + 2, source.counts)
+            assertEquals(1, source.downloads.size)
+        } finally { scope.cancel() }
+    }
+
+    @Test fun `cancelling after batch events recounts partial coverage once and updates resume`() = runBlocking {
+        val source = AlternativeQuestSource(route, other, smallUnion = true).apply { pending = CompletableDeferred() }
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        try {
+            val state = RouteQuestState(scope, source)
+            state.setRoutes(listOf(route, other))
+            val counts = source.counts
+            source.coverage.add(source.firstTiles.first())
+            repeat(10) { source.changes.emit(Unit) }
+            state.cancelDownload()
+            source.pending!!.complete(Unit)
+            delay(200)
+            assertEquals(counts + 1, source.counts)
+            assertTrue(state.alternatives.value.all { it.status == RouteQuestStatus.Incomplete })
+            assertEquals(1, source.coverage.size)
+            source.coverage.addAll(source.firstTiles + source.secondTiles)
+            source.changes.emit(Unit)
+            withTimeout(2000) { while (state.state.value.status != RouteQuestStatus.Complete) delay(10) }
+            assertEquals(counts + 2, source.counts)
+            assertEquals(1, source.downloads.size)
+        } finally { scope.cancel() }
+    }
+
     @Test fun `overlapping alternatives share one corridor download and independent counts`() = runBlocking {
         val source = AlternativeQuestSource(route, other, smallUnion = true)
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
@@ -273,6 +415,7 @@ class RouteQuestStateTest {
 
 private class FakeRouteQuests : RouteQuestDataSource {
     override val changes = MutableSharedFlow<Unit>()
+    var tiles = emptySet<TilePos>()
     var covered = true
     var failDownload = false
     var coverAfterDownload = true
@@ -284,7 +427,7 @@ private class FakeRouteQuests : RouteQuestDataSource {
     var pendingDownload: CompletableDeferred<Unit>? = null
     override suspend fun prepare(points: List<LatLon>): RouteQuestCorridor {
         preparations++
-        return RouteQuestCorridor(points, emptySet())
+        return RouteQuestCorridor(points, tiles)
     }
     override suspend fun load(corridor: RouteQuestCorridor) {
         downloads++
@@ -312,17 +455,28 @@ private class AlternativeQuestSource(
     var secondKeys: Set<QuestKey> = setOf(OsmNoteQuestKey(2), OsmNoteQuestKey(3))
     var pending: CompletableDeferred<Unit>? = null
     var fail = false
+    var failAfterPending = false
     var preparations = 0
+    var counts = 0
+    var coverageChecks = 0
+    override suspend fun questsFor(corridors: List<RouteQuestCorridor>): List<Set<QuestKey>> {
+        counts++
+        return corridors.map { quests(it) }
+    }
     override suspend fun prepare(points: List<LatLon>): RouteQuestCorridor {
         preparations++
         return RouteQuestCorridor(points, if (points == first) firstTiles else secondTiles)
     }
-    override suspend fun isCovered(corridor: RouteQuestCorridor) = coverage.containsAll(corridor.tiles)
+    override suspend fun isCovered(corridor: RouteQuestCorridor): Boolean {
+        coverageChecks++
+        return coverage.containsAll(corridor.tiles)
+    }
     override suspend fun load(corridor: RouteQuestCorridor) {
         downloads.add(corridor)
         missingDownloads.add(corridor.tiles - coverage)
         if (fail) error("Offline")
         pending?.await()
+        if (failAfterPending) error("Offline after partial download")
         coverage.addAll(corridor.tiles)
     }
     override suspend fun quests(corridor: RouteQuestCorridor) = if (corridor.points == first) firstKeys else secondKeys

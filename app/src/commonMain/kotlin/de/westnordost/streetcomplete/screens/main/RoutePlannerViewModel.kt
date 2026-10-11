@@ -15,7 +15,8 @@ class RoutePlannerViewModel(client: PedestrianRoutingClient, source: RouteQuestS
     init {
         viewModelScope.launch {
             routing.state.collect { state ->
-                quests.setRoutes(state.routes.map { it.points }, state.selectedIndex)
+                if (state.loading) quests.cancelDownload()
+                else quests.setRoutes(state.routes.map { it.points }, state.selectedIndex)
             }
         }
     }

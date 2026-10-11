@@ -93,7 +93,7 @@ fun MoveNodeForm(
 
     var confirmDiscard by remember { mutableStateOf(false) }
 
-    NonPredictiveBackHandler {
+    fun dismiss() {
         if (mapPosition != node.position) {
             confirmDiscard = true
         } else {
@@ -101,6 +101,7 @@ fun MoveNodeForm(
         }
     }
 
+    NonPredictiveBackHandler { dismiss() }
     // an arrow from the node to the crosshair, i.e. to where it would be moved
     OnMap {
         val mapState = checkNotNull(LocalMapState.current)
@@ -119,11 +120,12 @@ fun MoveNodeForm(
 
     Box(modifier = modifier.fillMaxSize()) {
         BottomSheetFormScaffold(
+            onDismissRequest = ::dismiss,
             content = {
                 MoveNodeFormContent(
                     distance = distance,
                     displayUnit = displayUnit,
-                    onClickCancel = restoreBackgroundAndDismiss,
+                    onClickCancel = ::dismiss,
                 )
             },
             fab = {

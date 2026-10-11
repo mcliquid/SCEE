@@ -41,19 +41,62 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respondOk
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withTimeout
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class UploadDownloadSerializeSyncTest {
+
+    @Test fun `cancelling a corridor waiting behind a download leaves its progress intact`() = runBlocking {
+        val env = SerializeSyncHarness()
+        val started = AtomicInteger()
+        val finished = AtomicInteger()
+        env.downloader.addListener(object : DownloadProgressSource.Listener {
+            override fun onStarted() { started.incrementAndGet() }
+            override fun onFinished() { finished.incrementAndGet() }
+        })
+        val normal = async(Dispatchers.IO) { env.downloader.download(bbox(), true, true) }
+        env.downloadMutationEntered.awaitSoon()
+        val corridor = async(start = CoroutineStart.UNDISPATCHED) { env.downloader.download(bbox(), false, false) }
+        assertEquals(1, started.get())
+        corridor.cancelAndJoin()
+        assertTrue(env.downloader.isDownloadInProgress)
+        assertTrue(env.downloader.isUserInitiatedDownloadInProgress)
+        assertEquals(0, finished.get())
+        env.releaseDownload.complete(Unit)
+        normal.awaitSoon()
+        assertFalse(env.downloader.isDownloadInProgress)
+        assertEquals(1, finished.get())
+    }
+
+    @Test fun `cancellation while waiting for upload propagates without success event`() = runBlocking {
+        val env = SerializeSyncHarness()
+        val successes = AtomicInteger()
+        env.downloader.addListener(object : DownloadProgressSource.Listener {
+            override fun onSuccess() { successes.incrementAndGet() }
+        })
+        env.serializeSync.lock()
+        try {
+            val corridor = async(Dispatchers.IO) { env.downloader.download(bbox(), false, true) }
+            env.downloadStarted.awaitSoon()
+            corridor.cancelAndJoin()
+            assertTrue(corridor.isCancelled)
+            assertFalse(env.downloader.isDownloadInProgress)
+            assertEquals(0, successes.get())
+            assertFalse(env.downloadMutationEntered.isCompleted)
+        } finally { env.serializeSync.unlock() }
+    }
 
     @Test fun `upload that owns SerializeSync finishes remaining work before waiting download`() = runBlocking {
         val env = SerializeSyncHarness()

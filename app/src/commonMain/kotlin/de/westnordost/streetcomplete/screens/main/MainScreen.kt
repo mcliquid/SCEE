@@ -1,10 +1,19 @@
 package de.westnordost.streetcomplete.screens.main
 
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
+import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.edits.create.CreateNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.addNodeEdit
 import de.westnordost.osmfeatures.FeatureDictionary
+import de.westnordost.streetcomplete.data.search.*
+import de.westnordost.streetcomplete.ui.LocalAppLocale
+import de.westnordost.streetcomplete.ui.common.NonPredictiveBackHandler
+import de.westnordost.streetcomplete.screens.main.map.layers.SearchTargetLayer
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -16,15 +25,30 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
+import de.westnordost.streetcomplete.screens.main.map.layers.pedestrianRouteColor
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -38,6 +62,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -63,6 +88,8 @@ import androidx.compose.material.TextButton
 import de.westnordost.streetcomplete.ui.common.feature.FeatureSearchDialog
 import de.westnordost.streetcomplete.ui.common.dialogs.AlertDialog
 import de.westnordost.streetcomplete.data.quest.VisibleQuestsSource
+import de.westnordost.streetcomplete.data.routing.RoutingError
+import de.westnordost.streetcomplete.data.routing.isRoutingCoordinateValid
 import de.westnordost.streetcomplete.quests.tree.AddTreeGenus
 import de.westnordost.streetcomplete.quests.custom.CustomQuestList
 import de.westnordost.streetcomplete.data.preferences.Preferences
@@ -70,6 +97,7 @@ import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.messages.Message
 import de.westnordost.streetcomplete.data.osmtracks.Trackpoint
 import de.westnordost.streetcomplete.resources.*
+import de.westnordost.streetcomplete.screens.MainNavViewModel
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.AddPoiForm
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.MainBottomSheet
 import de.westnordost.streetcomplete.screens.main.controls.LocationState
@@ -130,19 +158,21 @@ import org.maplibre.compose.util.DpPadding
 import org.maplibre.spatialk.units.Bearing
 import org.maplibre.spatialk.units.extensions.inDegrees
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeMark
 
 /** The map and its controls, forms, and sidebars. */
 @Composable
 fun MainScreen(
     tracks: MainMapTrackState,
+    routePlanner: RoutePlannerViewModel,
     onClickSettings: () -> Unit,
     onClickQuestSettings: () -> Unit,
     onClickAbout: () -> Unit,
     onClickProfile: () -> Unit,
     onClickLogin: () -> Unit,
     onClickEnterTeamMode: () -> Unit,
-    onShowIntroTutorial: () -> Unit,
     onShowOverlaysTutorial: () -> Unit,
+    navViewModel: MainNavViewModel,
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = koinViewModel(),
     editHistoryViewModel: EditHistoryViewModel = koinViewModel(),
@@ -152,6 +182,18 @@ fun MainScreen(
 ) {
     //region state
     val scope = rememberCoroutineScope()
+    val photon: PhotonSearchClient = koinInject()
+    val placeSearch = remember(photon, scope) { PlaceSearchState(scope, photon::search) }
+    val searchState by placeSearch.state.collectAsState()
+    val appLocale = LocalAppLocale.current
+    val searchLanguage = photonLanguage((appLocale.locale ?: appLocale.locales.localeList.firstOrNull())?.language ?: "default")
+    var showSearchTargetActions by remember { mutableStateOf(false) }
+    NonPredictiveBackHandler(isBackEnabled = searchState.open, onBackCompleted = placeSearch::close)
+    val routing = routePlanner.routing
+    val routingState by routing.state.collectAsState()
+    val routeQuests = routePlanner.quests
+    val routeDownloadConfirmation by routeQuests.confirmation.collectAsState()
+    val routeQuestStates by routeQuests.alternatives.collectAsState()
 
     val headingProvider = rememberDefaultHeadingProvider()
     val locationProvider = rememberDefaultLocationProvider()
@@ -162,6 +204,14 @@ fun MainScreen(
 
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
+    // The upper controls are 48dp high with 4dp outer padding; leave a clear gap below.
+    val routeInfoTop = 76.dp
+    val routeInfoMaxHeight = minOf(
+        with(density) { LocalWindowInfo.current.containerSize.height.toDp() } * 0.35f,
+        if (routingState.routes.size > 1) 160.dp else 80.dp,
+    )
+    val routeCameraTop = routeInfoTop + routeInfoMaxHeight + 12.dp +
+        with(density) { WindowInsets.safeDrawing.getTop(density).toDp() }
 
     val starsCount by viewModel.starsCount.collectAsState()
     val isShowingStarsCurrentWeek by viewModel.isShowingStarsCurrentWeek.collectAsState()
@@ -196,7 +246,7 @@ fun MainScreen(
     val isUploading by viewModel.isUploading.collectAsState()
     val isUploadingOrDownloading by viewModel.isUploadingOrDownloading.collectAsState()
 
-    val urlConfig by viewModel.urlConfig.collectAsState()
+    val urlConfig by navViewModel.urlConfig.collectAsState()
 
     val lastCrashReport by viewModel.lastCrashReport.collectAsState()
     val lastDownloadError by viewModel.lastDownloadError.collectAsState()
@@ -206,7 +256,7 @@ fun MainScreen(
 
     val isRequestingLogin by viewModel.isRequestingLogin.collectAsState()
 
-    val geoUri by viewModel.geoUri.collectAsState()
+    val geoUri by navViewModel.geoUri.collectAsState()
 
     var confirmReplaceDownload by remember { mutableStateOf(false) }
     var showMainMenuDialog by remember { mutableStateOf(false) }
@@ -221,10 +271,16 @@ fun MainScreen(
     var lastQuestSolved by remember { mutableStateOf<QuestSolvedEvent?>(null) }
 
     var location by rememberSerializable { mutableStateOf<LocationMeasurement?>(null) }
+    var routingLocationMark by remember { mutableStateOf<TimeMark?>(null) }
     var heading by remember { mutableStateOf<Float?>(null) }
     var locationState by remember { mutableStateOf<LocationState?>(null) }
 
     val sheet = rememberMainSheetState(mainBottomSheetViewModel, editHistoryViewModel)
+    LaunchedEffect(sheet.isOpen) {
+        if (sheet.isOpen) { placeSearch.close(); showSearchTargetActions = false }
+    }
+
+    var pendingSheetSelection by remember { mutableStateOf<MainSheetSelection?>(null) }
 
     val sheetSelection = sheet.selection
     val shownBottomSheet = sheet.shownBottomSheet
@@ -266,6 +322,8 @@ fun MainScreen(
             trackpoints = tracks.recentTrackPositions,
             oldTrackpointsLists = tracks.olderTrackPositions,
             gpxTrack = gpxTrack,
+            pedestrianRoutes = routingState.routes,
+            selectedPedestrianRoute = routingState.selectedIndex,
             customGeoJson = customGeoJson,
             shownBottomSheet = shownBottomSheet,
             selectedEdit = sheet.shownEdit,
@@ -274,16 +332,32 @@ fun MainScreen(
             showOverlay = showOverlay,
             downloadedTiles = downloadedTiles,
             pinsMode = pinsMode,
-            isSelectable = !sheet.isFormOpen,
-            onClickQuest = { sheet.show(MainSheetSelection.Quest(it)) },
-            onClickEdit = { sheet.show(MainSheetSelection.EditHistory(it)) },
+            consumeClick = !sheet.isOpen,
+            onClickQuest = { pendingSheetSelection = MainSheetSelection.Quest(it) },
+            onClickEdit = { pendingSheetSelection = MainSheetSelection.EditHistory(it) },
             onClickElement = { key ->
-                selectedOverlay?.let { sheet.show(MainSheetSelection.Overlay(it.name, key)) }
+                pendingSheetSelection = selectedOverlay?.let { MainSheetSelection.Overlay(it.name, key) }
             },
         )
+        searchState.selected?.let { place ->
+            SearchTargetLayer(place.position) {
+                if (!sheet.isOpen && !searchState.open) {
+                    showSearchTargetActions = true
+                    ClickResult.Consume
+                } else ClickResult.Pass
+            }
+        }
     }
 
     val cameraState = rememberMainMapCameraState(mapState, viewModel.initiallyFollowing, viewModel.initiallyNavigating)
+    LaunchedEffect(routingState.routes) {
+        routingState.routes.firstOrNull()?.let { route ->
+            cameraState.showRoute(
+                ElementPolylinesGeometry(routingState.routes.map { it.points }, route.points.first()),
+                DpPadding(left = 48.dp, right = 48.dp, top = routeCameraTop, bottom = 100.dp),
+            )
+        }
+    }
 
     val sheetPadding = Dimensions.getOpenQuestFormMapPadding(
         LocalWindowInfo.current,
@@ -294,6 +368,15 @@ fun MainScreen(
 
     //region actions
 
+    fun routeHere(destination: LatLon?) {
+        val start = runCatching { location?.position?.toLatLon() }.getOrNull()
+        if (location == null) showToast = Toast.RouteNoLocation
+        else if (start == null || !start.isRoutingCoordinateValid() || routingLocationMark?.elapsedNow()?.let { it < 0.milliseconds || it > 2.minutes } != false) {
+            showToast = Toast.RouteStaleLocation
+        } else if (!viewModel.isConnected) showToast = Toast.Offline
+        else if (destination != null && destination.isRoutingCoordinateValid()) routing.start(start, destination)
+    }
+
     fun getOffset(position: LatLon): Offset? =
         mapState.offsetInWindow(position, mapPositionInWindow, density)
 
@@ -301,7 +384,7 @@ fun MainScreen(
         mapState.positionAtCenter(sheetPadding)
 
     fun getMetersPerDp(): Double =
-        mapState.metersPerDpAtLatitude(mapState.cameraPosition.target.latitude) ?: 0.0
+        mapState.metersPerDpAtLatitude(mapState.cameraPosition.center.latitude) ?: 0.0
 
     fun ClickEvent.toMapClick(): MapClick? =
         position?.let { MapClick(it.toLatLon(), screenOffset, clickAreaSizeInMeters = getMetersPerDp() * 20) }
@@ -348,7 +431,7 @@ fun MainScreen(
         val displayedArea = mapState.viewport?.visibleBounds?.toStreetCompleteBoundingBox()
         if (displayedArea == null) {
             showToast = Toast.CannotFindBounds
-        } else if (!viewModel.download(displayedArea, mapState.cameraPosition.target.toLatLon(), enqueue)) {
+        } else if (!viewModel.download(displayedArea, mapState.cameraPosition.center.toLatLon(), enqueue)) {
             showToast = Toast.DownloadAreaTooBig
         }
     }
@@ -416,10 +499,20 @@ fun MainScreen(
 
     //region effects
 
+    LaunchedEffect(pendingSheetSelection, sheet.isOpen) {
+        val selection = pendingSheetSelection
+        if (selection != null) {
+            if (!sheet.isOpen) {
+                pendingSheetSelection = null
+                sheet.show(selection)
+            }
+        }
+    }
+
     LaunchedEffect(geoUri) {
         geoUri?.let {
             cameraState.moveTo(it)
-            viewModel.consumeGeoUri()
+            navViewModel.consumeGeoUri()
         }
     }
 
@@ -438,7 +531,8 @@ fun MainScreen(
     }
 
     LaunchedEffect(headingProvider) {
-        headingProvider.updates(HeadingRequest(33.milliseconds)).collect { headingMeasurement ->
+        val request = HeadingRequest { minimumInterval = 33.milliseconds }
+        headingProvider.updates(request).collect { headingMeasurement ->
             heading = (headingMeasurement.bearing - Bearing.North).inDegrees.toFloat()
         }
     }
@@ -451,6 +545,7 @@ fun MainScreen(
                     if (event.measurementMark.elapsedNow() > 10.minutes) return@collect
                     val measurement = event.measurement
                     location = measurement
+                    routingLocationMark = event.measurementMark
                     locationState = LocationState.UPDATING
                     tracks.addLocation(measurement)
                     launch {
@@ -462,17 +557,18 @@ fun MainScreen(
                 }
                 is LocationEvent.Unavailable -> {
                     location = null
+                    routingLocationMark = null
                     locationState = when (event.reason) {
                         LocationUnavailableReason.ServicesDisabled -> LocationState.ALLOWED
                         LocationUnavailableReason.TemporarilyUnavailable -> LocationState.SEARCHING
                         LocationUnavailableReason.PermissionDenied -> LocationState.DENIED
-                        LocationUnavailableReason.Unsupported,
-                        LocationUnavailableReason.UnexpectedFailure -> null
+                        else -> null // unsupported or unclassified
                     }
 
                     tracks.clear()
                     launch { cameraState.setNavigationMode(false, null, null) }
                 }
+                else -> Unit
             }
         }
     }
@@ -510,10 +606,6 @@ fun MainScreen(
     }
     LaunchedEffect(reversedQuestOrder) {
         mapViewModel.setReversedQuestOrder(reversedQuestOrder)
-    }
-
-    LaunchedEffect(Unit) {
-        if (!viewModel.hasShownTutorial && !isLoggedIn) onShowIntroTutorial()
     }
 
     LaunchedEffect(isTeamMode) {
@@ -626,7 +718,7 @@ fun MainScreen(
                     onZoomDrag = { zoomBy(it / 20.0) },
 
                     mapRotation = { mapState.cameraPosition.bearing.toFloat() },
-                    mapTilt = { mapState.cameraPosition.tilt.toFloat() },
+                    mapTilt = { mapState.cameraPosition.pitch.toFloat() },
                     onClickCompass = { scope.launch { cameraState.resetCompass() } },
 
                     locationState = locationState,
@@ -664,6 +756,7 @@ fun MainScreen(
                     showQuickSettings = showQuickSettings,
                     viewModel = viewModel,
                     camera = mapState.cameraPosition,
+                    onClickSearch = if (!sheet.isOpen) ({ showSearchTargetActions = false; placeSearch.open() }) else null,
                 )
             },
         )
@@ -683,6 +776,99 @@ fun MainScreen(
                 onDismissRequest = sheet::close,
                 getEditElement = editHistoryViewModel::getEditElement,
             )
+        }
+
+        if (!sheet.isOpen && !searchState.open && !showSearchTargetActions && (routingState.loading || routingState.route != null)) {
+            Surface(
+                modifier = Modifier.align(Alignment.TopCenter)
+                    .windowInsetsPadding(WindowInsets.safeDrawing).padding(top = routeInfoTop),
+                elevation = 4.dp,
+                shape = MaterialTheme.shapes.small,
+            ) {
+                Column(Modifier.heightIn(max = routeInfoMaxHeight)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 12.dp, vertical = 4.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    if (routingState.loading) {
+                        LinearProgressIndicator()
+                        Text(stringResource(Res.string.route_loading))
+                    }
+                    for ((index, route) in routingState.routes.withIndex()) {
+                        val questState = routeQuestStates.getOrNull(index)?.takeIf { it.points == route.points }
+                        val multiple = routingState.routes.size > 1
+                        val selected = index == routingState.selectedIndex
+                        Column(if (multiple) Modifier.selectable(selected, role = Role.RadioButton,
+                            onClick = { routing.select(index) })
+                            .background(if (selected) MaterialTheme.colors.primary.copy(alpha = 0.12f) else androidx.compose.ui.graphics.Color.Transparent)
+                            .padding(horizontal = 6.dp, vertical = 4.dp) else Modifier) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (multiple) {
+                                    Box(Modifier.size(10.dp).background(pedestrianRouteColor(index)))
+                                    Spacer(Modifier.size(6.dp))
+                                    Text(stringResource(Res.string.route_alternative, index + 1),
+                                        fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+                                    Spacer(Modifier.size(6.dp))
+                                }
+                                Text(stringResource(Res.string.route_summary, routeDistance(route.distanceMeters), routeMinutes(route.durationSeconds)),
+                                    fontWeight = if (multiple && selected) FontWeight.Bold else FontWeight.Normal)
+                            }
+                            if (questState != null) {
+                                val message = when (questState.status) {
+                                    RouteQuestStatus.Loading -> Res.string.route_quests_loading
+                                    RouteQuestStatus.Counting -> Res.string.route_quests_counting
+                                    RouteQuestStatus.Complete -> Res.string.route_quests_count
+                                    RouteQuestStatus.Incomplete -> Res.string.route_quests_incomplete
+                                    RouteQuestStatus.Error -> Res.string.route_quests_error
+                                    RouteQuestStatus.AwaitingConfirmation -> Res.string.route_quests_confirmation_pending
+                                    RouteQuestStatus.TooLarge -> Res.string.route_quests_too_large
+                                }
+                                Text(stringResource(message, questState.keys.size), style = MaterialTheme.typography.caption)
+                                if (selected && questState.status == RouteQuestStatus.Loading) {
+                                    TextButton(onClick = routeQuests::cancelDownload) { Text(stringResource(Res.string.cancel)) }
+                                }
+                                if (selected && (questState.status == RouteQuestStatus.Incomplete || questState.status == RouteQuestStatus.Error)) {
+                                    TextButton(onClick = { routeQuests.retry() }) { Text(stringResource(Res.string.route_quests_retry)) }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (searchState.open && !sheet.isOpen) {
+            Box(Modifier.fillMaxSize().windowInsetsPadding(WindowInsets.safeDrawing).imePadding().padding(horizontal = 8.dp, vertical = 4.dp), contentAlignment = Alignment.TopCenter) {
+                PlaceSearchPanel(searchState,
+                    onQuery = { text ->
+                        val camera = mapState.cameraPosition
+                        placeSearch.update(PhotonQuery(text, camera.center.toLatLon(), camera.zoom, searchLanguage))
+                    },
+                    onClose = placeSearch::close,
+                    onRetry = placeSearch::retry,
+                    onSelect = { place ->
+                        placeSearch.select(place)
+                        showSearchTargetActions = true
+                        val camera = mapState.cameraPosition
+                        cameraState.moveTo(camera.copy(center = place.position.toPosition(), zoom = place.zoom,
+                            pitch = 0.0, padding = DpPadding.Zero))
+                    })
+            }
+        }
+        val target = searchState.selected
+        if (target != null && showSearchTargetActions && !searchState.open && !sheet.isOpen) {
+            Surface(Modifier.align(Alignment.TopCenter).windowInsetsPadding(WindowInsets.safeDrawing)
+                .padding(top = routeInfoTop, start = 8.dp, end = 8.dp), elevation = 4.dp, shape = MaterialTheme.shapes.small) {
+                Column(Modifier.heightIn(max = routeInfoMaxHeight + 60.dp).verticalScroll(rememberScrollState()).padding(8.dp)) {
+                    Text(target.name, style = MaterialTheme.typography.subtitle1)
+                    if (target.context.isNotEmpty()) Text(target.context, style = MaterialTheme.typography.caption)
+                    FlowRow {
+                        TextButton(onClick = { showSearchTargetActions = false; routeHere(target.position) }) { Text(stringResource(Res.string.route_here)) }
+                        TextButton(onClick = { placeSearch.removeMarker(); showSearchTargetActions = false }) { Text(stringResource(Res.string.place_search_remove_marker)) }
+                        IconButton(onClick = { showSearchTargetActions = false }) {
+                            Icon(painterResource(Res.drawable.ic_clear_24), stringResource(Res.string.cancel))
+                        }
+                    }
+                }
+            }
         }
 
         AnimatedContent(
@@ -718,8 +904,8 @@ fun MainScreen(
                         onCreateNote = { pos, text, images, tracks, isGpx -> mainBottomSheetViewModel.createNote(pos, text, images, tracks, isGpx) },
                         shownBottomSheet = shownBottomSheet,
                         mapRotation = mapCamera.bearing.toFloat(),
-                        mapTilt = mapCamera.tilt.toFloat(),
-                        mapPosition = getCrosshairPosition() ?: mapCamera.target.toLatLon(),
+                        mapTilt = mapCamera.pitch.toFloat(),
+                        mapPosition = getCrosshairPosition() ?: mapCamera.center.toLatLon(),
                         mapMetersPerDp = getMetersPerDp(),
                         onSetMapMarkers = { if (id == sheet.id) sheet.formMarkers = it?.toList() },
                         onSetMapOverlay = { if (id == sheet.id) sheet.formMapOverlay = it },
@@ -741,6 +927,9 @@ fun MainScreen(
             else lastMapLongClick?.let { composeNote(it.position) }
         },
         onClickCreateTrack = { tracks.startRecording() },
+        onClickRouteHere = { routeHere(lastMapLongClick?.position) },
+        onClickRemoveRoute = { routeQuests.setRoute(emptyList()); routing.clear() },
+        canRemoveRoute = routingState.route != null || routingState.loading,
         isOpenLocationAvailable = mapAppLauncher.isAvailable(),
         onClickOpenLocation = {
             lastMapLongClick?.let { mapAppLauncher.openAt(it.position, mapState.cameraPosition.zoom) }
@@ -808,6 +997,14 @@ fun MainScreen(
 
     //region dialogs and toast popups
 
+    routeDownloadConfirmation?.let { request ->
+        ConfirmationDialog(
+            onDismissRequest = { if (routeQuests.confirmation.value == request) routeQuests.cancelDownload() },
+            onConfirmed = { routeQuests.confirmDownload(request) },
+            title = { Text(stringResource(Res.string.route_quests_download_title)) },
+            text = { Text(stringResource(Res.string.route_quests_download_confirmation, request.tiles, request.areaSqKm, request.batches)) },
+        )
+    }
     if (showLocationPermissionRationaleDialog) {
         ConfirmationDialog(
             onDismissRequest = { showLocationPermissionRationaleDialog = false },
@@ -848,6 +1045,7 @@ fun MainScreen(
         MainMenuDialog(
             onDismissRequest = { showMainMenuDialog = false },
             onClickProfile = onClickProfile,
+            onClickLogin = onClickLogin,
             onClickSettings = onClickSettings,
             onClickAbout = onClickAbout,
             onClickDownload = ::onClickDownload,
@@ -865,8 +1063,8 @@ fun MainScreen(
         ApplyUrlConfigDialog(
             presetName = config.urlConfig.presetName,
             presetNameAlreadyExists = config.alreadyExists,
-            onDismissRequest = viewModel::consumeUrlConfig,
-            onConfirmed = { viewModel.applyUrlConfig(config.urlConfig) },
+            onDismissRequest = navViewModel::consumeUrlConfig,
+            onConfirmed = { navViewModel.applyUrlConfig(config.urlConfig) },
         )
     }
 
@@ -889,6 +1087,19 @@ fun MainScreen(
         ToastPopup(
             onDismissRequest = { showToast = null },
             text = stringResource(message)
+        )
+    }
+
+    routingState.error?.let { error ->
+        ToastPopup(
+            onDismissRequest = { routing.dismissError() },
+            text = stringResource(when (error) {
+                RoutingError.Network -> Res.string.route_error_network
+                RoutingError.Timeout -> Res.string.route_error_timeout
+                RoutingError.Server -> Res.string.route_error_server
+                RoutingError.NoRoute -> Res.string.route_error_no_route
+                RoutingError.InvalidResponse -> Res.string.route_error_response
+            }),
         )
     }
 
@@ -920,12 +1131,16 @@ private enum class Toast {
     NoEmailClient,
     CannotFindBounds,
     NoLocation,
+    RouteNoLocation,
+    RouteStaleLocation,
     ImpreciseNote
 }
 
 private val Toast.messageResource: StringResource get() =  when (this) {
     Toast.CannotFindBounds -> Res.string.cannot_find_bbox_or_reduce_tilt
     Toast.NoLocation -> Res.string.no_gps_no_quests
+    Toast.RouteNoLocation -> Res.string.route_no_location
+    Toast.RouteStaleLocation -> Res.string.route_stale_location
     Toast.ImpreciseNote -> Res.string.create_new_note_unprecise
     Toast.Offline -> Res.string.offline
     Toast.TeamModeActive -> Res.string.team_mode_active

@@ -93,6 +93,12 @@ fun InsertNodeForm(
     val levelFilter: LevelFilter = koinInject()
     val featureDictionary: FeatureDictionary = koinInject()
     val initialBackground = rememberSaveable { prefs.getString(Prefs.THEME_BACKGROUND, "MAP") }
+    val restoreBackgroundAndDismiss = {
+        if (prefs.getString(Prefs.THEME_BACKGROUND, "MAP") != initialBackground) {
+            prefs.putString(Prefs.THEME_BACKGROUND, initialBackground)
+        }
+        onDismiss()
+    }
     val metersPerDp = LocalMapMetersPerDp.current
     val maxDistanceToCrosshair = (metersPerDp * 24).dp.toPx().toDouble()
     val snapToVertexDistance = (metersPerDp * 12).dp.toPx().toDouble()
@@ -114,11 +120,7 @@ fun InsertNodeForm(
             way to positions
         }
     }
-    NonPredictiveBackHandler {
-        if (prefs.getString(Prefs.THEME_BACKGROUND, "MAP") != initialBackground)
-            prefs.putString(Prefs.THEME_BACKGROUND, initialBackground)
-        onDismiss()
-    }
+    NonPredictiveBackHandler { restoreBackgroundAndDismiss() }
     val positionOnWay = remember(position, ways) {
         position.getPositionOnWaysForInsertNodeForm(
             ways = ways,
@@ -159,6 +161,7 @@ fun InsertNodeForm(
             tint = MaterialTheme.colors.onSurface
         )
         BottomSheetFormScaffold(
+            onDismissRequest = restoreBackgroundAndDismiss,
             content = {
                 val featureDictionary: FeatureDictionary = koinInject()
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(6.dp)) {
@@ -174,11 +177,7 @@ fun InsertNodeForm(
                     )
                     Divider()
                     Row {
-                        TextButton({
-                            if (prefs.getString(Prefs.THEME_BACKGROUND, "MAP") != initialBackground)
-                                prefs.putString(Prefs.THEME_BACKGROUND, initialBackground)
-                            onDismiss()
-                        }) { Text(stringResource(Res.string.cancel)) }
+                        TextButton({ restoreBackgroundAndDismiss() }) { Text(stringResource(Res.string.cancel)) }
                         SwitchMapBackgroundButton()
                     }
                 }

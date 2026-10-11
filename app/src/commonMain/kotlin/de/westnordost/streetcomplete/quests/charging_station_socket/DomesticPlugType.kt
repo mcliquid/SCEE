@@ -5,7 +5,7 @@ import de.westnordost.streetcomplete.resources.*
 import org.jetbrains.compose.resources.DrawableResource
 
 /**
- * Household plug types from [CountryInfo.domesticSocketType] (countrymetadata).
+ * Household plug types from [CountryInfo.domesticSocketTypes] (countrymetadata).
  * These are presentation-only; the quest still writes [SocketType.DOMESTIC] as `socket:domestic`.
  */
 enum class DomesticPlugType(val osmValue: String) {
@@ -47,7 +47,7 @@ val DomesticPlugType.icon: DrawableResource
 
 /** Known household plug types for this country, ignoring unsupported metadata values. */
 fun domesticPlugTypesForCountry(countryInfo: CountryInfo): List<DomesticPlugType> =
-    countryInfo.domesticSocketType.mapNotNull { DomesticPlugType.fromOsmValue(it) }
+    countryInfo.domesticSocketTypes.mapNotNull { DomesticPlugType.fromOsmValue(it) }
 
 fun domesticPlugIcons(countryInfo: CountryInfo): List<DrawableResource> =
     domesticPlugTypesForCountry(countryInfo).map { it.icon }

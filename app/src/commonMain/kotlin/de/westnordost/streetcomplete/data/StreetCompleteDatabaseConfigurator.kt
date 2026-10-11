@@ -31,7 +31,7 @@ import de.westnordost.streetcomplete.quests.osmose.OsmoseTable
 import de.westnordost.streetcomplete.util.logs.Log
 
 object StreetCompleteDatabaseConfigurator : DatabaseConfigurator {
-    override val version = 21
+    override val version = 22
 
     override fun onCreate(db: Database) {
         // OSM notes
@@ -269,6 +269,10 @@ object StreetCompleteDatabaseConfigurator : DatabaseConfigurator {
             db.deleteQuest("AddPlaygroundAccess")
             db.deleteQuest("AddProhibitedForPedestrians")
             db.deleteQuest("AddTowerAccess")
+        }
+        if (oldVersion < 22) {
+            db.deleteQuest("AddChargingStationCapacity")
+            db.deleteQuest("AddChargingStationBicycleCapacity")
         }
 
         createSceeTables(db)

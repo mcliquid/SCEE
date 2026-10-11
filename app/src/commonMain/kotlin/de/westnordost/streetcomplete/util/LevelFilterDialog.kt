@@ -103,7 +103,7 @@ import kotlin.math.floor
                 Text(stringResource(Res.string.level_filter_message))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Button({
-                        val selectableLevels = getLevelsInView(camera?.target?.toLatLon()?.enclosingBoundingBox(50.0), allowedLevelTypes, visibleQuestsSource, mapDataSource)
+                        val selectableLevels = getLevelsInView(camera?.center?.toLatLon()?.enclosingBoundingBox(50.0), allowedLevelTypes, visibleQuestsSource, mapDataSource)
                         val oldText = levelText.text
                         val currentLevel = "[\\d.+-]+".toRegex().find(oldText)?.value
                         val currentLevelNumber = currentLevel?.toDoubleOrNull()
@@ -116,7 +116,7 @@ import kotlin.math.floor
                         levelText = TextFieldValue(oldText.replace(currentLevel ?: oldText, newLevel.toNiceString()))
                     }) { Text("+") }
                     Button({
-                        val selectableLevels = getLevelsInView(camera?.target?.toLatLon()?.enclosingBoundingBox(50.0), allowedLevelTypes, visibleQuestsSource, mapDataSource)
+                        val selectableLevels = getLevelsInView(camera?.center?.toLatLon()?.enclosingBoundingBox(50.0), allowedLevelTypes, visibleQuestsSource, mapDataSource)
                         val oldText = levelText.text
                         val currentLevel = "[\\d.+-]+".toRegex().find(oldText)?.value
                         val currentLevelNumber = currentLevel?.toDoubleOrNull()

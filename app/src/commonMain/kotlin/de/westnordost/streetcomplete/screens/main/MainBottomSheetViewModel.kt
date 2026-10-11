@@ -195,8 +195,10 @@ class MainBottomSheetViewModelImpl(
         val levels = parseLevelsOrNull(element.tags)
         quest.type.getHighlightedElements(element, mapData).mapNotNull { other ->
             if (element == other) return@mapNotNull null
-            if (!levels.levelsIntersect(parseLevelsOrNull(other.tags))) return@mapNotNull null
-            if (element.tags["layer"] != other.tags["layer"]) return@mapNotNull null
+            if(quest.type.hideHighlightedElementsOnDifferentLevel) {
+                if (!levels.levelsIntersect(parseLevelsOrNull(other.tags))) return@mapNotNull null
+                if (element.tags["layer"] != other.tags["layer"]) return@mapNotNull null
+            }
             val geometry = mapData.getGeometry(other.type, other.id) ?: return@mapNotNull null
             Marker(geometry, getIcon(featureDictionary.value, other), getTitle(other.tags))
         }.toList()
@@ -209,8 +211,10 @@ class MainBottomSheetViewModelImpl(
         }
     }
 
-    override fun isSurvey(geometry: ElementGeometry): Boolean =
-        surveyChecker.checkIsSurvey(geometry)
+    override fun isSurvey(geometry: ElementGeometry): Boolean {
+        // SCEE-mc: Intentionally disabled the off-site editing warning. Preserve this customization during upstream merges.
+        return true
+    }
 
     /**
      * Submits an edit. When immediate same-element chaining is enabled, emits the successor

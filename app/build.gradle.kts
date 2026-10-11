@@ -7,7 +7,7 @@ import java.io.FileWriter
 
 
 /** App version name, code and flavor */
-val appVersionName = "64.0-alpha3"
+val appVersionName = "64.0-beta2"
 
 /** Localizations the app should be available in */
 val bcp47ExportLanguages = setOf(
@@ -41,15 +41,6 @@ plugins {
     // keep in sync with Kotlin version! See https://mokkery.dev/docs/Setup/#compatibility
     id("dev.mokkery") version "3.5.0"
     id("org.jetbrains.kotlin.plugin.allopen") version "2.4.20"
-}
-
-repositories {
-    // SPIKE: locally published osmfeatures that reads the NSI format
-    mavenLocal { content { includeGroup("de.westnordost") } }
-    google()
-    mavenCentral()
-    // for com.github.ticofab:android-gpx-parser
-    maven { url = uri("https://www.jitpack.io") }
 }
 
 buildkonfig {
@@ -124,14 +115,20 @@ kotlin {
         }
     }
 
+    applyDefaultHierarchyTemplate()
+
     sourceSets {
+        val jvmAndroidMain = create("jvmAndroidMain") { dependsOn(commonMain.get()) }
+        val nonAndroidMain = create("nonAndroidMain") { dependsOn(commonMain.get()) }
+        val mobileMain = create("mobileMain") { dependsOn(commonMain.get()) }
+
         commonMain {
             dependencies {
                 // Kotlin
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
 
                 // Atomics, Locks, Synchronization
-                // Aparently only necessary as long as https://github.com/Kotlin/kotlinx-atomicfu/issues/145 is not solved
+                // Apparently only necessary as long as https://github.com/Kotlin/kotlinx-atomicfu/issues/145 is not solved
                 implementation("org.jetbrains.kotlinx:atomicfu:0.33.0")
 
                 // Dependency injection
@@ -139,7 +136,6 @@ kotlin {
                 implementation("io.insert-koin:koin-core")
                 implementation("io.insert-koin:koin-compose")
                 implementation("io.insert-koin:koin-compose-viewmodel")
-                implementation("io.insert-koin:koin-androidx-compose-navigation")
 
                 // Logging
                 implementation("co.touchlab:kermit:2.2.0")
@@ -151,7 +147,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.9.1")
 
                 // location
-                implementation("org.maplibre.compose:location:0.19.0")
+                implementation("org.maplibre.compose:location:0.20.0")
 
                 // SQLite
                 implementation("androidx.sqlite:sqlite:2.7.1")
@@ -196,7 +192,8 @@ kotlin {
 
                 // UI Navigation
                 implementation("org.jetbrains.androidx.navigationevent:navigationevent-compose:1.1.0")
-                implementation("org.jetbrains.androidx.navigation:navigation-compose:2.9.2")
+                implementation("org.jetbrains.androidx.navigation3:navigation3-ui:1.1.2")
+                implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
 
                 // UI ViewModel
                 implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
@@ -204,7 +201,7 @@ kotlin {
                 // UI widgets
 
                 // Map
-                implementation("org.maplibre.compose:maplibre-compose:0.19.0")
+                implementation("org.maplibre.compose:maplibre-compose:0.20.0")
 
                 // non-lazy grid
                 // NOTE: might replace with
@@ -229,6 +226,8 @@ kotlin {
             }
         }
         androidMain {
+            dependsOn(jvmAndroidMain)
+            dependsOn(mobileMain)
             dependencies {
                 // Dependency injection
                 implementation("io.insert-koin:koin-android")
@@ -244,10 +243,11 @@ kotlin {
                 implementation("androidx.work:work-runtime-ktx:2.12.0")
 
                 // HTTP Client
-                implementation("io.ktor:ktor-client-android:3.5.2")
+                // cio, not android, because of https://youtrack.jetbrains.com/issue/KTOR-9848
+                implementation("io.ktor:ktor-client-cio:3.5.2")
 
                 // map
-                implementation("org.maplibre.compose:maplibre-compose-runtime-opengl-android:0.19.0")
+                implementation("org.maplibre.compose:maplibre-compose-runtime-opengl-android:0.20.0")
 
                 // required to @Preview composables in Android Studio
                 runtimeOnly("androidx.compose.ui:ui-tooling:1.12.1")
@@ -266,6 +266,8 @@ kotlin {
             }
         }
         iosMain {
+            dependsOn(nonAndroidMain)
+            dependsOn(mobileMain)
             dependencies {
                 // HTTP client
                 implementation("io.ktor:ktor-client-darwin:3.5.2")

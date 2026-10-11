@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.map_attribution_osm
+import de.westnordost.streetcomplete.resources.route_fix_map
 import de.westnordost.streetcomplete.resources.map_oneway_arrow
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -32,7 +33,6 @@ import org.maplibre.compose.layers.FillLayer
 import org.maplibre.compose.layers.LineLayer
 import org.maplibre.compose.layers.RasterLayer
 import org.maplibre.compose.layers.SymbolLayer
-import org.maplibre.compose.sources.TileSetOptions
 import org.maplibre.compose.sources.VectorSource
 import org.maplibre.compose.sources.rememberRasterTileSource
 import org.maplibre.compose.sources.rememberVectorTileSource
@@ -68,15 +68,18 @@ fun MapStyle(
     belowLabelsContent: @Composable @MaplibreComposable () -> Unit = {},
     aboveLabelsContent: @Composable @MaplibreComposable () -> Unit = {},
 ) {
-    val osmAttribution = stringResource(Res.string.map_attribution_osm)
-    val attributionHtml = remember(osmAttribution) {
-        "<a href='https://www.openstreetmap.org/copyright'>$osmAttribution</a> " +
-        "<a href='https://jawg.io?utm_medium=map&utm_source=attribution'>&copy; JawgMaps</a>"
+    // unicode 00a0 = no break space
+    val osmAttribution = stringResource(Res.string.map_attribution_osm).replaceFirst("© ", "©\u00a0")
+    val fixMap = stringResource(Res.string.route_fix_map)
+    val source = rememberVectorTileSource(listOf(MapTiles.URL_TEMPLATE)) {
+        maxZoom = MapTiles.MAX_ZOOM
+        attributionHtml =
+            "<a href='https://www.openstreetmap.org/copyright'>$osmAttribution</a> " +
+            "<a href='https://jawg.io?utm_medium=map&utm_source=attribution'>©\u00a0JawgMaps</a> " +
+            "<a href='https://routing.openstreetmap.de/about.html'>OSRM · FOSSGIS</a> " +
+            "<a href='https://www.openstreetmap.org/fixthemap'>$fixMap</a> " +
+            "<a href='https://photon.komoot.io'>Photon · komoot</a>"
     }
-    val source = rememberVectorTileSource(
-        tiles = listOf(MapTiles.URL_TEMPLATE),
-        options = TileSetOptions(maxZoom = MapTiles.MAX_ZOOM, attributionHtml = attributionHtml)
-    )
 
     val paths = remember(colors) {
         RoadType(
@@ -151,10 +154,9 @@ fun MapStyle(
     val roads = listOf(pedestrian, serviceRoads, minorRoads, majorRoads, motorways, motorwayLinks)
 
     if (rasterTiles != null) {
-        val rasterSource = rememberRasterTileSource(
-            tiles = listOf(rasterTiles),
-            options = TileSetOptions(maxZoom = rasterMaxZoom),
-        )
+        val rasterSource = rememberRasterTileSource(listOf(rasterTiles)) {
+            maxZoom = rasterMaxZoom
+        }
         RasterLayer(id = "raster-background", source = rasterSource)
     }
 

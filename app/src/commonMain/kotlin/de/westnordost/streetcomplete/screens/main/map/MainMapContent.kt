@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.text.intl.LocaleList
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import de.westnordost.streetcomplete.data.routing.PedestrianRoute
 import de.westnordost.streetcomplete.data.download.tiles.TilePos
 import de.westnordost.streetcomplete.data.edithistory.EditKey
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
@@ -39,6 +40,7 @@ import de.westnordost.streetcomplete.screens.main.map.layers.StyleableOverlayLay
 import de.westnordost.streetcomplete.screens.main.map.layers.StyleableOverlaySideLayer
 import de.westnordost.streetcomplete.screens.main.map.layers.StyledElement
 import de.westnordost.streetcomplete.screens.main.map.layers.TracksLayers
+import de.westnordost.streetcomplete.screens.main.map.layers.PedestrianRouteLayer
 import de.westnordost.streetcomplete.screens.main.map.layers.getIcon
 import de.westnordost.streetcomplete.screens.main.map.layers.toGeoJsonFeatures
 import de.westnordost.streetcomplete.ui.common.quest.Marker
@@ -77,6 +79,8 @@ internal fun MainMapContent(
     trackpoints: List<LatLon>,
     oldTrackpointsLists: List<List<LatLon>>,
     gpxTrack: List<LatLon> = emptyList(),
+    pedestrianRoutes: List<PedestrianRoute> = emptyList(),
+    selectedPedestrianRoute: Int = 0,
     customGeoJson: String? = null,
     shownBottomSheet: ShownBottomSheet?,
     /** the edit selected in the edit history, highlighted on the map */
@@ -88,9 +92,8 @@ internal fun MainMapContent(
     showOverlay: Boolean,
     downloadedTiles: Collection<TilePos>,
     pinsMode: PinsMode,
-    /** whether clicking pins and overlay elements selects them. Otherwise, the click falls
-     *  through to the map */
-    isSelectable: Boolean,
+    /** whether clicking pins and overlay elements consumes the click event */
+    consumeClick: Boolean,
     onClickQuest: (QuestKey) -> Unit,
     onClickEdit: (EditKey) -> Unit,
     onClickElement: (ElementKey) -> Unit,
@@ -120,13 +123,10 @@ internal fun MainMapContent(
     }
 
     val scope = rememberCoroutineScope()
-    fun <T : Any> select(key: T?, onSelect: (T) -> Unit): ClickResult =
-        if (key == null || !isSelectable) {
-            ClickResult.Pass
-        } else {
-            onSelect(key)
-            ClickResult.Consume
-        }
+    fun <T : Any> select(key: T?, onSelect: (T) -> Unit): ClickResult {
+        if (key != null) onSelect(key)
+        return if (consumeClick) ClickResult.Consume else ClickResult.Pass
+    }
     val onClickPin: (JsonObject) -> ClickResult = when (pinsMode) {
         PinsMode.Quests -> { properties -> select(viewModel.getQuestKey(properties), onClickQuest) }
         PinsMode.EditHistory -> { properties -> select(viewModel.getEditKey(properties), onClickEdit) }
@@ -204,6 +204,7 @@ internal fun MainMapContent(
                 )
             }
             TracksLayers(trackpoints, isRecording, oldTrackpointsLists, gpxTrack)
+            PedestrianRouteLayer(pedestrianRoutes, selectedPedestrianRoute)
             customGeoJson?.let { CustomGeometryLayers(it) }
         },
         aboveLabelsContent = {

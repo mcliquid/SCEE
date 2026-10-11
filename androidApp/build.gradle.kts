@@ -6,15 +6,6 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
-repositories {
-    // SPIKE: locally published osmfeatures that reads the NSI format
-    mavenLocal { content { includeGroup("de.westnordost") } }
-    google()
-    mavenCentral()
-    // for com.github.ticofab:android-gpx-parser
-    maven { url = uri("https://www.jitpack.io") }
-}
-
 android {
     namespace = "de.westnordost.streetcomplete.app"
     compileSdk = 37
@@ -30,8 +21,8 @@ android {
         applicationId = "de.westnordost.streetcomplete.expert"
         minSdk = 25
         targetSdk = 37
-        versionCode = 6402
-        versionName = "64.0-alpha3"
+        versionCode = 6404
+        versionName = "64.0-beta2"
 
         // no x86: the MapLibre Compose runtime has no x86 build, and other native libraries must
         // not make the app installable where the map cannot run

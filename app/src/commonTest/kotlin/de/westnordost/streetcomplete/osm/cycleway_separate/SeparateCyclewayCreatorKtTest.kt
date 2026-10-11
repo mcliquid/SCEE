@@ -12,6 +12,67 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class SeparateCyclewayCreatorKtTest {
+
+    @Test fun `generic path preserves access restrictions and conditional rules`() {
+        for (restriction in listOf("no", "dismount", "private", "destination", "customers", "permit", "use_sidepath")) {
+            val original = mapOf(
+                "highway" to "footway", "bicycle" to restriction, "foot" to "no",
+                "access" to "private", "vehicle" to "no",
+                "bicycle:conditional" to "yes @ (Su)",
+                "foot:conditional" to "yes @ (Su)",
+                "access:conditional" to "yes @ (Su)",
+            )
+            val tags = StringMapChangesBuilder(original)
+            PATH.applyTo(tags)
+            for ((key, value) in original.filterKeys { it != "highway" }) {
+                assertEquals(value, tags[key], key)
+            }
+        }
+    }
+
+    @Test fun `generic path preserves signed cycling prohibition`() {
+        for (restriction in listOf("no", "dismount")) {
+            val tags = StringMapChangesBuilder(mapOf("highway" to "path", "bicycle" to restriction, "bicycle:signed" to "yes"))
+            PATH.applyTo(tags)
+            assertEquals(restriction, tags["bicycle"])
+            assertEquals("yes", tags["bicycle:signed"])
+        }
+    }
+
+    @Test fun `generic path replaces bicycle designation only`() {
+        val tags = StringMapChangesBuilder(mapOf("highway" to "cycleway", "bicycle" to "designated"))
+        PATH.applyTo(tags)
+        assertEquals("yes", tags["bicycle"])
+    }
+
+    @Test fun `generic path retains signs for unchanged access values`() {
+        for (access in listOf("no", "dismount", "private", "destination", "customers", "permit", "permissive", "yes", "use_sidepath")) {
+            for (signed in listOf("yes", "no")) {
+                val tags = StringMapChangesBuilder(mapOf("highway" to "cycleway", "bicycle" to access,
+                    "bicycle:signed" to signed, "bicycle:conditional" to "no @ (Su)"))
+                PATH.applyTo(tags)
+                assertEquals(access, tags["bicycle"])
+                assertEquals(signed, tags["bicycle:signed"], "$access $signed")
+                assertEquals("no @ (Su)", tags["bicycle:conditional"])
+            }
+        }
+    }
+
+    @Test fun `generic path removes affirmative designation sign only`() {
+        for (bicycle in listOf(null, "designated")) {
+            for (signed in listOf("yes", "no")) {
+                val original = mapOf("highway" to "cycleway", "bicycle:signed" to signed) +
+                    (bicycle?.let { mapOf("bicycle" to it) } ?: emptyMap())
+                val tags = StringMapChangesBuilder(original)
+                PATH.applyTo(tags)
+                assertEquals(if (signed == "yes") null else signed, tags["bicycle:signed"])
+            }
+        }
+        val tags = StringMapChangesBuilder(mapOf("highway" to "path", "bicycle:signed" to "yes"))
+        PATH.applyTo(tags)
+        assertEquals("yes", tags["bicycle:signed"])
+    }
+
     @Test fun `apply not allowed`() {
         assertEquals(
             setOf(
@@ -36,13 +97,12 @@ class SeparateCyclewayCreatorKtTest {
         )
     }
 
-    @Test fun `apply not allowed re-tags cycleway and adds foot=yes if foot was no before`() {
+    @Test fun `apply not allowed re-tags cycleway without lifting foot prohibition`() {
         assertEquals(
             setOf(
                 StringMapEntryAdd("bicycle", "no"),
                 StringMapEntryAdd("bicycle:signed", "yes"),
-                StringMapEntryModify("highway", "cycleway", "path"),
-                StringMapEntryModify("foot", "no", "yes")
+                StringMapEntryModify("highway", "cycleway", "path")
             ),
             NOT_ALLOWED.appliedTo(mapOf(
                 "highway" to "cycleway",
@@ -649,12 +709,11 @@ class SeparateCyclewayCreatorKtTest {
         )
     }
 
-    @Test fun `apply path sets foot and bicycle if set`() {
+    @Test fun `apply path removes designation without lifting bicycle prohibition`() {
         assertEquals(
             setOf(
                 StringMapEntryModify("highway", "cycleway", "path"),
                 StringMapEntryModify("foot", "designated", "yes"),
-                StringMapEntryModify("bicycle", "no", "yes"),
             ),
             PATH.appliedTo(mapOf(
                 "highway" to "cycleway",

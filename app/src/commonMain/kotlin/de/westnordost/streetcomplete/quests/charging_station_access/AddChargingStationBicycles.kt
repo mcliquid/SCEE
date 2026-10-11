@@ -61,7 +61,7 @@ private val socketsEligibleForBicycleCharging = listOf(
     "xlr_3pin_cable",
 
     // USB-C can deliver quite some watts
-    "socket:device:USB-C",
+    "device:USB-C",
 
     // domestic. Barrel without bottom. Just the used ones according to taginfo
     "domestic",

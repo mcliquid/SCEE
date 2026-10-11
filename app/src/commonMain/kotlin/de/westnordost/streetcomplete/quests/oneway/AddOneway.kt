@@ -33,6 +33,7 @@ class AddOneway : OsmElementQuestType<OnewayAnswer> {
           highway ~ living_street|residential|service|tertiary|unclassified|busway
           and width <= 4 and (!lanes or lanes <= 1)
           and !oneway and area != yes and junction != roundabout
+          and !oneway:conditional
           and (access !~ private|no or (foot and foot !~ private|no))
     """.toElementFilterExpression() }
 

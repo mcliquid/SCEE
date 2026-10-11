@@ -27,6 +27,8 @@ class AddFerryAccessBicycle : OsmElementQuestType<FerryBicycleAccess> {
     private val filter by lazy { """
         ways, relations with
           route = ferry and !bicycle and !bicycle:signed
+          and !bicycle:conditional and !vehicle:conditional and !access:conditional
+          and !bicycle:forward and !bicycle:backward
     """.toElementFilterExpression() }
 
     override val changesetComment = "Specify ferry access for bicycles"

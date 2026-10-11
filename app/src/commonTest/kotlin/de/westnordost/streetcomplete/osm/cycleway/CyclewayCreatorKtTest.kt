@@ -17,6 +17,88 @@ import kotlin.test.assertNull
 
 class CyclewayCreatorKtTest {
 
+    @Test fun `removing sidewalk designation clears only its unconditional direction`() {
+        for (direction in listOf("yes", "-1", "no")) {
+            val tags = StringMapChangesBuilder(mapOf(
+                "sidewalk:right:bicycle" to "designated", "sidewalk:right:oneway:bicycle" to direction,
+                "sidewalk:right:oneway:bicycle:conditional" to "no @ (Su)",
+                "sidewalk:left:bicycle" to "designated", "sidewalk:left:oneway:bicycle" to "-1",
+            ))
+            cycleway(null, TRACK to FORWARD).applyTo(tags, false)
+            assertNull(tags["sidewalk:right:oneway:bicycle"])
+            assertEquals("no @ (Su)", tags["sidewalk:right:oneway:bicycle:conditional"])
+            assertEquals("-1", tags["sidewalk:left:oneway:bicycle"])
+            assertEquals("designated", tags["sidewalk:left:bicycle"])
+        }
+    }
+
+    @Test fun `unsigned sidewalk permission and its direction are retained`() {
+        for (signed in listOf(null, "no")) {
+            val original = mapOf("sidewalk:right:bicycle" to "yes", "sidewalk:right:oneway:bicycle" to "no") +
+                (signed?.let { mapOf("sidewalk:right:bicycle:signed" to it) } ?: emptyMap())
+            val tags = StringMapChangesBuilder(original)
+            cycleway(null, NONE to FORWARD).applyTo(tags, false)
+            for ((key, value) in original) assertEquals(value, tags[key], key)
+        }
+    }
+
+    @Test fun `unrelated sidewalk access restriction and direction are retained`() {
+        val tags = StringMapChangesBuilder(mapOf(
+            "sidewalk:right:bicycle" to "private", "sidewalk:right:oneway:bicycle" to "-1",
+            "sidewalk:right:bicycle:conditional" to "yes @ (Su)",
+        ))
+        cycleway(null, NONE to FORWARD).applyTo(tags, false)
+        assertEquals("private", tags["sidewalk:right:bicycle"])
+        assertEquals("-1", tags["sidewalk:right:oneway:bicycle"])
+        assertEquals("yes @ (Su)", tags["sidewalk:right:bicycle:conditional"])
+    }
+
+
+    @Test fun `switching track to permitted sidewalk removes track direction`() {
+        val tags = StringMapChangesBuilder(mapOf(
+            "cycleway:right" to "track", "cycleway:right:oneway" to "-1",
+            "cycleway:left" to "track", "cycleway:left:oneway" to "-1",
+            "oneway:bicycle:conditional" to "no @ (Su)",
+        ))
+        cycleway(null, SIDEWALK_OK to BOTH).applyTo(tags, false)
+        assertEquals("no", tags["cycleway:right"])
+        assertEquals(null, tags["cycleway:right:oneway"])
+        assertEquals("no", tags["sidewalk:right:oneway:bicycle"])
+        assertEquals("-1", tags["cycleway:left:oneway"])
+        assertEquals("no @ (Su)", tags["oneway:bicycle:conditional"])
+    }
+
+    @Test fun `removing permitted sidewalk clears all former sidewalk directions`() {
+        for (direction in listOf("yes", "-1", "no")) {
+            val tags = StringMapChangesBuilder(mapOf(
+                "cycleway:right" to "no", "sidewalk:right:bicycle" to "yes",
+                "sidewalk:right:bicycle:signed" to "yes",
+                "sidewalk:right:oneway:bicycle" to direction,
+                "sidewalk:left:oneway:bicycle" to "-1",
+            ))
+            cycleway(null, NONE to FORWARD).applyTo(tags, false)
+            assertEquals(null, tags["sidewalk:right:oneway:bicycle"])
+            assertEquals("-1", tags["sidewalk:left:oneway:bicycle"])
+        }
+    }
+
+    @Test fun `permitted sidewalk can change explicit direction back to default`() {
+        val tags = StringMapChangesBuilder(mapOf(
+            "cycleway:right" to "no", "sidewalk:right:bicycle" to "yes",
+            "sidewalk:right:bicycle:signed" to "yes", "sidewalk:right:oneway:bicycle" to "-1",
+        ))
+        cycleway(null, SIDEWALK_OK to FORWARD).applyTo(tags, false)
+        assertEquals("yes", tags["sidewalk:right:oneway:bicycle"])
+    }
+
+    @Test fun `bidirectional circular road does not acquire cyclist oneway exception`() {
+        val tags = StringMapChangesBuilder(mapOf("junction" to "circular", "oneway" to "no"))
+        cycleway(TRACK, TRACK).applyTo(tags, false)
+        assertEquals(null, tags["oneway:bicycle"])
+        assertEquals("no", tags["oneway"])
+    }
+
+
     @Test fun `apply nothing`() {
         assertEquals(
             setOf(),

@@ -1,8 +1,11 @@
 package de.westnordost.streetcomplete.osm.oneway
 
 fun isForwardOneway(tags: Map<String, String>): Boolean =
-    tags["oneway"] == "yes"
-    || tags["oneway"] != "-1" && (tags["junction"] == "roundabout" || tags["junction"] == "circular")
+    when (tags["oneway"]) {
+        "yes", "1", "true" -> true
+        null -> tags["junction"] == "roundabout"
+        else -> false
+    }
 
 fun isReversedOneway(tags: Map<String, String>): Boolean =
     tags["oneway"] == "-1"

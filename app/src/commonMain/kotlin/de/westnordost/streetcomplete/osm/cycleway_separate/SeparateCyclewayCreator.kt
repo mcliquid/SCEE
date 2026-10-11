@@ -16,16 +16,18 @@ fun SeparateCycleway.applyTo(tags: Tags) {
     // tag bicycle=*, foot=* and retag highway=* if necessary
     when (this) {
         PATH -> {
+            // Only a designation is contradicted by this answer, not signs for access restrictions.
+            val wasDesignated = tags["bicycle"] == "designated" || isCycleway && !tags.containsKey("bicycle")
             tags["highway"] = "path"
 
-            // only re-tag to "yes" if defined and not some kind of "yes" value
-            if (tags.containsKey("foot") && tags["foot"] !in yesButNotDesignated) {
+            // Removing designation does not confirm that access restrictions have been lifted.
+            if (tags["foot"] == "designated") {
                 tags["foot"] = "yes"
             }
-            if (tags.containsKey("bicycle") && tags["bicycle"] !in yesButNotDesignated) {
+            if (tags["bicycle"] == "designated") {
                 tags["bicycle"] = "yes"
             }
-            if (tags.containsKey("bicycle:signed")) {
+            if (wasDesignated && tags["bicycle:signed"] == "yes") {
                 tags.remove("bicycle:signed")
             }
         }
@@ -33,9 +35,6 @@ fun SeparateCycleway.applyTo(tags: Tags) {
             if (tags["bicycle"] !in noCycling) tags["bicycle"] = "no"
             if (isCycleway) {
                 tags["highway"] = if (tags["foot"] == "designated") "footway" else "path"
-            }
-            if (tags["foot"] == "no") {
-                tags["foot"] = "yes"
             }
             tags["bicycle:signed"] = "yes"
         }
@@ -112,8 +111,4 @@ fun SeparateCycleway.applyTo(tags: Tags) {
 
 private val noCycling = setOf(
     "no", "dismount"
-)
-
-private val yesButNotDesignated = setOf(
-    "yes", "permissive", "private", "destination", "customers", "permit"
 )

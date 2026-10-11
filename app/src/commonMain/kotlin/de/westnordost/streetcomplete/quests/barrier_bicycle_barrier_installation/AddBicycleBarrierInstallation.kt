@@ -54,7 +54,10 @@ class AddBicycleBarrierInstallation : OsmFilterQuestType<BicycleBarrierInstallat
     override fun applyAnswerTo(answer: BicycleBarrierInstallationAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         when (answer) {
             is BicycleBarrierInstallation -> tags["cycle_barrier:installation"] = answer.osmValue
-            BicycleBarrierInstallationAnswer.NotBicycleBarrier -> tags["barrier"] = "yes"
+            BicycleBarrierInstallationAnswer.NotBicycleBarrier -> {
+                tags["barrier"] = "yes"
+                tags.remove("cycle_barrier")
+            }
         }
     }
 }

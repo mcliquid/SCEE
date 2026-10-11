@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.quests.cycleway
 
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.meta.IncompleteCountryInfo
+import de.westnordost.streetcomplete.osm.Sides
 import de.westnordost.streetcomplete.osm.cycleway.parseCyclewaySides
 import de.westnordost.streetcomplete.osm.cycleway.selectableOrNullValues
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
@@ -16,6 +17,37 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class AddCyclewayTest {
+    @Test fun `oneway aliases have identical side relevance`() {
+        for (value in listOf("yes", "1", "true", "-1")) {
+            val element = way(tags = mapOf("highway" to "primary", "oneway" to value))
+            val relevance = getCyclewaySideRelevance(element, Sides(null, null), false)
+            assertEquals(CyclewaySideRelevance(left = value == "-1", right = value != "-1"), relevance, value)
+            val flowSide = if (value == "-1") "left" else "right"
+            val oppositeSide = if (value == "-1") "right" else "left"
+            assertApplicability(mapOf("oneway" to value, "cycleway:$flowSide" to "track"), bulk = false, single = null)
+            assertApplicability(mapOf("oneway" to value, "cycleway:$oppositeSide" to "track"), bulk = true, single = null)
+        }
+    }
+
+    @Test fun `junction does not override explicit bidirectional aliases`() {
+        for (junction in listOf("roundabout", "circular")) {
+            for (value in listOf("no", "0", "false")) {
+                assertApplicability(mapOf("junction" to junction, "oneway" to value, "cycleway:right" to "track"),
+                    bulk = true, single = true)
+            }
+        }
+        assertApplicability(mapOf("junction" to "circular", "cycleway:right" to "track"), bulk = true, single = true)
+        assertApplicability(mapOf("junction" to "roundabout", "cycleway:right" to "track"), bulk = false, single = null)
+    }
+
+    @Test fun `bidirectional circular road requires both cycleway sides`() {
+        assertApplicability(
+            mapOf("junction" to "circular", "oneway" to "no", "cycleway:right" to "track"),
+            bulk = true,
+            single = true,
+        )
+    }
+
     private var countryInfo = CountryInfo(
         null,
         listOf(IncompleteCountryInfo(hasAdvisoryCycleLane = false, isLeftHandTraffic = false))

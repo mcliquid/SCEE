@@ -18,6 +18,26 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AddIsSidepathTest {
+
+    @Test fun `no sidepath clears road metadata but preserves access`() {
+        val original = mapOf(
+            "highway" to "path", "is_sidepath:of" to "primary",
+            "is_sidepath:of:name" to "Altstraße", "is_sidepath:of:ref" to "B 1",
+            "bicycle" to "no", "access" to "private", "bicycle:conditional" to "yes @ (Su)",
+        )
+        val changes = questType.answerAppliedTo(IsSidepathAnswer.No, original)
+        val removedKeys = changes.filterIsInstance<de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryDelete>().map { it.key }.toSet()
+        assertEquals(setOf("is_sidepath:of", "is_sidepath:of:name", "is_sidepath:of:ref"), removedKeys)
+        assertTrue(changes.none { it.key in listOf("bicycle", "access", "bicycle:conditional") })
+    }
+
+    @Test fun `sidewalk retains valid road association`() {
+        val changes = questType.answerAppliedTo(IsSidepathAnswer.IsSidewalk, mapOf(
+            "highway" to "footway", "is_sidepath:of:name" to "Hauptstraße",
+        ))
+        assertTrue(changes.none { it.key == "is_sidepath:of:name" })
+    }
+
     private lateinit var questType: AddIsSidepath
 
     @BeforeTest

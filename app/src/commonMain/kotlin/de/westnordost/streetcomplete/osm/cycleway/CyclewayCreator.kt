@@ -179,9 +179,10 @@ private fun CyclewayAndDirection.applyTo(tags: Tags, isRight: Boolean, isLeftHan
     }
 
     val isPhysicalCycleway = cycleway != NONE && cycleway != SEPARATE && cycleway != NONE_NO_ONEWAY
-    if (!isPhysicalCycleway) {
+    if (!isPhysicalCycleway || cycleway == SIDEWALK_OK) {
         tags.remove("$cyclewayKey:oneway")
-    } else {
+    }
+    if (isPhysicalCycleway) {
         /* explicitly tag cycleway direction when either
            - the selected direction is not the one assumed by default when the key is missing
            - or the road is a oneway and the cycleway is on the contra-flow side
@@ -192,7 +193,8 @@ private fun CyclewayAndDirection.applyTo(tags: Tags, isRight: Boolean, isLeftHan
         val isDefaultDirection = defaultDirection == direction
         val roadDirection = Direction.from(tags)
         val isInContraflowOfOneway = roadDirection.isReverseOf(direction)
-        if (!isDefaultDirection || isInContraflowOfOneway || tags.containsKey("$cyclewayKey:oneway")) {
+        val directionKey = if (cycleway == SIDEWALK_OK) "sidewalk:$side:oneway:bicycle" else "$cyclewayKey:oneway"
+        if (!isDefaultDirection || isInContraflowOfOneway || tags.containsKey(directionKey)) {
             if (cycleway == SIDEWALK_OK) {
                 tags["sidewalk:$side:oneway:bicycle"] = direction.onewayValue
             } else {
@@ -215,13 +217,12 @@ private fun CyclewayAndDirection.applyTo(tags: Tags, isRight: Boolean, isLeftHan
     if (cycleway != SIDEWALK_OK && tags["sidewalk:$side:bicycle"] == "yes" && tags["sidewalk:$side:bicycle:signed"] == "yes") {
         tags.remove("sidewalk:$side:bicycle")
         tags.remove("sidewalk:$side:bicycle:signed")
-    }
-    if (direction != BOTH && tags["sidewalk:$side:oneway:bicycle"] == "no") {
         tags.remove("sidewalk:$side:oneway:bicycle")
     }
     // if anything that is not SIDEWALK_EXPLICIT is chosen, remove sidewalk:<side>:bicycle=designated if it's there
     if (cycleway != SIDEWALK_EXPLICIT && tags["sidewalk:$side:bicycle"] == "designated") {
         tags.remove("sidewalk:$side:bicycle")
+        tags.remove("sidewalk:$side:oneway:bicycle")
     }
 }
 

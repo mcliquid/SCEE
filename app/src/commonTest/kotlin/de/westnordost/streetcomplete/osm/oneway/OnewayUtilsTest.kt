@@ -6,6 +6,26 @@ import kotlin.test.assertTrue
 
 class OnewayUtilsTest {
 
+    @Test fun `explicit oneway overrides junction default`() {
+        for (junction in listOf("roundabout", "circular")) {
+            for (value in listOf("no", "0", "false", "reversible", "alternating")) {
+                assertFalse(isOneway(mapOf("junction" to junction, "oneway" to value)))
+            }
+            assertTrue(isReversedOneway(mapOf("junction" to junction, "oneway" to "-1")))
+            assertFalse(isForwardOneway(mapOf("junction" to junction, "oneway" to "-1")))
+        }
+        assertTrue(isForwardOneway(mapOf("junction" to "roundabout")))
+        assertFalse(isOneway(mapOf("junction" to "circular")))
+    }
+
+    @Test fun `recognizes affirmative oneway aliases`() {
+        for (value in listOf("yes", "1", "true")) {
+            assertTrue(isForwardOneway(mapOf("oneway" to value)))
+            assertTrue(isOneway(mapOf("oneway" to value)))
+        }
+    }
+
+
     private val oppositeCyclewayValues = listOf("opposite", "opposite_track", "opposite_lane")
 
     @Test fun `not oneway for cyclists with old tagging`() {

@@ -28,6 +28,8 @@ class AddOnewayBicycle : OsmElementQuestType<OnewayAnswer> {
       )
       and !oneway
       and !oneway:bicycle
+      and !oneway:conditional and !oneway:bicycle:conditional
+      and !bicycle:forward and !bicycle:backward
       and area != yes
       and junction != roundabout
       and ($FILTER_BICYCLE_ACCESSIBLE)

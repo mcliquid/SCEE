@@ -132,6 +132,7 @@ private val roadsFilter by lazy { """
       and cyclestreet != yes
       and ($FILTER_BICYCLE_ACCESSIBLE)
       and bicycle != designated
+      and !oneway:conditional and !oneway:bicycle:conditional
 """.toElementFilterExpression() }
 
 // streets for which missing cycleway information should be surveyed
@@ -157,10 +158,12 @@ private val initialSurveyRoadsFilter by lazy { """
 private val likelyNoBicycleContraflow by lazy { """
     ways with
       (
-        oneway ~ yes|-1 and highway ~ primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|unclassified
+        oneway ~ yes|1|true|-1 and highway ~ primary|primary_link|secondary|secondary_link|tertiary|tertiary_link|unclassified
         or dual_carriageway = yes
-        or junction ~ roundabout|circular
+        or junction = roundabout and !oneway
+        or junction ~ roundabout|circular and oneway ~ yes|1|true|-1
       )
+      and oneway !~ no|0|false
 """.toElementFilterExpression() }
 
 internal data class CyclewaySideRelevance(val left: Boolean, val right: Boolean)

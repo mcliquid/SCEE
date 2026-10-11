@@ -6,6 +6,19 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class PrivateAccessUtilsTest {
+
+    @Test fun `vehicle permission overrides inherited restriction but not bicycle restriction`() {
+        for (access in listOf("no", "private")) {
+            for (vehicle in listOf("yes", "permissive", "destination", "customers", "permit")) {
+                val tags = mapOf("access" to access, "vehicle" to vehicle)
+                assertEquals(true, bicycleAccessibleFilter.matches(way(tags = tags)), tags.toString())
+                for (bicycle in listOf("no", "private")) {
+                    assertEquals(false, bicycleAccessibleFilter.matches(way(tags = tags + ("bicycle" to bicycle))))
+                }
+            }
+        }
+    }
+
     private val bicycleAccessibleFilter =
         "ways with ($FILTER_BICYCLE_ACCESSIBLE)".toElementFilterExpression()
 

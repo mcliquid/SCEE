@@ -22,6 +22,7 @@ class AddBikeParkingAccess : OsmFilterQuestType<ParkingAccess>() {
           amenity = bicycle_parking
           and bicycle_parking ~ building|lockers|shed
           and (!access or access = unknown)
+          and !access:conditional
     """
 
     override val changesetComment = "Specify bicycle parking access"

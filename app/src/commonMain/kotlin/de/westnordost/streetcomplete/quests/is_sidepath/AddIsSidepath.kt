@@ -107,8 +107,12 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer> {
                 }
             }
 
-            IsSidepathAnswer.No ->
+            IsSidepathAnswer.No -> {
                 tags["is_sidepath"] = "no"
+                tags.remove("is_sidepath:of")
+                tags.remove("is_sidepath:of:name")
+                tags.remove("is_sidepath:of:ref")
+            }
 
             IsSidepathAnswer.IsSidewalk ->
                 tags["footway"] = "sidewalk"

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="waterway_crossing_edit">What is at this crossing?</string>
+    <string name="waterway_crossing_unavailable">This crossing cannot be edited automatically.</string>
+    <string name="waterway_crossing_bridge">Bridge</string>
+    <string name="waterway_crossing_culvert">Culvert</string>
+    <string name="waterway_crossing_ford">Ford</string>
+    <string name="waterway_crossing_boundaries">Mark the start and end on the map.</string>
+    <string name="waterway_crossing_save">Save</string>
+    <string name="waterway_crossing_rejected">This crossing cannot be edited automatically.</string>
+    <string name="waterway_crossing_multiple">There are several crossings here. Please edit manually.</string>
+    <string name="waterway_crossing_near_node">The crossing is too close to an existing point.</string>
+</resources>

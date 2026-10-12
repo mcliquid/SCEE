@@ -1,0 +1,164 @@
+package de.westnordost.streetcomplete.quests.waterway_crossing
+
+import de.westnordost.streetcomplete.data.ConflictException
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.*
+import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometryCreator
+import de.westnordost.streetcomplete.data.osm.mapdata.*
+import de.westnordost.streetcomplete.testutils.*
+import kotlin.test.*
+import de.westnordost.streetcomplete.util.math.distanceTo
+
+class AddWaterwayCrossingTest {
+    private val type = AddWaterwayCrossing()
+
+    @Test fun `unchanged geometry and irrelevant tags reuse detection but return current metadata`() {
+        val f = WaterwayCrossingTestData()
+        var nodeReads = 0
+        val data = object : MapDataWithGeometry by f.data {
+            override fun getNode(id: Long): Node? { nodeReads++; return f.data.getNode(id) }
+        }
+        type.getCrossings(data)
+        val firstReads = nodeReads
+        assertTrue(firstReads > 0)
+        type.getCrossings(data)
+        assertEquals(firstReads, nodeReads)
+        val renamed = f.road.copy(tags = f.road.tags + ("name" to "New name"))
+        f.data.putElement(renamed)
+        assertEquals(renamed, type.getCrossings(data).single().road)
+        assertEquals(firstReads, nodeReads)
+    }
+
+    @Test fun `shared endpoints touches and collinear overlaps are excluded identically`() {
+        for (kind in listOf("shared", "touch", "overlap", "structure")) {
+            val f = WaterwayCrossingTestData()
+            when (kind) {
+                "shared" -> f.data.putElement(f.water.copy(nodeIds = listOf(1, 6)))
+                "touch" -> f.data.putElement(node(5, p()))
+                "overlap" -> {
+                    f.data.putElement(node(5, p(0.0, -0.001)))
+                    f.data.putElement(node(6, p(0.0, 0.001)))
+                }
+                "structure" -> f.data.putElement(f.road.copy(tags = f.road.tags + ("bridge" to "yes")))
+            }
+            assertTrue(type.getCrossings(f.data).isEmpty(), kind)
+            assertTrue(findWaterwayCrossings(f.data, p(), 100.0).isEmpty(), kind)
+        }
+    }
+
+    @Test fun `canonical crossing outside tile must not be replaced by another crossing`() {
+        val f = WaterwayCrossingTestData()
+        f.data.putElement(node(7, p(-0.001, 0.001)))
+        f.data.putElement(node(8, p(0.001, 0.001)))
+        f.data.putElement(way(30, listOf(7, 8), mapOf("waterway" to "ditch")))
+        val bbox = BoundingBox(-0.0001, 0.0009, 0.0001, 0.0011)
+        assertTrue(type.getCrossings(f.data, bbox).isEmpty())
+        assertEquals(20L, type.getCrossings(f.data).single().waterway.id)
+    }
+
+    @Test fun `incomplete surrounding way is never silently omitted from edit snapshot`() {
+        val f = WaterwayCrossingTestData()
+        f.data.putElement(way(30, listOf(999, 1000), mapOf("highway" to "service")))
+        assertTrue(findWaterwayCrossings(f.data, p(), 1.0).isEmpty())
+    }
+
+    @Test fun `detect unconnected road and waterway without an existing crossing node`() {
+        val f = WaterwayCrossingTestData()
+        val crossing = type.getCrossings(f.data).single()
+        assertEquals(f.road, crossing.road)
+        assertEquals(f.water, crossing.waterway)
+        assertEquals(p(), crossing.position)
+        assertEquals(listOf(f.road), type.getApplicableElements(f.data).toList())
+        assertNull(type.isApplicableTo(f.road))
+        assertFalse(type.isApplicableTo(f.water)!!)
+    }
+
+    @Test fun `motorway trunk and link roads can be described but never become simple fords`() {
+        for (highway in listOf("motorway", "trunk", "primary_link", "trunk_link", "motorway_link")) {
+            val f = WaterwayCrossingTestData()
+            val road = f.road.copy(tags = mapOf("highway" to highway))
+            f.data.putElement(road)
+            assertEquals(road, type.getCrossings(f.data).single().road)
+            assertFailsWith<ConflictException> {
+                CreateWaterwayFordAction(f.crossing.copy(road = road)).createUpdates(f.repo, f.idProvider())
+            }
+            val changes = f.bridge.copy(crossing = f.crossing.copy(road = road)).createUpdates(f.repo, f.idProvider())
+            assertEquals("1", (changes.creations + changes.modifications).filterIsInstance<Way>()
+                .single { it.tags["bridge"] == "yes" }.tags["layer"])
+        }
+    }
+
+    @Test fun `any existing structure or elevation tag excludes the automatic quest`() {
+        for ((key, value) in listOf("bridge" to "yes", "bridge" to "viaduct", "tunnel" to "culvert",
+            "tunnel" to "yes", "covered" to "yes", "ford" to "yes", "layer" to "1", "layer" to "0",
+            "bridge" to "no", "level" to "1", "location" to "underground")) {
+            for (onRoad in listOf(false, true)) {
+                val f = WaterwayCrossingTestData()
+                val way = if (onRoad) f.road else f.water
+                f.data.putElement(way.copy(tags = way.tags + (key to value)))
+                assertTrue(type.getCrossings(f.data).isEmpty(), "$key=$value on ${way.id}")
+            }
+        }
+    }
+
+    @Test fun `shared crossing vertex is excluded by automatic and manual detection`() {
+        val f = WaterwayCrossingTestData()
+        f.data.putElement(node(7, p()))
+        val road = f.road.copy(nodeIds = listOf(1, 2, 7, 3, 4))
+        val water = f.water.copy(nodeIds = listOf(5, 7, 6))
+        f.data.putElement(road); f.data.putElement(water)
+        assertTrue(type.getCrossings(f.data).isEmpty())
+        assertTrue(findWaterwayCrossings(f.data, p(), 1.0).isEmpty())
+        f.data.putElement(node(7, p(), tags = mapOf("ford" to "yes")))
+        assertTrue(type.getCrossings(f.data).isEmpty())
+    }
+
+    @Test fun `incomplete closed and self intersecting ways are excluded`() {
+        val f = WaterwayCrossingTestData()
+        f.data.putElement(f.road.copy(nodeIds = listOf(1, 2, 999, 3, 4)))
+        assertTrue(type.getCrossings(f.data).isEmpty())
+        f.data.putElement(f.road.copy(nodeIds = listOf(1, 2, 3, 4, 1)))
+        assertTrue(type.getCrossings(f.data).isEmpty())
+        val positions = listOf(p(-0.001, -0.001), p(0.001, 0.001), p(0.001, -0.001), p(-0.001, 0.001))
+        positions.forEachIndexed { i, position -> f.data.putElement(node(i + 1L, position)) }
+        f.data.putElement(f.road)
+        assertTrue(type.getCrossings(f.data).isEmpty())
+    }
+
+    @Test fun `near misses do not create quests`() {
+        val f = WaterwayCrossingTestData()
+        f.data.putElement(node(5, p(0.00001, 0.0)))
+        assertTrue(type.getCrossings(f.data).isEmpty())
+    }
+
+    @Test fun `multiple intersections of the same pair are ambiguous`() {
+        val f = WaterwayCrossingTestData()
+        listOf(p(-0.001, -0.001), p(0.001, -0.001), p(0.001, 0.001), p(-0.001, 0.001))
+            .forEachIndexed { i, pos -> f.data.putElement(node(i + 1L, pos)) }
+        f.data.putElement(node(5, p(0.0, -0.002))); f.data.putElement(node(6, p(0.0, 0.002)))
+        assertTrue(type.getCrossings(f.data).isEmpty())
+    }
+
+    @Test fun `one deterministic quest per road when different waterways intersect it`() {
+        val f = WaterwayCrossingTestData()
+        f.data.putElement(node(7, p(-0.001, 0.001))); f.data.putElement(node(8, p(0.001, 0.001)))
+        f.data.putElement(way(30, listOf(7, 8), mapOf("waterway" to "ditch")))
+        val candidate = type.getCrossings(f.data).single()
+        assertEquals(f.water, candidate.waterway)
+        val reversed = MutableMapDataWithGeometry(f.data.toList().reversed(), emptyList())
+        assertEquals(candidate, type.getCrossings(reversed).single())
+    }
+
+    @Test fun `bridge culvert and ford each resolve automatic detection`() {
+        for (action in listOf("bridge", "culvert", "ford")) {
+            val f = WaterwayCrossingTestData()
+            val edit = when (action) {
+                "bridge" -> f.bridge
+                "culvert" -> f.culvert
+                else -> CreateWaterwayFordAction(f.crossing)
+            }
+            val changes = edit.createUpdates(f.repo, f.idProvider())
+            (changes.creations + changes.modifications).forEach { f.data.putElement(it) }
+            assertTrue(type.getCrossings(f.data).isEmpty(), action)
+        }
+    }
+}

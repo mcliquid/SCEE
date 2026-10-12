@@ -40,6 +40,9 @@ import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.meta.CountryInfos
 import de.westnordost.streetcomplete.data.meta.get
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
+import de.westnordost.streetcomplete.data.osm.edits.ElementEditAction
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.findWaterwayCrossings
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.WaterwayCrossing
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
@@ -52,6 +55,7 @@ import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.cancel
 import de.westnordost.streetcomplete.resources.crosshair
 import de.westnordost.streetcomplete.resources.insert_node_select_way
+import de.westnordost.streetcomplete.resources.waterway_crossing_edit
 import de.westnordost.streetcomplete.screens.main.map.getIcon
 import de.westnordost.streetcomplete.screens.main.map.getTitle
 import de.westnordost.streetcomplete.ui.common.FloatingOkButton
@@ -79,6 +83,9 @@ import org.jetbrains.compose.resources.getSystemResourceEnvironment
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -86,7 +93,9 @@ fun InsertNodeForm(
     position: LatLon,
     onDismiss: () -> Unit,
     highlightGeometries: ((Collection<ElementGeometry>) -> Unit)?,
-    onSelectFeature: (Feature, PositionOnWay) -> Unit
+    onSelectFeature: (Feature, PositionOnWay) -> Unit,
+    mapPosition: LatLon = position,
+    onCrossingEdit: (ElementEditAction, LatLon) -> Unit = { _, _ -> },
 ) {
     val prefs: Preferences = koinInject()
     val mapDataSource: MapDataWithEditsSource = koinInject()
@@ -129,6 +138,22 @@ fun InsertNodeForm(
         )
     }
     val connectedWays = remember(positionOnWay) { positionOnWay?.getWays(mapData).orEmpty() }
+    // The existing node insertion query is node-based. A wider local query also finds waterways
+    // whose segment crosses here but whose endpoints are outside the 100 m insertion box.
+    var crossing by remember(position) { mutableStateOf<WaterwayCrossing?>(null) }
+    LaunchedEffect(position) {
+        crossing = withContext(Dispatchers.IO) {
+            findWaterwayCrossings(mapDataSource.getMapDataWithGeometry(position.enclosingBoundingBox(500.0)), position, 15.0).singleOrNull()
+        }
+    }
+    val selectedCrossing = crossing
+    var editCrossing by remember { mutableStateOf(false) }
+    if (editCrossing && selectedCrossing != null) {
+        WaterwayCrossingForm(selectedCrossing, mapPosition,
+            onDismiss = restoreBackgroundAndDismiss,
+            onConfirmed = { onCrossingEdit(it, selectedCrossing.position) })
+        return
+    }
     var selectedWay: Way? by remember(connectedWays) { mutableStateOf(connectedWays.firstOrNull()) }
     val showMarkers = LocalMapMarkersCallback.current
     LaunchedEffect(connectedWays) {
@@ -176,6 +201,9 @@ fun InsertNodeForm(
                         Modifier.heightIn(max = 150.dp).verticalScroll(rememberScrollState())
                     )
                     Divider()
+                    if (crossing != null) {
+                        TextButton(onClick = { editCrossing = true }) { Text(stringResource(Res.string.waterway_crossing_edit)) }
+                    }
                     Row {
                         TextButton({ restoreBackgroundAndDismiss() }) { Text(stringResource(Res.string.cancel)) }
                         SwitchMapBackgroundButton()

@@ -1,6 +1,8 @@
 package de.westnordost.streetcomplete
 
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitWayAction
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.SetWaterwayStructureAction
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.CreateWaterwayFordAction
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 
@@ -118,7 +120,10 @@ object ApplicationConstants {
     val EDIT_ACTIONS_NOT_ALLOWED_TO_USE_LOCAL_CHANGES = setOf(
         /* because this action may edit route relations but route relations are not persisted
            locally for performance reasons */
-        SplitWayAction::class
+        SplitWayAction::class,
+        SetWaterwayStructureAction::class,
+        // Revalidate crossing geometry and heights even without a version conflict on upload.
+        CreateWaterwayFordAction::class
     )
 
     const val EE_QUEST_OFFSET = 2222 // must be larger than the largest SC ordinal, and should not be changed to allow preset transfer

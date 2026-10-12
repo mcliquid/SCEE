@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="waterway_crossing_edit">Was befindet sich an dieser Kreuzung?</string>
+    <string name="waterway_crossing_unavailable">Diese Kreuzung kann nicht automatisch bearbeitet werden.</string>
+    <string name="waterway_crossing_bridge">Brücke</string>
+    <string name="waterway_crossing_culvert">Durchlass</string>
+    <string name="waterway_crossing_ford">Furt</string>
+    <string name="waterway_crossing_boundaries">Markiere Anfang und Ende auf der Karte.</string>
+    <string name="waterway_crossing_save">Speichern</string>
+    <string name="waterway_crossing_rejected">Diese Kreuzung kann nicht automatisch bearbeitet werden.</string>
+    <string name="waterway_crossing_multiple">Hier gibt es mehrere Kreuzungen. Bitte manuell bearbeiten.</string>
+    <string name="waterway_crossing_near_node">Die Kreuzung liegt zu nah an einem vorhandenen Punkt.</string>
+</resources>

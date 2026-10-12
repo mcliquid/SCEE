@@ -68,6 +68,10 @@ fun SplitWayForm(
     way: Way,
     wayGeometry: ElementPolylinesGeometry,
     modifier: Modifier = Modifier,
+    requiredCuts: Int? = null,
+    contextMarkers: List<Marker> = emptyList(),
+    instruction: String? = null,
+    confirmLabel: String? = null,
 ) {
     val prefs: Preferences = koinInject()
     val initialBackground = rememberSaveable { prefs.getString(Prefs.THEME_BACKGROUND, "MAP") }
@@ -120,8 +124,9 @@ fun SplitWayForm(
     }
 
     val hasChanges = cuts.isNotEmpty()
-    val isFormComplete = cuts.size >= if (way.isClosed) 2 else 1
+    val isFormComplete = if (requiredCuts != null) cuts.size == requiredCuts else cuts.size >= if (way.isClosed) 2 else 1
     val canSplitHere = scissorsPosition != null
+        && (requiredCuts == null || cuts.size < requiredCuts)
         && cuts.all { scissorsPosition.pos.distanceTo(it.pos) >= minDistanceToOtherCuts }
 
     val snipAnimation = remember { Animatable(0f) }
@@ -137,7 +142,7 @@ fun SplitWayForm(
 
     LaunchedEffect(cuts) {
         mapMarkersCallback?.invoke(
-            cuts.map { Marker(ElementPointGeometry(it.pos), Res.drawable.scissors_cut) }
+            contextMarkers + cuts.map { Marker(ElementPointGeometry(it.pos), Res.drawable.scissors_cut) }
         )
     }
 
@@ -177,6 +182,7 @@ fun SplitWayForm(
         BottomSheetFormScaffold(
             onDismissRequest = ::dismiss,
             content = {
+                if (instruction != null) Text(instruction, Modifier.padding(12.dp))
                 SplitWayFormContent(
                     onClickCancel = ::dismiss,
                     canCutHere = canSplitHere,
@@ -205,6 +211,10 @@ fun SplitWayForm(
                         }
                     },
                     modifier = Modifier.padding(8.dp),
+                    content = {
+                        if (confirmLabel != null) Text(confirmLabel, Modifier.padding(horizontal = 16.dp))
+                        else Icon(painterResource(Res.drawable.ic_check_32), stringResource(Res.string.ok))
+                    },
                 )
             }
         )

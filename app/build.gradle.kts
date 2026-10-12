@@ -287,6 +287,9 @@ kotlin {
             dependencies {
                 // without it, :app:testAndroidHostTest throws java.lang.UnsatisfiedLinkError for sqliteJni
                 implementation("androidx.sqlite:sqlite-bundled-jvm:2.7.1")
+                implementation("androidx.compose.ui:ui-test-junit4:1.12.1")
+                implementation("androidx.compose.ui:ui-test-manifest:1.12.1")
+                implementation("org.robolectric:robolectric:4.16.1")
             }
         }
     }

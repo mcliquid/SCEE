@@ -12,6 +12,9 @@ import de.westnordost.streetcomplete.data.osm.edits.delete.RevertDeletePoiNodeAc
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtLinePosition
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtPoint
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitWayAction
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.WaterwayCrossingTestData
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.CreateWaterwayFordAction
+import de.westnordost.streetcomplete.testutils.pGeom
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.RevertUpdateElementTagsAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChanges
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
@@ -91,6 +94,22 @@ class ElementEditsDaoTest : StreetCompleteDatabaseTestCase() {
         assertNotNull(edit.id)
         val dbEdit = dao.get(edit.id)
         assertEquals(edit, dbEdit)
+    }
+
+    @Test fun waterwayCrossingActionsPersistAndReplayWithStableIds() {
+        val f = WaterwayCrossingTestData()
+        for (action in listOf(f.bridge, f.culvert, CreateWaterwayFordAction(f.crossing))) {
+            val edit = ElementEdit(0, tagEdit, pGeom(), "survey", 123, false, action, true)
+            dao.put(edit)
+            val restored = dao.get(edit.id)!!
+            assertEquals(edit, restored)
+            val before = action.createUpdates(f.repo, f.idProvider())
+            val after = restored.action.createUpdates(f.repo, f.idProvider())
+            assertEquals(before.creations.map { it.key }, after.creations.map { it.key })
+            fun waySignatures(elements: Collection<de.westnordost.streetcomplete.data.osm.mapdata.Element>) =
+                elements.filterIsInstance<Way>().map { Triple(it.id, it.nodeIds, it.tags) }
+            assertEquals(waySignatures(before.creations + before.modifications), waySignatures(after.creations + after.modifications))
+        }
     }
 
     @Test fun addGet_AddNodeEdit() {

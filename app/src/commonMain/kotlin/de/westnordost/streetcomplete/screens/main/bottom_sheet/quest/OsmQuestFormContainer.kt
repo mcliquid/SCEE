@@ -33,6 +33,8 @@ import de.westnordost.streetcomplete.osm.ConstructionDialog
 import de.westnordost.streetcomplete.osm.places.applyReplacePlaceTo
 import de.westnordost.streetcomplete.osm.places.getPlaceAsDisused
 import de.westnordost.streetcomplete.quests.custom.CustomQuestList
+import de.westnordost.streetcomplete.quests.waterway_crossing.AddWaterwayCrossing
+import de.westnordost.streetcomplete.quests.waterway_crossing.WaterwayCrossingQuestForm
 import de.westnordost.streetcomplete.quests.existence.CheckExistence
 import de.westnordost.streetcomplete.quests.shop_type.CheckShopExistence
 import de.westnordost.streetcomplete.quests.shop_type.ShopGoneDialog
@@ -132,6 +134,11 @@ fun <T> OsmQuestFormContainer(
             Action.EditTags -> showForm(QuestFormState.EditTags)
             Action.UnderConstruction -> showConstructionDialog = true
             is Answer<T> -> {
+                if (questType is AddWaterwayCrossing) {
+                    // Already previewed and confirmed: save the complete compound geometry action.
+                    onEdit(action.value as ElementEditAction, false, false)
+                    return
+                }
                 val changesBuilder = StringMapChangesBuilder(element.tags)
                 questType.applyAnswerTo(action.value, changesBuilder, geometry, element.timestampEdited)
                 val changes = changesBuilder.create()
@@ -157,7 +164,11 @@ fun <T> OsmQuestFormContainer(
         ) {
             when (currentState) {
                 QuestFormState.Quest -> {
-                    questType.Form(
+                    if (questType is AddWaterwayCrossing) {
+                        WaterwayCrossingQuestForm(
+                            on = { @Suppress("UNCHECKED_CAST") onAction(it as QuestAction<T>) },
+                            element = element, geometry = geometry, mapPosition = mapPosition ?: center)
+                    } else questType.Form(
                         on = ::onAction,
                         element = element,
                         geometry = geometry,

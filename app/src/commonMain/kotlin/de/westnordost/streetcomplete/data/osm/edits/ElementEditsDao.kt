@@ -22,6 +22,8 @@ import de.westnordost.streetcomplete.data.osm.edits.delete.RevertDeletePoiNodeAc
 import de.westnordost.streetcomplete.data.osm.edits.move.MoveNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.move.RevertMoveNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitWayAction
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.SetWaterwayStructureAction
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.CreateWaterwayFordAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.RevertUpdateElementTagsAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
 import de.westnordost.streetcomplete.util.Mockable
@@ -49,6 +51,8 @@ class ElementEditsDao(
                 subclass(UpdateElementTagsAction::class)
                 subclass(RevertUpdateElementTagsAction::class)
                 subclass(SplitWayAction::class)
+                subclass(SetWaterwayStructureAction::class)
+                subclass(CreateWaterwayFordAction::class)
                 subclass(DeletePoiNodeAction::class)
                 subclass(RevertDeletePoiNodeAction::class)
                 subclass(CreateNodeAction::class)

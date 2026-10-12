@@ -19,6 +19,8 @@ import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditsController
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestType
 import de.westnordost.streetcomplete.data.osm.edits.IsRevertAction
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.SetWaterwayStructureAction
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.CreateWaterwayFordAction
 import de.westnordost.streetcomplete.data.upload.OnUploadedChangeListener
 import de.westnordost.streetcomplete.data.user.UserLoginController
 import de.westnordost.streetcomplete.data.user.statistics.StatisticsController
@@ -105,10 +107,15 @@ class ElementEditsUploader(
             val deleted = mutableListOf<ElementKey>()
 
             val fetchStart = Perf.mark()
-            for (elementKey in edit.action.elementKeys) {
+            val crossingEdit = edit.action is SetWaterwayStructureAction || edit.action is CreateWaterwayFordAction
+            val keys = if (crossingEdit) edit.action.elementKeys.sortedBy { it.type == ElementType.NODE } else edit.action.elementKeys
+            val fetched = mutableSetOf<ElementKey>()
+            for (elementKey in keys) {
+                if (crossingEdit && elementKey in fetched) continue
                 val mapData = fetchElementComplete(elementKey.type, elementKey.id)
                 if (mapData != null) {
                     updated.addAll(mapData)
+                    if (crossingEdit) fetched.addAll(mapData.map { ElementKey(it.type, it.id) })
                 } else {
                     deleted.add(elementKey)
                 }

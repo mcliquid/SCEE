@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.data.osm.edits.upload
 
 import de.westnordost.streetcomplete.data.ConflictException
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.WaterwayCrossingTestData
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditAction
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditsController
@@ -61,6 +62,33 @@ class ElementEditsUploaderTest {
 
         uploader = ElementEditsUploader(elementEditsController, noteEditsController, mapDataController, singleUploader, mapDataApi, statisticsController, externalSourceQuestController, mockPrefs2())
         uploader.uploadedChangeListener = listener
+    }
+
+    @Test fun `crossing conflict refresh still fetches nodes absent from complete responses`() = runBlocking {
+        val f = WaterwayCrossingTestData()
+        val edit = edit(action = f.bridge)
+        every { elementEditsController.getOldestUnsynced() } sequentially { returns(edit); repeat { returns(null) } }
+        everySuspend { singleUploader.upload(any(), any()) } throws ConflictException()
+        everySuspend { mapDataApi.getWayComplete(f.road.id) } returns null
+        everySuspend { mapDataApi.getWayComplete(f.water.id) } returns f.repo.getWayComplete(f.water.id)
+        for (id in f.road.nodeIds) everySuspend { mapDataApi.getNode(id) } returns f.data.getNode(id)
+        uploader.upload()
+        verifySuspend(exactly(4)) { mapDataApi.getNode(any()) }
+        verifySuspend(exactly(0)) { mapDataApi.getNode(5) }
+        verifySuspend(exactly(0)) { mapDataApi.getNode(6) }
+    }
+
+    @Test fun `crossing conflict refresh reuses complete way nodes and still fetches missing ones`() = runBlocking {
+        val f = WaterwayCrossingTestData()
+        val edit = edit(action = f.bridge)
+        every { elementEditsController.getOldestUnsynced() } sequentially { returns(edit); repeat { returns(null) } }
+        everySuspend { singleUploader.upload(any(), any()) } throws ConflictException()
+        everySuspend { mapDataApi.getWayComplete(f.road.id) } returns f.repo.getWayComplete(f.road.id)
+        everySuspend { mapDataApi.getWayComplete(f.water.id) } returns f.repo.getWayComplete(f.water.id)
+        uploader.upload()
+        verifySuspend(exactly(0)) { mapDataApi.getNode(any()) }
+        verifySuspend { mapDataApi.getWayComplete(f.road.id) }
+        verifySuspend { mapDataApi.getWayComplete(f.water.id) }
     }
 
     @Test fun `cancel upload finishes current edit`() = runBlocking {

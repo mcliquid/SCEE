@@ -3,6 +3,15 @@ package de.westnordost.streetcomplete.data.osm.edits.upload
 import de.westnordost.streetcomplete.data.ConflictException
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditAction
 import de.westnordost.streetcomplete.data.osm.edits.ElementIdProvider
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.WaterwayCrossingTestData
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.CreateWaterwayFordAction
+import de.westnordost.streetcomplete.data.osm.mapdata.*
+import de.westnordost.streetcomplete.testutils.rel
+import de.westnordost.streetcomplete.testutils.member
+import de.westnordost.streetcomplete.testutils.p
+import dev.mokkery.answering.calls
+import dev.mokkery.verify
+import dev.mokkery.verifyNoMoreCalls
 import de.westnordost.streetcomplete.data.osm.edits.upload.changesets.OpenChangesetsManager
 import de.westnordost.streetcomplete.data.osm.mapdata.ChangesetTooLargeException
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataApiClient
@@ -22,6 +31,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class ElementEditUploaderTest {
 
@@ -87,5 +97,41 @@ class ElementEditUploaderTest {
         }
         every { mapDataSource.getNodes(emptySet()) } returns emptyList()
         uploader.upload(edit, { ElementIdProvider(emptyList()) })
+    }
+
+    @Test fun `crossing edits always use remote data and upload all changes together`(): Unit = runBlocking {
+        val f = WaterwayCrossingTestData()
+        // This relation is absent from the local source. Splitting must fetch it from the API.
+        val route = rel(30, listOf(member(ElementType.WAY, 10)), mapOf("type" to "route", "route" to "bus"))
+        everySuspend { mapDataApi.getWayComplete(any()) } calls { (id: Long) -> f.repo.getWayComplete(id) }
+        everySuspend { mapDataApi.getNode(any()) } calls { (id: Long) -> f.repo.getNode(id) }
+        everySuspend { mapDataApi.getRelationsForWay(any()) } calls { (id: Long) -> if (id == 10L) listOf(route) else emptyList() }
+        everySuspend { changesetManager.getOrCreateChangeset(any(), any(), any(), any()) } returns 1L
+        val uploaded = mutableListOf<MapDataChanges>()
+        everySuspend { mapDataApi.uploadChanges(any(), any(), any()) } calls {
+            (_: Long, changes: MapDataChanges, _: (Map<String, String>, Int) -> Boolean) ->
+            uploaded.add(changes)
+            MapDataUpdates()
+        }
+        every { mapDataSource.getNodes(emptySet()) } returns emptyList()
+        for (action in listOf(f.bridge, f.culvert, CreateWaterwayFordAction(f.crossing))) {
+            uploader.upload(edit(action = action), f::idProvider)
+        }
+        assertEquals(3, uploaded.size)
+        val bridge = uploaded[0]
+        assertEquals(2, bridge.creations.filterIsInstance<Node>().size)
+        assertEquals(2, bridge.creations.filterIsInstance<Way>().size)
+        assertTrue(bridge.modifications.any { it is Relation && it.id == 30L && it.members.size == 3 })
+        assertTrue((bridge.creations + bridge.modifications).any { it is Way && it.tags["bridge"] == "yes" })
+        verify { mapDataSource.getNodes(emptySet()) }
+        verifyNoMoreCalls(mapDataSource)
+    }
+
+    @Test fun `crossing moved remotely conflicts before any upload`(): Unit = runBlocking {
+        val f = WaterwayCrossingTestData()
+        f.data.putElement(f.data.getNode(2)!!.copy(position = p(0.0001, -0.0002)))
+        everySuspend { mapDataApi.getWayComplete(any()) } calls { (id: Long) -> f.repo.getWayComplete(id) }
+        everySuspend { mapDataApi.uploadChanges(any(), any(), any()) } throws AssertionError("Must not upload a moved crossing")
+        assertFailsWith<ConflictException> { uploader.upload(edit(action = f.bridge), f::idProvider) }
     }
 }

@@ -15,6 +15,7 @@ import de.westnordost.streetcomplete.data.osm.edits.addNodeEdit
 import de.westnordost.streetcomplete.data.osm.edits.create.CreateNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.create.createNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.tagEdit
+import de.westnordost.streetcomplete.quests.waterway_crossing.AddWaterwayCrossing
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
@@ -24,6 +25,7 @@ import de.westnordost.streetcomplete.data.quest.ExternalSourceQuestKey
 import de.westnordost.streetcomplete.data.quest.OsmNoteQuestKey
 import de.westnordost.streetcomplete.data.quest.OsmQuestKey
 import de.westnordost.streetcomplete.data.quest.QuestKey
+import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.quests.note_comments.AddNoteCommentForm
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.quest_create_note
@@ -73,6 +75,8 @@ fun MainBottomSheet(
     lastMapClick: MapClick?,
     modifier: Modifier = Modifier
 ) {
+    val questTypes: QuestTypeRegistry = koinInject()
+    val koinCrossingType = remember(questTypes) { questTypes.filterIsInstance<AddWaterwayCrossing>().single() }
     var confirmEdit by remember { mutableStateOf<PendingEdit?>(null) }
 
     when (shownBottomSheet) {
@@ -309,7 +313,14 @@ fun MainBottomSheet(
                         highlightGeometries = { geometries ->
                             onSetMapMarkers(geometries.map { Marker(it) })
                         },
-                        onSelectFeature = { f, p -> selected = f to p }
+                        onSelectFeature = { f, p -> selected = f to p },
+                        mapPosition = mapPosition,
+                        onCrossingEdit = { action, position ->
+                            val editType = koinCrossingType
+                            onSubmitEdit(editType, ElementPointGeometry(position), action, false, null)
+                            onSolved(editType.icon, position)
+                            onDismiss()
+                        },
                     )
                 }
             } else {

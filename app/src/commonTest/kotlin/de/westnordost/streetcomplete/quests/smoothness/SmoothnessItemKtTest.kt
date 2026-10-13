@@ -30,11 +30,25 @@ class SmoothnessItemKtTest {
         assertTrue(GOOD in smoothnessAnswersForSurface("sett"))
     }
 
+    @Test fun `additional smoothness surfaces reuse similar surface illustrations`() {
+        assertEquals("asphalt", EXCELLENT.getIllustrationSurface("chipseal"))
+        assertEquals("concrete", GOOD.getIllustrationSurface("concrete:lanes"))
+        assertEquals("sett", INTERMEDIATE.getIllustrationSurface("unhewn_cobblestone"))
+        assertEquals("paving_stones", GOOD.getIllustrationSurface("grass_paver"))
+        assertEquals("gravel", BAD.getIllustrationSurface("pebblestone"))
+        for (surface in listOf("chipseal", "concrete:lanes", "unhewn_cobblestone", "grass_paver", "pebblestone")) {
+            val answers = smoothnessAnswersForSurface(surface)
+            assertTrue(answers.isNotEmpty(), surface)
+            for (answer in answers) {
+                assertNotNull(answer.getImage(answer.getIllustrationSurface(surface)), "$surface $answer")
+            }
+        }
+    }
+
     @Test fun `generic SCEE surfaces reuse asphalt and gravel illustrations`() {
         val genericSurfaces = listOf(
             "grass", "dirt", "sand", "mud", "ground", "unpaved", "woodchips",
-            "pebblestone", "grass_paver", "unhewn_cobblestone", "metal", "rock",
-            "laterite", "earth"
+            "metal", "rock", "laterite", "earth"
         )
         for (surface in genericSurfaces) {
             assertEquals("asphalt", EXCELLENT.getIllustrationSurface(surface), surface)

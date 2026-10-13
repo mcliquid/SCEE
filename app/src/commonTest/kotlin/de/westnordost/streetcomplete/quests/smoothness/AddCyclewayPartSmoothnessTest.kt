@@ -45,6 +45,18 @@ class AddCyclewayPartSmoothnessTest {
         )
     }
 
+    @Test fun `applicable to additional smoothness cycleway surfaces`() {
+        for (surface in listOf("chipseal", "concrete:lanes", "unhewn_cobblestone", "grass_paver", "pebblestone")) {
+            assertIsApplicable(
+                "highway" to "path",
+                "bicycle" to "designated",
+                "foot" to "designated",
+                "segregated" to "yes",
+                "cycleway:surface" to surface,
+            )
+        }
+    }
+
     @Test fun `applicable to explicit combined cycleway and footway`() {
         assertIsApplicable(
             "highway" to "cycleway",

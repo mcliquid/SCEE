@@ -39,18 +39,33 @@ val Smoothness.title: StringResource get() = when (this) {
     IMPASSABLE ->    Res.string.quest_smoothness_title_impassable
 }
 
+/** Surfaces with dedicated smoothness photos in [getImage]. */
+private val SURFACES_WITH_SMOOTHNESS_ILLUSTRATIONS = setOf(
+    "asphalt", "concrete", "concrete:plates", "sett", "paving_stones", "compacted", "gravel", "fine_gravel",
+)
+
+/** Map surveyed surface tags to the photo set used in the smoothness form. */
+private val SMOOTHNESS_ILLUSTRATION_SURFACE_ALIASES = mapOf(
+    "chipseal" to "asphalt",
+    "concrete:lanes" to "concrete",
+    "unhewn_cobblestone" to "sett",
+    "grass_paver" to "paving_stones",
+    "pebblestone" to "gravel",
+)
+
 /**
  * Surface tag used to pick smoothness photos and descriptions.
  *
  * SCEE asks smoothness for more surfaces than StreetComplete. Surfaces without dedicated photos
- * reuse generic asphalt (excellent/good) and gravel (worse) illustrations.
+ * reuse a similar surface’s illustrations or generic asphalt (excellent/good) and gravel (worse).
  */
 fun Smoothness.getIllustrationSurface(surface: String?): String =
-    if (surface in SURFACES_FOR_SMOOTHNESS) surface!!
-    else when (this) {
-        EXCELLENT, GOOD -> "asphalt"
-        else -> "gravel"
-    }
+    SMOOTHNESS_ILLUSTRATION_SURFACE_ALIASES[surface]
+        ?: if (surface in SURFACES_WITH_SMOOTHNESS_ILLUSTRATIONS) surface!!
+        else when (this) {
+            EXCELLENT, GOOD -> "asphalt"
+            else -> "gravel"
+        }
 
 fun smoothnessAnswersForSurface(surface: String?): List<Smoothness> =
     Smoothness.entries.filter { it.getImage(it.getIllustrationSurface(surface)) != null }

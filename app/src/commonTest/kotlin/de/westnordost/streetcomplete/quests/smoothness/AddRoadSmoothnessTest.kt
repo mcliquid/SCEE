@@ -5,6 +5,7 @@ import de.westnordost.streetcomplete.testutils.inMemoryPrefs
 import de.westnordost.streetcomplete.testutils.way
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AddRoadSmoothnessTest {
@@ -21,6 +22,30 @@ class AddRoadSmoothnessTest {
             "surface" to "asphalt",
             "smoothness" to "excellent",
             "smoothness:date" to "2014-10-10"
+        ))))
+    }
+
+    @Test fun `applicable for additional smoothness surfaces on roads`() {
+        for (surface in listOf("chipseal", "concrete:lanes", "unhewn_cobblestone", "grass_paver", "pebblestone")) {
+            assertTrue(
+                questType.isApplicableTo(way(tags = mapOf("highway" to "residential", "surface" to surface))),
+                surface
+            )
+        }
+    }
+
+    @Test fun `not applicable when smoothness is current on additional surfaces`() {
+        assertFalse(questType.isApplicableTo(way(tags = mapOf(
+            "highway" to "residential",
+            "surface" to "chipseal",
+            "smoothness" to "good",
+        ))))
+    }
+
+    @Test fun `not applicable for surfaces outside smoothness survey`() {
+        assertFalse(questType.isApplicableTo(way(tags = mapOf(
+            "highway" to "residential",
+            "surface" to "wood",
         ))))
     }
 }

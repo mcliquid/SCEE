@@ -59,10 +59,12 @@ class AddRoadSmoothness : OsmFilterQuestType<SmoothnessAnswer>() {
     }
 }
 
-// surfaces that are actually used in AddSmoothnessForm
-// should only contain values that are in the Surface class
+// Surfaces for which smoothness is surveyed; must be supported in AddSmoothnessForm (via photos or aliases).
+// Values should exist in the Surface enum (concrete:plates is a documented alias of concrete).
 val SURFACES_FOR_SMOOTHNESS = listOf(
-    "asphalt", "concrete", "concrete:plates", "sett", "paving_stones", "compacted", "gravel", "fine_gravel"
+    "asphalt", "chipseal", "concrete", "concrete:plates", "concrete:lanes",
+    "sett", "unhewn_cobblestone", "paving_stones", "grass_paver",
+    "compacted", "gravel", "fine_gravel", "pebblestone",
 )
 
 private val ROADS_TO_ASK_SMOOTHNESS_FOR = arrayOf(

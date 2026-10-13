@@ -51,4 +51,43 @@ class AddPathSmoothnessTest {
             "surface" to "paved",
         ))))
     }
+
+    @Test fun `foot permission overrides private access`() {
+        assertTrue(questType.isApplicableTo(way(nodes = listOf(1, 2, 3), tags = mapOf(
+            "highway" to "path",
+            "surface" to "asphalt",
+            "segregated" to "no",
+            "access" to "private",
+            "foot" to "yes",
+        ))))
+    }
+
+    @Test fun `bicycle permission overrides private access`() {
+        assertTrue(questType.isApplicableTo(way(nodes = listOf(1, 2, 3), tags = mapOf(
+            "highway" to "path",
+            "surface" to "asphalt",
+            "segregated" to "no",
+            "access" to "private",
+            "bicycle" to "designated",
+        ))))
+    }
+
+    @Test fun `not applicable to private access without foot or bicycle override`() {
+        assertFalse(questType.isApplicableTo(way(nodes = listOf(1, 2, 3), tags = mapOf(
+            "highway" to "path",
+            "surface" to "asphalt",
+            "segregated" to "no",
+            "access" to "private",
+        ))))
+    }
+
+    @Test fun `bicycle dismount does not override private access without foot permission`() {
+        assertFalse(questType.isApplicableTo(way(nodes = listOf(1, 2, 3), tags = mapOf(
+            "highway" to "path",
+            "surface" to "asphalt",
+            "segregated" to "no",
+            "access" to "private",
+            "bicycle" to "dismount",
+        ))))
+    }
 }

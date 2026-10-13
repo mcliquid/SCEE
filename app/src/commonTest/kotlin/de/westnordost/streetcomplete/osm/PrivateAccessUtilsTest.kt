@@ -34,6 +34,7 @@ class PrivateAccessUtilsTest {
             mapOf("access" to "permissive") to true,
             mapOf("access" to "customers", "bicycle" to "yes") to true,
             mapOf("motor_vehicle" to "private") to true,
+            mapOf("access" to "private", "bicycle" to "dismount") to false,
             emptyMap<String, String>() to true,
         )
 
@@ -41,4 +42,48 @@ class PrivateAccessUtilsTest {
             assertEquals(expected, bicycleAccessibleFilter.matches(way(tags = tags)), tags.toString())
         }
     }
+
+    @Test fun `foot access follows OSM access hierarchy`() {
+        val cases = listOf(
+            mapOf("access" to "private") to false,
+            mapOf("access" to "private", "foot" to "yes") to true,
+            mapOf("access" to "no", "foot" to "designated") to true,
+            mapOf("vehicle" to "private") to false,
+            mapOf("vehicle" to "private", "foot" to "yes") to true,
+            mapOf("access" to "yes", "foot" to "no") to false,
+            mapOf("foot" to "private") to false,
+            emptyMap<String, String>() to true,
+        )
+
+        for ((tags, expected) in cases) {
+            assertEquals(expected, footAccessibleFilter.matches(way(tags = tags)), tags.toString())
+        }
+    }
+
+    @Test fun `foot or bicycle accessible when either mode is permitted`() {
+        assertEquals(
+            true,
+            footOrBicycleAccessibleFilter.matches(way(tags = mapOf("access" to "private", "foot" to "yes"))),
+        )
+        assertEquals(
+            true,
+            footOrBicycleAccessibleFilter.matches(way(tags = mapOf("access" to "private", "bicycle" to "yes"))),
+        )
+        assertEquals(
+            false,
+            footOrBicycleAccessibleFilter.matches(way(tags = mapOf("access" to "private"))),
+        )
+        assertEquals(
+            false,
+            footOrBicycleAccessibleFilter.matches(
+                way(tags = mapOf("access" to "private", "bicycle" to "dismount", "foot" to "no")),
+            ),
+        )
+    }
+
+    private val footAccessibleFilter =
+        "ways with ($FILTER_FOOT_ACCESSIBLE)".toElementFilterExpression()
+
+    private val footOrBicycleAccessibleFilter =
+        "ways with ($FILTER_FOOT_OR_BICYCLE_ACCESSIBLE)".toElementFilterExpression()
 }

@@ -8,6 +8,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement
+import de.westnordost.streetcomplete.osm.FILTER_BICYCLE_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.quest.RadioGroupQuestForm
@@ -26,6 +27,7 @@ class AddMopedAccess : OsmFilterQuestType<MopedAccessAnswer>() {
           and !moped
           and !moped:signed
           and (motor_vehicle != no or !motor_vehicle)
+          and ($FILTER_BICYCLE_ACCESSIBLE)
     """
     override val enabledInCountries = NoCountriesExcept(
         "BE", // https://github.com/streetcomplete/StreetComplete/issues/5565

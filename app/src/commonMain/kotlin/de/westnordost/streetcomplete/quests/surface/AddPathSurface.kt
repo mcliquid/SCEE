@@ -10,6 +10,7 @@ import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.WHEELCHAIR
+import de.westnordost.streetcomplete.osm.FILTER_FOOT_OR_BICYCLE_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.changeToSteps
 import de.westnordost.streetcomplete.osm.surface.INVALID_SURFACES
@@ -24,7 +25,7 @@ class AddPathSurface : OsmFilterQuestType<PathSurfaceAnswer>() {
         ways with
           highway ~ ${prefs.getString("${questPrefix(prefs)}qs_${name}_highway_selection", HIGHWAY_TYPES)}
           and segregated != yes
-          and access !~ private|no
+          and ($FILTER_FOOT_OR_BICYCLE_ACCESSIBLE)
           and (!conveying or conveying = no)
           and (!indoor or indoor = no)
           and (

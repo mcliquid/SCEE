@@ -108,6 +108,26 @@ class AddFootwayWidthTest {
         )
     }
 
+    @Test fun `foot permission overrides private access`() {
+        assertTrue(quest.isApplicableTo(way(tags = mapOf(
+            "highway" to "footway",
+            "access" to "private",
+            "foot" to "permissive",
+        ))))
+    }
+
+    @Test fun `not applicable to private footway without foot permission`() {
+        assertFalse(quest.isApplicableTo(way(tags = mapOf(
+            "highway" to "footway",
+            "access" to "private",
+        ))))
+        assertFalse(quest.isApplicableTo(way(tags = mapOf(
+            "highway" to "footway",
+            "access" to "private",
+            "bicycle" to "yes",
+        ))))
+    }
+
     @Test fun `not applicable to footway with bicycle designated`() {
         assertFalse(quest.isApplicableTo(way(tags = mapOf(
             "highway" to "footway",

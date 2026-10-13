@@ -8,6 +8,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
+import de.westnordost.streetcomplete.osm.FILTER_FOOT_OR_BICYCLE_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
 import de.westnordost.streetcomplete.quests.getPrefixedFullElementSelectionPref
@@ -36,7 +37,7 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer> {
           )
           and !is_sidepath
           and area != yes
-          and access !~ no|private
+          and ($FILTER_FOOT_OR_BICYCLE_ACCESSIBLE)
     """.trimIndent()
 
     private val filter by lazy {

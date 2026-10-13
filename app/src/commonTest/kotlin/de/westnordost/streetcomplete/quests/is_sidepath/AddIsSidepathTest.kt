@@ -47,6 +47,21 @@ class AddIsSidepathTest {
         questType = AddIsSidepath()
     }
 
+    @Test fun `bicycle permission overrides private access on cycleway`() {
+        assertTrue(questType.isApplicableTo(way(tags = mapOf(
+            "highway" to "cycleway",
+            "access" to "private",
+            "bicycle" to "yes",
+        ))))
+    }
+
+    @Test fun `not applicable to private cycleway without bicycle permission`() {
+        assertFalse(questType.isApplicableTo(way(tags = mapOf(
+            "highway" to "cycleway",
+            "access" to "private",
+        ))))
+    }
+
     // region tagging
 
     @Test fun `apply no answer`() {

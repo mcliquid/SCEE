@@ -11,6 +11,7 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.WHEELCHAIR
+import de.westnordost.streetcomplete.osm.FILTER_FOOT_OR_BICYCLE_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.resources.*
 
@@ -20,7 +21,7 @@ class AddPathSmoothness : OsmFilterQuestType<SmoothnessAnswer>() {
         ways with
           highway ~ ${ALL_PATHS_EXCEPT_STEPS.joinToString("|")}
           and surface ~ ${SURFACES_FOR_SMOOTHNESS.joinToString("|")}
-          and access !~ private|no
+          and ($FILTER_FOOT_OR_BICYCLE_ACCESSIBLE)
           and segregated != yes
           and (!conveying or conveying = no)
           and (!indoor or indoor = no)

@@ -9,6 +9,7 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
 import de.westnordost.streetcomplete.data.quest.DayNightCycle.ONLY_NIGHT
+import de.westnordost.streetcomplete.osm.FILTER_FOOT_OR_BICYCLE_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.changeToSteps
 import de.westnordost.streetcomplete.osm.lit.LitStatus.AUTOMATIC
@@ -53,7 +54,7 @@ class AddWayLit : OsmFilterQuestType<WayLitOrIsStepsAnswer>() {
             or lit = no and lit older today -8 years
             or lit older today -16 years
           )
-          and (access !~ private|no or (foot and foot !~ private|no))
+          and ($FILTER_FOOT_OR_BICYCLE_ACCESSIBLE)
           and indoor != yes
           and ~path|footway|cycleway !~ link
     """

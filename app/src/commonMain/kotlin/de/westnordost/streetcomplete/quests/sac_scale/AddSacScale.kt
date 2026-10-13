@@ -21,6 +21,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
+import de.westnordost.streetcomplete.osm.FILTER_FOOT_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.BooleanQuestSettingsDialog
 import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
@@ -40,8 +41,7 @@ class AddSacScale : OsmElementQuestType<SacScale> {
         ways with
           highway ~ path
           and !sac_scale
-          and access !~ no|private
-          and foot !~ no|private
+          and ($FILTER_FOOT_ACCESSIBLE)
           and (!lit or lit = no)
           and surface ~ "grass|sand|dirt|soil|fine_gravel|compacted|wood|gravel|pebblestone|rock|ground|earth|mud|woodchips|snow|ice|salt|stone"
     """

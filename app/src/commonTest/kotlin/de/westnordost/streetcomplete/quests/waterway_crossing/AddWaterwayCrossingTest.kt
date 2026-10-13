@@ -11,6 +11,18 @@ import de.westnordost.streetcomplete.util.math.distanceTo
 class AddWaterwayCrossingTest {
     private val type = AddWaterwayCrossing()
 
+    @Test fun `element-only detection is identical and retains relation and context exclusions`() {
+        val f = WaterwayCrossingTestData()
+        assertEquals(type.getCrossings(f.data), type.getCrossings(MutableMapData(f.data)))
+        val shared = f.sharedCrossing()
+        f.data.putElement(rel(30, listOf(member(ElementType.NODE, shared.road.nodeIds[2]))))
+        assertTrue(type.getCrossings(MutableMapData(f.data)).isEmpty())
+        f.data.remove(ElementType.RELATION, 30)
+        assertEquals(1, type.getCrossings(MutableMapData(f.data)).size)
+        f.data.putElement(way(40, listOf(999, 1000), mapOf("highway" to "service")))
+        assertTrue(type.getCrossings(MutableMapData(f.data)).isEmpty())
+    }
+
     @Test fun `unchanged geometry and irrelevant tags reuse detection but return current metadata`() {
         val f = WaterwayCrossingTestData()
         var nodeReads = 0

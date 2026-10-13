@@ -6,6 +6,7 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometryEntry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.util.SpatialCache
+import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import de.westnordost.streetcomplete.util.math.contains
 import de.westnordost.streetcomplete.util.math.isCompletelyInside
 import kotlinx.atomicfu.locks.ReentrantLock
@@ -367,93 +368,125 @@ class MapDataCache(
      * and their geometries.
      * If data is not cached, tiles containing the [bbox] are fetched from database and cached.
      */
-    fun getMapDataWithGeometry(bbox: BoundingBox): MutableMapDataWithGeometry = lock.withLock {
-        val requiredTiles = bbox.enclosingTilesRect(tileZoom).asTilePosSequence().toList()
-        val cachedTiles = spatialCache.getTiles()
-        val tilesToFetch = requiredTiles.filterNot { it in cachedTiles }
-        val tilesRectToFetch = tilesToFetch.minTileRect()
+    fun getMapDataWithGeometry(bbox: BoundingBox): MutableMapDataWithGeometry = getMapDataWithGeometry(bbox, null)
 
-        val result = MutableMapDataWithGeometry()
-        result.boundingBox = bbox
-        val nodes: Collection<Node>
-        if (tilesRectToFetch != null) {
-            // fetch needed data
-            val fetchBBox = tilesRectToFetch.asBoundingBox(tileZoom)
-            val (elements, geometries) = fetchMapData(fetchBBox)
-
-            // get nodes from spatial cache
-            // this may not contain all nodes, but tiles that were cached initially might
-            // get dropped when the caches are updated
-            // duplicate fetch might be unnecessary in many cases, but it's very fast anyway
-
-            // get(bbox) for tiles not in spatialCache calls spatialCache.fetch, but this is still
-            // safe as tiles are replaced and properly filled as part of the following update
-            nodes = HashSet<Node>(spatialCache.get(bbox))
-            update(updatedElements = elements, updatedGeometries = geometries, bbox = fetchBBox)
-
-            // return data if we need exactly what was just fetched
-            if (fetchBBox == bbox) {
-                val nodeGeometryEntries = elements.filterIsInstance<Node>().map { it.toElementGeometryEntry() }
-                result.putAll(elements, geometries + nodeGeometryEntries)
-                return result
+    internal fun getMapDataForAreas(areas: List<BoundingBox>): MutableMapDataWithGeometry {
+        require(areas.isNotEmpty())
+        if (areas.size == 1) return getMapDataWithGeometry(areas.single())
+        // Preserve the existing cold-cache fast path, which may return a tile's full fetched data.
+        if (areas.any { it == it.enclosingTilesRect(tileZoom).asBoundingBox(tileZoom) }) {
+            val result = MutableMapDataWithGeometry()
+            for (area in areas) {
+                val part = getMapDataWithGeometry(area)
+                result.putAll(part)
             }
-
-            // add newly fetched nodes from elements
-            // getting nodes from spatialCache can cause issues, as tiles in the bbox may now be removed unexpectedly
-            // see https://github.com/streetcomplete/StreetComplete/issues/4980#issuecomment-1531960544
-            for (element in elements) {
-                if (element !is Node) continue
-                if (element.position in bbox) nodes.add(element)
-            }
-        } else {
-            nodes = spatialCache.get(bbox)
+            return result
         }
+        val bounds = areas.flatMap { listOf(it.min, it.max) }.enclosingBoundingBox()
+        require(!bounds.crosses180thMeridian)
+        return getMapDataWithGeometry(bounds, areas)
+    }
 
-        val wayIds = HashSet<Long>(nodes.size / 5)
-        val relationIds = HashSet<Long>(nodes.size / 10)
-        for (node in nodes) {
-            wayIdsByNodeIdCache[node.id]?.let { wayIds.addAll(it) }
-            relationIdsByElementKeyCache[node.key]?.let { relationIds.addAll(it) }
-            result.put(node, ElementPointGeometry(node.position))
-        }
+    private fun getMapDataWithGeometry(bbox: BoundingBox, areas: List<BoundingBox>?): MutableMapDataWithGeometry {
+        return lock.withLock {
+            val requiredTiles = bbox.enclosingTilesRect(tileZoom).asTilePosSequence().toList()
+            val cachedTiles = spatialCache.getTiles()
+            val tilesToFetch = requiredTiles.filterNot { it in cachedTiles }
+            val tilesRectToFetch = tilesToFetch.minTileRect()
 
-        val nodesToFetch = hashSetOf<Long>()
-        for (wayId in wayIds) {
-            val way = wayCache[wayId]!!
-            val wayGeometry = wayGeometryCache[wayId]
-            result.put(way, wayGeometry)
-            relationIdsByElementKeyCache[way.key]?.let { relationIds.addAll(it) }
+            val result = MutableMapDataWithGeometry()
+            result.boundingBox = bbox
+            val nodes: Collection<Node>
+            if (tilesRectToFetch != null) {
+                // fetch needed data
+                val fetchBBox = tilesRectToFetch.asBoundingBox(tileZoom)
+                val (elements, geometries) = fetchMapData(fetchBBox)
 
-            // find all nodes that are part of the way, but not in result
-            if (wayGeometry?.bounds?.isCompletelyInside(bbox) == true) continue // no need to check
-            for (nodeId in way.nodeIds) {
-                if (result.getNode(nodeId) != null) continue
-                val cachedNode = getCachedNode(nodeId)
-                if (cachedNode != null) {
-                    result.put(cachedNode, ElementPointGeometry(cachedNode.position))
-                    continue
+                // get nodes from spatial cache
+                // this may not contain all nodes, but tiles that were cached initially might
+                // get dropped when the caches are updated
+                // duplicate fetch might be unnecessary in many cases, but it's very fast anyway
+
+                // get(bbox) for tiles not in spatialCache calls spatialCache.fetch, but this is still
+                // safe as tiles are replaced and properly filled as part of the following update
+                nodes = spatialCache.get(bbox).filterTo(HashSet()) { node -> areas == null || areas.any { node.position in it } }
+                update(updatedElements = elements, updatedGeometries = geometries, bbox = fetchBBox)
+
+                // return data if we need exactly what was just fetched
+                if (areas == null && fetchBBox == bbox) {
+                    val nodeGeometryEntries = elements.filterIsInstance<Node>().map { it.toElementGeometryEntry() }
+                    result.putAll(elements, geometries + nodeGeometryEntries)
+                    return result
                 }
-                nodesToFetch.add(nodeId)
-            }
-        }
-        if (nodesToFetch.isNotEmpty()) {
-            fetchNodes(nodesToFetch).forEach {
-                nodesOutsideSpatialCache[it.id] = it
-                result.put(it, ElementPointGeometry(it.position))
-            }
-        }
 
-        for (relationId in relationIds) {
-            result.put(relationCache[relationId]!!, relationGeometryCache[relationId])
-            // don't add relations of relations, because elementDao.getAll(bbox) also isn't doing that
-        }
+                // add newly fetched nodes from elements
+                // getting nodes from spatialCache can cause issues, as tiles in the bbox may now be removed unexpectedly
+                // see https://github.com/streetcomplete/StreetComplete/issues/4980#issuecomment-1531960544
+                for (element in elements) {
+                    if (element !is Node) continue
+                    if (element.position in bbox && (areas == null || areas.any { element.position in it })) nodes.add(element)
+                }
+            } else {
+                nodes = if (areas == null) spatialCache.get(bbox) else spatialCache.get(bbox).filter { node -> areas.any { node.position in it } }
+            }
 
-        // trim if we fetched new data, and spatialCache is full
-        // trim to 66%, so trim is (probably) not immediately called on next fetch
-        if (spatialCache.size >= maxTiles && tilesToFetch.isNotEmpty()) {
-            trim((maxTiles * 2) / 3)
+            val wayIds = HashSet<Long>(nodes.size / 5)
+            val relationIds = HashSet<Long>(nodes.size / 10)
+            val waysNeedingNodes = HashSet<Long>()
+            for (node in nodes) {
+                wayIdsByNodeIdCache[node.id]?.let { ids ->
+                    wayIds.addAll(ids)
+                    if (areas != null) for (id in ids) {
+                        if (id in waysNeedingNodes) continue
+                        val geometry = wayGeometryCache[id]
+                        if (geometry == null || areas.any { node.position in it && !geometry.bounds.isCompletelyInside(it) }) {
+                            waysNeedingNodes.add(id)
+                        }
+                    }
+                }
+                relationIdsByElementKeyCache[node.key]?.let { relationIds.addAll(it) }
+                result.put(node, ElementPointGeometry(node.position))
+            }
+
+            val nodesToFetch = hashSetOf<Long>()
+            for (wayId in wayIds) {
+                val way = wayCache[wayId]!!
+                val wayGeometry = wayGeometryCache[wayId]
+                result.put(way, wayGeometry)
+                relationIdsByElementKeyCache[way.key]?.let { relationIds.addAll(it) }
+
+                // find all nodes that are part of the way, but not in result
+                if (areas == null && wayGeometry?.bounds?.isCompletelyInside(bbox) == true) continue
+                if (areas != null && wayId !in waysNeedingNodes) continue // no need to check
+                for (nodeId in way.nodeIds) {
+                    if (result.getNode(nodeId) != null) continue
+                    val cachedNode = getCachedNode(nodeId)
+                    if (cachedNode != null) {
+                        result.put(cachedNode, ElementPointGeometry(cachedNode.position))
+                        continue
+                    }
+                    nodesToFetch.add(nodeId)
+                }
+            }
+            if (nodesToFetch.isNotEmpty()) {
+                fetchNodes(nodesToFetch).forEach {
+                    nodesOutsideSpatialCache[it.id] = it
+                    result.put(it, ElementPointGeometry(it.position))
+                }
+            }
+
+            for (relationId in relationIds) {
+                result.put(relationCache[relationId]!!, relationGeometryCache[relationId])
+                // don't add relations of relations, because elementDao.getAll(bbox) also isn't doing that
+            }
+
+            // trim if we fetched new data, and spatialCache is full
+            // trim to 66%, so trim is (probably) not immediately called on next fetch
+            if (spatialCache.size >= maxTiles && tilesToFetch.isNotEmpty()) {
+                trim((maxTiles * 2) / 3)
+            }
+            return result
         }
-        return result
     }
 
     /** Clears the cache */

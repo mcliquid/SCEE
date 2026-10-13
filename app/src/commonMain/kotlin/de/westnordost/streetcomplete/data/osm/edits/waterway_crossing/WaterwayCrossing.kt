@@ -6,7 +6,9 @@ import de.westnordost.streetcomplete.util.math.distanceTo
 import de.westnordost.streetcomplete.util.math.distanceToArc
 import de.westnordost.streetcomplete.util.math.distanceToArcs
 import de.westnordost.streetcomplete.util.math.initialBearingTo
-import de.westnordost.streetcomplete.util.math.intersectionOf
+import de.westnordost.streetcomplete.util.math.arcIntersection
+import de.westnordost.streetcomplete.util.math.toNormalOnSphere
+import de.westnordost.streetcomplete.util.math.toLatLon
 import kotlinx.serialization.Serializable
 import de.westnordost.streetcomplete.util.ktx.equalsInOsm
 
@@ -56,6 +58,7 @@ private val roadTypes = setOf("motorway", "trunk", "motorway_link", "trunk_link"
     "residential", "unclassified", "tertiary", "secondary", "primary",
     "service", "living_street", "track", "path", "footway", "cycleway", "bridleway", "pedestrian")
 private val waterTypes = setOf("stream", "river", "canal", "ditch", "drain")
+private val detectionFeatureKeys = setOf("highway", "waterway", "railway", "area")
 
 internal fun crossingCheck(condition: Boolean, message: String) {
     if (!condition) throw ConflictException(message)
@@ -97,20 +100,46 @@ private fun validateContext(context: CrossingContextWay, center: LatLon, section
     }, "Crossing context geometry moved")
 }
 
+/** Only reused within one detection run over the same data; replay/upload never shares this cache. */
+internal class CrossingGeometryChecks {
+    private val simpleWays = mutableMapOf<Long, Result<Unit>>()
+    private val crossings = mutableMapOf<Pair<Long, Long>, List<LatLon>>()
+    private val overlaps = mutableMapOf<Pair<Long, Long>, Boolean>()
+
+    fun checkSimple(way: Way, positions: List<LatLon>) {
+        simpleWays.getOrPut(way.id) {
+            try { checkSimpleCrossingWay(way, positions); Result.success(Unit) }
+            catch (e: ConflictException) { Result.failure(e) }
+        }.getOrThrow()
+    }
+
+    fun intersections(road: Way, water: Way, rp: List<LatLon>, wp: List<LatLon>): List<LatLon> {
+        val key = road.id to water.id
+        return crossings[key] ?: uniqueCrossingPoints(rp, wp).also {
+            // Empty pairs never reach validation. Avoid retaining every spatial near miss.
+            if (it.isNotEmpty()) crossings[key] = it
+        }
+    }
+
+    fun overlaps(road: Way, water: Way, rp: List<LatLon>, wp: List<LatLon>) =
+        overlaps.getOrPut(road.id to water.id) { hasOverlappingCrossingEdges(rp, wp) }
+}
+
 internal fun checkCrossing(road: Way, water: Way, rp: List<LatLon>, wp: List<LatLon>, pos: LatLon,
-    allowSharedFord: Boolean = false) {
+    allowSharedFord: Boolean = false, geometryChecks: CrossingGeometryChecks? = null) {
     crossingCheck(road.id != water.id && road.tags["highway"] in roadTypes
         && water.tags["waterway"] in waterTypes, "Select one road and one linear waterway")
     for ((way, positions) in listOf(road to rp, water to wp)) {
         crossingCheck(way.tags.keys.none { it in structureKeys }
             && way.tags["area"] != "yes" && "railway" !in way.tags,
             "Existing structure, layer or area tags require manual editing")
-        checkSimpleCrossingWay(way, positions)
+        if (geometryChecks == null) checkSimpleCrossingWay(way, positions)
+        else geometryChecks.checkSimple(way, positions)
     }
     val shared = road.nodeIds.filterIndexed { i, id -> id in water.nodeIds && rp[i].distanceTo(pos) < 0.01 }
     crossingCheck(shared.isEmpty() || allowSharedFord && shared.size == 1, "Ways already connected")
-    crossingCheck(!hasOverlappingCrossingEdges(rp, wp), "Overlapping crossing ways")
-    val crossings = uniqueCrossingPoints(rp, wp)
+    crossingCheck(!(geometryChecks?.overlaps(road, water, rp, wp) ?: hasOverlappingCrossingEdges(rp, wp)), "Overlapping crossing ways")
+    val crossings = geometryChecks?.intersections(road, water, rp, wp) ?: uniqueCrossingPoints(rp, wp)
     crossingCheck(crossings.count { it.equalsInOsm(pos) } == 1,
         "Crossing is no longer unique")
     if (shared.isNotEmpty()) {
@@ -135,12 +164,22 @@ internal fun checkCrossing(road: Way, water: Way, rp: List<LatLon>, wp: List<Lat
 }
 
 /** Reject shared stretches even when another pair of edges has a proper intersection. */
-internal fun hasOverlappingCrossingEdges(first: List<LatLon>, second: List<LatLon>): Boolean =
-    first.zipWithNext().any { (a, b) -> second.zipWithNext().any { (c, d) ->
-        val shared = listOf(a, b).filter { it.distanceToArc(c, d) < 0.01 } +
-            listOf(c, d).filter { it.distanceToArc(a, b) < 0.01 }
-        shared.any { p -> shared.any { q -> p.distanceTo(q) > 0.01 } }
-    } }
+internal fun hasOverlappingCrossingEdges(first: List<LatLon>, second: List<LatLon>): Boolean {
+    val shared = ArrayList<LatLon>(4)
+    for (i in 0 until first.lastIndex) for (j in 0 until second.lastIndex) {
+        val a = first[i]
+        val b = first[i + 1]
+        val c = second[j]
+        val d = second[j + 1]
+        shared.clear()
+        if (a.distanceToArc(c, d) < 0.01) shared.add(a)
+        if (b.distanceToArc(c, d) < 0.01) shared.add(b)
+        if (c.distanceToArc(a, b) < 0.01) shared.add(c)
+        if (d.distanceToArc(a, b) < 0.01) shared.add(d)
+        for (p in shared) for (q in shared) if (p.distanceTo(q) > 0.01) return true
+    }
+    return false
+}
 
 /** Shared by detection and replay; neither may treat ambiguous lines as a simple crossing. */
 internal fun checkSimpleCrossingWay(way: Way, positions: List<LatLon>) {
@@ -148,11 +187,13 @@ internal fun checkSimpleCrossingWay(way: Way, positions: List<LatLon>) {
         && way.nodeIds.size == positions.size
         && way.nodeIds.distinct().size == way.nodeIds.size
         && positions.distinct().size == positions.size, "Closed or ambiguous way")
-    crossingCheck(positions.zipWithNext().all { (a, b) -> a.distanceTo(b) > 0.01 }, "Degenerate segment")
-    val segments = positions.zipWithNext()
-    for (i in segments.indices) for (j in i + 2 until segments.size) {
-        crossingCheck(intersectionOf(segments[i].first, segments[i].second,
-            segments[j].first, segments[j].second) == null, "Self-intersecting way")
+    for (i in 0 until positions.lastIndex) {
+        crossingCheck(positions[i].distanceTo(positions[i + 1]) > 0.01, "Degenerate segment")
+    }
+    val normals = positions.map { it.toNormalOnSphere() }
+    for (i in 0 until positions.lastIndex) for (j in i + 2 until positions.lastIndex) {
+        crossingCheck(arcIntersection(normals[i], normals[i + 1], normals[j], normals[j + 1]) == null,
+            "Self-intersecting way")
     }
     // Adjacent edges may touch only at their shared vertex; reject backtracking/overlap.
     for (i in 1 until positions.lastIndex) {
@@ -162,18 +203,29 @@ internal fun checkSimpleCrossingWay(way: Way, positions: List<LatLon>) {
     }
 }
 
-fun crossingPoints(first: List<LatLon>, second: List<LatLon>): List<LatLon> =
-    first.zipWithNext().flatMap { (a, b) ->
-        second.zipWithNext().mapNotNull { (c, d) ->
+fun crossingPoints(first: List<LatLon>, second: List<LatLon>): List<LatLon> {
+    if (first.size < 2 || second.size < 2) return emptyList()
+    val firstNormals = first.map { it.toNormalOnSphere() }
+    val secondNormals = second.map { it.toNormalOnSphere() }
+    val result = mutableListOf<LatLon>()
+    for (i in 0 until first.lastIndex) {
+        val a = first[i]
+        val b = first[i + 1]
+        for (j in 0 until second.lastIndex) {
+            val c = second[j]
+            val d = second[j + 1]
             // Exact shared endpoints are already known intersections. Spherical rounding
             // can put a recomputed endpoint just outside both adjacent arcs.
-            when {
+            val point = when {
                 a == c || a == d -> a
                 b == c || b == d -> b
-                else -> intersectionOf(a, b, c, d)
+                else -> arcIntersection(firstNormals[i], firstNormals[i + 1], secondNormals[j], secondNormals[j + 1])?.toLatLon()
             }
+            if (point != null) result.add(point)
         }
     }
+    return result
+}
 
 /** Unique geometric intersections near the selected point. Editing applies stricter checks. */
 fun findWaterwayCrossings(data: MapDataWithGeometry, near: LatLon, radius: Double): List<WaterwayCrossing> {
@@ -196,14 +248,15 @@ fun findWaterwayCrossings(data: MapDataWithGeometry, near: LatLon, radius: Doubl
     }.sortedBy { it.position.distanceTo(near) }
 }
 
-internal fun crossingContext(data: MapDataWithGeometry, road: Way, water: Way, pos: LatLon): List<CrossingContextWay>? {
+internal fun crossingContext(data: MapData, road: Way, water: Way, pos: LatLon): List<CrossingContextWay>? {
     val context = mutableListOf<CrossingContextWay>()
     for (other in data.ways.filter { it.id != road.id && it.id != water.id
         && ("highway" in it.tags || "waterway" in it.tags || "railway" in it.tags) }) {
         val positions = other.nodeIds.map { data.getNode(it)?.position ?: return null }
         if (positions.size < 2) continue
-        if (pos.distanceToArcs(positions) < 0.01) return null
-        if (pos.distanceToArcs(positions) <= CROSSING_CONTEXT_MARGIN)
+        val distance = pos.distanceToArcs(positions)
+        if (distance < 0.01) return null
+        if (distance <= CROSSING_CONTEXT_MARGIN)
             context.add(CrossingContextWay(other, positions))
     }
     return context
@@ -224,13 +277,13 @@ internal fun Way.allowsSimpleWaterwayFord() = tags["highway"] in setOf(
 /** Only geometry and tags which influence crossing eligibility; versions and unrelated tags do not. */
 internal fun crossingDetectionElement(element: Element): Element? = when (element) {
     is Way -> if ("highway" in element.tags || "waterway" in element.tags || "railway" in element.tags)
-        element.copy(tags = element.tags.filterKeys { it in structureKeys || it in setOf("highway", "waterway", "railway", "area") },
+        element.copy(tags = element.tags.filterKeys { it in structureKeys || it in detectionFeatureKeys },
             version = 0, timestampEdited = 0) else null
     is Node -> element.copy(tags = element.tags.filterKeys { it in structureKeys }, version = 0, timestampEdited = 0)
     is Relation -> null
 }
 
-internal fun crossingDetectionInput(data: MapDataWithGeometry): List<Element> {
+internal fun crossingDetectionInput(data: MapData): List<Element> {
     val ways = data.ways.mapNotNull { crossingDetectionElement(it) as? Way }
     val nodeIds = ways.flatMap { it.nodeIds }.toSet()
     val sharedIds = ways.filter { it.isCrossingRoad() }.flatMap { it.nodeIds }.toSet()
@@ -254,8 +307,9 @@ private fun Way.remap(ids: Map<ElementKey, Long>) = copy(
 )
 
 /** Shared vertices support only a conservative tag-only ford; unconnected ways keep all answers. */
-internal fun checkEditableCrossing(data: MapData, road: Way, water: Way, rp: List<LatLon>, wp: List<LatLon>, pos: LatLon) {
-    checkCrossing(road, water, rp, wp, pos, allowSharedFord = true)
+internal fun checkEditableCrossing(data: MapData, road: Way, water: Way, rp: List<LatLon>, wp: List<LatLon>, pos: LatLon,
+    geometryChecks: CrossingGeometryChecks? = null) {
+    checkCrossing(road, water, rp, wp, pos, allowSharedFord = true, geometryChecks = geometryChecks)
     val shared = road.nodeIds.singleOrNull { it in water.nodeIds && data.getNode(it)?.position?.distanceTo(pos)?.let { d -> d < 0.01 } == true } ?: return
     val node = data.getNode(shared) ?: throw ConflictException("Incomplete crossing geometry")
     crossingCheck(node.tags.isEmpty(), "Existing crossing node tags require manual editing")

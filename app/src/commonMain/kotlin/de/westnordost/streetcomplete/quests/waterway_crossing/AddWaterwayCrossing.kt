@@ -37,7 +37,7 @@ class AddWaterwayCrossing : OsmElementQuestType<ElementEditAction> {
     private var cachedInput: List<Element>? = null
     private var cachedCandidates = emptyList<Candidate>()
 
-    fun getCrossings(data: MapDataWithGeometry, bbox: BoundingBox? = null,
+    fun getCrossings(data: MapData, bbox: BoundingBox? = null,
         preferredPositions: Map<Long, List<LatLon>> = emptyMap()): List<Candidate> = cacheLock.withLock {
         val input = crossingDetectionInput(data)
         if (input != cachedInput) {
@@ -60,14 +60,14 @@ class AddWaterwayCrossing : OsmElementQuestType<ElementEditAction> {
         cachedCandidates.filter { it.road.id in ids || it.waterway.id in ids }
     }
 
-    private fun findCandidates(data: MapDataWithGeometry): List<Candidate> {
+    private fun findCandidates(data: MapData): List<Candidate> {
+        val geometryChecks = CrossingGeometryChecks()
         // Bounding-box prefilter before segment intersection, using downloaded complete nodes.
         fun geometry(way: Way): List<LatLon>? {
             if (way.hasCrossingStructure() || way.isClosed || way.tags["area"] == "yes"
                 || "railway" in way.tags || way.nodeIds.size < 2
                 || way.nodeIds.distinct().size != way.nodeIds.size) return null
             val positions = way.nodeIds.map { data.getNode(it)?.position ?: return null }
-            try { checkSimpleCrossingWay(way, positions) } catch (_: ConflictException) { return null }
             return positions
         }
         val waters = data.ways.filter { it.isCrossingWaterway() }.mapNotNull { way ->
@@ -81,16 +81,22 @@ class AddWaterwayCrossing : OsmElementQuestType<ElementEditAction> {
                 .filter { (_, _, b) -> b.max.latitude >= bounds.min.latitude
                     && (bounds.crosses180thMeridian || b.crosses180thMeridian
                         || b.min.longitude <= bounds.max.longitude && b.max.longitude >= bounds.min.longitude) }
-                .flatMap { (water, wp, _) -> uniqueCrossingPoints(rp, wp).mapNotNull { point ->
-                    try { checkEditableCrossing(data, road, water, rp, wp, point) } catch (_: ConflictException) { return@mapNotNull null }
-                    if (crossingContext(data, road, water, point) == null) return@mapNotNull null
-                    // A ford/structure on the crossing vertex already describes this crossing.
-                    if ((road.nodeIds + water.nodeIds).any { id -> data.getNode(id)?.let {
-                        it.position.distanceTo(point) < 0.01
-                            && it.tags.keys.any { key -> key in setOf("ford", "bridge", "tunnel", "covered", "layer", "level") }
-                    } == true }) return@mapNotNull null
-                    Candidate(road, water, point)
-                } }.toList()
+                .flatMap { (water, wp, _) ->
+                    try {
+                        geometryChecks.checkSimple(road, rp)
+                        geometryChecks.checkSimple(water, wp)
+                    } catch (_: ConflictException) { return@flatMap emptySequence() }
+                    geometryChecks.intersections(road, water, rp, wp).mapNotNull { point ->
+                        try { checkEditableCrossing(data, road, water, rp, wp, point, geometryChecks) } catch (_: ConflictException) { return@mapNotNull null }
+                        if (crossingContext(data, road, water, point) == null) return@mapNotNull null
+                        // A ford/structure on the crossing vertex already describes this crossing.
+                        if ((road.nodeIds + water.nodeIds).any { id -> data.getNode(id)?.let {
+                            it.position.distanceTo(point) < 0.01
+                                && it.tags.keys.any { key -> key in setOf("ford", "bridge", "tunnel", "covered", "layer", "level") }
+                        } == true }) return@mapNotNull null
+                        Candidate(road, water, point)
+                    }.asSequence()
+                }.toList()
             candidates
         }
     }

@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.data.osm.edits
 
+import de.westnordost.streetcomplete.data.osm.mapdata.MapDataAreasSource
 import de.westnordost.streetcomplete.data.ConflictException
 import de.westnordost.streetcomplete.data.osm.edits.move.MoveNodeAction
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometryCreator
@@ -721,6 +722,52 @@ class MapDataWithEditsSourceTest {
 
     //region getMapDataWithGeometry
 
+    @Test fun `area query without node edits does not rebuild way node membership`() {
+        var nodeIdReads = 0
+        val ids = object : AbstractList<Long>() {
+            override val size = 2
+            override fun get(index: Int): Long { nodeIdReads++; return index + 1L }
+        }
+        val nd1 = node(1, p(0.5, 0.5))
+        val nd2 = node(2, p(2.5, 2.5))
+        val road = way(1, ids)
+        val relation = rel(3, listOf(member(WAY, 1)))
+        val complete = MutableMapDataWithGeometry().also {
+            it.put(nd1, pGeom(0.5, 0.5))
+            it.put(nd2, pGeom(2.5, 2.5))
+            it.put(road, geometryCreator.create(road, listOf(nd1.position, nd2.position)))
+            it.putElement(relation)
+        }
+        every { mapDataSource.getMapDataWithGeometry(any()) } returns complete
+        thereAreNoMapDataChanges()
+        val source = create()
+        nodeIdReads = 0
+        val result = source.getMapDataWithGeometry(bbox())
+        assertEquals(0, nodeIdReads)
+        assertEquals(nd2, result.getNode(2)) // full way nodes outside the query are retained
+        assertEquals(relation, result.getRelation(3))
+        assertEquals(complete.getWayGeometry(1), result.getWayGeometry(1))
+    }
+
+    @Test fun `way-only tag edit retains complete geometry and relation without node overlay`() {
+        val nd1 = node(1, p(0.5, 0.5))
+        val nd2 = node(2, p(2.5, 2.5))
+        val road = way(1, listOf(1, 2))
+        val relation = rel(3, listOf(member(WAY, 1)))
+        originalElementsAre(nd1, nd2, road, relation)
+        originalGeometriesAre(
+            ElementGeometryEntry(NODE, 1, pGeom(0.5, 0.5)),
+            ElementGeometryEntry(NODE, 2, pGeom(2.5, 2.5)),
+            ElementGeometryEntry(WAY, 1, requireNotNull(geometryCreator.create(road, listOf(nd1.position, nd2.position))))
+        )
+        val changed = road.copy(tags = mapOf("name" to "Renamed"))
+        mapDataChangesAre(modifications = listOf(changed))
+        val result = create().getMapDataWithGeometry(bbox())
+        assertEquals(changed, result.getWay(1))
+        assertEquals(nd2, result.getNode(2))
+        assertEquals(mapData.getWayGeometry(1), result.getWayGeometry(1))
+    }
+
     @Test fun `getMapDataWithGeometry returns nothing`() {
         thereAreNoOriginalElements()
         thereAreNoOriginalGeometries()
@@ -1325,6 +1372,38 @@ class MapDataWithEditsSourceTest {
     }
 
     //endregion
+
+    @Test fun `bulk area overlay equals individual offline reads after moved nodes way tags deletion and undo`() {
+        val n1 = node(1, p(0.0001, 0.0001))
+        val n2 = node(2, p(0.003, 0.003))
+        val w = way(10, listOf(1, 2), mapOf("highway" to "residential"))
+        originalElementsAre(n1, n2, w)
+        originalGeometriesAre(ElementGeometryEntry(NODE, 1, pGeom(n1.position.latitude, n1.position.longitude)),
+            ElementGeometryEntry(NODE, 2, pGeom(n2.position.latitude, n2.position.longitude)),
+            ElementGeometryEntry(WAY, w.id, geometryCreator.create(w, mapData)!!))
+        val bulkBase = object : MapDataSource by mapDataSource, MapDataAreasSource {
+            override fun getMapDataForAreas(areas: List<BoundingBox>) = MutableMapDataWithGeometry().apply {
+                areas.forEach { putAll(mapDataSource.getMapDataWithGeometry(it)) }
+            }
+        }
+        val areas = listOf(BoundingBox(0.0, 0.0, 0.001, 0.001), BoundingBox(0.003, 0.003, 0.004, 0.004))
+        val source = MapDataWithEditsSourceImpl(bulkBase, editsSource, geometryCreator)
+        fun compare() {
+            val expected = MutableMapDataWithGeometry().apply { areas.forEach { putAll(source.getMapDataWithGeometry(it)) } }
+            assertEquals(expected.toSet(), source.getMapDataForAreas(areas).toSet())
+        }
+        compare()
+        editsControllerNotifiesMapDataChangesAdded(modifications = listOf(n1.copy(position = p(0.002, 0.002))))
+        compare() // moved into a hole, still needed by a selected way
+        editsControllerNotifiesMapDataChangesAdded(modifications = listOf(w.copy(tags = w.tags + ("bridge" to "yes"))))
+        compare()
+        editsControllerNotifiesMapDataChangesAdded(deletions = listOf(w))
+        compare()
+        every { editsSource.getAllUnsynced() } returns emptyList()
+        editsControllerNotifiesDeletedEdit(listOf(w.key, n1.key), emptyList())
+        compare()
+        assertEquals(w, source.getMapDataForAreas(areas).getWay(w.id))
+    }
 
     private fun create() = MapDataWithEditsSourceImpl(mapDataSource, editsSource, geometryCreator)
 

@@ -14,6 +14,9 @@ import de.westnordost.streetcomplete.data.osm.mapdata.ElementType
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.MutableMapDataWithGeometry
+import de.westnordost.streetcomplete.data.osm.mapdata.MutableMapData
+import de.westnordost.streetcomplete.data.osm.mapdata.MapData
+import de.westnordost.streetcomplete.data.osm.mapdata.MapDataAreasSource
 import de.westnordost.streetcomplete.data.osm.mapdata.key
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.*
@@ -39,6 +42,7 @@ import de.westnordost.streetcomplete.util.math.contains
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import de.westnordost.streetcomplete.util.math.enlargedBy
 import kotlinx.atomicfu.locks.ReentrantLock
+import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.locks.withLock
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -70,6 +74,7 @@ class OsmQuestController(
 
     private val lock = ReentrantLock()
     private var lastCrossingQuery: Pair<BoundingBox, List<Element>>? = null
+    private val crossingDataRevision = atomic(0L)
 
     private val wayOnlyFilterQuestTypes by lazy {
         // technically those could change if questTypeRegistry is reloaded, but that's unlikely enough to ignore it
@@ -85,6 +90,7 @@ class OsmQuestController(
          *  OSM elements are updated, so the quests that reference that element need to be updated
          *  as well. */
         override fun onUpdated(updated: MapDataWithGeometry, deleted: Collection<ElementKey>) {
+            crossingDataRevision.incrementAndGet()
             val time = nowAsEpochMilliseconds()
             val start = Perf.mark()
             val crossingType = allQuestTypes.filterIsInstance<AddWaterwayCrossing>().singleOrNull()
@@ -191,6 +197,7 @@ class OsmQuestController(
         /** Replace all quests of the given types in the given bounding box with the given quests.
          *  Called on download of a quest type for a bounding box. */
         override fun onReplacedForBBox(bbox: BoundingBox, mapDataWithGeometry: MapDataWithGeometry) {
+            crossingDataRevision.incrementAndGet()
             val quests = createQuestsForBBox(bbox, mapDataWithGeometry, allQuestTypes)
             var obsoleteQuestKeys: List<OsmQuestKey> = listOf()
             var visibleQuests: Collection<OsmQuest> = listOf()
@@ -205,6 +212,7 @@ class OsmQuestController(
         }
 
         override fun onCleared() {
+            crossingDataRevision.incrementAndGet()
             lock.withLock {
                 lastCrossingQuery = null
                 db.clear()
@@ -517,12 +525,37 @@ class OsmQuestController(
     private fun crossingCandidates(type: AddWaterwayCrossing, original: MapDataWithGeometry,
         bbox: BoundingBox?): List<AddWaterwayCrossing.Candidate> {
         val roads = original.ways.filter { type.isApplicableTo(it) == null }
-        val data = MutableMapDataWithGeometry(original)
-        // Query the whole anchor, rather than letting the viewport choose between its crossings.
-        for (road in roads) {
+        // Detection uses nodes, ways and relations, never the materialized geometry maps.
+        val data = MutableMapData(original)
+        val areas = roads.mapNotNull { road ->
             val positions = road.nodeIds.mapNotNull { original.getNode(it)?.position }
             if (positions.size == road.nodeIds.size && positions.isNotEmpty())
-                data.putAll(mapDataSource.getMapDataWithGeometry(positions.enclosingBoundingBox().enlargedBy(500.0)))
+                positions.enclosingBoundingBox().enlargedBy(500.0) else null
+        }
+        val bulkSource = mapDataSource as? MapDataAreasSource
+        if (bulkSource != null) {
+            val queriedBounds = HashMap<BoundingBox, Long>()
+            // Exact union selection happens at the source, before way/relation closure and edits.
+            // Nothing is shared with another run or revision. Large anchors stay individual reads.
+            for (group in crossingAreaGroups(areas)) {
+                val revision = crossingDataRevision.value
+                val pending = group.distinct().filter { queriedBounds[it] != revision }
+                if (pending.isEmpty()) continue
+                val area = bulkSource.getMapDataForAreas(pending)
+                data.addAll(area)
+                if (crossingDataRevision.value == revision) pending.forEach { queriedBounds[it] = revision }
+            }
+        } else {
+            // Sources without bulk-read support keep the original exact-query behavior.
+            val queriedBounds = HashMap<BoundingBox, Long>()
+            for (bounds in areas) {
+                val revision = crossingDataRevision.value
+                if (queriedBounds[bounds] != revision) {
+                    val area = mapDataSource.getMapDataWithGeometry(bounds)
+                    data.addAll(area)
+                    if (crossingDataRevision.value == revision) queriedBounds[bounds] = revision
+                }
+            }
         }
         val persisted = lock.withLock { db.getAllForElements(roads.map { it.key }) }
             .filter { it.questTypeName == type.name }
@@ -532,7 +565,7 @@ class OsmQuestController(
     }
 
     /** Retire a saved pin only on positive evidence, never just on an incomplete viewport query. */
-    private fun crossingResolved(entry: OsmQuestDaoEntry, data: MapDataWithGeometry): Boolean {
+    private fun crossingResolved(entry: OsmQuestDaoEntry, data: MapData): Boolean {
         val road = data.getWay(entry.elementId) ?: return false
         // Retire legacy single-pin entries once their anchor is available; regenerate in the crossing table.
         if (entry.discriminator.isEmpty()) return true

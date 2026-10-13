@@ -23,7 +23,7 @@ class MapDataControllerImpl constructor(
     private val geometryDB: ElementGeometryDao,
     private val elementGeometryCreator: ElementGeometryCreator,
     private val createdElementsController: CreatedElementsController,
-) : MapDataController {
+) : MapDataController, MapDataAreasSource {
 
     private val listeners = Listeners<MapDataSource.Listener>()
 
@@ -169,6 +169,9 @@ class MapDataControllerImpl constructor(
     override fun getMapDataWithGeometry(bbox: BoundingBox): MutableMapDataWithGeometry =
         cache.getMapDataWithGeometry(bbox)
 
+    override fun getMapDataForAreas(areas: List<BoundingBox>): MutableMapDataWithGeometry =
+        cache.getMapDataForAreas(areas)
+
     // this is used after downloading one tile with auto-download, so we should always have it cached
     override fun getElementCounts(bbox: BoundingBox): MapDataSource.ElementCounts {
         val data = getMapDataWithGeometry(bbox)
@@ -279,7 +282,9 @@ class MapDataControllerImpl constructor(
     }
 
     private fun onReplacedForBBox(bbox: BoundingBox, mapDataWithGeometry: MutableMapDataWithGeometry) {
-        listeners.forEach { it.onReplacedForBBox(bbox, mapDataWithGeometry) }
+        listeners.forEach {
+            it.onReplacedForBBox(bbox, mapDataWithGeometry)
+        }
     }
 
     private fun onCleared() {

@@ -54,8 +54,107 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         dao = OsmQuestDao(database)
         ctrl = controller()
     }
-    private fun controller() = OsmQuestController(dao, source, notes,
+    private fun controller(mapSource: MapDataWithEditsSource = source) = OsmQuestController(dao, mapSource, notes,
         QuestTypeRegistry({ listOf(202 to type) }), lazyOf(boundaries), MapSettings())
+
+    @Test fun `bulk reads still reuse identical anchors across groups and invalidate between updates`() {
+        repeat(100) { data.putElement(f.road.copy(id = 100L + it)) }
+        val cache = crossingTestCache(data, warm = true)
+        var queries = 0
+        val bulk = object : MapDataWithEditsSource by source, MapDataAreasSource {
+            override fun getMapDataForAreas(areas: List<BoundingBox>): MutableMapDataWithGeometry {
+                queries++
+                return cache.getMapDataForAreas(areas)
+            }
+            override fun getMapDataWithGeometry(bbox: BoundingBox) = cache.getMapDataWithGeometry(bbox)
+        }
+        val controller = controller(bulk)
+        assertTrue(controller.getAllInBBox(area, listOf(type)).isEmpty())
+        assertEquals(1, queries)
+        val removed = (100L until 200L).map { ElementKey(ElementType.WAY, it) }
+        cache.update(deletedKeys = removed)
+        data.ways.filter { it.id >= 100 }.toList().forEach { data.remove(ElementType.WAY, it.id) }
+        queries = 0
+        assertEquals(1, controller.getAllInBBox(area, listOf(type)).size)
+        assertEquals(1, queries)
+    }
+
+    @Test fun `bulk source and original queries create exactly the same quest keys and positions`() {
+        data.putElement(node(8, p(-0.002, 0.003)))
+        data.putElement(node(9, p(0.002, 0.003)))
+        data.putElement(way(40, listOf(8, 9), mapOf("waterway" to "ditch")))
+        data.putElement(node(10, p(0.001, -0.002)))
+        data.putElement(node(11, p(0.001, 0.004)))
+        data.putElement(way(30, listOf(10, 11), mapOf("highway" to "service")))
+        data.ways.toList().forEach { w -> data.put(w, ElementGeometryCreator().create(w, data)) }
+        val oldCache = crossingTestCache(data, warm = true)
+        every { source.getMapDataWithGeometry(any()) } calls { (bounds: BoundingBox) -> oldCache.getMapDataWithGeometry(bounds) }
+        val expected = controller().getAllInBBox(area, listOf(type)).map { it.key to it.position }.toSet()
+        val newCache = crossingTestCache(data, warm = true)
+        var queries = 0
+        val bulk = object : MapDataWithEditsSource by source, MapDataAreasSource {
+            override fun getMapDataForAreas(areas: List<BoundingBox>): MutableMapDataWithGeometry {
+                queries++
+                return newCache.getMapDataForAreas(areas)
+            }
+            override fun getMapDataWithGeometry(bbox: BoundingBox) = newCache.getMapDataWithGeometry(bbox)
+        }
+        val actual = controller(bulk).getAllInBBox(area, listOf(type)).map { it.key to it.position }.toSet()
+        assertEquals(3, expected.size)
+        assertEquals(expected, actual)
+        assertEquals(1, queries)
+    }
+
+    @Test fun `identical anchor queries reuse the full result only within one run`() {
+        // Identical bounds, but both ways and their references must remain in the data.
+        data.putElement(f.road.copy(id = 30))
+        val requests = mutableListOf<BoundingBox>()
+        every { source.getMapDataWithGeometry(any()) } calls { (bounds: BoundingBox) ->
+            requests.add(bounds)
+            data
+        }
+        assertTrue(ctrl.getAllInBBox(area, listOf(type)).isEmpty()) // third way prevents editing
+        assertEquals(2, requests.size) // viewport and one shared full-anchor query, previously three
+        requests.clear()
+        data.remove(ElementType.WAY, 30)
+        val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+        assertEquals(2, requests.size) // no full-anchor result reused across data changes
+        assertEquals(f.road.id, quest.elementId)
+    }
+
+    @Test fun `overlapping distinct anchors retain outside tile candidates and relation checks`() {
+        val shared = f.sharedCrossing()
+        data.putElement(node(8, p(-0.002, 0.003)))
+        data.putElement(node(9, p(0.002, 0.003)))
+        val secondWater = way(40, listOf(8, 9), mapOf("waterway" to "ditch"))
+        data.putElement(secondWater)
+        val secondRoad = way(30, listOf(1, 4), mapOf("highway" to "service"))
+        // Do not introduce a third way at the shared ford.
+        data.putElement(node(10, p(0.001, -0.002)))
+        data.putElement(node(11, p(0.001, 0.004)))
+        data.putElement(secondRoad.copy(nodeIds = listOf(10, 11)))
+        data.putElement(rel(100, listOf(member(ElementType.NODE, shared.road.nodeIds[2]))))
+        data.ways.toList().forEach { w -> data.put(w, ElementGeometryCreator().create(w, data)) }
+        val requests = mutableListOf<BoundingBox>()
+        every { source.getMapDataWithGeometry(any()) } calls { (bounds: BoundingBox) -> requests.add(bounds); data }
+        val quests = ctrl.getAllInBBox(area, listOf(type))
+        assertTrue(quests.none { it.elementId == f.road.id }) // relation forbids the shared ford
+        assertEquals(2, quests.count { it.elementId == secondRoad.id })
+        assertEquals(3, requests.size) // distinct overlapping anchors must not be collapsed
+        assertEquals(3, requests.distinct().size)
+    }
+
+    @Test fun `data invalidation during an anchor query prevents reuse within the run`() {
+        data.putElement(f.road.copy(id = 30))
+        var requests = 0
+        every { source.getMapDataWithGeometry(any()) } calls {
+            requests++
+            if (requests == 2) mapListener.onCleared()
+            data
+        }
+        assertTrue(ctrl.getAllInBBox(area, listOf(type)).isEmpty())
+        assertEquals(3, requests)
+    }
 
     @Test fun `combined OSM bridge removes both persisted pins and undo restores the same keys`() {
         data.toList().forEach { data.remove(it.type, it.id) }

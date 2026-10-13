@@ -17,6 +17,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.ElementType.RELATION
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementType.WAY
 import de.westnordost.streetcomplete.data.osm.mapdata.MapData
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataChanges
+import de.westnordost.streetcomplete.data.osm.mapdata.MapDataAreasSource
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataSource
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataUpdates
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
@@ -43,7 +44,7 @@ class MapDataWithEditsSourceImpl(
     private val mapDataSource: MapDataSource,
     private val elementEditsSource: ElementEditsSource,
     private val elementGeometryCreator: ElementGeometryCreator
-) : MapDataWithEditsSource {
+) : MapDataWithEditsSource, MapDataAreasSource {
 
     private val listeners = Listeners<MapDataWithEditsSource.Listener>()
 
@@ -270,10 +271,27 @@ class MapDataWithEditsSourceImpl(
         return updatedGeometries + originalGeometries
     }
 
-    override fun getMapDataWithGeometry(bbox: BoundingBox): MapDataWithGeometry = lock.withLock {
-        val mapDataWithGeometry = mapDataSource.getMapDataWithGeometry(bbox)
-        modifyBBoxMapData(bbox, mapDataWithGeometry)
-        return mapDataWithGeometry
+    override fun getMapDataWithGeometry(bbox: BoundingBox): MapDataWithGeometry {
+        return lock.withLock {
+            val mapDataWithGeometry = mapDataSource.getMapDataWithGeometry(bbox)
+            modifyBBoxMapData(bbox, mapDataWithGeometry)
+            mapDataWithGeometry
+        }
+    }
+
+    override fun getMapDataForAreas(areas: List<BoundingBox>): MutableMapDataWithGeometry {
+        require(areas.isNotEmpty())
+        return lock.withLock {
+            val bulkSource = mapDataSource as? MapDataAreasSource
+            if (bulkSource == null || areas.size == 1) {
+                return@withLock MutableMapDataWithGeometry().apply {
+                    for (area in areas) putAll(getMapDataWithGeometry(area))
+                }
+            }
+            bulkSource.getMapDataForAreas(areas).also { data ->
+                modifyAreasMapData(areas, data)
+            }
+        }
     }
 
     /* ----------------------------------- MapDataRepository ------------------------------------ */
@@ -411,13 +429,16 @@ class MapDataWithEditsSourceImpl(
 
     /* ------------------------------------------------------------------------------------------ */
 
-    private fun modifyBBoxMapData(bbox: BoundingBox, mapData: MutableMapDataWithGeometry) = lock.withLock {
+    private fun modifyBBoxMapData(bbox: BoundingBox, mapData: MutableMapDataWithGeometry) =
+        modifyAreasMapData(listOf(bbox), mapData)
+
+    private fun modifyAreasMapData(areas: List<BoundingBox>, mapData: MutableMapDataWithGeometry) = lock.withLock {
         val addWays = ArrayList<Way>()
         for ((key, geometry) in updatedGeometries) {
             // we will deal with nodes at the end
             if (key.type == NODE) continue
 
-            if (geometry != null && geometry.bounds.intersect(bbox)) {
+            if (geometry != null && areas.any { geometry.bounds.intersect(it) }) {
                 // add the modified data if it is in the bbox
                 val element = updatedElements[key]
                 if (element != null) {
@@ -442,12 +463,15 @@ class MapDataWithEditsSourceImpl(
             mapData.putAll(nodes, geometries)
         }
 
+        val updatedNodes = updatedElements.values.filterIsInstance<Node>()
+        // Without node edits there is nothing to overlay here. In particular, do not rebuild
+        // every way's node membership for each overlapping crossing-area query.
+        if (updatedNodes.isEmpty()) return@withLock
         val wayNodes = mapData.ways.flatMapTo(HashSet()) { it.nodeIds }
-        for (node in updatedElements.values) {
-            if (node !is Node) continue
+        for (node in updatedNodes) {
             // nodes are included if they are either within the bbox or part of a way that is
             // (partly) within the bbox)
-            if (node.position in bbox || node.id in wayNodes) {
+            if (areas.any { node.position in it } || node.id in wayNodes) {
                 mapData.put(node, ElementPointGeometry(node.position))
             } else {
                 mapData.remove(node.type, node.id)
@@ -559,7 +583,9 @@ class MapDataWithEditsSourceImpl(
     }
     private fun callOnReplacedForBBox(bbox: BoundingBox, mapDataWithGeometry: MapDataWithGeometry) {
         if (mapDataWithGeometry.size == 0) return
-        listeners.forEach { it.onReplacedForBBox(bbox, mapDataWithGeometry) }
+        listeners.forEach {
+            it.onReplacedForBBox(bbox, mapDataWithGeometry)
+        }
     }
     private fun callOnCleared() {
         listeners.forEach { it.onCleared() }

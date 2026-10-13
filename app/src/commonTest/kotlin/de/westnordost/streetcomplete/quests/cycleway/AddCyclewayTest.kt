@@ -99,6 +99,23 @@ class AddCyclewayTest {
         assertMinorOnewayApplicability(serviceTags, true)
     }
 
+    @Test fun `oneway minor road with flow side no does not reopen both sides`() {
+        for (oneway in listOf("yes", "1", "true", "-1")) {
+            val flowSide = if (oneway == "-1") "left" else "right"
+            val tags = mapOf("highway" to "residential", "oneway" to oneway, "cycleway:$flowSide" to "no")
+            val element = way(tags = tags)
+            val cycleways = parseCyclewaySides(tags, false)!!.selectableOrNullValues(countryInfo)
+            assertEquals(
+                CyclewaySideRelevance(left = oneway == "-1", right = oneway != "-1"),
+                getCyclewaySideRelevance(element, cycleways, false),
+                oneway,
+            )
+            assertMinorOnewayApplicability(tags, false)
+        }
+        val serviceFlowSideNo = mapOf("highway" to "service", "service" to "alley", "oneway" to "yes", "cycleway:right" to "no")
+        assertMinorOnewayApplicability(serviceFlowSideNo, false)
+    }
+
     @Test fun `confirmed bicycle contraflow on oneway minor road sets oneway bicycle no`() {
         val original = mapOf("highway" to "residential", "oneway" to "yes")
         val answer = Sides(

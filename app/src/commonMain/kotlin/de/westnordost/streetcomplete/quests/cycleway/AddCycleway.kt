@@ -205,10 +205,12 @@ internal fun getCyclewaySideRelevance(
 ): CyclewaySideRelevance {
     val contraflowSideIsRight = isReversedOneway(element.tags) xor isLeftHandTraffic
     val contraflowSide = if (contraflowSideIsRight) cycleways.right else cycleways.left
-    val hasCyclewayTagging = parseCyclewaySides(element.tags, isLeftHandTraffic) != null
     val assumeNoContraflow =
         likelyNoBicycleContraflow.matches(element) ||
-        (untaggedMinorOnewayLikelyNoBicycleContraflow.matches(element) && !hasCyclewayTagging)
+        (
+            untaggedMinorOnewayLikelyNoBicycleContraflow.matches(element) &&
+            !minorOnewayContraflowSurveyIsRelevant(element, cycleways, isLeftHandTraffic)
+        )
     val bothSidesAreRelevant =
         contraflowSide != null ||
         isNotOnewayForCyclists(element.tags, isLeftHandTraffic) ||
@@ -219,6 +221,21 @@ internal fun getCyclewaySideRelevance(
         left = contraflowSideIsRight,
         right = !contraflowSideIsRight,
     )
+}
+
+/** Whether a contraflow cycleway survey is needed on minor one-way roads. */
+internal fun minorOnewayContraflowSurveyIsRelevant(
+    element: Element,
+    cycleways: Sides<CyclewayAndDirection>,
+    isLeftHandTraffic: Boolean,
+): Boolean {
+    if (isNotOnewayForCyclists(element.tags, isLeftHandTraffic)) return true
+    val contraflowSideIsRight = isReversedOneway(element.tags) xor isLeftHandTraffic
+    val contraflow = if (contraflowSideIsRight) cycleways.right else cycleways.left
+    if (contraflow != null) return true
+    val flow = if (contraflowSideIsRight) cycleways.left else cycleways.right
+    val flowCycleway = flow?.cycleway
+    return flowCycleway != null && flowCycleway != Cycleway.NONE && flowCycleway != Cycleway.NONE_NO_ONEWAY
 }
 
 private fun Element.hasMissingRelevantCyclewayInfo(countryInfo: CountryInfo?): Boolean? {

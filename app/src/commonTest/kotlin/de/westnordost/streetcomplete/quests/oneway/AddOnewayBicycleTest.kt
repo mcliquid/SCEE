@@ -7,7 +7,7 @@ import de.westnordost.streetcomplete.testutils.way
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class AddOnewayBicycleTest {
     private lateinit var questType: AddOnewayBicycle
@@ -25,7 +25,7 @@ class AddOnewayBicycleTest {
             "bicycle" to "yes",
         ))
 
-        assertNull(questType.isApplicableTo(way))
+        assertTrue(questType.isApplicableTo(way))
     }
 
     @Test fun `not applicable when bicycles are explicitly prohibited`() {
@@ -35,6 +35,6 @@ class AddOnewayBicycleTest {
             "bicycle" to "no",
         ))
 
-        assertFalse(questType.isApplicableTo(way)!!)
+        assertFalse(questType.isApplicableTo(way))
     }
 }

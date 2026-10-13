@@ -68,8 +68,8 @@ class AddOnewayBicycle : OsmElementQuestType<OnewayAnswer> {
     ): Iterable<Element> =
         mapData.ways.filter { filter.matches(it) }
 
-    override fun isApplicableTo(element: Element): Boolean? =
-        if (filter.matches(element)) null else false
+    override fun isApplicableTo(element: Element): Boolean =
+        filter.matches(element)
 
     @Composable
     override fun Form(on: (QuestAction<OnewayAnswer>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {

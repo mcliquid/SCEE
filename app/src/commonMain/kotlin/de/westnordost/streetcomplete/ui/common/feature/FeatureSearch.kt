@@ -165,7 +165,7 @@ private fun FeatureSearchTextField(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val interactionSource = remember { MutableInteractionSource() }
-    val allowIme = remember { MutableStateFlow(showKeyboardInitially) }
+    val allowIme = remember(showKeyboardInitially) { MutableStateFlow(showKeyboardInitially) }
 
     if (!showKeyboardInitially) {
         LaunchedEffect(interactionSource) {

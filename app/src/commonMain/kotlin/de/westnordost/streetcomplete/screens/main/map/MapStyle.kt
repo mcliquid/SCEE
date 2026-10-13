@@ -71,14 +71,16 @@ fun MapStyle(
     // unicode 00a0 = no break space
     val osmAttribution = stringResource(Res.string.map_attribution_osm).replaceFirst("© ", "©\u00a0")
     val fixMap = stringResource(Res.string.route_fix_map)
-    val source = rememberVectorTileSource(listOf(MapTiles.URL_TEMPLATE)) {
-        maxZoom = MapTiles.MAX_ZOOM
-        attributionHtml =
-            "<a href='https://www.openstreetmap.org/copyright'>$osmAttribution</a> " +
+    val vectorSourceAttributionHtml = remember(osmAttribution, fixMap) {
+        "<a href='https://www.openstreetmap.org/copyright'>$osmAttribution</a> " +
             "<a href='https://jawg.io?utm_medium=map&utm_source=attribution'>©\u00a0JawgMaps</a> " +
             "<a href='https://routing.openstreetmap.de/about.html'>OSRM · FOSSGIS</a> " +
             "<a href='https://www.openstreetmap.org/fixthemap'>$fixMap</a> " +
             "<a href='https://photon.komoot.io'>Photon · komoot</a>"
+    }
+    val source = rememberVectorTileSource(listOf(MapTiles.URL_TEMPLATE)) {
+        maxZoom = MapTiles.MAX_ZOOM
+        attributionHtml = vectorSourceAttributionHtml
     }
 
     val paths = remember(colors) {
@@ -531,7 +533,7 @@ private fun LabelLayers(
     languages: List<String>,
     hiddenLabels: Set<MapLabel>,
 ) {
-    val localizedName = feature.localizedName(languages)
+    val localizedName = remember(languages) { feature.localizedName(languages) }
     val haloWidth = const(2.5.dp)
     val textFont = const(listOf("Roboto Regular"))
     val textSize = byZoom(1.0 to 13.sp, 24 to 64.sp)

@@ -311,9 +311,10 @@ fun MainScreen(
         selectedOverlay != null
         && (sheetSelection is MainSheetSelection.Overlay || sheetSelection == null)
 
+    val baseStyle = remember { BaseStyle.Json(BASE_STYLE) }
     val mapState = rememberMapState(
         runtime = runtime,
-        baseStyle = BaseStyle.Json(BASE_STYLE),
+        baseStyle = baseStyle,
         initialCameraPosition = initialCamera
     ) {
         MainMapContent(

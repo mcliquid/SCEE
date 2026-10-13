@@ -143,7 +143,10 @@ internal fun MainMapContent(
     }
     val selectedOverlayElement = shownBottomSheet as? ShownBottomSheet.Overlay
 
-    val languages = LocaleList.current.localeList.map { it.language }.distinct()
+    val languageKey = LocaleList.current.localeList.joinToString { it.language }
+    val languages = remember(languageKey) {
+        LocaleList.current.localeList.map { it.language }.distinct()
+    }
     val prefs: Preferences = koinInject()
     val background = prefs.getString(Prefs.THEME_BACKGROUND, "MAP")
     val hideSatelliteLabels = prefs.getBoolean(Prefs.NO_SATELLITE_LABEL, false)

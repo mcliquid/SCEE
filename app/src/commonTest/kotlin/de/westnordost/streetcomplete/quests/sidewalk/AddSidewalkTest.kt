@@ -215,6 +215,18 @@ class AddSidewalkTest {
         assertTrue(questType.isApplicableTo(road))
     }
 
+    @Test fun `highway preference applies on same quest instance`() {
+        val quest = AddSidewalk()
+        Prefs.preferences.putString("qs_AddSidewalk_highway_selection", "residential")
+        val residential = way(tags = mapOf("highway" to "residential", "lit" to "yes"))
+        val primary = way(tags = mapOf("highway" to "primary", "lit" to "yes"))
+        assertTrue(quest.isApplicableTo(residential))
+        assertFalse(quest.isApplicableTo(primary))
+
+        Prefs.preferences.putString("qs_AddSidewalk_highway_selection", "primary|residential")
+        assertTrue(quest.isApplicableTo(primary))
+    }
+
     @Test fun `highway preference uses per-preset prefix`() {
         Prefs.preferences.putBoolean(Prefs.QUEST_SETTINGS_PER_PRESET, true)
         Prefs.preferences.putLong(Preferences.SELECTED_EDIT_TYPE_PRESET, 42)

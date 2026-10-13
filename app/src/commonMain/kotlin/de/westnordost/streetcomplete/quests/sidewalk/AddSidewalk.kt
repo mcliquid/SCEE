@@ -54,7 +54,7 @@ class AddSidewalk : OsmElementQuestType<Sides<Sidewalk>> {
      *   is mapped as a separate way OR that is tagged with that the cycleway is separate. If the
      *   cycleway is separate, the sidewalk is too for sure
      */
-    private val untaggedRoadsFilter by lazy { """
+    private fun untaggedRoadsFilter() = """
         ways with
           highway ~ ${prefs.getString(questPrefix(prefs) + PREF_SIDEWALK_HIGHWAY_SELECTION, ROADS_WITH_SIDEWALK.joinToString("|"))}
           and !sidewalk and !sidewalk:both and !sidewalk:left and !sidewalk:right
@@ -69,7 +69,7 @@ class AddSidewalk : OsmElementQuestType<Sides<Sidewalk>> {
           )
           and ~foot|bicycle|bicycle:backward|bicycle:forward !~ use_sidepath
           and ~cycleway|cycleway:left|cycleway:right|cycleway:both !~ separate
-    """.toElementFilterExpression() }
+    """.toElementFilterExpression()
 
     override val changesetComment = "Specify whether roads have sidewalks"
     override val wikiLink = "Key:sidewalk"
@@ -83,7 +83,7 @@ class AddSidewalk : OsmElementQuestType<Sides<Sidewalk>> {
 
     override fun isApplicableTo(element: Element): Boolean =
         roadsFilter.matches(element)
-        && (untaggedRoadsFilter.matches(element) || element.hasInvalidOrIncompleteSidewalkTags())
+        && (untaggedRoadsFilter().matches(element) || element.hasInvalidOrIncompleteSidewalkTags())
 
     override fun getHighlightedElements(element: Element, mapData: MapDataWithGeometry) =
         mapData.filter("""

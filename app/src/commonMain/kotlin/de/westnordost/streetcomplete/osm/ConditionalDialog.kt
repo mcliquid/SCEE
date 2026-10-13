@@ -107,7 +107,7 @@ fun AddConditionalDialog(
                         items = values,
                         onSelectedItem = { value = it },
                         modifier = Modifier.fillMaxWidth(),
-                        selectedItem = values.first(),
+                        selectedItem = value,
                         itemContent = { Text(it, Modifier.weight(1f)) }
                     )
                 else

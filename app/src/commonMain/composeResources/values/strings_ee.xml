@@ -845,4 +845,8 @@ Out of the box SCEE is configured to behave very similar to StreetComplete.</str
     <string name="quest_tree_denotation_urban_description">Inside a settlement</string>
     <string name="quest_tree_denotation_natural">Natural</string>
     <string name="quest_tree_denotation_natural_description">Outside of a settlement</string>
+    <string name="quest_bicycleInPedestrianStreet_title">Is cycling allowed here?</string>
+    <string name="quest_bicycleInPedestrianStreet_noSign">No bicycle permission sign</string>
+    <string name="quest_bicycleInPedestrianStreet_conditional">Depends on time / other restriction</string>
+    <string name="quest_bicycleInPedestrianStreet_hint">Check the signs on site. Answer yes or no only for an explicitly confirmed rule. A missing bicycle permission sign does not automatically mean cycling is prohibited.</string>
 </resources>

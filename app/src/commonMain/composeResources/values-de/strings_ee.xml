@@ -678,4 +678,8 @@
     <string name="no_qr_code_handler">Es wurde kein QR-Code-Scanner gefunden. Installiere eine kompatible App wie „Binary Eye“ und versuche es erneut.</string>
     <string name="quest_evse_id_scan_unknown_value">Der QR-Code wurde nicht erkannt. Bitte erstelle ein Ticket und füge ein Bild des QR-Codes bei, damit wir die Unterstützung hinzufügen können.</string>
     <string name="quest_evse_id_scan_more">Eine weitere EVSE-ID scannen</string>
+    <string name="quest_bicycleInPedestrianStreet_title">Ist das Radfahren hier erlaubt?</string>
+    <string name="quest_bicycleInPedestrianStreet_noSign">Keine Fahrradfreigabe ausgeschildert</string>
+    <string name="quest_bicycleInPedestrianStreet_conditional">Zeitabhängig / andere Regelung</string>
+    <string name="quest_bicycleInPedestrianStreet_hint">Prüfe die Beschilderung vor Ort. Antworte nur bei eindeutig festgestellter Regelung mit Ja oder Nein. Ohne Fahrradfreigabe-Schild nicht automatisch auf ein Fahrradverbot schließen.</string>
 </resources>

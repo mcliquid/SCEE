@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.quests
 
 import de.westnordost.osmfeatures.Feature
 import de.westnordost.streetcomplete.ApplicationConstants.EE_QUEST_OFFSET
+import de.westnordost.streetcomplete.quests.bicycle_in_pedestrian_street.AddBicycleInPedestrianStreet
 import de.westnordost.streetcomplete.quests.waterway_crossing.AddWaterwayCrossing
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -716,6 +717,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 69 to AddCyclewayPartSmoothness(),
     EE_QUEST_OFFSET + 201 to AddIsSidepath(),
     EE_QUEST_OFFSET + 202 to AddWaterwayCrossing(),
+    EE_QUEST_OFFSET + 203 to AddBicycleInPedestrianStreet(),
     EE_QUEST_OFFSET + 62 to AddToiletsDisposal(),
     EE_QUEST_OFFSET + 63 to AddEvseId(),
     EE_QUEST_OFFSET + 66 to AddServiceTimes(),

@@ -110,10 +110,34 @@ class AddCyclewayTest {
                 getCyclewaySideRelevance(element, cycleways, false),
                 oneway,
             )
-            assertMinorOnewayApplicability(tags, false)
+            // With country (RHT): quest must not reopen. Without country, RHT/LHT disagree on
+            // which side is flow vs contraflow for asymmetric cycleway:*=no → null.
+            assertMinorOnewayApplicability(tags, bulk = false, single = null)
         }
-        val serviceFlowSideNo = mapOf("highway" to "service", "service" to "alley", "oneway" to "yes", "cycleway:right" to "no")
-        assertMinorOnewayApplicability(serviceFlowSideNo, false)
+        for (oneway in listOf("yes", "1", "true", "-1")) {
+            val flowSide = if (oneway == "-1") "right" else "left"
+            val tags = mapOf("highway" to "residential", "oneway" to oneway, "cycleway:$flowSide" to "no")
+            val element = way(tags = tags)
+            val cycleways = parseCyclewaySides(tags, true)!!.selectableOrNullValues(countryInfo)
+            assertEquals(
+                CyclewaySideRelevance(left = oneway != "-1", right = oneway == "-1"),
+                getCyclewaySideRelevance(element, cycleways, true),
+                "LHT $oneway",
+            )
+        }
+        for (serviceTags in listOf(
+            mapOf("highway" to "service", "service" to "alley", "oneway" to "yes", "cycleway:right" to "no"),
+            mapOf("highway" to "service", "oneway" to "yes", "cycleway:right" to "no"),
+        )) {
+            val element = way(tags = serviceTags)
+            val cycleways = parseCyclewaySides(serviceTags, false)!!.selectableOrNullValues(countryInfo)
+            assertEquals(
+                CyclewaySideRelevance(left = false, right = true),
+                getCyclewaySideRelevance(element, cycleways, false),
+                serviceTags.toString(),
+            )
+            assertMinorOnewayApplicability(serviceTags, bulk = false, single = null)
+        }
     }
 
     @Test fun `confirmed bicycle contraflow on oneway minor road sets oneway bicycle no`() {
@@ -605,12 +629,23 @@ class AddCyclewayTest {
         assertEquals(single, questType.isApplicableTo(way))
     }
 
-    private fun assertMinorOnewayApplicability(tags: Map<String, String>, applicable: Boolean) {
+    private fun assertMinorOnewayApplicability(
+        tags: Map<String, String>,
+        applicable: Boolean,
+    ) {
+        assertMinorOnewayApplicability(tags, bulk = applicable, single = applicable)
+    }
+
+    private fun assertMinorOnewayApplicability(
+        tags: Map<String, String>,
+        bulk: Boolean,
+        single: Boolean?,
+    ) {
         val way = way(1L, listOf(1, 2, 3), tags)
         val mapData = TestMapDataWithGeometry(listOf(way))
         mapData.wayGeometriesById[1L] = pGeom(0.0, 0.0)
 
-        assertEquals(applicable, questType.getApplicableElements(mapData).any(), tags.toString())
-        assertEquals(applicable, questType.isApplicableTo(way)!!, tags.toString())
+        assertEquals(bulk, questType.getApplicableElements(mapData).any(), tags.toString())
+        assertEquals(single, questType.isApplicableTo(way), tags.toString())
     }
 }

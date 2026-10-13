@@ -9,7 +9,7 @@ object Prefs {
     lateinit var preferences: Preferences
 
     const val VOLUME_ZOOM = "volume_button_zoom"
-    const val SHOW_3D_BUILDINGS = "3d_buildings"
+    // 3D building extrusion is intentionally not exposed: MapLibre style uses flat fills only (see strings_ee.xml).
     const val QUEST_GEOMETRIES = "quest_geometries"
     const val AUTO_DOWNLOAD = "auto_download"
     const val LOCATION_INTERVAL = "gps_interval"

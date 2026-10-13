@@ -72,6 +72,7 @@ fun MainBottomSheet(
     mapMetersPerDp: Double,
     onSetMapMarkers: (Iterable<Marker>?) -> Unit,
     onSetMapOverlay: (MapOverlayContent?) -> Unit,
+    onSetOverlayVisible: (Boolean) -> Unit = {},
     lastMapClick: MapClick?,
     modifier: Modifier = Modifier
 ) {
@@ -265,6 +266,7 @@ fun MainBottomSheet(
                     onSolved(shownBottomSheet.overlay.icon, center)
                     onDismiss()
                 },
+                onSetOverlayVisible = onSetOverlayVisible,
                 overlay = shownBottomSheet.overlay,
                 element = shownBottomSheet.element,
                 geometry = shownBottomSheet.geometry,

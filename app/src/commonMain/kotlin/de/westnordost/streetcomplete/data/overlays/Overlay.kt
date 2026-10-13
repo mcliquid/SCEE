@@ -54,6 +54,9 @@ interface Overlay : ElementEditType {
 
 sealed interface OverlayAction
 @JvmInline value class Edit(val value: ElementEditAction) : OverlayAction
+/** Open the tag editor or note form for a related element rather than the selected way. */
+data class ShowElementForm(val element: Element, val action: Action) : OverlayAction
+
 enum class Action : OverlayAction {
     /** Just close the overlay form */
     Dismiss,

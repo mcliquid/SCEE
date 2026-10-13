@@ -3,7 +3,6 @@ package de.westnordost.streetcomplete.overlays.restriction
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.core.graphics.ColorUtils
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -22,7 +21,6 @@ import de.westnordost.streetcomplete.quests.max_weight.MaxWeightType
 import de.westnordost.streetcomplete.quests.max_weight.osmKey
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.*
-import de.westnordost.streetcomplete.util.ktx.containsAnyKey
 import de.westnordost.streetcomplete.util.ktx.isArea
 
 class RestrictionOverlay : Overlay {
@@ -49,11 +47,13 @@ class RestrictionOverlay : Overlay {
 
     @Composable
     override fun Form(on: (OverlayAction) -> Unit, element: Element?, geometry: ElementGeometry, countryInfo: CountryInfo) {
-        TODO("Not yet implemented")
+        when {
+            element == null || element is Node ->
+                RestrictionOverlayNodeForm(on, element, geometry, countryInfo)
+            element is Way ->
+                RestrictionOverlayWayForm(on, element, geometry, countryInfo)
+        }
     }
-//    override fun createForm(element: Element?): AbstractOverlayForm = RestrictionOverlayNodeForm()
-//        if (element is Way) RestrictionOverlayWayForm()
-//        else RestrictionOverlayNodeForm() // node or null when inserting
 
     override val changesetComment: String = "Specify traffic restrictions"
     override val icon = Res.drawable.ic_overlay_restriction
@@ -72,7 +72,7 @@ class RestrictionOverlay : Overlay {
         if (relations == null) {
             // no turn restriction, but maybe weight
 //            val color = if (way.tags.keys.filter { it.startsWith("max") }.any { key -> maxWeightKeys.any { key.startsWith(it) } })
-            val color = if (way.tags.containsAnyKey(*maxWeightKeys))
+            val color = if (getWeightRestrictions(way).isNotEmpty())
                 OverlayColor.Teal
                 else OverlayColor.Invisible
             return OverlayStyle.Polyline(OverlayStyle.Stroke(color))
@@ -84,7 +84,7 @@ class RestrictionOverlay : Overlay {
             if (colors.first() == colors.last())
                 colors.first()
             else
-                Color(ColorUtils.blendARGB(colors.first().toArgb(), colors.last().toArgb(), 0.5f))
+                blendColors(colors.first(), colors.last(), 0.5f)
         } else
             relations.first().getColor(way.id)
         return OverlayStyle.Polyline(OverlayStyle.Stroke(color))
@@ -111,9 +111,11 @@ private fun Relation.getColor(wayId: Long): Color {
 
 private fun getColor(role: String, restriction: String): Color = when {
     restriction.startsWith("no_") && role == "from" -> OverlayColor.Orange
-    restriction.startsWith("no_") && role == "to" -> darkerOrange
+    restriction.startsWith("no_") && role == "to" ->
+        blendColors(OverlayColor.Orange, OverlayColor.Black, 0.75f)
     restriction.startsWith("only_") && role == "from" -> OverlayColor.Gold
-    restriction.startsWith("only_") && role == "to" -> darkerGold
+    restriction.startsWith("only_") && role == "to" ->
+        blendColors(OverlayColor.Gold, OverlayColor.Black, 0.75f)
     role == "via" -> OverlayColor.Lime
     else -> OverlayColor.Black
 }
@@ -148,5 +150,14 @@ val turnRestrictionTypes = linkedSetOf(
 
 private val maxWeightKeys = MaxWeightType.entries.map { it.osmKey }.toTypedArray()
 
-private val darkerGold = Color(ColorUtils.blendARGB(OverlayColor.Gold.toArgb(), OverlayColor.Black.toArgb(), 0.75f))
-private val darkerOrange = Color(ColorUtils.blendARGB(OverlayColor.Orange.toArgb(), OverlayColor.Black.toArgb(), 0.75f))
+/** Blend sRGB channels as in the historical Android overlay, without Android view utilities. */
+private fun blendColors(first: Color, second: Color, ratio: Float): Color {
+    val a = first.toArgb()
+    val b = second.toArgb()
+    var result = 0
+    for (shift in listOf(24, 16, 8, 0)) {
+        val channel = (((a ushr shift) and 255) * (1 - ratio) + ((b ushr shift) and 255) * ratio).toInt()
+        result = result or (channel shl shift)
+    }
+    return Color(result)
+}

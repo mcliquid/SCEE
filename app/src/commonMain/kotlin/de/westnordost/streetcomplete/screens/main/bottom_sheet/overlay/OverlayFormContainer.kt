@@ -22,6 +22,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.overlays.Action
+import de.westnordost.streetcomplete.data.overlays.ShowElementForm
 import de.westnordost.streetcomplete.data.overlays.Edit
 import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.overlays.OverlayAction
@@ -35,6 +36,7 @@ import de.westnordost.streetcomplete.ui.common.quest.LocalElement
 import de.westnordost.streetcomplete.ui.common.quest.LocalLastMapClick
 import de.westnordost.streetcomplete.ui.common.quest.LocalMapMarkersCallback
 import de.westnordost.streetcomplete.ui.common.quest.LocalMapMetersPerDp
+import de.westnordost.streetcomplete.ui.common.quest.LocalSetOverlayVisibleCallback
 import de.westnordost.streetcomplete.ui.common.quest.LocalMapOverlayCallback
 import de.westnordost.streetcomplete.ui.common.quest.LocalMapRotation
 import de.westnordost.streetcomplete.ui.common.quest.LocalMapTilt
@@ -73,6 +75,7 @@ fun OverlayFormContainer(
     mapMetersPerDp: Double,
     onSetMapMarkers: (Iterable<Marker>?) -> Unit,
     onSetMapOverlay: (MapOverlayContent?) -> Unit,
+    onSetOverlayVisible: (Boolean) -> Unit = {},
     lastMapClick: MapClick?,
     modifier: Modifier = Modifier,
     countryBoundaries: CountryBoundaries = koinInject(),
@@ -81,6 +84,7 @@ fun OverlayFormContainer(
     val geometry = geometry ?: ElementPointGeometry(mapPosition)
     val countryInfo = remember { countryInfos.get(countryBoundaries, geometry.center) }
     var state by rememberSerializable { mutableStateOf<OverlayFormState>(OverlayFormState.Overlay) }
+    var relatedElement by rememberSerializable { mutableStateOf<Element?>(null) }
     var showAccessManager by remember { mutableStateOf(false) }
     var showConstructionDialog by remember { mutableStateOf(false) }
 
@@ -88,6 +92,7 @@ fun OverlayFormContainer(
         state = form
         onSetMapMarkers(null)
         onSetMapOverlay(null)
+        onSetOverlayVisible(true)
     }
 
     fun onAction(action: OverlayAction) {
@@ -99,6 +104,11 @@ fun OverlayFormContainer(
             Action.EditTags -> showForm(OverlayFormState.EditTags)
             Action.ManageAccess -> showAccessManager = true
             Action.UnderConstruction -> showConstructionDialog = true
+            is ShowElementForm -> {
+                require(action.action == Action.EditTags || action.action == Action.LeaveNote)
+                relatedElement = action.element
+                showForm(if (action.action == Action.EditTags) OverlayFormState.EditTags else OverlayFormState.LeaveNote)
+            }
             is Edit -> onEdit(action.value, false, false)
         }
     }
@@ -109,12 +119,13 @@ fun OverlayFormContainer(
         modifier = modifier,
     ) { currentState ->
         CompositionLocalProvider(
-            LocalElement provides element,
+            LocalElement provides (relatedElement ?: element),
             LocalMapRotation provides mapRotation,
             LocalMapTilt provides mapTilt,
             LocalMapMetersPerDp provides mapMetersPerDp,
             LocalLastMapClick provides lastMapClick,
             LocalMapMarkersCallback provides { if (currentState == state) onSetMapMarkers(it) },
+            LocalSetOverlayVisibleCallback provides { if (currentState == state) onSetOverlayVisible(it) },
             LocalMapOverlayCallback provides { if (currentState == state) onSetMapOverlay(it) },
         ) {
             when (currentState) {
@@ -133,7 +144,7 @@ fun OverlayFormContainer(
                         },
                         onDismiss = onDismiss,
                         editType = overlay,
-                        element = element,
+                        element = relatedElement ?: element,
                     )
                 }
                 OverlayFormState.SplitWay -> {
@@ -155,7 +166,7 @@ fun OverlayFormContainer(
                 }
                 OverlayFormState.EditTags -> {
                     EditTagsForm(
-                        onConfirmed = { onEdit(UpdateElementTagsAction(element!!, it), true, false) },
+                        onConfirmed = { onEdit(UpdateElementTagsAction(relatedElement ?: element!!, it), true, false) },
                         onDismiss = onDismiss,
                     )
                 }

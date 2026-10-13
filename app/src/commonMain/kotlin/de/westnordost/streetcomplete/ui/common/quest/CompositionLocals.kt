@@ -34,6 +34,8 @@ val LocalLastMapClick = compositionLocalOf<MapClick?> { null }
 
 val LocalMapMarkersCallback = compositionLocalOf<((Iterable<Marker>) -> Unit)?> { null }
 
+val LocalSetOverlayVisibleCallback = compositionLocalOf<((Boolean) -> Unit)?> { null }
+
 val LocalMapOverlayCallback = compositionLocalOf<((MapOverlayContent?) -> Unit)?> { null }
 
 /** True while the tag editor form is open. Used by SCEE forms that adapt UI in that context. */

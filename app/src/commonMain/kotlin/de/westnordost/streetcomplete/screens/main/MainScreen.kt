@@ -305,7 +305,9 @@ fun MainScreen(
         else -> PinsMode.None
     }
 
+    var formOverlayVisible by remember(sheet.id) { mutableStateOf(true) }
     val showOverlay =
+        formOverlayVisible &&
         selectedOverlay != null
         && (sheetSelection is MainSheetSelection.Overlay || sheetSelection == null)
 
@@ -909,6 +911,7 @@ fun MainScreen(
                         mapMetersPerDp = getMetersPerDp(),
                         onSetMapMarkers = { if (id == sheet.id) sheet.formMarkers = it?.toList() },
                         onSetMapOverlay = { if (id == sheet.id) sheet.formMapOverlay = it },
+                        onSetOverlayVisible = { if (id == sheet.id) formOverlayVisible = it },
                         lastMapClick = sheet.lastMapClick,
                     )
                     }

@@ -17,8 +17,6 @@ import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.overlays.OverlayAction
 import de.westnordost.streetcomplete.data.overlays.OverlayColor
 import de.westnordost.streetcomplete.data.overlays.OverlayStyle
-import de.westnordost.streetcomplete.quests.max_weight.MaxWeightType
-import de.westnordost.streetcomplete.quests.max_weight.osmKey
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.util.ktx.isArea
@@ -71,7 +69,6 @@ class RestrictionOverlay : Overlay {
         val relations = restrictionsByWayMemberId[way.id]
         if (relations == null) {
             // no turn restriction, but maybe weight
-//            val color = if (way.tags.keys.filter { it.startsWith("max") }.any { key -> maxWeightKeys.any { key.startsWith(it) } })
             val color = if (getWeightRestrictions(way).isNotEmpty())
                 OverlayColor.Teal
                 else OverlayColor.Invisible
@@ -147,8 +144,6 @@ val turnRestrictionTypes = linkedSetOf(
     "only_left_turn",
     "only_straight_on",
 )
-
-private val maxWeightKeys = MaxWeightType.entries.map { it.osmKey }.toTypedArray()
 
 /** Blend sRGB channels as in the historical Android overlay, without Android view utilities. */
 private fun blendColors(first: Color, second: Color, ratio: Float): Color {

@@ -80,6 +80,34 @@ class RestrictionOverlayRegressionTest {
         assertNull(changed.way.tags["maxweight"])
     }
 
+    @Test fun `adding a conditional limit refreshes the displayed value and subsequent numeric edits`() {
+        val original = getWeightRestrictions(way(tags = mapOf("maxweight" to "7.5"))).single()
+        val changed = withWeightConditional(original, "5 @ (wet)")
+        assertEquals(Weight(5.0, metric), parseWeightForDisplay(changed.weight, "DE", listOf(metric)))
+        assertNull(changed.way.tags["maxweight"])
+        assertTrue(isRestrictionComplete(changed, original))
+        val edited = withWeight(changed, Weight(4.0, metric))
+        assertEquals("4 @ (wet)", edited.way.tags["maxweight:conditional"])
+        assertNull(edited.way.tags["maxweight"])
+    }
+
+    @Test fun `new conditional-only weight is complete and exceptions retain the base input`() {
+        val draft = WeightRestriction(way(), MaxWeightType.MAX_WEIGHT, "")
+        assertTrue(isRestrictionComplete(withWeightConditional(draft, "5 @ (wet)"), null))
+        val original = getWeightRestrictions(way(tags = mapOf("maxweight" to "7.5"))).single()
+        val exception = withWeightConditional(original, "none @ (delivery)")
+        assertEquals("7.5", exception.weight)
+        assertEquals("7.5", exception.way.tags["maxweight"])
+        assertEquals("none @ (delivery)", exception.way.tags["maxweight:conditional"])
+    }
+
+    @Test fun `new turn selection displays its draft type rather than the previously selected relation`() {
+        val old = rel(tags = mapOf("restriction" to "no_left_turn"))
+        assertEquals("only_right_turn", turnRestrictionEditorType(old, "only_right_turn", true))
+        assertEquals("no_left_turn", turnRestrictionEditorType(old, "only_right_turn", false))
+        assertEquals("only_right_turn", turnRestrictionEditorType(null, "only_right_turn", true))
+    }
+
     @Test fun `reentering the same conditional weight cannot submit an empty tag diff`() {
         val road = way(tags = mapOf("maxweight:conditional" to "5 @ (wet)"))
         val original = getWeightRestrictions(road).single()

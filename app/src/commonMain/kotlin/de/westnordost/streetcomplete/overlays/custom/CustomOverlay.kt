@@ -45,7 +45,6 @@ import de.westnordost.streetcomplete.ui.common.quest.ConfirmDeleteDialog
 import de.westnordost.streetcomplete.util.getCurrentCustomOverlayPref
 import de.westnordost.streetcomplete.util.getNameLabel
 import de.westnordost.streetcomplete.util.ktx.isArea
-import de.westnordost.streetcomplete.util.logs.Log
 import org.jetbrains.compose.resources.stringResource
 import kotlin.collections.iterator
 import kotlin.math.abs
@@ -86,7 +85,6 @@ class CustomOverlay(val prefs: Preferences) : Overlay {
         var confirmDeleteNode by remember { mutableStateOf<Node?>(null) }
         if (element == null) {
             val initialTags = remember { prefs.getString(getCurrentCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_FILTER, prefs), "").substringAfter("with ").toTags() }
-            Log.i("test", "inti $initialTags from ")
             EditTagsForm(
                 onConfirmed = { on(Edit(CreateNodeAction(geometry.center, initialTags))) },
                 onDismiss = { on(Action.Dismiss) },

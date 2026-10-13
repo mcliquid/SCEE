@@ -25,7 +25,7 @@ jobs:
         run: echo "COMMIT_SHA=$(git log -n 1 --format='%h')" >> $GITHUB_ENV
 
       - name: Encode git revision
-        run: sed -i -e "s/versionName = \"\([^ ]*\).*\"/versionName = \"\1 (git $COMMIT_SHA)\"/"  androidApp/build.gradle.kts
+        run: sed -i "s/^app\.streetcomplete\.versionName=.*/& (git $COMMIT_SHA)/" gradle.properties
 
       - name: Build with Gradle
         run: ./gradlew assembleDebug -Papp.streetcomplete.debug=true

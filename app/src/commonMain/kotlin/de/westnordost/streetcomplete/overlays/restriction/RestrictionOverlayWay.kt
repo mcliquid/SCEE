@@ -320,6 +320,18 @@ val turnRestrictionExceptions = listOf(
 
 fun pointGeometry(position: LatLon): ElementPointGeometry = ElementPointGeometry(position)
 
+internal fun turnRestrictionEditorType(relation: Relation?, draftType: String, selectionMode: Boolean): String =
+    if (selectionMode) draftType
+    else relation?.tags?.getShortRestrictionValue()?.takeIf { it in turnRestrictionTypes } ?: draftType
+
+internal fun withWeightConditional(restriction: WeightRestriction, value: String): WeightRestriction {
+    val tags = restriction.way.tags.toMutableMap()
+    val key = restriction.type.osmKey
+    tags["$key:conditional"] = value
+    if (!value.startsWith("none")) tags.remove(key)
+    return restriction.copy(way = restriction.way.copy(tags = tags), weight = tags[key] ?: value)
+}
+
 /** Keep a conditional-only limit conditional when its numeric value is edited. */
 fun withWeight(restriction: WeightRestriction, weight: Weight?): WeightRestriction {
     val value = weight?.toOsmString().orEmpty()

@@ -390,7 +390,7 @@ fun RestrictionOverlayWayForm(
                         .map { "${it.key} = ${it.value}" }
                         .joinToString("\n")
 
-                    key(selectedRestriction, weightRestriction.type) {
+                    key(selectedRestriction, weightRestriction.type, weightRestriction.type.osmKey in weightRestriction.way.tags) {
                         MaxWeightSignForm(
                             type = weightRestriction.type,
                             weight = editedWeight,
@@ -575,15 +575,10 @@ fun RestrictionOverlayWayForm(
                     values = null,
                     numberOnly = false,
                     countryInfo = countryInfo,
-                ) { key, value ->
-                    val newTags = restriction.way.tags.toMutableMap()
-                    newTags[key] = value
-                    if (!value.startsWith("none")) newTags.remove(weightKey)
-                    currentRestriction = WeightRestriction(
-                        way = restriction.way.copy(tags = newTags),
-                        type = restriction.type,
-                        weight = restriction.weight,
-                    )
+                ) { _, value ->
+                    val updated = withWeightConditional(restriction, value)
+                    currentRestriction = updated
+                    editedWeight = parseWeightForDisplay(updated.weight, countryInfo.countryCode.orEmpty(), units)
                     showAddConditionalDialog = false
                 }
             }
@@ -738,9 +733,7 @@ private fun TurnRestrictionEditor(
     infoText: String?,
     showOnlyFor: Boolean,
 ) {
-    val selectedType = relation?.tags?.getShortRestrictionValue()
-        ?.takeIf { it in turnRestrictionTypeList }
-        ?: draftTurnType
+    val selectedType = turnRestrictionEditorType(relation, draftTurnType, selectionMode)
     val canSwap = relation != null && isTurnRestrictionFromToSwapAllowed(relation)
     val wayRole = relation?.let { wayRoleInTurnRestriction(it, wayId) }
 
@@ -975,7 +968,7 @@ internal fun removeConditional(
         WeightRestriction(
             way = restriction.way.copy(tags = newTags),
             type = restriction.type,
-            weight = restriction.weight,
+            weight = newTags[key] ?: restriction.weight,
         )
     }
 }

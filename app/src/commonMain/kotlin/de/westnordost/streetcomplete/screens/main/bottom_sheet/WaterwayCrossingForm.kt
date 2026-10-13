@@ -99,7 +99,7 @@ fun WaterwayCrossingForm(
             hintImages = emptyList(),
             note = null,
             answers = if (submitted || saving) emptyList() else buildList {
-                addAll(listOf(
+                if (crossing.road.nodeIds.none { it in crossing.waterway.nodeIds }) addAll(listOf(
                     AnswerItem(stringResource(Res.string.waterway_crossing_bridge)) { structure = WaterwayStructure.BRIDGE },
                     AnswerItem(stringResource(Res.string.waterway_crossing_culvert)) { structure = WaterwayStructure.CULVERT },
                 ))
@@ -170,7 +170,7 @@ private fun refreshCrossingContext(action: ElementEditAction, crossing: Waterway
         .singleOrNull { it.road.id == crossing.road.id && it.waterway.id == crossing.waterway.id }
         ?: run {
             // Explain known safety failures without repeating a successful action validation.
-            crossing.validate(source)
+            crossing.validate(source, allowSharedFord = action is CreateWaterwayFordAction)
             throw ConflictException("Crossing unavailable or ambiguous")
         }
     return when (action) {

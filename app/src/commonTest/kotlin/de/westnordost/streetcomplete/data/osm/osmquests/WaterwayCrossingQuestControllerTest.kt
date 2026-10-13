@@ -56,6 +56,115 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
     private fun controller() = OsmQuestController(dao, source, notes,
         QuestTypeRegistry({ listOf(202 to type) }), lazyOf(boundaries), MapSettings())
 
+    @Test fun `ford retirement is independent of geographic position and segment direction`() {
+        for (i in 0 until 100) {
+            dao.clear()
+            val fixture = WaterwayCrossingTestData()
+            data = fixture.data
+            val origin = p(20.0 + i * 0.5123, 10.0 + i * 0.314)
+            val angle = kotlin.math.PI * i / 101
+            data.nodes.toList().forEach { n ->
+                val lat = n.position.latitude; val lon = n.position.longitude
+                data.putElement(n.copy(position = p(origin.latitude + lat * kotlin.math.cos(angle) - lon * kotlin.math.sin(angle),
+                    origin.longitude + lat * kotlin.math.sin(angle) + lon * kotlin.math.cos(angle))))
+            }
+            data.ways.toList().forEach { w -> data.put(w, ElementGeometryCreator().create(w, data)) }
+            val bounds = BoundingBox(origin.latitude - 0.01, origin.longitude - 0.01, origin.latitude + 0.01, origin.longitude + 0.01)
+            val c = findWaterwayCrossings(data, origin, 10.0).single()
+            val quest = ctrl.getAllInBBox(bounds, listOf(type)).single()
+            val changes = CreateWaterwayFordAction(c).createUpdates(fixture.repo, fixture.idProvider())
+            (changes.creations + changes.modifications).forEach { data.putElement(it) }
+            (changes.creations + changes.modifications).forEach { e -> data.put(e, ElementGeometryCreator().create(e, data)) }
+            assertTrue(ctrl.getAllInBBox(bounds, listOf(type)).isEmpty(), "case $i points=" + uniqueCrossingPoints(
+                data.getWay(c.road.id)!!.nodeIds.map { data.getNode(it)!!.position },
+                data.getWay(c.waterway.id)!!.nodeIds.map { data.getNode(it)!!.position }) + " expected=" + c.position)
+            assertNull(dao.get(quest.key), "case $i")
+        }
+    }
+
+    @Test fun `bridge undo culvert undo ford removes persisted quest and notifies visible cache`() {
+        // Nonzero coordinates expose spherical endpoint rounding hidden by equatorial fixtures.
+        val origin = p(22.0492, 11.256)
+        val angle = kotlin.math.PI * 4 / 101
+        data.nodes.toList().forEach { n ->
+            val lat = n.position.latitude; val lon = n.position.longitude
+            data.putElement(n.copy(position = p(origin.latitude + lat * kotlin.math.cos(angle) - lon * kotlin.math.sin(angle),
+                origin.longitude + lat * kotlin.math.sin(angle) + lon * kotlin.math.cos(angle))))
+        }
+        data.ways.toList().forEach { w -> data.put(w, ElementGeometryCreator().create(w, data)) }
+        val bounds = BoundingBox(origin.latitude - 0.01, origin.longitude - 0.01, origin.latitude + 0.01, origin.longitude + 0.01)
+        val original = MutableMapDataWithGeometry(data)
+        val crossing = findWaterwayCrossings(data, origin, 10.0).single()
+        val quest = ctrl.getAllInBBox(bounds, listOf(type)).single()
+        val deletedPins = mutableListOf<de.westnordost.streetcomplete.data.quest.OsmQuestKey>()
+        ctrl.addListener(object : OsmQuestSource.Listener {
+            override fun onUpdated(added: Collection<OsmQuest>, deleted: Collection<de.westnordost.streetcomplete.data.quest.OsmQuestKey>) { deletedPins.addAll(deleted) }
+            override fun onInvalidated() {}
+        })
+        every { source.getWaysForNode(any()) } calls { (id: Long) -> data.ways.filter { id in it.nodeIds } }
+        for (structure in listOf(WaterwayStructure.BRIDGE, WaterwayStructure.CULVERT)) {
+            val positions = if (structure == WaterwayStructure.BRIDGE) crossing.roadPositions else crossing.waterwayPositions
+            val i = if (structure == WaterwayStructure.BRIDGE) 1 else 0
+            val cuts = (if (structure == WaterwayStructure.BRIDGE) listOf(0.25, 0.75) else listOf(0.4, 0.6)).map { de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtLinePosition(positions[i], positions[i + 1], it) }
+            val changes = SetWaterwayStructureAction(crossing, structure, cuts).createUpdates(f.repo, f.idProvider())
+            val updates = MutableMapDataWithGeometry()
+            (changes.creations + changes.modifications).forEach { data.putElement(it) }
+            (changes.creations + changes.modifications).forEach { e -> val g = ElementGeometryCreator().create(e, data); data.put(e, g); updates.put(e, g) }
+            mapListener.onUpdated(updates, emptyList())
+            assertTrue(ctrl.getAllInBBox(bounds, listOf(type)).isEmpty())
+            assertNull(dao.get(quest.key))
+            assertTrue(quest.key in deletedPins)
+            changes.creations.forEach { data.remove(it.type, it.id) }
+            original.forEach { e -> data.put(e, original.getGeometry(e.type, e.id)) }
+            mapListener.onUpdated(data, changes.creations.map { it.key })
+            assertEquals(quest.position, ctrl.getAllInBBox(bounds, listOf(type)).single().position)
+        }
+        val changes = CreateWaterwayFordAction(crossing).createUpdates(f.repo, f.idProvider())
+        val ford = changes.creations.filterIsInstance<Node>().single()
+        assertEquals(mapOf("ford" to "yes"), ford.tags)
+        assertEquals(crossing.position, ford.position)
+        assertEquals(setOf(crossing.road.id, crossing.waterway.id), changes.modifications.map { it.id }.toSet())
+        changes.modifications.filterIsInstance<Way>().forEach { way ->
+            val before = original.getWay(way.id)!!
+            assertEquals(before.tags, way.tags)
+            assertEquals(before.nodeIds, way.nodeIds.filter { it != ford.id })
+            assertEquals(1, way.nodeIds.count { it == ford.id })
+        }
+        val updates = MutableMapDataWithGeometry()
+        (changes.creations + changes.modifications).forEach { data.putElement(it) }
+        (changes.creations + changes.modifications).forEach { e -> val g = ElementGeometryCreator().create(e, data); data.put(e, g); updates.put(e, g) }
+        deletedPins.clear()
+        mapListener.onUpdated(updates, emptyList())
+        assertTrue(ctrl.getAllInBBox(bounds, listOf(type)).isEmpty())
+        assertNull(dao.get(quest.key))
+        assertTrue(quest.key in deletedPins)
+        assertNull(ctrl.get(quest.key))
+    }
+
+    @Test fun `stale quest is removed on direct and dynamic cached lookup`() {
+        for (dynamic in listOf(false, true)) {
+            dao.clear()
+            data = MutableMapDataWithGeometry(f.data)
+            val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+            data.putElement(f.road.copy(tags = f.road.tags + ("bridge" to "yes")))
+            if (dynamic) dao.clear()
+            // No map update notification: simulate a change between cache lookup and opening.
+            assertNull(ctrl.getValidated(quest))
+            assertNull(dao.get(quest.key))
+            assertNull(ctrl.get(quest.key))
+        }
+    }
+
+    @Test fun `shared ford pin persists across tile queries and retires after tagging`() {
+        f.sharedCrossing()
+        val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+        val tile = BoundingBox(-0.00001, -0.00001, 0.00001, 0.00001)
+        assertEquals(quest.position, ctrl.getAllInBBox(tile, listOf(type)).single().position)
+        assertEquals(quest.position, controller().getAllInBBox(tile, listOf(type)).single().position)
+        data.putElement(node(7, p(), tags = mapOf("ford" to "yes")))
+        assertTrue(ctrl.getAllInBBox(tile, listOf(type)).isEmpty())
+    }
+
     @Test fun `irrelevant way and node tag updates do not rerun crossing queries`() {
         var queries = 0
         every { source.getMapDataWithGeometry(any()) } calls { queries++; data }

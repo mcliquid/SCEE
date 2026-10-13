@@ -5,6 +5,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.*
 import de.westnordost.streetcomplete.util.math.distanceTo
 import de.westnordost.streetcomplete.util.math.distanceToArc
 import de.westnordost.streetcomplete.util.math.distanceToArcs
+import de.westnordost.streetcomplete.util.math.initialBearingTo
 import de.westnordost.streetcomplete.util.math.intersectionOf
 import kotlinx.serialization.Serializable
 import de.westnordost.streetcomplete.util.ktx.equalsInOsm
@@ -32,10 +33,10 @@ data class WaterwayCrossing(
         nearbyWays = nearbyWays.map { it.copy(way = it.way.remap(ids)) },
     )
 
-    fun validate(repository: MapDataRepository): Pair<Way, Way> {
+    fun validate(repository: MapDataRepository, allowSharedFord: Boolean = false): Pair<Way, Way> {
         val (currentRoad, rp) = validateWay(road, roadPositions, repository)
         val (currentWater, wp) = validateWay(waterway, waterwayPositions, repository)
-        checkCrossing(currentRoad, currentWater, rp, wp, position)
+        checkCrossing(currentRoad, currentWater, rp, wp, position, allowSharedFord)
         for (context in nearbyWays) validateContext(context, position, repository)
         return currentRoad to currentWater
     }
@@ -93,7 +94,8 @@ private fun validateContext(context: CrossingContextWay, center: LatLon, reposit
     }, "Crossing context geometry moved")
 }
 
-internal fun checkCrossing(road: Way, water: Way, rp: List<LatLon>, wp: List<LatLon>, pos: LatLon) {
+internal fun checkCrossing(road: Way, water: Way, rp: List<LatLon>, wp: List<LatLon>, pos: LatLon,
+    allowSharedFord: Boolean = false) {
     crossingCheck(road.id != water.id && road.tags["highway"] in roadTypes
         && water.tags["waterway"] in waterTypes, "Select one road and one linear waterway")
     for ((way, positions) in listOf(road to rp, water to wp)) {
@@ -102,12 +104,30 @@ internal fun checkCrossing(road: Way, water: Way, rp: List<LatLon>, wp: List<Lat
             "Existing structure, layer or area tags require manual editing")
         checkSimpleCrossingWay(way, positions)
     }
-    crossingCheck(road.nodeIds.none { it in water.nodeIds }, "Ways already connected")
+    val shared = road.nodeIds.filter { it in water.nodeIds }
+    crossingCheck(shared.isEmpty() || allowSharedFord && shared.size == 1, "Ways already connected")
     crossingCheck(!hasOverlappingCrossingEdges(rp, wp), "Overlapping crossing ways")
-    val crossings = crossingPoints(rp, wp)
+    val crossings = if (shared.isEmpty()) crossingPoints(rp, wp) else uniqueCrossingPoints(rp, wp)
     crossingCheck(crossings.size == 1 && crossings.single().equalsInOsm(pos),
         "Crossing is no longer unique")
-    crossingCheck((rp + wp).all { it.distanceTo(pos) >= MIN_CROSSING_EDGE_LENGTH },
+    if (shared.isNotEmpty()) {
+        crossingCheck(road.allowsSimpleWaterwayFord(), "Ford on this road requires manual editing")
+        val ri = road.nodeIds.indexOf(shared.single())
+        val wi = water.nodeIds.indexOf(shared.single())
+        crossingCheck(ri in 1 until rp.lastIndex && wi in 1 until wp.lastIndex,
+            "Ford ways must continue through the crossing")
+        crossingCheck(rp[ri].equalsInOsm(pos) && wp[wi].equalsInOsm(pos), "Shared crossing moved")
+        // Four alternating rays distinguish a crossing from two lines merely touching.
+        val rays = listOf(rp[ri - 1] to 0, rp[ri + 1] to 0, wp[wi - 1] to 1, wp[wi + 1] to 1)
+            .map { (p, kind) -> pos.initialBearingTo(p) to kind }
+            .sortedBy { it.first }
+        crossingCheck(rays.indices.all { rays[it].second != rays[(it + 1) % 4].second
+            && (rays[(it + 1) % 4].first - rays[it].first + 360.0) % 360.0 > 0.001 },
+            "Ways only touch at shared node")
+    }
+    val vertices = rp.filterIndexed { i, _ -> road.nodeIds[i] !in shared } +
+        wp.filterIndexed { i, _ -> water.nodeIds[i] !in shared }
+    crossingCheck(vertices.all { it.distanceTo(pos) >= MIN_CROSSING_EDGE_LENGTH },
         "Crossing too close to an existing node")
 }
 
@@ -141,7 +161,15 @@ internal fun checkSimpleCrossingWay(way: Way, positions: List<LatLon>) {
 
 fun crossingPoints(first: List<LatLon>, second: List<LatLon>): List<LatLon> =
     first.zipWithNext().flatMap { (a, b) ->
-        second.zipWithNext().mapNotNull { (c, d) -> intersectionOf(a, b, c, d) }
+        second.zipWithNext().mapNotNull { (c, d) ->
+            // Exact shared endpoints are already known intersections. Spherical rounding
+            // can put a recomputed endpoint just outside both adjacent arcs.
+            when {
+                a == c || a == d -> a
+                b == c || b == d -> b
+                else -> intersectionOf(a, b, c, d)
+            }
+        }
     }
 
 /** Unique geometric intersections near the selected point. Editing applies stricter checks. */
@@ -159,7 +187,7 @@ fun findWaterwayCrossings(data: MapDataWithGeometry, near: LatLon, radius: Doubl
             val points = uniqueCrossingPoints(rp, wp)
             val pos = points.singleOrNull()?.takeIf { it.distanceTo(near) <= radius }
                 ?: return@mapNotNull null
-            try { checkCrossing(road, water, rp, wp, pos) } catch (_: ConflictException) { return@mapNotNull null }
+            try { checkEditableCrossing(data, road, water, rp, wp, pos) } catch (_: ConflictException) { return@mapNotNull null }
             val context = crossingContext(data, road, water, pos) ?: return@mapNotNull null
             WaterwayCrossing(road, water, rp, wp, pos, context)
         }
@@ -203,7 +231,14 @@ internal fun crossingDetectionElement(element: Element): Element? = when (elemen
 internal fun crossingDetectionInput(data: MapDataWithGeometry): List<Element> {
     val ways = data.ways.mapNotNull { crossingDetectionElement(it) as? Way }
     val nodeIds = ways.flatMap { it.nodeIds }.toSet()
-    return (ways + data.nodes.filter { it.id in nodeIds }.mapNotNull(::crossingDetectionElement))
+    val sharedIds = ways.filter { it.isCrossingRoad() }.flatMap { it.nodeIds }.toSet()
+        .intersect(ways.filter { it.isCrossingWaterway() }.flatMap { it.nodeIds }.toSet())
+    val wayIds = ways.map { it.id }.toSet()
+    val otherReferences = data.ways.filter { way -> way.id !in wayIds && way.nodeIds.any { it in sharedIds } }
+        .map { it.copy(tags = emptyMap(), version = 0, timestampEdited = 0) }
+    return (ways + otherReferences + data.relations.filter { r -> r.members.any { it.type == ElementType.NODE && it.ref in sharedIds } } + data.nodes.filter { it.id in nodeIds }.mapNotNull {
+        if (it.id in sharedIds) it.copy(version = 0, timestampEdited = 0) else crossingDetectionElement(it)
+    })
         .sortedWith(compareBy({ it.type.ordinal }, { it.id }))
 }
 
@@ -215,3 +250,15 @@ private fun Way.remap(ids: Map<ElementKey, Long>) = copy(
     id = ids[key] ?: id,
     nodeIds = nodeIds.map { ids[ElementKey(ElementType.NODE, it)] ?: it },
 )
+
+/** Shared vertices support only a conservative tag-only ford; unconnected ways keep all answers. */
+internal fun checkEditableCrossing(data: MapData, road: Way, water: Way, rp: List<LatLon>, wp: List<LatLon>, pos: LatLon) {
+    checkCrossing(road, water, rp, wp, pos, allowSharedFord = true)
+    val shared = road.nodeIds.singleOrNull { it in water.nodeIds } ?: return
+    val node = data.getNode(shared) ?: throw ConflictException("Incomplete crossing geometry")
+    crossingCheck(node.tags.isEmpty(), "Existing crossing node tags require manual editing")
+    crossingCheck(data.ways.filter { shared in it.nodeIds }.map { it.id }.toSet() == setOf(road.id, water.id),
+        "Additional way at ford; use manual editing")
+    crossingCheck(data.relations.none { r -> r.members.any { it.type == ElementType.NODE && it.ref == shared } },
+        "Crossing node in relation requires manual editing")
+}

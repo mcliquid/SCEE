@@ -100,16 +100,43 @@ class AddWaterwayCrossingTest {
         }
     }
 
-    @Test fun `shared crossing vertex is excluded by automatic and manual detection`() {
+    @Test fun `safe shared crossing vertex supports ford but existing tags exclude it`() {
         val f = WaterwayCrossingTestData()
         f.data.putElement(node(7, p()))
         val road = f.road.copy(nodeIds = listOf(1, 2, 7, 3, 4))
         val water = f.water.copy(nodeIds = listOf(5, 7, 6))
         f.data.putElement(road); f.data.putElement(water)
-        assertTrue(type.getCrossings(f.data).isEmpty())
-        assertTrue(findWaterwayCrossings(f.data, p(), 1.0).isEmpty())
+        assertEquals(1, type.getCrossings(f.data).size)
+        assertEquals(1, findWaterwayCrossings(f.data, p(), 1.0).size)
         f.data.putElement(node(7, p(), tags = mapOf("ford" to "yes")))
         assertTrue(type.getCrossings(f.data).isEmpty())
+    }
+
+    @Test fun `shared endpoint tangent major roads node tags and additional references have no answers`() {
+        for (kind in listOf("endpoint", "touch", "major", "tag", "layer", "way", "relation")) {
+            val f = WaterwayCrossingTestData()
+            val c = f.sharedCrossing()
+            when (kind) {
+                "endpoint" -> f.data.putElement(c.waterway.copy(nodeIds = listOf(7, 6)))
+                "touch" -> f.data.putElement(node(5, p(0.001, -0.001)))
+                "major" -> f.data.putElement(c.road.copy(tags = mapOf("highway" to "primary")))
+                "tag" -> f.data.putElement(node(7, p(), tags = mapOf("barrier" to "gate")))
+                "layer" -> f.data.putElement(c.waterway.copy(tags = c.waterway.tags + ("layer" to "-1")))
+                "way" -> f.data.putElement(way(30, listOf(7, 1), mapOf("boundary" to "administrative")))
+                "relation" -> f.data.putElement(rel(30, listOf(member(ElementType.NODE, 7))))
+            }
+            assertTrue(type.getCrossings(f.data).isEmpty(), kind)
+            assertTrue(findWaterwayCrossings(f.data, p(), 1.0).isEmpty(), kind)
+        }
+    }
+
+    @Test fun `complete long segments with all vertices outside tile still produce stable crossing`() {
+        val f = WaterwayCrossingTestData()
+        f.data.putElement(f.road.copy(nodeIds = listOf(1, 4)))
+        val tile = BoundingBox(-0.00001, -0.00001, 0.00001, 0.00001)
+        val first = type.getCrossings(f.data, tile).single()
+        assertEquals(10L, first.road.id)
+        assertEquals(first.position, type.getCrossings(f.data, BoundingBox(-0.00002, -0.00002, 0.00002, 0.00002)).single().position)
     }
 
     @Test fun `incomplete closed and self intersecting ways are excluded`() {

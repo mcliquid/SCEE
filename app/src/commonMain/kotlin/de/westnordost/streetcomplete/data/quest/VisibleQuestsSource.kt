@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.data.quest
 
 import com.russhwolf.settings.ObservableSettings
+import de.westnordost.streetcomplete.quests.waterway_crossing.AddWaterwayCrossing
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.EditType
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
@@ -180,12 +181,19 @@ class VisibleQuestsSource(
     }
 
     fun get(questKey: QuestKey): Quest? {
-        val quest = cache.get(questKey) ?: when (questKey) {
+        val cached = cache.get(questKey)
+        val quest = cached ?: when (questKey) {
             is OsmNoteQuestKey -> osmNoteQuestSource.get(questKey.noteId)
             is OsmQuestKey -> osmQuestSource.get(questKey)
             is ExternalSourceQuestKey -> externalSourceQuestController.get(questKey)
         } ?: return null
-        return if (isVisible(quest, prefs.getBoolean(Prefs.HIDE_OVERLAY_QUESTS, true))) quest else null
+        val current = if (cached != null && quest is OsmQuest && quest.type is AddWaterwayCrossing) {
+            osmQuestSource.getValidated(quest) ?: run {
+                updateVisibleQuests(deleted = listOf(quest.key))
+                return null
+            }
+        } else quest
+        return if (isVisible(current, prefs.getBoolean(Prefs.HIDE_OVERLAY_QUESTS, true))) current else null
     }
 
     private fun isVisible(quest: Quest, hideOverlayQuests: Boolean): Boolean =

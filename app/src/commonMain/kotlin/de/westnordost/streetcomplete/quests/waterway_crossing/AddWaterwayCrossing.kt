@@ -87,7 +87,7 @@ class AddWaterwayCrossing : OsmElementQuestType<ElementEditAction> {
                         || b.min.longitude <= bounds.max.longitude && b.max.longitude >= bounds.min.longitude) }
                 .mapNotNull { (water, wp, _) ->
                     val point = uniqueCrossingPoints(rp, wp).singleOrNull() ?: return@mapNotNull null
-                    try { checkCrossing(road, water, rp, wp, point) } catch (_: ConflictException) { return@mapNotNull null }
+                    try { checkEditableCrossing(data, road, water, rp, wp, point) } catch (_: ConflictException) { return@mapNotNull null }
                     if (crossingContext(data, road, water, point) == null) return@mapNotNull null
                     // A ford/structure on the crossing vertex already describes this crossing.
                     if ((road.nodeIds + water.nodeIds).any { id -> data.getNode(id)?.let {

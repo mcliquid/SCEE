@@ -13,6 +13,31 @@ class WaterwayCrossingActionTest {
     private val f = WaterwayCrossingTestData()
     private fun MapDataChanges.ways() = (creations + modifications).filterIsInstance<Way>()
 
+    @Test fun `shared ford modifies only existing node and rejects remotely added tags or references`() {
+        val f = WaterwayCrossingTestData()
+        val c = f.sharedCrossing()
+        val action = CreateWaterwayFordAction(c)
+        assertEquals(NewElementsCount(0, 0, 0), action.newElementsCount)
+        val changes = action.createUpdates(f.repo, ElementIdProvider(emptyList()))
+        assertTrue(changes.creations.isEmpty())
+        assertTrue(changes.deletions.isEmpty())
+        assertEquals(listOf(7L), changes.modifications.map { it.id })
+        assertEquals(mapOf("ford" to "yes"), changes.modifications.single().tags)
+        assertEquals(c.road, f.data.getWay(10))
+        assertEquals(c.waterway, f.data.getWay(20))
+        assertFailsWith<ConflictException> {
+            SetWaterwayStructureAction(c, WaterwayStructure.BRIDGE, f.splits).createUpdates(f.repo, f.idProvider())
+        }
+        f.data.putElement(node(7, p(), tags = mapOf("name" to "Existing feature")))
+        assertFailsWith<ConflictException> { action.createUpdates(f.repo, f.idProvider()) }
+        f.data.putElement(node(7, p()))
+        f.data.putElement(way(30, listOf(7, 1)))
+        assertFailsWith<ConflictException> { action.createUpdates(f.repo, f.idProvider()) }
+        f.data.remove(ElementType.WAY, 30)
+        f.data.putElement(rel(30, listOf(member(ElementType.NODE, 7))))
+        assertFailsWith<ConflictException> { action.createUpdates(f.repo, f.idProvider()) }
+    }
+
     @Test fun `far context changes and classification edits do not conflict but near geometry changes do`() {
         val positions = listOf(p(-0.0005, 0.0007), p(0.0005, 0.0007), p(0.01, 0.01), p(0.02, 0.02))
         positions.forEachIndexed { i, pos -> f.data.putElement(node(i + 7L, pos)) }

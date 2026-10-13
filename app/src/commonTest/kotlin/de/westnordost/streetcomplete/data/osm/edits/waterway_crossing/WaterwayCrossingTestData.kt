@@ -31,6 +31,15 @@ class WaterwayCrossingTestData {
     val ids = listOf(ElementKey(ElementType.NODE, -1001), ElementKey(ElementType.NODE, -1002),
         ElementKey(ElementType.WAY, -2001), ElementKey(ElementType.WAY, -2002))
     fun idProvider() = ElementIdProvider(ids)
+    fun sharedCrossing(): WaterwayCrossing {
+        val road = road.copy(nodeIds = listOf(1, 2, 7, 3, 4))
+        val water = water.copy(nodeIds = listOf(5, 7, 6))
+        data.putElement(node(7, p(), timestamp = 0))
+        for (way in listOf(road, water)) data.put(way, ElementGeometryCreator().create(way, data))
+        return WaterwayCrossing(road, water, road.nodeIds.map { data.getNode(it)!!.position },
+            water.nodeIds.map { data.getNode(it)!!.position }, p())
+    }
+
     val repo: MapDataSource = mock {
         every { getNode(any()) } calls { (id: Long) -> data.getNode(id) }
         every { getWay(any()) } calls { (id: Long) -> data.getWay(id) }
@@ -45,6 +54,9 @@ class WaterwayCrossingTestData {
             MutableMapData(listOf(way) + way.nodeIds.mapNotNull { data.getNode(it) })
         } }
         every { getWaysForNode(any()) } calls { (id: Long) -> data.ways.filter { id in it.nodeIds } }
+        every { getRelationsForNode(any()) } calls { (id: Long) -> data.relations.filter { relation ->
+            relation.members.any { it.type == ElementType.NODE && it.ref == id }
+        } }
         every { getRelationsForWay(any()) } calls { (id: Long) -> data.relations.filter { relation ->
             relation.members.any { it.type == ElementType.WAY && it.ref == id }
         } }

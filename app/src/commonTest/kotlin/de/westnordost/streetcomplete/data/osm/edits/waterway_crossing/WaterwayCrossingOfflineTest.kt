@@ -17,6 +17,31 @@ import kotlinx.serialization.json.Json
 import kotlin.math.round
 
 class WaterwayCrossingOfflineTest {
+    @Test fun `shared ford serializes replays offline and undo restores untagged vertex`() {
+        val f = WaterwayCrossingTestData()
+        val c = f.sharedCrossing()
+        val action = Json.decodeFromString<CreateWaterwayFordAction>(Json.encodeToString(CreateWaterwayFordAction(c)))
+        var pending = listOf(edit(action = action))
+        lateinit var listener: ElementEditsSource.Listener
+        val edits = mock<ElementEditsSource> {
+            every { getAllUnsynced() } calls { pending }
+            every { getIdProvider(any()) } calls { ElementIdProvider(emptyList()) }
+            every { addListener(any()) } calls { (l: ElementEditsSource.Listener) -> listener = l }
+        }
+        val local = MapDataWithEditsSourceImpl(f.repo, edits, ElementGeometryCreator())
+        assertEquals("yes", local.getNode(7)!!.tags["ford"])
+        assertEquals(c.road.nodeIds, local.getWay(10)!!.nodeIds)
+        assertEquals(c.waterway.nodeIds, local.getWay(20)!!.nodeIds)
+        val removed = pending
+        pending = emptyList()
+        listener.onDeletedEdits(removed)
+        assertTrue(local.getNode(7)!!.tags.isEmpty())
+        f.data.putElement(node(7, p(0.00000004, 0.00000004)))
+        assertEquals("yes", action.createUpdates(f.repo, ElementIdProvider(emptyList())).modifications.single().tags["ford"])
+        f.data.putElement(node(7, p(0.0000002, 0.0)))
+        assertFailsWith<ConflictException> { action.createUpdates(f.repo, ElementIdProvider(emptyList())) }
+    }
+
     @Test fun `two serialized pending splits replay and second upload accepts first uploads OSM rounding`() {
         val f = WaterwayCrossingTestData()
         val base = WaterwayCrossingTestData()

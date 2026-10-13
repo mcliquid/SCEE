@@ -14,6 +14,9 @@ interface OsmQuestSource {
     /** get single quest by id */
     fun get(key: OsmQuestKey): OsmQuest?
 
+    /** Revalidate a cached quest before opening, including quests created dynamically. */
+    fun getValidated(quest: OsmQuest): OsmQuest? = get(quest.key)
+
     /** Get all quests of optionally the given types in given bounding box */
     fun getAllInBBox(bbox: BoundingBox, questTypes: Collection<QuestType>? = null): Collection<OsmQuest>
 

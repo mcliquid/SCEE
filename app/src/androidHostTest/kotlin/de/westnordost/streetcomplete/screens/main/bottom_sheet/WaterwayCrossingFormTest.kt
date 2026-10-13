@@ -61,12 +61,17 @@ class WaterwayCrossingFormTest {
             MutableMapData(listOf(way) + way.nodeIds.mapNotNull { f.data.getNode(it) })
         } }
         every { getNode(any()) } calls { (id: Long) -> f.repo.getNode(id) }
+        every { getWaysForNode(any()) } calls { (id: Long) -> f.repo.getWaysForNode(id) }
+        every { getRelationsForNode(any()) } calls { (id: Long) -> f.repo.getRelationsForNode(id) }
         every { getRelationsForWay(any()) } calls { (id: Long) -> f.repo.getRelationsForWay(id) }
         every { getMapDataWithGeometry(any()) } calls { f.data }
     }
     private val testKoin = koinApplication {
         modules(module {
             single<MapDataWithEditsSource> { source }
+            single<de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestSource> {
+                mock { every { getValidated(any()) } calls { null } }
+            }
             single { Preferences(MapSettings()) }
             single<SoundEffectPlayer> { sound }
             single { FeatureDictionary.create(kotlinx.io.files.SystemFileSystem, "src/commonMain/composeResources/files/osmfeatures/default") }
@@ -89,6 +94,64 @@ class WaterwayCrossingFormTest {
 
     private fun awaitSave() = compose.waitUntil(10000) {
         saved != null || compose.onAllNodesWithText("OK").fetchSemanticsNodes().isNotEmpty()
+    }
+
+    @Test fun `quest invalidated before form loads is dismissed instead of remaining unanswerable`() {
+        f.data.putElement(f.road.copy(tags = f.road.tags + ("bridge" to "yes")))
+        var closed = false
+        compose.setContent {
+            KoinIsolatedContext(testKoin) {
+                MaterialTheme {
+                    CompositionLocalProvider(de.westnordost.streetcomplete.ui.common.quest.LocalQuestType provides
+                        de.westnordost.streetcomplete.quests.waterway_crossing.AddWaterwayCrossing()) {
+                        de.westnordost.streetcomplete.quests.waterway_crossing.WaterwayCrossingQuestForm(
+                            on = { if (it == Action.Dismiss) closed = true }, element = f.road,
+                            geometry = de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry(p()), mapPosition = p())
+                    }
+                }
+            }
+        }
+        compose.waitUntil(10000) { closed }
+        assertNull(saved)
+    }
+
+    @Test fun `opening persisted quest includes known long road missing from local tile query`() {
+        val road = f.road.copy(nodeIds = listOf(1, 4))
+        f.data.putElement(road)
+        f.data.putElement(node(1, p(0.0, -0.02)))
+        f.data.putElement(node(4, p(0.0, 0.02)))
+        every { source.getMapDataWithGeometry(any()) } calls {
+            de.westnordost.streetcomplete.data.osm.mapdata.MutableMapDataWithGeometry().apply {
+                f.water.nodeIds.forEach { putElement(f.data.getNode(it)!!) }
+                putElement(f.water)
+            }
+        }
+        compose.setContent {
+            KoinIsolatedContext(testKoin) {
+                MaterialTheme {
+                    CompositionLocalProvider(de.westnordost.streetcomplete.ui.common.quest.LocalQuestType provides
+                        de.westnordost.streetcomplete.quests.waterway_crossing.AddWaterwayCrossing()) {
+                        de.westnordost.streetcomplete.quests.waterway_crossing.WaterwayCrossingQuestForm(
+                            on = {}, element = road,
+                            geometry = de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry(p()), mapPosition = p())
+                    }
+                }
+            }
+        }
+        compose.waitUntil(10000) { compose.onAllNodesWithText("Bridge").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("Ford").assertExists()
+    }
+
+    @Test fun `shared vertex offers only ford and saves without split or new node`() {
+        crossing = f.sharedCrossing()
+        show()
+        compose.onNodeWithText("Bridge").assertDoesNotExist()
+        compose.onNodeWithText("Culvert").assertDoesNotExist()
+        compose.onNodeWithText("Ford").performClick()
+        awaitSave()
+        val action = assertIs<CreateWaterwayFordAction>(saved)
+        assertEquals(0, action.newElementsCount.nodes)
+        assertEquals(1, saveCount)
     }
 
     @Test fun `cancelling in flight validation never saves an edit`() {

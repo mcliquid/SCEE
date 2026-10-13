@@ -5,7 +5,6 @@ import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentAlpha
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Dialog
 import de.westnordost.osmfeatures.Feature
@@ -31,7 +30,7 @@ fun FeatureSearchDialog(
     showKeyboardInitially: Boolean = true,
 ) {
     val prefs: Preferences = koinInject()
-    val searchMoreLanguages = remember { prefs.getBoolean(Prefs.SEARCH_MORE_LANGUAGES, false) }
+    val searchMoreLanguages = prefs.getBoolean(Prefs.SEARCH_MORE_LANGUAGES, false)
     Dialog(onDismissRequest = onDismissRequest) {
         AlertDialogLayout(
             modifier = modifier,

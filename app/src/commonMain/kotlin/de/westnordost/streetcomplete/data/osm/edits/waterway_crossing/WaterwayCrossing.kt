@@ -20,10 +20,11 @@ data class WaterwayCrossing(
     val waterwayPositions: List<LatLon>,
     val position: LatLon,
     val nearbyWays: List<CrossingContextWay> = emptyList(),
+    val contextSection: List<LatLon> = emptyList(),
 ) {
     val elementKeys get() = (listOf(road.key, waterway.key) + nearbyWays.map { it.way.key } +
         (road.nodeIds + waterway.nodeIds + nearbyWays.flatMap { context ->
-            nearbyEdges(context.way, context.positions, position).flatMap { listOf(it.first, it.second) } +
+            nearbyEdges(context.way, context.positions, position, contextSection).flatMap { listOf(it.first, it.second) } +
                 context.way.nodeIds.filter { it < 0 }
         }).distinct()
             .map { ElementKey(ElementType.NODE, it) }).distinct()
@@ -37,7 +38,7 @@ data class WaterwayCrossing(
         val (currentRoad, rp) = validateWay(road, roadPositions, repository)
         val (currentWater, wp) = validateWay(waterway, waterwayPositions, repository)
         checkCrossing(currentRoad, currentWater, rp, wp, position, allowSharedFord)
-        for (context in nearbyWays) validateContext(context, position, repository)
+        for (context in nearbyWays) validateContext(context, position, contextSection, repository)
         return currentRoad to currentWater
     }
 }
@@ -48,8 +49,8 @@ data class WaterwayCrossing(
 data class CrossingContextWay(val way: Way, val positions: List<LatLon>)
 
 internal const val MIN_CROSSING_EDGE_LENGTH = 1.0 // metres, independent of map zoom
-// Keep the first phase's structure and its checked surrounding geometry within a bounded area.
-internal const val MAX_CROSSING_STRUCTURE_LENGTH = 100.0
+// A margin for conflict snapshots, not a limit on surveyed structure length.
+internal const val CROSSING_CONTEXT_MARGIN = 100.0
 private val structureKeys = setOf("bridge", "tunnel", "covered", "ford", "layer", "level", "location")
 private val roadTypes = setOf("motorway", "trunk", "motorway_link", "trunk_link", "primary_link", "secondary_link", "tertiary_link",
     "residential", "unclassified", "tertiary", "secondary", "primary",
@@ -77,18 +78,20 @@ private fun validateWay(original: Way, positions: List<LatLon>, repo: MapDataRep
 
 private data class NearbyEdge(val first: Long, val second: Long, val a: LatLon, val b: LatLon)
 
-private fun nearbyEdges(way: Way, positions: List<LatLon>, center: LatLon): List<NearbyEdge> =
+private fun nearbyEdges(way: Way, positions: List<LatLon>, center: LatLon, section: List<LatLon>): List<NearbyEdge> =
     positions.zipWithNext().mapIndexedNotNull { i, (a, b) ->
-        if (center.distanceToArc(a, b) <= MAX_CROSSING_STRUCTURE_LENGTH)
+        if (center.distanceToArc(a, b) <= CROSSING_CONTEXT_MARGIN || section.any { it.distanceToArc(a, b) <= CROSSING_CONTEXT_MARGIN }
+            || section.size >= 2 && (a.distanceToArcs(section) <= CROSSING_CONTEXT_MARGIN || b.distanceToArcs(section) <= CROSSING_CONTEXT_MARGIN
+                || crossingPoints(listOf(a, b), section).isNotEmpty()))
             NearbyEdge(way.nodeIds[i], way.nodeIds[i + 1], a, b) else null
     }
 
-private fun validateContext(context: CrossingContextWay, center: LatLon, repository: MapDataRepository) {
+private fun validateContext(context: CrossingContextWay, center: LatLon, section: List<LatLon>, repository: MapDataRepository) {
     val data = repository.getWayComplete(context.way.id) ?: throw ConflictException("Crossing context unavailable")
     val current = data.getWay(context.way.id) ?: throw ConflictException("Crossing context unavailable")
     val positions = current.nodeIds.map { data.getNode(it)?.position ?: throw ConflictException("Incomplete crossing geometry") }
-    val before = nearbyEdges(context.way, context.positions, center)
-    val after = nearbyEdges(current, positions, center)
+    val before = nearbyEdges(context.way, context.positions, center, section)
+    val after = nearbyEdges(current, positions, center, section)
     crossingCheck(before.size == after.size && before.zip(after).all { (a, b) ->
         a.first == b.first && a.second == b.second && a.a.equalsInOsm(b.a) && a.b.equalsInOsm(b.b)
     }, "Crossing context geometry moved")
@@ -104,11 +107,11 @@ internal fun checkCrossing(road: Way, water: Way, rp: List<LatLon>, wp: List<Lat
             "Existing structure, layer or area tags require manual editing")
         checkSimpleCrossingWay(way, positions)
     }
-    val shared = road.nodeIds.filter { it in water.nodeIds }
+    val shared = road.nodeIds.filterIndexed { i, id -> id in water.nodeIds && rp[i].distanceTo(pos) < 0.01 }
     crossingCheck(shared.isEmpty() || allowSharedFord && shared.size == 1, "Ways already connected")
     crossingCheck(!hasOverlappingCrossingEdges(rp, wp), "Overlapping crossing ways")
-    val crossings = if (shared.isEmpty()) crossingPoints(rp, wp) else uniqueCrossingPoints(rp, wp)
-    crossingCheck(crossings.size == 1 && crossings.single().equalsInOsm(pos),
+    val crossings = uniqueCrossingPoints(rp, wp)
+    crossingCheck(crossings.count { it.equalsInOsm(pos) } == 1,
         "Crossing is no longer unique")
     if (shared.isNotEmpty()) {
         crossingCheck(road.allowsSimpleWaterwayFord(), "Ford on this road requires manual editing")
@@ -182,14 +185,13 @@ fun findWaterwayCrossings(data: MapDataWithGeometry, near: LatLon, radius: Doubl
     val waters = data.ways.filter { it.tags["waterway"] in waterTypes }
     return roads.flatMap { road ->
         val rp = positions(road) ?: return@flatMap emptyList()
-        waters.mapNotNull { water ->
-            val wp = positions(water) ?: return@mapNotNull null
-            val points = uniqueCrossingPoints(rp, wp)
-            val pos = points.singleOrNull()?.takeIf { it.distanceTo(near) <= radius }
-                ?: return@mapNotNull null
-            try { checkEditableCrossing(data, road, water, rp, wp, pos) } catch (_: ConflictException) { return@mapNotNull null }
-            val context = crossingContext(data, road, water, pos) ?: return@mapNotNull null
-            WaterwayCrossing(road, water, rp, wp, pos, context)
+        waters.flatMap { water ->
+            val wp = positions(water) ?: return@flatMap emptyList()
+            uniqueCrossingPoints(rp, wp).filter { it.distanceTo(near) <= radius }.mapNotNull { pos ->
+                try { checkEditableCrossing(data, road, water, rp, wp, pos) } catch (_: ConflictException) { return@mapNotNull null }
+                val context = crossingContext(data, road, water, pos) ?: return@mapNotNull null
+                WaterwayCrossing(road, water, rp, wp, pos, context)
+            }
         }
     }.sortedBy { it.position.distanceTo(near) }
 }
@@ -201,7 +203,7 @@ internal fun crossingContext(data: MapDataWithGeometry, road: Way, water: Way, p
         val positions = other.nodeIds.map { data.getNode(it)?.position ?: return null }
         if (positions.size < 2) continue
         if (pos.distanceToArcs(positions) < 0.01) return null
-        if (pos.distanceToArcs(positions) <= MAX_CROSSING_STRUCTURE_LENGTH)
+        if (pos.distanceToArcs(positions) <= CROSSING_CONTEXT_MARGIN)
             context.add(CrossingContextWay(other, positions))
     }
     return context
@@ -254,7 +256,7 @@ private fun Way.remap(ids: Map<ElementKey, Long>) = copy(
 /** Shared vertices support only a conservative tag-only ford; unconnected ways keep all answers. */
 internal fun checkEditableCrossing(data: MapData, road: Way, water: Way, rp: List<LatLon>, wp: List<LatLon>, pos: LatLon) {
     checkCrossing(road, water, rp, wp, pos, allowSharedFord = true)
-    val shared = road.nodeIds.singleOrNull { it in water.nodeIds } ?: return
+    val shared = road.nodeIds.singleOrNull { it in water.nodeIds && data.getNode(it)?.position?.distanceTo(pos)?.let { d -> d < 0.01 } == true } ?: return
     val node = data.getNode(shared) ?: throw ConflictException("Incomplete crossing geometry")
     crossingCheck(node.tags.isEmpty(), "Existing crossing node tags require manual editing")
     crossingCheck(data.ways.filter { shared in it.nodeIds }.map { it.id }.toSet() == setOf(road.id, water.id),

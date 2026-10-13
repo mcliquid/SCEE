@@ -72,6 +72,7 @@ fun SplitWayForm(
     contextMarkers: List<Marker> = emptyList(),
     instruction: String? = null,
     confirmLabel: String? = null,
+    additionalMarkers: (suspend (List<SplitPolylineAtPosition>) -> List<Marker>)? = null,
 ) {
     val prefs: Preferences = koinInject()
     val initialBackground = rememberSaveable { prefs.getString(Prefs.THEME_BACKGROUND, "MAP") }
@@ -140,9 +141,9 @@ fun SplitWayForm(
         }
     }
 
-    LaunchedEffect(cuts) {
+    LaunchedEffect(cuts, contextMarkers) {
         mapMarkersCallback?.invoke(
-            contextMarkers + cuts.map { Marker(ElementPointGeometry(it.pos), Res.drawable.scissors_cut) }
+            contextMarkers + (additionalMarkers?.invoke(cuts) ?: emptyList()) + cuts.map { Marker(ElementPointGeometry(it.pos), Res.drawable.scissors_cut) }
         )
     }
 

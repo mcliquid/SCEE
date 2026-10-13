@@ -9,7 +9,8 @@ interface OsmQuestDaoEntry {
     val elementType: ElementType
     val elementId: Long
     val position: LatLon
+    val discriminator: String get() = ""
 }
 
 val OsmQuestDaoEntry.key get() =
-    OsmQuestKey(elementType, elementId, questTypeName)
+    OsmQuestKey(elementType, elementId, questTypeName, discriminator)

@@ -16,7 +16,8 @@ data class OsmNoteQuestKey(val noteId: Long) : QuestKey()
 data class OsmQuestKey(
     val elementType: ElementType,
     val elementId: Long,
-    val questTypeName: String
+    val questTypeName: String,
+    val discriminator: String = ""
 ) : QuestKey()
 
 @Serializable

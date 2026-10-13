@@ -22,6 +22,16 @@ class OsmQuestsHiddenDaoTest : StreetCompleteDatabaseTestCase() {
         dao = OsmQuestsHiddenDao(database)
     }
 
+    @Test fun `crossing pins on one road can be hidden and unhidden independently`() {
+        val first = OsmQuestKey(ElementType.WAY, 10, "AddWaterwayCrossing", "0:0")
+        val second = first.copy(discriminator = "0:10000")
+        dao.add(first); dao.add(second)
+        assertEquals(setOf(first, second), dao.getAll().map { it.key }.toSet())
+        assertTrue(dao.delete(first))
+        assertNull(dao.getTimestamp(first))
+        assertNotNull(dao.getTimestamp(second))
+    }
+
     @Test fun addGetDelete() {
         val key = OsmQuestKey(ElementType.NODE, 123L, "bla")
         assertFalse(dao.delete(key))

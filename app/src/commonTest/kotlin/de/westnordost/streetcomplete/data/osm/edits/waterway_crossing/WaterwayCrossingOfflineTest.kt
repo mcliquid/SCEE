@@ -17,6 +17,35 @@ import kotlinx.serialization.json.Json
 import kotlin.math.round
 
 class WaterwayCrossingOfflineTest {
+    @Test fun `combined multi crossing bridge replays offline and undo restores both crossings`() {
+        val f = WaterwayCrossingTestData()
+        f.data.toList().forEach { f.data.remove(it.type, it.id) }
+        f.data.putAll(osmCrossingPracticeData(982009820, 1385223359, 1385223360))
+        val candidate = de.westnordost.streetcomplete.quests.waterway_crossing.AddWaterwayCrossing().getCrossings(f.data).first()
+        val crossing = findWaterwayCrossings(f.data, candidate.position, 1.0).single()
+        val rp = crossing.roadPositions
+        val action = Json.decodeFromString<SetWaterwayStructureAction>(Json.encodeToString(
+            SetWaterwayStructureAction(crossing, WaterwayStructure.BRIDGE, listOf(
+                de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtPoint(rp[1]),
+                de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtPoint(rp[rp.lastIndex - 1])))))
+        var pending = listOf(edit(action = action))
+        lateinit var listener: ElementEditsSource.Listener
+        val edits = mock<ElementEditsSource> {
+            every { getAllUnsynced() } calls { pending }
+            every { getIdProvider(any()) } calls { f.idProvider() }
+            every { addListener(any()) } calls { (l: ElementEditsSource.Listener) -> listener = l }
+        }
+        val local = MapDataWithEditsSourceImpl(f.repo, edits, ElementGeometryCreator())
+        val results = action.createUpdates(f.repo, f.idProvider())
+        val middle = (results.creations + results.modifications).filterIsInstance<Way>().single { "bridge" in it.tags }
+        assertEquals("yes", local.getWay(middle.id)!!.tags["bridge"])
+        assertEquals(f.data.getWay(1385223359), local.getWay(1385223359))
+        assertEquals(f.data.getWay(1385223360), local.getWay(1385223360))
+        val removed = pending; pending = emptyList(); listener.onDeletedEdits(removed)
+        assertEquals(crossing.road, local.getWay(crossing.road.id))
+        assertEquals(2, de.westnordost.streetcomplete.quests.waterway_crossing.AddWaterwayCrossing().getCrossings(f.data).size)
+    }
+
     @Test fun `shared ford serializes replays offline and undo restores untagged vertex`() {
         val f = WaterwayCrossingTestData()
         val c = f.sharedCrossing()

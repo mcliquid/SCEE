@@ -125,7 +125,8 @@ private fun Edit.toProperties(): List<Pair<String, JsonPrimitive>> = when (this)
         MARKER_EDIT_TYPE to JsonPrimitive(EDIT_TYPE_HIDE_OSM_QUEST),
         MARKER_ELEMENT_TYPE to JsonPrimitive(elementType.name),
         MARKER_ELEMENT_ID to JsonPrimitive(elementId),
-        MARKER_QUEST_TYPE to JsonPrimitive(questType.name)
+        MARKER_QUEST_TYPE to JsonPrimitive(questType.name),
+        "crossing_id" to JsonPrimitive(discriminator)
     )
     is ExternalSourceQuestHidden -> listOf(
         MARKER_EDIT_TYPE to JsonPrimitive(EDIT_TYPE_HIDE_OTHER_SOURCE_QUEST),
@@ -147,7 +148,8 @@ private fun JsonObject.toEditKey(): EditKey? {
             QuestHiddenKey(OsmQuestKey(
                 ElementType.valueOf(getValue(MARKER_ELEMENT_TYPE).jsonPrimitive.content),
                 getValue(MARKER_ELEMENT_ID).jsonPrimitive.long,
-                getValue(MARKER_QUEST_TYPE).jsonPrimitive.content
+                getValue(MARKER_QUEST_TYPE).jsonPrimitive.content,
+                get("crossing_id")?.jsonPrimitive?.contentOrNull ?: ""
             ))
         EDIT_TYPE_HIDE_OSM_NOTE_QUEST ->
             QuestHiddenKey(OsmNoteQuestKey(getValue(MARKER_NOTE_ID).jsonPrimitive.long))

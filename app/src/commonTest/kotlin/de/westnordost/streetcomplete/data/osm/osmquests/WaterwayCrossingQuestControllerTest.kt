@@ -16,6 +16,7 @@ import de.westnordost.streetcomplete.testutils.*
 import de.westnordost.streetcomplete.util.countryboundaries.AllCountries
 import de.westnordost.streetcomplete.util.countryboundaries.Countries
 import de.westnordost.streetcomplete.util.countryboundaries.CountryBoundaries
+import de.westnordost.streetcomplete.util.ktx.equalsInOsm
 import de.westnordost.streetcomplete.util.math.contains
 import dev.mokkery.answering.calls
 import dev.mokkery.answering.returns
@@ -55,6 +56,95 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
     }
     private fun controller() = OsmQuestController(dao, source, notes,
         QuestTypeRegistry({ listOf(202 to type) }), lazyOf(boundaries), MapSettings())
+
+    @Test fun `combined OSM bridge removes both persisted pins and undo restores the same keys`() {
+        data.toList().forEach { data.remove(it.type, it.id) }
+        data.putAll(osmCrossingPracticeData(982009820, 1385223359, 1385223360))
+        data.ways.toList().forEach { w -> data.put(w, ElementGeometryCreator().create(w, data)) }
+        every { source.getWaysForNode(any()) } calls { (id: Long) -> data.ways.filter { id in it.nodeIds } }
+        val bounds = BoundingBox(47.75, 9.10, 47.77, 9.13)
+        val original = MutableMapDataWithGeometry(data)
+        val quests = ctrl.getAllInBBox(bounds, listOf(type))
+        assertEquals(2, quests.size)
+        val keys = quests.map { it.key }.toSet()
+        assertEquals(2, keys.size)
+        val originalListener = mapListener
+        assertEquals(keys, controller().getAllInBBox(bounds, listOf(type)).map { it.key }.toSet())
+        mapListener = originalListener
+        val crossing = findWaterwayCrossings(data, quests.first().position, 1.0).single()
+        val rp = crossing.roadPositions
+        val action = SetWaterwayStructureAction(crossing, WaterwayStructure.BRIDGE, listOf(
+            de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtPoint(rp[1]),
+            de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtPoint(rp[rp.lastIndex - 1])))
+        val changes = action.createUpdates(f.repo, f.idProvider())
+        val updates = MutableMapDataWithGeometry()
+        (changes.creations + changes.modifications).forEach { data.putElement(it) }
+        (changes.creations + changes.modifications).forEach { e ->
+            val g = ElementGeometryCreator().create(e, data); data.put(e, g); updates.put(e, g)
+        }
+        val deletedPins = mutableSetOf<de.westnordost.streetcomplete.data.quest.OsmQuestKey>()
+        ctrl.addListener(object : OsmQuestSource.Listener {
+            override fun onUpdated(added: Collection<OsmQuest>, deleted: Collection<de.westnordost.streetcomplete.data.quest.OsmQuestKey>) { deletedPins.addAll(deleted) }
+            override fun onInvalidated() {}
+        })
+        mapListener.onUpdated(updates, emptyList())
+        assertTrue(ctrl.getAllInBBox(bounds, listOf(type)).isEmpty())
+        assertTrue(deletedPins.containsAll(keys))
+        keys.forEach { assertNull(dao.get(it)) }
+        changes.creations.forEach { data.remove(it.type, it.id) }
+        original.forEach { e -> data.put(e, original.getGeometry(e.type, e.id)) }
+        mapListener.onUpdated(data, changes.creations.map { it.key })
+        assertEquals(keys, ctrl.getAllInBBox(bounds, listOf(type)).map { it.key }.toSet())
+    }
+
+    @Test fun `partial bridge and upload ID replacement leave exactly the other crossing pin`() {
+        data.putElement(node(1, p(0.0, -0.004)))
+        data.put(f.road, ElementGeometryCreator().create(f.road, data))
+        data.putElement(node(7, p(-0.002, 0.001))); data.putElement(node(8, p(0.002, 0.001)))
+        val water = way(30, listOf(7, 8), mapOf("waterway" to "ditch"))
+        data.put(water, ElementGeometryCreator().create(water, data))
+        every { source.getWaysForNode(any()) } calls { (id: Long) -> data.ways.filter { id in it.nodeIds } }
+        val initial = ctrl.getAllInBBox(area, listOf(type))
+        assertEquals(2, initial.size)
+        val edits = f.bridge.copy(crossing = findWaterwayCrossings(data, p(), 1.0).single()).createUpdates(f.repo, f.idProvider())
+        fun notify(elements: List<Element>, deleted: List<ElementKey>) {
+            elements.forEach { data.putElement(it) }
+            val updates = MutableMapDataWithGeometry()
+            elements.forEach { e -> val g = ElementGeometryCreator().create(e, data); data.put(e, g); updates.put(e, g) }
+            mapListener.onUpdated(updates, deleted)
+        }
+        notify(edits.creations + edits.modifications, emptyList())
+        val remaining = ctrl.getAllInBBox(area, listOf(type)).single()
+        assertTrue(remaining.position.equalsInOsm(p(0.0, 0.001)))
+        assertTrue(remaining.elementId < 0)
+        initial.forEach { assertNull(dao.get(it.key)) }
+        val temporary = data.filter { it.id < 0 }.toList()
+        val ids = temporary.associate { it.key to (100000L - it.id) }
+        val replacements = data.mapNotNull { element -> when (element) {
+            is Node -> if (element.id < 0) element.copy(id = ids.getValue(element.key)) else null
+            is Way -> if (element.id < 0 || element.nodeIds.any { it < 0 }) element.copy(
+                id = ids[element.key] ?: element.id,
+                nodeIds = element.nodeIds.map { ids[ElementKey(ElementType.NODE, it)] ?: it }) else null
+            is Relation -> null
+        } }
+        temporary.forEach { data.remove(it.type, it.id) }
+        notify(replacements, temporary.map { it.key })
+        val uploaded = ctrl.getAllInBBox(area, listOf(type)).single()
+        assertEquals(remaining.position, uploaded.position)
+        assertEquals(remaining.key.discriminator, uploaded.key.discriminator)
+        assertTrue(uploaded.elementId > 0)
+        assertNull(dao.get(remaining.key))
+        assertEquals(uploaded.position, dao.get(uploaded.key)!!.position)
+    }
+
+    @Test fun `legacy single pin is replaced with independent crossing keys`() {
+        val legacy = BasicOsmQuestDaoEntry(ElementType.WAY, f.road.id, type.name, p())
+        dao.put(legacy)
+        val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+        assertTrue(quest.key.discriminator.isNotEmpty())
+        assertNull(dao.get(legacy.key))
+        assertEquals(quest.position, dao.get(quest.key)!!.position)
+    }
 
     @Test fun `ford retirement is independent of geographic position and segment direction`() {
         for (i in 0 until 100) {
@@ -209,12 +299,13 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         }
         val firstTile = BoundingBox(-0.0001, -0.0001, 0.0001, 0.0001)
         val otherTile = BoundingBox(-0.0001, 0.0059, 0.0001, 0.0061)
-        assertTrue(ctrl.getAllInBBox(otherTile, listOf(type)).isEmpty())
+        val otherQuest = ctrl.getAllInBBox(otherTile, listOf(type)).single()
         val quest = ctrl.getAllInBBox(firstTile, listOf(type)).single()
         assertEquals(p(), quest.position)
-        assertTrue(ctrl.getAllInBBox(otherTile, listOf(type)).isEmpty())
+        assertEquals(otherQuest, ctrl.getAllInBBox(otherTile, listOf(type)).single())
         assertEquals(quest.position, dao.get(quest.key)!!.position)
-        assertTrue(controller().getAllInBBox(otherTile, listOf(type)).isEmpty())
+        assertEquals(otherQuest, controller().getAllInBBox(otherTile, listOf(type)).single())
+        assertNotEquals(quest.key, otherQuest.key)
         assertEquals(quest, controller().getAllInBBox(firstTile, listOf(type)).single())
     }
 

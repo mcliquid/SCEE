@@ -31,7 +31,7 @@ import de.westnordost.streetcomplete.quests.osmose.OsmoseTable
 import de.westnordost.streetcomplete.util.logs.Log
 
 object StreetCompleteDatabaseConfigurator : DatabaseConfigurator {
-    override val version = 22
+    override val version = 23
 
     override fun onCreate(db: Database) {
         // OSM notes
@@ -282,6 +282,8 @@ object StreetCompleteDatabaseConfigurator : DatabaseConfigurator {
         // create some EE tables if not existing
         // this is to avoid actual db upgrade to keep compatibility with upstream
 
+        db.exec(de.westnordost.streetcomplete.data.osm.osmquests.WaterwayCrossingQuestTable.CREATE)
+        db.exec(de.westnordost.streetcomplete.data.osm.osmquests.WaterwayCrossingQuestTable.INDEX_CREATE)
         // create other source tables
         db.tryExec(ExternalSourceQuestTables.CREATE_HIDDEN)
         db.tryExec(ExternalSourceQuestTables.CREATE_EDITS)

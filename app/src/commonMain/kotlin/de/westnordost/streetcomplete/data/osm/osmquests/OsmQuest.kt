@@ -14,10 +14,12 @@ data class OsmQuest(
     override val type: OsmElementQuestType<*>,
     override val elementType: ElementType,
     override val elementId: Long,
-    override val geometry: ElementGeometry
+    override val geometry: ElementGeometry,
+    override val discriminator: String = if (type is de.westnordost.streetcomplete.quests.waterway_crossing.AddWaterwayCrossing)
+        "${kotlin.math.round(geometry.center.latitude * 1e7).toLong()}:${kotlin.math.round(geometry.center.longitude * 1e7).toLong()}" else ""
 ) : Quest(), OsmQuestDaoEntry {
 
-    override val key: OsmQuestKey = OsmQuestKey(elementType, elementId, questTypeName.intern())
+    override val key: OsmQuestKey = OsmQuestKey(elementType, elementId, questTypeName.intern(), discriminator)
 
     override val questTypeName: String get() = type.name
 

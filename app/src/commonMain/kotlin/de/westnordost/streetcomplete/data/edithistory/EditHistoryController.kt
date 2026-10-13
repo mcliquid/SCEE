@@ -81,7 +81,11 @@ class EditHistoryController(
             is OsmQuestKey -> {
                 val geometry = mapDataSource.getGeometry(key.elementType, key.elementId) ?: return null
                 val questType = questTypeRegistry.getByName(key.questTypeName) as? OsmElementQuestType<*> ?: return null
-                OsmQuestHidden(key.elementType, key.elementId, questType, geometry, timestamp)
+                OsmQuestHidden(key.elementType, key.elementId, questType,
+                    key.discriminator.split(':').mapNotNull { it.toLongOrNull() }.takeIf { it.size == 2 }?.let {
+                        de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry(
+                            de.westnordost.streetcomplete.data.osm.mapdata.LatLon(it[0] / 1e7, it[1] / 1e7))
+                    } ?: geometry, timestamp, key.discriminator)
             }
             is ExternalSourceQuestKey -> {
                 val type = externalSourceQuestController.getQuestType(key) ?: return null

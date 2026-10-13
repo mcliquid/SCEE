@@ -161,10 +161,7 @@ fun MainBottomSheet(
                     onDismiss()
                 },
                 onHideQuest = { tempHide ->
-                    val key = OsmQuestKey(
-                        shownBottomSheet.element.type,
-                        shownBottomSheet.element.id, shownBottomSheet.quest.type.name)
-                    onHideQuest(key, tempHide)
+                    onHideQuest(shownBottomSheet.quest.key, tempHide)
                     onDismiss()
                 },
                 questType = shownBottomSheet.quest.type,

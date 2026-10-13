@@ -45,14 +45,14 @@ class AddWaterwayCrossingTest {
         }
     }
 
-    @Test fun `canonical crossing outside tile must not be replaced by another crossing`() {
+    @Test fun `each crossing has its own tile independent pin`() {
         val f = WaterwayCrossingTestData()
         f.data.putElement(node(7, p(-0.001, 0.001)))
         f.data.putElement(node(8, p(0.001, 0.001)))
         f.data.putElement(way(30, listOf(7, 8), mapOf("waterway" to "ditch")))
         val bbox = BoundingBox(-0.0001, 0.0009, 0.0001, 0.0011)
-        assertTrue(type.getCrossings(f.data, bbox).isEmpty())
-        assertEquals(20L, type.getCrossings(f.data).single().waterway.id)
+        assertEquals(30L, type.getCrossings(f.data, bbox).single().waterway.id)
+        assertEquals(setOf(20L, 30L), type.getCrossings(f.data).map { it.waterway.id }.toSet())
     }
 
     @Test fun `incomplete surrounding way is never silently omitted from edit snapshot`() {
@@ -157,22 +157,22 @@ class AddWaterwayCrossingTest {
         assertTrue(type.getCrossings(f.data).isEmpty())
     }
 
-    @Test fun `multiple intersections of the same pair are ambiguous`() {
+    @Test fun `multiple safe intersections of the same pair are independent`() {
         val f = WaterwayCrossingTestData()
         listOf(p(-0.001, -0.001), p(0.001, -0.001), p(0.001, 0.001), p(-0.001, 0.001))
             .forEachIndexed { i, pos -> f.data.putElement(node(i + 1L, pos)) }
         f.data.putElement(node(5, p(0.0, -0.002))); f.data.putElement(node(6, p(0.0, 0.002)))
-        assertTrue(type.getCrossings(f.data).isEmpty())
+        assertEquals(2, type.getCrossings(f.data).size)
     }
 
-    @Test fun `one deterministic quest per road when different waterways intersect it`() {
+    @Test fun `multiple quests per road have deterministic positions`() {
         val f = WaterwayCrossingTestData()
         f.data.putElement(node(7, p(-0.001, 0.001))); f.data.putElement(node(8, p(0.001, 0.001)))
         f.data.putElement(way(30, listOf(7, 8), mapOf("waterway" to "ditch")))
-        val candidate = type.getCrossings(f.data).single()
-        assertEquals(f.water, candidate.waterway)
+        val candidates = type.getCrossings(f.data)
+        assertEquals(2, candidates.size)
         val reversed = MutableMapDataWithGeometry(f.data.toList().reversed(), emptyList())
-        assertEquals(candidate, type.getCrossings(reversed).single())
+        assertEquals(candidates.toSet(), type.getCrossings(reversed).toSet())
     }
 
     @Test fun `bridge culvert and ford each resolve automatic detection`() {

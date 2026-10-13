@@ -19,7 +19,7 @@ import de.westnordost.streetcomplete.util.math.contains
 import de.westnordost.streetcomplete.util.math.distanceTo
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 
-/** One quest per road, at its first unresolved crossing. Answers edit both ways atomically. */
+/** One independently identified quest per unresolved crossing. Answers edit both ways atomically. */
 class AddWaterwayCrossing : OsmElementQuestType<ElementEditAction> {
     override val icon = Res.drawable.quest_waterway_crossing
     override val title = Res.string.waterway_crossing_edit
@@ -31,29 +31,25 @@ class AddWaterwayCrossing : OsmElementQuestType<ElementEditAction> {
             && !element.isClosed && element.tags["area"] != "yes" && "railway" !in element.tags) null else false
 
     override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> =
-        getCrossings(mapData).map { it.road }
+        getCrossings(mapData).map { it.road }.distinctBy { it.id }
 
     private val cacheLock = ReentrantLock()
     private var cachedInput: List<Element>? = null
     private var cachedCandidates = emptyList<Candidate>()
 
     fun getCrossings(data: MapDataWithGeometry, bbox: BoundingBox? = null,
-        preferredPositions: Map<Long, LatLon> = emptyMap()): List<Candidate> = cacheLock.withLock {
+        preferredPositions: Map<Long, List<LatLon>> = emptyMap()): List<Candidate> = cacheLock.withLock {
         val input = crossingDetectionInput(data)
         if (input != cachedInput) {
             cachedCandidates = findCandidates(data)
             cachedInput = input
         }
-        cachedCandidates.groupBy { it.road.id }.values.mapNotNull { candidates ->
-            val preferred = preferredPositions[candidates.first().road.id]
-            val chosen = if (preferred != null) candidates.singleOrNull { it.position.equalsInOsm(preferred) }
-                else candidates.minWithOrNull(compareBy({ it.waterway.id }, { it.position.latitude }, { it.position.longitude }))
-            chosen?.takeIf { bbox == null || bbox.contains(it.position) }?.copy(
-                road = data.getWay(chosen.road.id) ?: chosen.road,
-                waterway = data.getWay(chosen.waterway.id) ?: chosen.waterway,
-                position = preferred ?: chosen.position,
-            )
-        }
+        cachedCandidates.filter { bbox == null || bbox.contains(it.position) }.map { candidate ->
+            val preferred = preferredPositions[candidate.road.id].orEmpty().singleOrNull { it.equalsInOsm(candidate.position) }
+            candidate.copy(road = data.getWay(candidate.road.id) ?: candidate.road,
+                waterway = data.getWay(candidate.waterway.id) ?: candidate.waterway,
+                position = preferred ?: candidate.position)
+        }.distinctBy { Triple(it.road.id, it.position.latitude, it.position.longitude) }
     }
 
     internal fun cachedCandidateAt(roadId: Long, position: LatLon): Candidate? = cacheLock.withLock {
@@ -85,8 +81,7 @@ class AddWaterwayCrossing : OsmElementQuestType<ElementEditAction> {
                 .filter { (_, _, b) -> b.max.latitude >= bounds.min.latitude
                     && (bounds.crosses180thMeridian || b.crosses180thMeridian
                         || b.min.longitude <= bounds.max.longitude && b.max.longitude >= bounds.min.longitude) }
-                .mapNotNull { (water, wp, _) ->
-                    val point = uniqueCrossingPoints(rp, wp).singleOrNull() ?: return@mapNotNull null
+                .flatMap { (water, wp, _) -> uniqueCrossingPoints(rp, wp).mapNotNull { point ->
                     try { checkEditableCrossing(data, road, water, rp, wp, point) } catch (_: ConflictException) { return@mapNotNull null }
                     if (crossingContext(data, road, water, point) == null) return@mapNotNull null
                     // A ford/structure on the crossing vertex already describes this crossing.
@@ -95,13 +90,15 @@ class AddWaterwayCrossing : OsmElementQuestType<ElementEditAction> {
                             && it.tags.keys.any { key -> key in setOf("ford", "bridge", "tunnel", "covered", "layer", "level") }
                     } == true }) return@mapNotNull null
                     Candidate(road, water, point)
-                }.toList()
+                } }.toList()
             candidates
         }
     }
 
-    fun getQuestGeometry(element: Element, data: MapDataWithGeometry): ElementPointGeometry? =
-        getCrossings(data).find { it.road.id == element.id }?.let { ElementPointGeometry(it.position) }
+    override fun getHighlightedElements(element: Element, mapData: MapDataWithGeometry): Sequence<Element> {
+        if (element !is Way) return emptySequence()
+        return getCrossings(mapData).filter { it.road.id == element.id }.map { it.waterway }.distinctBy { it.id }.asSequence()
+    }
 
     @Composable override fun Form(on: (QuestAction<ElementEditAction>) -> Unit, element: Element,
         geometry: ElementGeometry, countryInfo: CountryInfo) {

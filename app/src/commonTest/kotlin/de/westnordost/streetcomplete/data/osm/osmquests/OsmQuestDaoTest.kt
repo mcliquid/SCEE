@@ -20,6 +20,18 @@ class OsmQuestDaoTest : StreetCompleteDatabaseTestCase() {
         dao = OsmQuestDao(database)
     }
 
+    @Test fun `two crossing entries on the same way persist independently`() {
+        val first = BasicOsmQuestDaoEntry(ElementType.WAY, 10, "AddWaterwayCrossing", LatLon(0.0, 0.0), "0:0")
+        val second = first.copy(position = LatLon(0.0, 0.001), discriminator = "0:10000")
+        dao.putAll(listOf(first, second))
+        assertEquals(first, dao.get(first.key))
+        assertEquals(second, dao.get(second.key))
+        assertEquals(2, dao.getAllForElements(listOf(ElementKey(ElementType.WAY, 10))).size)
+        dao.delete(first.key)
+        assertNull(dao.get(first.key))
+        assertEquals(second, dao.get(second.key))
+    }
+
     @Test fun addGet() {
         val q = entry(ElementType.NODE, 123L, "a")
         val key = q.key

@@ -39,3 +39,21 @@ object OsmQuestTable {
         );
     """
 }
+
+/** Separate SCEE table: multiple crossings without changing the upstream quest schema. */
+object WaterwayCrossingQuestTable {
+    const val NAME = "waterway_crossing_quests"
+    const val CROSSING_ID = "crossing_id"
+    const val CREATE = """
+        CREATE TABLE IF NOT EXISTS $NAME (
+            quest_type varchar(255) NOT NULL,
+            element_id int NOT NULL,
+            element_type varchar(255) NOT NULL,
+            latitude double NOT NULL,
+            longitude double NOT NULL,
+            $CROSSING_ID varchar(255) NOT NULL,
+            PRIMARY KEY (element_type, element_id, quest_type, $CROSSING_ID)
+        );
+    """
+    const val INDEX_CREATE = "CREATE INDEX IF NOT EXISTS waterway_crossing_quests_spatial_index ON $NAME (latitude, longitude)"
+}

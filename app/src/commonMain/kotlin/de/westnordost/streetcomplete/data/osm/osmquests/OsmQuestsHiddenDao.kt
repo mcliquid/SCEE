@@ -24,7 +24,7 @@ class OsmQuestsHiddenDao(private val db: Database) {
         db.queryOne(NAME,
             where = "$QUEST_TYPE = ? AND $ELEMENT_ID = ? AND $ELEMENT_TYPE = ?",
             args = arrayOf(
-                osmQuestKey.questTypeName,
+                osmQuestKey.storedType(),
                 osmQuestKey.elementId,
                 osmQuestKey.elementType.name,
             )
@@ -34,7 +34,7 @@ class OsmQuestsHiddenDao(private val db: Database) {
         db.delete(NAME,
             where = "$QUEST_TYPE = ? AND $ELEMENT_ID = ? AND $ELEMENT_TYPE = ?",
             args = arrayOf(
-                osmQuestKey.questTypeName,
+                osmQuestKey.storedType(),
                 osmQuestKey.elementId,
                 osmQuestKey.elementType.name,
             )
@@ -56,14 +56,15 @@ class OsmQuestsHiddenDao(private val db: Database) {
 private fun OsmQuestKey.toPairs() = listOf(
     ELEMENT_TYPE to elementType.name,
     ELEMENT_ID to elementId,
-    QUEST_TYPE to questTypeName,
+    QUEST_TYPE to storedType(),
     TIMESTAMP to nowAsEpochMilliseconds()
 )
 
 private fun CursorPosition.toOsmQuestKey() = OsmQuestKey(
     ElementType.valueOf(getString(ELEMENT_TYPE)),
     getLong(ELEMENT_ID),
-    getString(QUEST_TYPE).intern()
+    getString(QUEST_TYPE).substringBefore('@').intern(),
+    getString(QUEST_TYPE).substringAfter('@', "")
 )
 
 private fun CursorPosition.toOsmQuestHiddenAt() = OsmQuestHiddenAt(
@@ -72,3 +73,5 @@ private fun CursorPosition.toOsmQuestHiddenAt() = OsmQuestHiddenAt(
 )
 
 data class OsmQuestHiddenAt(val key: OsmQuestKey, val timestamp: Long)
+
+private fun OsmQuestKey.storedType() = questTypeName + if (discriminator.isEmpty()) "" else "@$discriminator"

@@ -263,7 +263,8 @@ private fun QuestKey.toProperties(): List<Pair<String, JsonPrimitive>> = when (t
         MARKER_QUEST_GROUP to JsonPrimitive(QUEST_GROUP_OSM),
         MARKER_ELEMENT_TYPE to JsonPrimitive(elementType.name),
         MARKER_ELEMENT_ID to JsonPrimitive(elementId),
-        MARKER_QUEST_TYPE to JsonPrimitive(questTypeName)
+        MARKER_QUEST_TYPE to JsonPrimitive(questTypeName),
+        "crossing_id" to JsonPrimitive(discriminator)
     )
     is ExternalSourceQuestKey -> listOf(
         MARKER_QUEST_GROUP to JsonPrimitive(QUEST_GROUP_OTHER),
@@ -281,7 +282,8 @@ private fun JsonObject.toQuestKey(): QuestKey? {
             OsmQuestKey(
                 ElementType.valueOf(getValue(MARKER_ELEMENT_TYPE).jsonPrimitive.content),
                 getValue(MARKER_ELEMENT_ID).jsonPrimitive.long,
-                getValue(MARKER_QUEST_TYPE).jsonPrimitive.content
+                getValue(MARKER_QUEST_TYPE).jsonPrimitive.content,
+                get("crossing_id")?.jsonPrimitive?.contentOrNull ?: ""
             )
         QUEST_GROUP_OTHER ->
             ExternalSourceQuestKey(

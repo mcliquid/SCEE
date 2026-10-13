@@ -21,6 +21,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.MutableMapData
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.ui.common.quest.LocalMapMetersPerDp
 import de.westnordost.streetcomplete.util.sound.SoundEffectPlayer
+import de.westnordost.streetcomplete.util.ktx.equalsInOsm
 import com.russhwolf.settings.MapSettings
 import de.westnordost.streetcomplete.data.ConflictException
 import de.westnordost.osmfeatures.FeatureDictionary
@@ -54,6 +55,7 @@ class WaterwayCrossingFormTest {
     private var questAction: Action? = null
     private var crossing = f.crossing
     private var saveCount = 0
+    private var mapMarkers = emptyList<de.westnordost.streetcomplete.ui.common.quest.Marker>()
     private val mapPosition = mutableStateOf(f.crossing.position)
     private val sound = mock<SoundEffectPlayer>()
     private val source = mock<MapDataWithEditsSource> {
@@ -82,7 +84,8 @@ class WaterwayCrossingFormTest {
     private fun show() = compose.setContent {
         KoinIsolatedContext(testKoin) {
             MaterialTheme {
-                CompositionLocalProvider(LocalMapMetersPerDp provides 0.1) {
+                CompositionLocalProvider(LocalMapMetersPerDp provides 0.1,
+                    de.westnordost.streetcomplete.ui.common.quest.LocalMapMarkersCallback provides { mapMarkers = it.toList() }) {
                     WaterwayCrossingForm(crossing, mapPosition.value,
                         onDismiss = { dismissed = true },
                         onConfirmed = { saved = it; saveCount++ },
@@ -290,6 +293,39 @@ class WaterwayCrossingFormTest {
             .filterIsInstance<Way>().single { "bridge" in it.tags || "tunnel" in it.tags }
         assertEquals(if (action.structure == WaterwayStructure.BRIDGE) "1" else "-1", middle.tags["layer"])
         compose.onNodeWithText("Preview", substring = true).assertDoesNotExist()
+    }
+
+    @Test fun `combined bridge highlights and snapshots a waterway beyond initial context`() {
+        val otherPositions = listOf(p(-0.002, 0.0011), p(0.002, 0.0011))
+        f.data.putElement(node(7, otherPositions[0])); f.data.putElement(node(8, otherPositions[1]))
+        f.data.putElement(way(30, listOf(7, 8), mapOf("waterway" to "ditch")))
+        val action = f.bridge.copy(splits = listOf(
+            de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtLinePosition(f.roadPositions[0], f.roadPositions[1], 0.1),
+            de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtLinePosition(f.roadPositions[2], f.roadPositions[3], 0.9)))
+        cuts("Bridge", action)
+        compose.waitUntil(10000) { mapMarkers.any { marker ->
+            (marker.geometry as? de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry)?.polylines == listOf(otherPositions)
+        } }
+        compose.onNodeWithText("Save").performClick(); awaitSave()
+        val savedAction = assertIs<SetWaterwayStructureAction>(saved)
+        assertTrue(savedAction.crossing.nearbyWays.any { it.way.id == 30L })
+        assertTrue(action.selectedPositions().zip(savedAction.crossing.contextSection).all { (a, b) ->
+            a.equalsInOsm(b) })
+        val changes = savedAction.createUpdates(f.repo, f.idProvider())
+        assertEquals(1, (changes.creations + changes.modifications).filterIsInstance<Way>().count { "bridge" in it.tags })
+        assertTrue(changes.modifications.none { it.id == 20L || it.id == 30L })
+    }
+
+    @Test fun `incompatible second crossing prevents the entire shared segment edit`() {
+        f.data.putElement(node(7, p(-0.002, 0.0011))); f.data.putElement(node(8, p(0.002, 0.0011)))
+        f.data.putElement(way(30, listOf(7, 8), mapOf("waterway" to "ditch", "layer" to "-1")))
+        val action = f.bridge.copy(splits = listOf(
+            de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtLinePosition(f.roadPositions[0], f.roadPositions[1], 0.1),
+            de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtLinePosition(f.roadPositions[2], f.roadPositions[3], 0.9)))
+        cuts("Bridge", action)
+        compose.onNodeWithText("Save").performClick(); awaitSave()
+        assertNull(saved)
+        compose.onNodeWithText("This crossing cannot be edited automatically.").assertExists()
     }
 
     @Test fun `changing layer during splitting prevents save`() {

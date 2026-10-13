@@ -150,8 +150,9 @@ class OsmQuestController(
                 val affected = crossingType.cachedCandidatesForDeletedWays(deleted.filter { it.type == ElementType.WAY }.map { it.id }.toSet())
                 val removedPins = lock.withLock {
                     val keys = affected.mapNotNull { candidate ->
-                        val key = OsmQuestKey(ElementType.WAY, candidate.road.id, crossingType.name)
-                        key.takeIf { db.get(it)?.position?.equalsInOsm(candidate.position) == true }
+                        db.getAllForElements(listOf(candidate.road.key)).singleOrNull {
+                            it.questTypeName == crossingType.name && it.position.equalsInOsm(candidate.position)
+                        }?.key
                     }
                     if (keys.isNotEmpty()) { db.deleteAll(keys); lastCrossingQuery = null }
                     keys
@@ -306,16 +307,10 @@ class OsmQuestController(
             }
         }
 
-        return questTypes.map { questType ->
+        return questTypes.filterNot { it is AddWaterwayCrossing }.map { questType ->
             scope.async {
                 val typeStart = Perf.mark()
                 var surroundingWaitMs = 0L
-                if (questType is AddWaterwayCrossing) {
-                    if (element !is Way || questType.isApplicableTo(element) != null) return@async null
-                    val candidate = crossingCandidates(questType, withContext(Dispatchers.IO) { lazyMapData }, null)
-                        .singleOrNull { it.road.id == element.id && element is Way }
-                    return@async candidate?.let { OsmQuest(questType, element.type, element.id, ElementPointGeometry(it.position)) }
-                }
                 val result = if (questType.enabledInCountries != AllCountries && !mayCreateQuest(questType, geometry, null)) {
                     null // check whether it's disabled before creating the quest
                 } else {
@@ -329,10 +324,7 @@ class OsmQuestController(
                             .any { it.id == element.id && it.type == element.type }
                     }
                     if (appliesToElement) {
-                        val questGeometry = if (questType is AddWaterwayCrossing) {
-                            questType.getQuestGeometry(element, withContext(Dispatchers.IO) { lazyMapData })
-                        } else geometry
-                        questGeometry?.let { OsmQuest(questType, element.type, element.id, it) }
+                        OsmQuest(questType, element.type, element.id, geometry)
                     } else null
                 }
                 val ownMs = (Perf.ms(typeStart) - surroundingWaitMs).coerceAtLeast(0)
@@ -342,8 +334,19 @@ class OsmQuestController(
         }
     }
 
-    suspend fun createNonPoiQuestsForElement(element: Element, geometry: ElementGeometry): List<OsmQuest> =
-        createQuestsForElementDeferred(element, geometry, allQuestTypes.filter { it.dotColor == null }).awaitAll().filterNotNull()
+    suspend fun createNonPoiQuestsForElement(element: Element, geometry: ElementGeometry): List<OsmQuest> {
+        val ordinary = createQuestsForElementDeferred(element, geometry, allQuestTypes.filter { it.dotColor == null }).awaitAll().filterNotNull()
+        val crossings = if (element is Way) withContext(Dispatchers.IO) {
+            val data = MutableMapDataWithGeometry(mapDataSource.getMapDataWithGeometry(geometry.bounds.enlargedBy(ApplicationConstants.QUEST_FILTER_PADDING)))
+            data.put(element, geometry)
+            allQuestTypes.filterIsInstance<AddWaterwayCrossing>().flatMap { type ->
+                crossingCandidates(type, data, null).filter { it.road.id == element.id }.map {
+                    OsmQuest(type, element.type, element.id, ElementPointGeometry(it.position))
+                }
+            }
+        } else emptyList()
+        return ordinary + crossings
+    }
 
     private fun getObsoleteQuestKeys(
         questsNow: Collection<OsmQuest>,
@@ -473,7 +476,7 @@ class OsmQuestController(
         val questType = questTypeRegistry.getByName(entry.questTypeName) as? OsmElementQuestType<*> ?: return null
         // The DAO persists the crossing position. The anchor's complete line is not the quest pin.
         val questGeometry = if (questType is AddWaterwayCrossing) ElementPointGeometry(entry.position) else geometry
-        return OsmQuest(questType, entry.elementType, entry.elementId, questGeometry)
+        return OsmQuest(questType, entry.elementType, entry.elementId, questGeometry, entry.discriminator)
     }
 
     private fun refreshCrossingQuests(bbox: BoundingBox, types: List<AddWaterwayCrossing>): Pair<Collection<OsmQuest>, List<OsmQuestKey>> {
@@ -523,7 +526,7 @@ class OsmQuestController(
         }
         val persisted = lock.withLock { db.getAllForElements(roads.map { it.key }) }
             .filter { it.questTypeName == type.name }
-        val preferred = persisted.filterNot { crossingResolved(it, data) }.associate { it.elementId to it.position }
+        val preferred = persisted.filterNot { crossingResolved(it, data) }.groupBy { it.elementId }.mapValues { (_, entries) -> entries.map { it.position } }
         val roadIds = roads.map { it.id }.toSet()
         return type.getCrossings(data, bbox, preferred).filter { it.road.id in roadIds }
     }
@@ -531,6 +534,8 @@ class OsmQuestController(
     /** Retire a saved pin only on positive evidence, never just on an incomplete viewport query. */
     private fun crossingResolved(entry: OsmQuestDaoEntry, data: MapDataWithGeometry): Boolean {
         val road = data.getWay(entry.elementId) ?: return false
+        // Retire legacy single-pin entries once their anchor is available; regenerate in the crossing table.
+        if (entry.discriminator.isEmpty()) return true
         if (!road.isCrossingRoad() || road.hasCrossingStructure() || road.isClosed || road.tags["area"] == "yes") return true
         val rp = road.nodeIds.map { data.getNode(it)?.position ?: return false }
         if (entry.position.distanceToArcs(rp) > 0.02) return true
@@ -546,7 +551,7 @@ class OsmQuestController(
         return data.ways.any { water ->
             if (!water.isCrossingWaterway()) return@any false
             val wp = water.nodeIds.map { data.getNode(it)?.position ?: return@any false }
-            val point = uniqueCrossingPoints(rp, wp).singleOrNull()?.takeIf { it.equalsInOsm(entry.position) } ?: return@any false
+            val point = uniqueCrossingPoints(rp, wp).singleOrNull { it.equalsInOsm(entry.position) } ?: return@any false
             try { checkEditableCrossing(data, road, water, rp, wp, point); false } catch (_: de.westnordost.streetcomplete.data.ConflictException) { true }
         }
     }

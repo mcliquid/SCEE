@@ -394,7 +394,8 @@ private const val BACKUP_PRESETS_QUEST_SETTINGS = "quest_settings"
 
 private const val TAG = "DataManagementSettings"
 
-const val LAST_KNOWN_DB_VERSION = 22L
+// DB v23 adds a quest cache table; exported hidden quests and presets retain their formats.
+const val LAST_KNOWN_DB_VERSION = 23L
 
 val renamedQuests = mapOf(
     "ExternalQuest" to CustomQuest::class.simpleName!!,

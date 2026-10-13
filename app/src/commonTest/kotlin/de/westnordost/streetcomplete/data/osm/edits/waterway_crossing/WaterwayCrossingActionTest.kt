@@ -166,8 +166,6 @@ class WaterwayCrossingActionTest {
             listOf(SplitAtLinePosition(f.roadPositions[1], f.roadPositions[2], 0.001), f.splits[1]),
             listOf(SplitAtLinePosition(f.roadPositions[0], f.roadPositions[1], 0.4),
                 SplitAtLinePosition(f.roadPositions[0], f.roadPositions[1], 0.6)),
-            listOf(SplitAtLinePosition(f.roadPositions[0], f.roadPositions[1], 0.1),
-                SplitAtLinePosition(f.roadPositions[2], f.roadPositions[3], 0.9)),
         )
         for (cuts in invalid) assertFailsWith<ConflictException> {
             f.bridge.copy(splits = cuts).createUpdates(f.repo, f.idProvider())

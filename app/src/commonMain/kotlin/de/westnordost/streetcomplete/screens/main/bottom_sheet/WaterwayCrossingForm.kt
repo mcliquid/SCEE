@@ -13,6 +13,8 @@ import de.westnordost.streetcomplete.data.osm.osmquests.Action
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.split_way.SplitWayForm
 import de.westnordost.streetcomplete.ui.common.quest.*
+import de.westnordost.streetcomplete.util.math.distanceTo
+import de.westnordost.streetcomplete.util.math.enlargedBy
 import de.westnordost.streetcomplete.util.math.distanceToArc
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import org.jetbrains.compose.resources.StringResource
@@ -84,6 +86,25 @@ fun WaterwayCrossingForm(
             way = way,
             wayGeometry = ElementPolylinesGeometry(listOf(positions), crossing.position),
             requiredCuts = 2,
+            additionalMarkers = { cuts ->
+                if (cuts.size != 2) emptyList() else withContext(Dispatchers.IO) {
+                    try {
+                        val action = SetWaterwayStructureAction(crossing, selected, cuts)
+                        val section = action.selectedPositions()
+                        val nearby = source.getMapDataWithGeometry(section.enclosingBoundingBox().enlargedBy(500.0))
+                        val counterpart = if (selected == WaterwayStructure.BRIDGE)
+                            CrossingContextWay(crossing.waterway, crossing.waterwayPositions)
+                        else CrossingContextWay(crossing.road, crossing.roadPositions)
+                        (listOf(counterpart) + crossing.nearbyWays + nearby.ways.filter { it.id != way.id
+                            && ("highway" in it.tags || "waterway" in it.tags || "railway" in it.tags) }.mapNotNull { other ->
+                            val complete = source.getWayComplete(other.id) ?: return@mapNotNull null
+                            val op = other.nodeIds.map { complete.getNode(it)?.position ?: return@mapNotNull null }
+                            CrossingContextWay(other, op)
+                        }).distinctBy { it.way.id }.filter { crossingPoints(section, it.positions).isNotEmpty() }
+                            .map { Marker(ElementPolylinesGeometry(listOf(it.positions), crossing.position)) }
+                    } catch (_: ConflictException) { emptyList() }
+                }
+            },
             confirmLabel = stringResource(Res.string.waterway_crossing_save),
             contextMarkers = listOf(
                 Marker(ElementPolylinesGeometry(listOf(positions), crossing.position)),
@@ -99,7 +120,7 @@ fun WaterwayCrossingForm(
             hintImages = emptyList(),
             note = null,
             answers = if (submitted || saving) emptyList() else buildList {
-                if (crossing.road.nodeIds.none { it in crossing.waterway.nodeIds }) addAll(listOf(
+                if (crossing.road.nodeIds.withIndex().none { (i, id) -> id in crossing.waterway.nodeIds && crossing.roadPositions[i].distanceTo(crossing.position) < 0.01 }) addAll(listOf(
                     AnswerItem(stringResource(Res.string.waterway_crossing_bridge)) { structure = WaterwayStructure.BRIDGE },
                     AnswerItem(stringResource(Res.string.waterway_crossing_culvert)) { structure = WaterwayStructure.CULVERT },
                 ))
@@ -134,23 +155,8 @@ private fun validateCrossingAction(action: ElementEditAction, crossing: Waterway
     val count = action.newElementsCount
     val ids = List(count.nodes) { ElementKey(ElementType.NODE, -Long.MAX_VALUE + it) } +
         List(count.ways) { ElementKey(ElementType.WAY, -Long.MAX_VALUE + it) }
-    val changes = action.createUpdates(source, ElementIdProvider(ids))
-    // In phase 1 the structure may cross only the chosen counterpart. A larger structure
-    // involving additional transport ways requires a survey of all their relative layers.
-    val editedWays = (changes.creations + changes.modifications).filterIsInstance<Way>()
-    val target = editedWays.find { "bridge" in it.tags || "tunnel" in it.tags }
-    if (target != null) {
-        val createdNodes = changes.creations.filterIsInstance<Node>().associateBy { it.id }
-        val positions = target.nodeIds.map { createdNodes[it]?.position ?: (source.getNode(it)?.position ?: throw ConflictException("Incomplete crossing geometry")) }
-        val nearby = source.getMapDataWithGeometry(crossing.position.enclosingBoundingBox(500.0))
-        val others = nearby.ways.filter { it.id != crossing.road.id && it.id != crossing.waterway.id
-            && ("highway" in it.tags || "waterway" in it.tags || "railway" in it.tags) }
-        for (other in others) {
-            val otherPositions = other.nodeIds.map { source.getNode(it)?.position ?: throw ConflictException("Incomplete surrounding geometry") }
-            if (crossingPoints(positions, otherPositions).isNotEmpty() || hasOverlappingCrossingEdges(positions, otherPositions))
-                throw ConflictException("Additional crossing in selected structure; use manual editing")
-        }
-    } else {
+    action.createUpdates(source, ElementIdProvider(ids))
+    if (action is CreateWaterwayFordAction) {
         val nearby = source.getMapDataWithGeometry(crossing.position.enclosingBoundingBox(500.0))
         for (other in nearby.ways.filter { it.id != crossing.road.id && it.id != crossing.waterway.id }) {
             val positions = other.nodeIds.map { source.getNode(it)?.position ?: throw ConflictException("Incomplete surrounding geometry") }
@@ -174,7 +180,17 @@ private fun refreshCrossingContext(action: ElementEditAction, crossing: Waterway
             throw ConflictException("Crossing unavailable or ambiguous")
         }
     return when (action) {
-        is SetWaterwayStructureAction -> action.copy(crossing = action.crossing.copy(nearbyWays = (action.crossing.nearbyWays + current.nearbyWays).distinctBy { it.way.id }))
+        is SetWaterwayStructureAction -> {
+            val section = action.selectedPositions()
+            val sectionData = source.getMapDataWithGeometry(section.enclosingBoundingBox().enlargedBy(500.0))
+            val context = sectionData.ways.filter { it.id != crossing.road.id && it.id != crossing.waterway.id
+                && ("highway" in it.tags || "waterway" in it.tags || "railway" in it.tags) }.map { way ->
+                val complete = source.getWayComplete(way.id) ?: throw ConflictException("Crossing context unavailable")
+                CrossingContextWay(way, way.nodeIds.map { complete.getNode(it)?.position ?: throw ConflictException("Incomplete surrounding geometry") })
+            }
+            action.copy(crossing = action.crossing.copy(contextSection = section,
+                nearbyWays = (action.crossing.nearbyWays + current.nearbyWays + context).distinctBy { it.way.id }))
+        }
         is CreateWaterwayFordAction -> action.copy(crossing = action.crossing.copy(nearbyWays = (action.crossing.nearbyWays + current.nearbyWays).distinctBy { it.way.id }))
         else -> action
     }

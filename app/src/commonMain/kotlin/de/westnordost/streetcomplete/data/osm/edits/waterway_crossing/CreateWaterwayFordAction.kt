@@ -6,13 +6,15 @@ import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChanges
 import de.westnordost.streetcomplete.data.osm.edits.create.CreateNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.create.InsertIntoWayAt
 import de.westnordost.streetcomplete.data.osm.mapdata.*
+import de.westnordost.streetcomplete.util.math.distanceTo
 import de.westnordost.streetcomplete.util.math.distanceToArc
 import kotlinx.serialization.Serializable
+import de.westnordost.streetcomplete.util.ktx.equalsInOsm
 
 /** Interior ford: reuse a safe shared vertex or insert one node into two unconnected ways. */
 @Serializable
 data class CreateWaterwayFordAction(val crossing: WaterwayCrossing) : ElementEditAction {
-    override val newElementsCount get() = NewElementsCount(if (crossing.road.nodeIds.any { it in crossing.waterway.nodeIds }) 0 else 1, 0, 0)
+    override val newElementsCount get() = NewElementsCount(if (crossing.road.nodeIds.withIndex().any { (i, id) -> id in crossing.waterway.nodeIds && crossing.roadPositions[i].distanceTo(crossing.position) < 0.01 }) 0 else 1, 0, 0)
     override val elementKeys get() = crossing.elementKeys
     override fun idsUpdatesApplied(updatedIds: Map<ElementKey, Long>) =
         copy(crossing = crossing.idsUpdatesApplied(updatedIds))
@@ -30,7 +32,7 @@ data class CreateWaterwayFordAction(val crossing: WaterwayCrossing) : ElementEdi
         }
         val roadPositions = positions(road)
         val waterPositions = positions(water)
-        val shared = road.nodeIds.singleOrNull { it in water.nodeIds }
+        val shared = road.nodeIds.singleOrNull { it in water.nodeIds && repository.getNode(it)?.position?.distanceTo(crossing.position)?.let { d -> d < 0.01 } == true }
         if (shared != null) {
             val node = repository.getNode(shared) ?: throw de.westnordost.streetcomplete.data.ConflictException("Crossing node unavailable")
             crossingCheck(node.tags.isEmpty(), "Existing crossing node tags require manual editing")
@@ -41,7 +43,7 @@ data class CreateWaterwayFordAction(val crossing: WaterwayCrossing) : ElementEdi
             return CreateNodeFromVertexAction(node, changes, listOf(road.id, water.id))
                 .createUpdates(repository, idProvider)
         }
-        val currentPosition = crossingPoints(roadPositions, waterPositions).single()
+        val currentPosition = uniqueCrossingPoints(roadPositions, waterPositions).single { it.equalsInOsm(crossing.position) }
         val inserts = listOf(road to roadPositions, water to waterPositions).map { (way, positions) ->
             val segment = positions.zipWithNext().singleOrNull { (a, b) -> currentPosition.distanceToArc(a, b) < 0.01 }
                 ?: throw de.westnordost.streetcomplete.data.ConflictException("Ambiguous ford segment")

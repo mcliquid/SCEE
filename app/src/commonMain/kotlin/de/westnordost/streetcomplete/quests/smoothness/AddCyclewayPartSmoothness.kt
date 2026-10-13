@@ -51,6 +51,7 @@ class AddCyclewayPartSmoothness : OsmFilterQuestType<SmoothnessAnswer>() {
     override val achievements = listOf(BICYCLIST)
     override val defaultDisabledMessage = Res.string.default_disabled_msg_difficult_and_time_consuming
     override val hint = Res.string.quest_smoothness_hint
+    override val previousAnswerKeys = listOf("cycleway:smoothness")
 
     @Composable
     override fun Form(on: (QuestAction<SmoothnessAnswer>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {

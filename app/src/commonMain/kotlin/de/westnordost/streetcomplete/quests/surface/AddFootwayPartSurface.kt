@@ -48,6 +48,7 @@ class AddFootwayPartSurface : OsmFilterQuestType<Surface>() {
     override val icon = Res.drawable.quest_footway_surface
     override val title = Res.string.quest_footwayPartSurface_title
     override val achievements = listOf(PEDESTRIAN, WHEELCHAIR, OUTDOORS)
+    override val previousAnswerKeys = listOf("footway:surface")
 
     @Composable
     override fun Form(on: (QuestAction<Surface>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {

@@ -42,6 +42,12 @@ class AddSidewalkSurface : OsmFilterQuestType<SidewalkSurfaceAnswer>() {
     override val achievements = listOf(PEDESTRIAN, WHEELCHAIR)
     override val defaultDisabledMessage = Res.string.default_disabled_msg_difficult_and_time_consuming
     override val hint = Res.string.quest_street_side_puzzle_tutorial
+    override val previousAnswerKeys = listOf(
+        "sidewalk:both:surface",
+        "sidewalk:left:surface",
+        "sidewalk:right:surface",
+        "sidewalk:surface",
+    )
 
     @Composable
     override fun Form(on: (QuestAction<SidewalkSurfaceAnswer>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {

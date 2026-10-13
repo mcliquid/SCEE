@@ -31,6 +31,7 @@
     <string name="pref_delete_old_data_after_summary">%1$d Tagen</string>
     <string name="quest_monitor_active_request">Aktives Anfordern von Standorten erhöht den Akkuverbrauch. Wenn keine aktive Standortanforderung erfolgt, werden die von anderen Apps angeforderten Standorte weiterhin verwendet.</string>
     <string name="quest_material_metal">Metall</string>
+    <string name="quest_previous_value">Bisher: %1$s</string>
     <string name="tag_editor_last_edited">Zuletzt bearbeitet: %1$s</string>
     <string name="quest_monitor_net">Aktiv nach Netzwerkstandorten fragen\?</string>
     <string name="quest_settings_resurvey_all_opening_hours_title">Alle Öffnungszeiten neu ermitteln</string>

@@ -743,6 +743,7 @@
 
     <!-- other -->
     <string name="hide_button">Hide</string>
+    <string name="quest_previous_value">Previously: %1$s</string>
     <string name="tag_editor_last_edited">Last edited: %1$s</string>
     <string name="tag_editor_duplicate_key">Ignoring change of duplicate key "%1$s</string>
     <string name="tutorial_info_fork_message"><b>SCEE</b>\n\n

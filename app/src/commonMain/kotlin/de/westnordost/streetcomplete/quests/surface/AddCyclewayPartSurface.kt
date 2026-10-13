@@ -45,6 +45,7 @@ class AddCyclewayPartSurface : OsmFilterQuestType<Surface>() {
     override val icon = Res.drawable.quest_bicycleway_surface
     override val title = Res.string.quest_cyclewayPartSurface_title
     override val achievements = listOf(BICYCLIST, OUTDOORS)
+    override val previousAnswerKeys = listOf("cycleway:surface")
 
     @Composable
     override fun Form(on: (QuestAction<Surface>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {

@@ -10,6 +10,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.quest.QuestType
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.ui.common.quest.previousAnswerKeysFromWikiLink
 import de.westnordost.streetcomplete.util.countryboundaries.AllCountries
 import de.westnordost.streetcomplete.util.countryboundaries.Countries
 import kotlin.jvm.JvmInline
@@ -78,6 +79,10 @@ interface OsmElementQuestType<T> : QuestType, ElementEditType {
      *  30m is the default because this is about "across this large street". There shouldn't be
      *  any misunderstandings which element is meant that far apart. */
     val highlightedElementsRadius: Double get() = 30.0
+
+    /** Tag keys whose existing values are shown under the quest title on resurvey
+     *  (e.g. `Bisher: grade2` for `tracktype`). Default: key from a `Key:…` [wikiLink]. */
+    val previousAnswerKeys: List<String> get() = previousAnswerKeysFromWikiLink(wikiLink)
 
     /** Composable form in which to enter the requested information. Use
      *  [QuestForm][de.westnordost.streetcomplete.ui.common.quest.QuestForm] to define a custom

@@ -29,6 +29,7 @@ import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.osm.osmquests.Action
 import de.westnordost.streetcomplete.data.osm.osmquests.Action.*
+import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.osm.ALL_PATHS
 import de.westnordost.streetcomplete.osm.ALL_ROADS
@@ -178,7 +179,15 @@ private fun QuestForm(
 ) {
     val prefs: Preferences = koinInject()
     val element = LocalElement.current
+    val questType = LocalQuestType.current
     val fixme = element?.tags?.get("fixme") ?: element?.tags?.get("FIXME")
+    val previousAnswerValue = remember(element, questType) {
+        val osmQuestType = questType as? OsmElementQuestType<*> ?: return@remember null
+        formatPreviousAnswerValues(element?.tags.orEmpty(), osmQuestType.previousAnswerKeys)
+    }
+    val previousAnswerLabel = previousAnswerValue?.let {
+        stringResource(Res.string.quest_previous_value, it)
+    }
 
     var confirmDiscard by remember { mutableStateOf(false) }
 
@@ -240,6 +249,7 @@ private fun QuestForm(
             subtitle = subtitle,
             hintText = hintText,
             hintImages = hintImages,
+            previousAnswer = previousAnswerLabel,
         )
     }
 

@@ -36,8 +36,8 @@ import de.westnordost.streetcomplete.ui.theme.titleLarge
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
-/** Layout that contains the title, subtitle (name and location label), info button and
- *  retractable info area */
+/** Layout that contains the title, optional previous answer, subtitle (name and location label),
+ *  info button and retractable info area */
 @Composable
 fun QuestHeader(
     title: String,
@@ -45,6 +45,7 @@ fun QuestHeader(
     hintText: String?,
     hintImages: List<DrawableResource>,
     modifier: Modifier = Modifier,
+    previousAnswer: String? = null,
 ) {
     var showInfo by remember { mutableStateOf(false) }
 
@@ -55,6 +56,14 @@ fun QuestHeader(
             Column(Modifier.weight(1f)) {
                 CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.titleLarge) {
                     Text(title)
+                }
+                if (previousAnswer != null) {
+                    CompositionLocalProvider(
+                        LocalTextStyle provides MaterialTheme.typography.body1,
+                        LocalContentAlpha provides ContentAlpha.medium
+                    ) {
+                        Text(previousAnswer)
+                    }
                 }
                 if (subtitle != null) {
                     CompositionLocalProvider(

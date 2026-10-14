@@ -36,4 +36,6 @@ dependencyResolutionManagement {
 
 include(":app")
 include(":androidApp")
-include(":desktopApp")
+// SCEE: upstream desktop launcher (streetcomplete#7242) is not needed for Android builds
+// and fails here because commonMain still has Android-only SCEE code. Re-enable later with:
+// include(":desktopApp")

@@ -33,14 +33,14 @@ val poEditorProjectId = "97843"
 
 plugins {
     id("org.jetbrains.kotlin.multiplatform")
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.20"
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.21"
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.android.kotlin.multiplatform.library")
     id("org.jetbrains.compose")
     id("com.codingfeline.buildkonfig") version "0.23.0"
     // keep in sync with Kotlin version! See https://mokkery.dev/docs/Setup/#compatibility
-    id("dev.mokkery") version "3.5.0"
-    id("org.jetbrains.kotlin.plugin.allopen") version "2.4.20"
+    id("dev.mokkery") version "3.5.1"
+    id("org.jetbrains.kotlin.plugin.allopen") version "2.4.21"
 }
 
 buildkonfig {
@@ -161,14 +161,14 @@ kotlin {
                 implementation("androidx.sqlite:sqlite-bundled:2.7.1")
 
                 // HTTP client
-                implementation("io.ktor:ktor-client-core:3.5.2")
-                implementation("io.ktor:ktor-client-encoding:3.5.2")
+                implementation("io.ktor:ktor-client-core:3.6.0")
+                implementation("io.ktor:ktor-client-encoding:3.6.0")
                 // SHA256 hashing, used during OAuth authentication
                 implementation("org.kotlincrypto.hash:sha2:0.8.0")
 
                 // XML
-                implementation("io.github.pdvrieze.xmlutil:core:1.0.2")
-                implementation("io.github.pdvrieze.xmlutil:core-io:1.0.2")
+                implementation("io.github.pdvrieze.xmlutil:core:1.0.2.1")
+                implementation("io.github.pdvrieze.xmlutil:core-io:1.0.2.1")
 
                 // YAML
                 implementation("com.charleskorn.kaml:kaml:0.104.0")
@@ -214,13 +214,13 @@ kotlin {
                 // NOTE: might replace with
                 // https://developer.android.com/develop/ui/compose/layouts/adaptive/grid
                 // when that API is not experimental anymore
-                implementation("com.cheonjaeung.compose.grid:grid:2.8.0")
+                implementation("com.cheonjaeung.compose.grid:grid:2.9.0")
 
                 // reorderable lists (raw Compose API is pretty complicated)
                 implementation("sh.calvin.reorderable:reorderable:3.1.0")
 
                 // sharing presets/settings via QR Code
-                implementation("io.github.alexzhirkevich:qrose:1.3.0")
+                implementation("io.github.alexzhirkevich:qrose:1.3.1")
 
                 // for encoding information for the URL configuration (QR code)
                 implementation("com.ionspin.kotlin:bignum:0.3.10")
@@ -252,7 +252,7 @@ kotlin {
 
                 // HTTP Client
                 // cio, not android, because of https://youtrack.jetbrains.com/issue/KTOR-9848
-                implementation("io.ktor:ktor-client-cio:3.5.2")
+                implementation("io.ktor:ktor-client-cio:3.6.0")
 
                 // map
                 implementation("org.maplibre.compose:maplibre-compose-runtime-opengl-android:0.20.0")
@@ -261,13 +261,13 @@ kotlin {
                 runtimeOnly("androidx.compose.ui:ui-tooling:1.12.1")
 
                 // fast json (de)serialization used for database read and write
-                implementation("com.squareup.moshi:moshi:1.15.1")
+                implementation("com.squareup.moshi:moshi:1.15.2")
 
                 // sunset-sunrise parser for lit quests
                 implementation("com.luckycatlabs:SunriseSunsetCalculator:1.2")
 
                 // diff utils for comparing filters modified by quest settings with original
-                implementation("io.github.java-diff-utils:java-diff-utils:4.12")
+                implementation("io.github.java-diff-utils:java-diff-utils:4.17")
 
                 // parser for user-supplied GPX tracks
                 implementation("com.github.ticofab:android-gpx-parser:2.3.1")
@@ -278,7 +278,7 @@ kotlin {
             dependsOn(mobileMain)
             dependencies {
                 // HTTP client
-                implementation("io.ktor:ktor-client-darwin:3.5.2")
+                implementation("io.ktor:ktor-client-darwin:3.6.0")
             }
         }
         getByName("desktopMain") {
@@ -289,14 +289,14 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.11.0")
 
                 // HTTP client
-                implementation("io.ktor:ktor-client-cio:3.5.2")
+                implementation("io.ktor:ktor-client-cio:3.6.0")
             }
         }
         commonTest {
             dependencies {
                 implementation(kotlin("test"))
 
-                implementation("io.ktor:ktor-client-mock:3.5.2")
+                implementation("io.ktor:ktor-client-mock:3.6.0")
                 implementation("androidx.sqlite:sqlite-bundled:2.7.1")
                 // in-memory ObservableSettings (MapSettings) for deterministic preference fixtures
                 implementation("com.russhwolf:multiplatform-settings-test:1.3.0")
@@ -308,7 +308,7 @@ kotlin {
                 implementation("androidx.sqlite:sqlite-bundled-jvm:2.7.1")
                 implementation("androidx.compose.ui:ui-test-junit4:1.12.1")
                 implementation("androidx.compose.ui:ui-test-manifest:1.12.1")
-                implementation("org.robolectric:robolectric:4.16.1")
+                implementation("org.robolectric:robolectric:4.17")
             }
         }
     }

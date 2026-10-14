@@ -105,7 +105,7 @@ dependencies {
     // Android / UI
     implementation("androidx.activity:activity-compose:1.13.0")
     implementation("com.google.android.material:material:1.14.0")
-    implementation("androidx.appcompat:appcompat:1.7.1")
+    implementation("androidx.appcompat:appcompat:1.8.0")
 
     // Compose
     implementation("org.jetbrains.compose.runtime:runtime:1.12.1")
@@ -115,7 +115,7 @@ dependencies {
     add("legacyDebugImplementation", "androidx.compose.ui:ui-tooling:1.12.1")
 
     // location
-    implementation("org.maplibre.compose:location:0.19.0")
+    implementation("org.maplibre.compose:location:0.20.0")
 
     // Dependency Injection
     implementation("io.insert-koin:koin-android:4.2.2")
@@ -130,7 +130,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.9.1")
 
     // HTTP Client
-    implementation("io.ktor:ktor-client-android:3.5.2")
+    implementation("io.ktor:ktor-client-android:3.6.0")
 
     // finding OSM features
     implementation("de.westnordost:osmfeatures:8.1.0-SNAPSHOT")

@@ -75,8 +75,8 @@ abstract class MainBottomSheetViewModel : ViewModel() {
         key: QuestKey? = null,
     )
 
-    /** When immediate next-quest chaining finds a successor, this emits its selection. */
-    abstract val chainedQuestSelection: kotlinx.coroutines.flow.SharedFlow<MainSheetSelection.Quest>
+    /** When same-element chaining finds a successor after a successful answer, emits its selection. */
+    abstract val chainedQuestSelection: SharedFlow<MainSheetSelection.Quest>
 
     abstract fun commentNote(
         note: Note,
@@ -217,8 +217,10 @@ class MainBottomSheetViewModelImpl(
     }
 
     /**
-     * Submits an edit. When immediate same-element chaining is enabled, emits the successor
-     * via [chainedQuestSelection] for MainScreen to open.
+     * Submits an edit. On success, when [Prefs.SHOW_NEXT_QUEST_IMMEDIATELY] is enabled, looks up
+     * a same-element successor from already-updated visible quests (tiny bbox — no global
+     * recompute) and emits it via [chainedQuestSelection]. Dismiss/close without a successful
+     * save never reaches this path. Failed saves do not chain.
      */
     override fun submitEdit(
         elementEditType: ElementEditType,
@@ -229,7 +231,7 @@ class MainBottomSheetViewModelImpl(
     ) {
         launch(Dispatchers.IO) {
             val trace = PerfTrace("answer", Perf.nextId(), Perf.mark())
-            try {
+            val saved = try {
                 withPerfTrace(trace) {
                     trace.set("quest", elementEditType.name)
                     val isNearUserLocation = surveyChecker.checkIsSurvey(geometry)
@@ -237,23 +239,39 @@ class MainBottomSheetViewModelImpl(
                     elementEditsController.add(elementEditType, geometry, source, elementEditAction, isNearUserLocation, key)
                 }
                 trace.set("pipeline", "visible-quests")
+                true
+            } catch (_: Exception) {
+                false
             } finally {
                 trace.finish()
             }
 
+            val showNextImmediately = prefs.getBoolean(Prefs.SHOW_NEXT_QUEST_IMMEDIATELY, true)
             val elementKey = elementKeyForImmediateSameElementQuest(
                 elementEditType,
                 elementEditAction,
-                prefs.getBoolean(Prefs.SHOW_NEXT_QUEST_IMMEDIATELY, false),
-            ) ?: return@launch
+                showNextImmediately,
+            )
+            val successor = if (elementKey != null) {
+                immediateSameElementQuestSheet(
+                    visibleQuestsSource.getAll(geometry.center.enclosingBoundingBox(0.5)),
+                    elementKey,
+                    questTypesInChainingOrder(questTypeRegistry, questTypeOrderSource),
+                ) { type, id -> mapDataSource.get(type, id) }
+            } else {
+                null
+            }
 
-            val successor = immediateSameElementQuestSheet(
-                visibleQuestsSource.getAll(geometry.center.enclosingBoundingBox(0.5)),
-                elementKey,
-                questTypesInChainingOrder(questTypeRegistry, questTypeOrderSource),
-            ) { type, id -> mapDataSource.get(type, id) } ?: return@launch
-
-            _chainedQuestSelection.tryEmit(MainSheetSelection.Quest(successor.quest.key))
+            if (
+                shouldAutoOpenSameElementQuestSuccessor(
+                    elementKey,
+                    hasSuccessor = successor != null,
+                    showNextImmediately = showNextImmediately,
+                    savedSuccessfully = saved,
+                )
+            ) {
+                _chainedQuestSelection.tryEmit(MainSheetSelection.Quest(successor!!.quest.key))
+            }
         }
     }
 

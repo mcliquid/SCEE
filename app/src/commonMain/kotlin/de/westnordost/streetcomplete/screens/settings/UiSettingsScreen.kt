@@ -77,7 +77,7 @@ fun UiSettingsScreen(
                 name = stringResource(Res.string.pref_show_next_quest_title),
                 description = stringResource(Res.string.pref_show_next_quest_summary),
                 pref = Prefs.SHOW_NEXT_QUEST_IMMEDIATELY,
-                default = false,
+                default = true,
             )
             Preference(
                 name = stringResource(Res.string.pref_show_nearby_quests_title),

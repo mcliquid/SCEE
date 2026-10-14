@@ -13,10 +13,23 @@ import de.westnordost.streetcomplete.data.quest.QuestType
 import de.westnordost.streetcomplete.data.visiblequests.QuestTypeOrderSource
 
 /**
- * Element edited by an ordinary tag update, when automatic same-element chaining is enabled.
+ * Element edited by an ordinary tag update that may participate in same-element chaining.
  *
  * Structural actions (split, move, delete, create) and non-quest edits (tag editor, overlays,
  * external-source quests, notes) return null. Callers then keep the normal post-answer close.
+ * Closing/dismissing a quest form without a successful submit never calls this path.
+ */
+internal fun elementKeyForSameElementQuestChain(
+    elementEditType: ElementEditType,
+    elementEditAction: ElementEditAction,
+): ElementKey? {
+    if (elementEditType !is OsmElementQuestType<*>) return null
+    val tagUpdate = elementEditAction as? UpdateElementTagsAction ?: return null
+    return tagUpdate.originalElement.key
+}
+
+/**
+ * Element for automatic same-element chaining when the "open next quest" preference is on.
  */
 internal fun elementKeyForImmediateSameElementQuest(
     elementEditType: ElementEditType,
@@ -24,10 +37,20 @@ internal fun elementKeyForImmediateSameElementQuest(
     showNextImmediately: Boolean,
 ): ElementKey? {
     if (!showNextImmediately) return null
-    if (elementEditType !is OsmElementQuestType<*>) return null
-    val tagUpdate = elementEditAction as? UpdateElementTagsAction ?: return null
-    return tagUpdate.originalElement.key
+    return elementKeyForSameElementQuestChain(elementEditType, elementEditAction)
 }
+
+/**
+ * Whether to auto-open a found successor after a successful answer.
+ * Pref off, failed save, dismiss/close, or no successor → false (return to map).
+ */
+internal fun shouldAutoOpenSameElementQuestSuccessor(
+    elementKey: ElementKey?,
+    hasSuccessor: Boolean,
+    showNextImmediately: Boolean,
+    savedSuccessfully: Boolean,
+): Boolean =
+    savedSuccessfully && showNextImmediately && elementKey != null && hasSuccessor
 
 /**
  * Configured quest-type order for choosing the next quest on the same element.

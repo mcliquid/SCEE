@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.data.preferences
 
+import androidx.compose.ui.text.intl.Locale
 import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.SettingsListener
 import com.russhwolf.settings.boolean
@@ -22,7 +23,9 @@ import kotlin.reflect.KClass
 @Mockable
 class Preferences(val prefs: ObservableSettings) {
     // application settings
-    var language: String? by prefs.nullableString(LANGUAGE_SELECT)
+    var locale: Locale?
+        set(value) { prefs.putStringOrNull(LANGUAGE_SELECT, locale?.toLanguageTag()) }
+        get() = prefs.getStringOrNull(LANGUAGE_SELECT)?.let { Locale(it) }
 
     var theme: Theme
         set(value) { prefs.putString(THEME_SELECT, value.name) }
@@ -71,8 +74,10 @@ class Preferences(val prefs: ObservableSettings) {
     fun onShowOverlaySelectorChanged(callback: (Boolean) -> Unit): SettingsListener =
         prefs.addBooleanListener(Prefs.OVERLAY_QUICK_SELECTOR, false, callback)
 
-    fun onLanguageChanged(callback: (String?) -> Unit): SettingsListener =
-        prefs.addStringOrNullListener(LANGUAGE_SELECT, callback)
+    fun onLocaleChanged(callback: (Locale?) -> Unit): SettingsListener =
+        prefs.addStringOrNullListener(LANGUAGE_SELECT) {
+            callback(it?.let { Locale(it) })
+        }
 
     fun onThemeChanged(callback: (Theme) -> Unit): SettingsListener =
         prefs.addStringOrNullListener(THEME_SELECT) {
@@ -196,8 +201,6 @@ class Preferences(val prefs: ObservableSettings) {
     fun onSelectedEditTypePresetChanged(callback: (Long) -> Unit): SettingsListener =
         prefs.addLongListener(SELECTED_EDIT_TYPE_PRESET, 0L, callback)
 
-    var lastEditTime: Long by prefs.long(LAST_EDIT_TIME, 0L)
-
     fun <T> getLastPicked(serializer: KSerializer<List<T>>, key: String): List<T> =
         try {
             prefs.getStringOrNull(LAST_PICKED_PREFIX + key)?.let { Json.decodeFromString(serializer, it) } ?: emptyList()
@@ -216,6 +219,12 @@ class Preferences(val prefs: ObservableSettings) {
         prefs.putString(LAST_PICKED_PREFIX + key, Json.encodeToString(serializer, values))
     }
 
+    /** The "languages" here are not necessarily IETF language tags, they are essentially what comes
+     *  in the `name:<>`. Most of the time it is a language tag, but it is possible that some
+     *  community or another uses other subtags. See
+     *  https://github.com/streetcomplete/countrymetadata/blob/master/data/additionalStreetsignLanguages.yml
+     *  and
+     *  https://github.com/streetcomplete/countrymetadata/blob/master/data/officialLanguages.yml */
     var preferredLanguageForNames: String? by prefs.nullableString(PREFERRED_LANGUAGE_FOR_NAMES)
 
     fun getLanguagesWithPreferredFirst(languages: List<String>): List<String> {
@@ -307,7 +316,6 @@ class Preferences(val prefs: ObservableSettings) {
         const val SELECTED_EDIT_TYPE_PRESET = "selectedQuestsPreset"
         private const val SELECTED_OVERLAY = "selectedOverlay"
         private const val LAST_PICKED_PREFIX = "imageListLastPicked."
-        private const val LAST_EDIT_TIME = "changesets.lastChangeTime"
 
         // profile & statistics screen UI
         private const val USER_DAYS_ACTIVE = "days_active"

@@ -62,7 +62,7 @@ fun SettingsScreen(
     onClickPresetSelection: () -> Unit,
     onClickQuestSelection: () -> Unit,
     onClickOverlaySelection: () -> Unit,
-    onClickLanguageSelection: () -> Unit,
+    onClickLocaleSelection: () -> Unit,
     onClickMessagesSelection: () -> Unit,
     onClickBack: () -> Unit,
     onClickQuestSettings: () -> Unit,
@@ -82,7 +82,7 @@ fun SettingsScreen(
     val theme by viewModel.theme.collectAsState()
     val keepScreenOn by viewModel.keepScreenOn.collectAsState()
     val showZoomButtons by viewModel.showZoomButtons.collectAsState()
-    val selectedLanguage by viewModel.selectedLanguage.collectAsState()
+    val selectedLocale by viewModel.selectedLocale.collectAsState()
     val expertMode by viewModel.expertMode.collectAsState()
 
     var showDeleteCacheConfirmation by remember { mutableStateOf(false) }
@@ -205,10 +205,10 @@ fun SettingsScreen(
 
                 Preference(
                     name = stringResource(Res.string.pref_title_language_select2),
-                    onClick = onClickLanguageSelection,
+                    onClick = onClickLocaleSelection,
                 ) {
                     Text(
-                        text = selectedLanguage?.let { getLanguageDisplayName(it) }
+                        text = selectedLocale?.let { it.getDisplayName(it) ?: it.toLanguageTag() }
                             ?: stringResource(Res.string.language_default),
                         modifier = Modifier.weight(1f, fill = false)
                     )
@@ -338,7 +338,7 @@ fun SettingsScreen(
             onDismissRequest = { showDeleteCacheConfirmation = false },
             onConfirmed = { viewModel.deleteCache() },
             text = {
-                val numberFormatter = NumberFormatter(Locale.current, maxFractionDigits = 1)
+                val numberFormatter = NumberFormatter(maxFractionDigits = 1)
                 Text(stringResource(
                     Res.string.delete_cache_dialog_message,
                     numberFormatter.format(1.0 * REFRESH_DATA_AFTER / (24 * 60 * 60 * 1000)),
@@ -388,10 +388,4 @@ private val Theme.title: StringResource get() = when (this) {
     Theme.DARK -> Res.string.theme_dark
     Theme.SYSTEM -> Res.string.theme_system_default
     Theme.DARK_CONTRAST -> Res.string.theme_dark_contrast
-}
-
-private fun getLanguageDisplayName(languageTag: String): String? {
-    if (languageTag.isEmpty()) return null
-    val locale = Locale(languageTag)
-    return locale.getDisplayName(locale) ?: languageTag
 }

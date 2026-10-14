@@ -25,7 +25,6 @@ Phoenix
 Syringa
 Salix
 Olea
-Ananas
 Fagus
 Pyrus
 Juglans
@@ -43,11 +42,9 @@ Acacia
 Morus
 Magnolia
 Liquidambar
-Arecaceae
 Cercis
 Vachellia
 Crataegus
-Humulus
 Thuja
 Castanea
 Taxus
@@ -55,7 +52,6 @@ Abies
 Liriodendron
 Adansonia
 Zelkova
-Hylocereus
 Areca
 Ligustrum
 Hevea
@@ -68,7 +64,6 @@ Mangifera
 Larix
 Ailanthus
 Trachycarpus
-Opuntia
 Catalpa
 Pseudotsuga
 Chamaecyparis
@@ -79,7 +74,6 @@ Luma
 Ostrya
 Nothofagus
 Lagerstroemia
-Agave
 Pterocarya
 Koelreuteria
 Araucaria
@@ -89,7 +83,6 @@ Callistemon
 Melia
 Jacaranda
 Quillaja
-Pirus
 Juniperus
 Cornus
 Prosopis
@@ -97,7 +90,6 @@ Cordyline
 Maytenus
 Casuarina
 Jubaea
-Actinidia
 Tipuana
 Brachychiton
 Metasequoia
@@ -105,7 +97,6 @@ Grevillea
 Diospyros
 Roystonea
 Parrotia
-Gleditschia
 Taxodium
 Sequoiadendron
 Syagrus

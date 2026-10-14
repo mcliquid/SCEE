@@ -3,9 +3,9 @@ package de.westnordost.streetcomplete.data.preferences
 import com.russhwolf.settings.SettingsListener
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.elementfilter.filters.CompareTagAge
-import de.westnordost.streetcomplete.data.elementfilter.filters.ElementFilter
 import de.westnordost.streetcomplete.data.elementfilter.filters.RelativeDate
 import de.westnordost.streetcomplete.osm.toCheckDate
+import de.westnordost.streetcomplete.util.ktx.toEpochMilli
 
 enum class ResurveyIntervals(val multiplier: Float) {
     EVEN_LESS_OFTEN(2.0f),
@@ -25,6 +25,6 @@ class ResurveyIntervalsUpdater(private val prefs: Preferences) {
     fun update() {
         RelativeDate.MULTIPLIER = prefs.resurveyIntervals.multiplier
         CompareTagAge.resurveyKeys = prefs.getString(Prefs.RESURVEY_KEYS, "").split(",").map { it.trim() }
-        CompareTagAge.resurveyDate = prefs.getString(Prefs.RESURVEY_DATE, "").toCheckDate()
+        CompareTagAge.resurveyDateMillis = prefs.getString(Prefs.RESURVEY_DATE, "").toCheckDate()?.toEpochMilli()
     }
 }

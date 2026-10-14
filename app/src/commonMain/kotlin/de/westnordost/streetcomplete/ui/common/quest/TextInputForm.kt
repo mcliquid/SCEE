@@ -36,7 +36,7 @@ fun<T> TextInputForm(
         onClickOk = { on(Answer(stringToAnswer(text.text))) },
         modifier = modifier,
         otherAnswers = otherAnswers,
-        hasChanges = text.text.isNotBlank(),
+        hasChanges = text.text.isNotBlank() && text.text != initialValue,
         hintText = hintText
     ) {
         ProvideTextStyle(MaterialTheme.typography.largeInput) {

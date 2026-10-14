@@ -58,7 +58,7 @@ class AddServiceTimes : OsmElementQuestType<CollectionTimesAnswer> {
 
     @Composable
     override fun Form(on: (QuestAction<CollectionTimesAnswer>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
-        AddPostboxCollectionTimesForm(on, element, countryInfo, "service_times", Res.string.quest_service_times_resurvey_title)
+        AddPostboxCollectionTimesForm(on, element, countryInfo, "service_times")
     }
 
     override fun applyAnswerTo(answer: CollectionTimesAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {

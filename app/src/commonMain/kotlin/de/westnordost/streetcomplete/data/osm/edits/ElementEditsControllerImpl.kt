@@ -10,7 +10,6 @@ import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTag
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataUpdates
-import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.util.Listeners
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
@@ -23,9 +22,7 @@ import kotlinx.atomicfu.locks.withLock
 class ElementEditsControllerImpl(
     private val editsDB: ElementEditsDao,
     private val editElementsDB: EditElementsDao,
-    private val elementIdProviderDB: ElementIdProviderDao,
-    private val prefs: Preferences,
-//    private val externalSourceQuestController: ExternalSourceQuestController,
+    private val elementIdProviderDB: ElementIdProviderDao
 ) : ElementEditsController, KoinComponent {
 
     private val externalSourceQuestController: ExternalSourceQuestController by inject()
@@ -245,7 +242,6 @@ class ElementEditsControllerImpl(
     }
 
     private fun onAddedEdit(edit: ElementEdit, key: QuestKey?) {
-        prefs.lastEditTime = nowAsEpochMilliseconds()
         listeners.forEach { it.onAddedEdit(edit, key) }
     }
 

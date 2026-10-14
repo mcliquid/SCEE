@@ -289,7 +289,7 @@ class QuestPinsManager(
         val pins = quest.markerLocations.mapNotNull {
             val resId = quest.type.icon.toAndroidResourceId()
             if (ApplicationConstants.DEBUG) requireNotNull(resId) { "icon ${quest.type.icon.name} has no android resId" }
-            else return@mapNotNull null
+            else if (resId == null) return@mapNotNull null
             Pin(it, resId, props, order, geometry, color)
         }
         // storing importance in the quest requires the VisibleQuestsSource.cache to be invalidated on order change!

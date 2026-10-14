@@ -21,24 +21,25 @@ import de.westnordost.streetcomplete.resources.*
 class AddPathSurface : OsmFilterQuestType<PathSurfaceAnswer>() {
 
     override val elementFilter = """
-        ways with highway ~ ${prefs.getString("${questPrefix(prefs)}qs_${name}_highway_selection", HIGHWAY_TYPES)}
-        and segregated != yes
-        and access !~ private|no
-        and (!conveying or conveying = no)
-        and (!indoor or indoor = no)
-        and (
-          !surface
-          or surface ~ ${INVALID_SURFACES.joinToString("|")}
-          or (
-            surface ~ paved|unpaved
-            and !surface:note
-            and !note:surface
-            and !check_date:surface
+        ways with
+          highway ~ ${prefs.getString("${questPrefix(prefs)}qs_${name}_highway_selection", HIGHWAY_TYPES)}
+          and segregated != yes
+          and access !~ private|no
+          and (!conveying or conveying = no)
+          and (!indoor or indoor = no)
+          and (
+            !surface
+            or surface ~ ${INVALID_SURFACES.joinToString("|")}
+            or (
+              surface ~ paved|unpaved
+              and !surface:note
+              and !note:surface
+              and !check_date:surface
+            )
+            or surface older today -8 years
           )
-          or surface older today -8 years
-        )
-        and ~path|footway|cycleway|bridleway !~ link
-        and ice_road != yes
+          and ~path|footway|cycleway|bridleway !~ link
+          and ice_road != yes
     """
 
     override val changesetComment = "Specify path surfaces"

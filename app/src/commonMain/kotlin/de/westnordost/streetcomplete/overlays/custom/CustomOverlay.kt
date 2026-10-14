@@ -1,13 +1,19 @@
 package de.westnordost.streetcomplete.overlays.custom
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.elementfilter.ElementFilterExpression
@@ -35,6 +41,7 @@ import de.westnordost.streetcomplete.screens.main.bottom_sheet.EditTagsForm
 import de.westnordost.streetcomplete.ui.common.overlay.OverlayForm
 import de.westnordost.streetcomplete.ui.common.quest.AnswerItem
 import de.westnordost.streetcomplete.ui.common.quest.ConfirmDeleteDialog
+import de.westnordost.streetcomplete.ui.theme.titleLarge
 import de.westnordost.streetcomplete.util.getCurrentCustomOverlayPref
 import de.westnordost.streetcomplete.util.getNameLabel
 import de.westnordost.streetcomplete.util.ktx.isArea
@@ -109,14 +116,27 @@ class CustomOverlay(val prefs: Preferences) : Overlay {
                 val colorTags = if (colorKeySelector != null)
                     element.tags.filter { it.key.matches(colorKeySelector) }
                 else null
-                if (colorTags != null)
-                Text(colorTags.entries.sortedBy { it.key }.joinToString("\n") { "${it.key} = ${it.value}" })
-                TextButton({
-                    if (colorKeyPref.startsWith("!") && !colorKeyPref.contains(' '))
-                        focusKey = colorKeyPref
-                    on(Action.EditTags)
-                }) {
-                    Text(stringResource(Res.string.quest_generic_answer_show_edit_tags))
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    if (colorTags != null) {
+                        Text(
+                            text = colorTags.entries.sortedBy { it.key }.joinToString("\n") { "${it.key} = ${it.value}" },
+                            modifier = Modifier.fillMaxWidth(),
+                            style = MaterialTheme.typography.titleLarge,
+                        )
+                    }
+                    Button(
+                        onClick = {
+                            if (colorKeyPref.startsWith("!") && !colorKeyPref.contains(' '))
+                                focusKey = colorKeyPref
+                            on(Action.EditTags)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(stringResource(Res.string.quest_generic_answer_show_edit_tags))
+                    }
                 }
             }
         }

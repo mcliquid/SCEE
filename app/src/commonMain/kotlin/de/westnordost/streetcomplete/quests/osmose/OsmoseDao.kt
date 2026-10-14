@@ -91,7 +91,7 @@ class OsmoseDao(
         requestBuilder.url(url)
         requestBuilder.header("User-Agent", USER_AGENT)
         if (prefs.getBoolean(PREF_OSMOSE_APP_LANGUAGE, false)) {
-            val language = prefs.language ?: LocaleList.current.firstOrNull()?.language
+            val language = prefs.locale?.language ?: LocaleList.current.firstOrNull()?.language
             if (language != null)
                 requestBuilder.header("Accept-Language", language)
         }

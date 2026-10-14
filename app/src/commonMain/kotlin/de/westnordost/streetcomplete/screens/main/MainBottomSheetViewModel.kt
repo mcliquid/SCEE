@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import de.westnordost.osmfeatures.Feature
 import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuest
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
 import de.westnordost.streetcomplete.data.location.SurveyChecker
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditAction
@@ -200,7 +201,10 @@ class MainBottomSheetViewModelImpl(
 
     private fun showOsmQuest(questKey: OsmQuestKey) {
         val element = mapDataSource.get(questKey.elementType, questKey.elementId) ?: return
-        val quest = osmQuestSource.get(questKey) ?: return
+        val quest = if (prefs.getBoolean(Prefs.DYNAMIC_QUEST_CREATION, false))
+                visibleQuestsSource.get(questKey) as? OsmQuest
+            else osmQuestSource.get(questKey)
+        if (quest == null) return
         shownBottomSheet.value = ShownBottomSheet.OsmQuest(quest, element)
     }
 

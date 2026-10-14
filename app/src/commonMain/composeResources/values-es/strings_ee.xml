@@ -654,7 +654,6 @@
     <string name="quest_orchard_type_meadow_orchard_description">Árboles grandes, amplio espacio entre ellos</string>
     <string name="quest_orchard_type_plantation_description">Sistema de plantación de alta densida, con espaciamiento estrecho (generalmente comerciales)</string>
     <string name="quest_service_times_title">¿Cuándo se celebran los oficios religiosos aquí?</string>
-    <string name="quest_service_times_resurvey_title">¿Se mantienen vigentes los horarios del servicio religioso en este lugar?</string>
     <string name="quest_kerb_type_title">¿Qué clase de bordillo es este?</string>
     <string name="quest_tree_denotation_title">¿Qué describe mejor este árbol? Elija la primera opción que corresponda.</string>
     <string name="quest_tree_denotation_landmark">Punto de referencia</string>

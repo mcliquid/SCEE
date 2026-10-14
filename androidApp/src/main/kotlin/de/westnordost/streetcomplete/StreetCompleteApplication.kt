@@ -16,10 +16,6 @@ import de.westnordost.streetcomplete.screens.settings.LAST_KNOWN_DB_VERSION
 import de.westnordost.streetcomplete.util.error_reporting.CrashReportsUncaughtExceptionHandler
 import de.westnordost.streetcomplete.util.getSelectedLocales
 import de.westnordost.streetcomplete.util.logs.Log
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.koin.workManagerFactory
@@ -59,7 +55,7 @@ class StreetCompleteApplication : Application() {
         updateDefaultLocales()
         updateTheme(prefs.theme)
 
-        settingsListeners += prefs.onLanguageChanged { updateDefaultLocales() }
+        settingsListeners += prefs.onLocaleChanged { updateDefaultLocales() }
         settingsListeners += prefs.onThemeChanged { updateTheme(it) }
     }
 

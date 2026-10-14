@@ -8,7 +8,6 @@ import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementType.NODE
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementType.WAY
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataUpdates
-import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.quest.TestQuestTypeA
 import de.westnordost.streetcomplete.testutils.edit
 import de.westnordost.streetcomplete.testutils.mockPrefs3
@@ -29,7 +28,6 @@ class ElementEditsControllerImplTest {
     private lateinit var db: ElementEditsDao
     private lateinit var elementsDb: EditElementsDao
     private lateinit var listener: ElementEditsSource.Listener
-    private lateinit var prefs: Preferences
     private lateinit var idProvider: ElementIdProviderDao
 
     @BeforeTest fun setUp() {
@@ -39,10 +37,9 @@ class ElementEditsControllerImplTest {
         }
         elementsDb = mock()
         idProvider = mock()
-        prefs = mockPrefs3()
 
         listener = mock()
-        ctrl = ElementEditsControllerImpl(db, elementsDb, idProvider, prefs)
+        ctrl = ElementEditsControllerImpl(db, elementsDb, idProvider)
         ctrl.addListener(listener)
     }
 
@@ -184,7 +181,7 @@ class ElementEditsControllerImplTest {
         val c = edit.action.newElementsCount
         verify { idProvider.assign(edit.id, c.nodes, c.ways, c.relations) }
         verify { listener.onAddedEdit(any()) }
-        verify { prefs.lastEditTime = any() }    }
+    }
 
     private fun verifyDelete(vararg edits: ElementEdit) {
         val editIds = edits.map { it.id }

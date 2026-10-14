@@ -653,7 +653,6 @@
     <string name="quest_orchard_type_meadow_orchard_description">Große Bäume, große Abstände</string>
     <string name="quest_orchard_type_plantation_description">Spindelbäume, kleine Abstände (meistens kommerziell genutzt)</string>
     <string name="quest_service_times_title">Wann findet hier ein Gottesdienst statt?</string>
-    <string name="quest_service_times_resurvey_title">Sind die Gottesdienstzeiten hier noch aktuell?</string>
     <string name="quest_kerb_type_title">Um welche Art von Bordstein handelt es sich hier?</string>
     <string name="quest_tree_denotation_title">Was beschreibt diesen Baum am besten? Wähle die erste passende Option.</string>
     <string name="quest_tree_denotation_landmark">Wahrzeichen</string>

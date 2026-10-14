@@ -23,6 +23,7 @@ import de.westnordost.streetcomplete.ui.common.dialogs.InfoDialog
 import de.westnordost.streetcomplete.ui.common.item_select.ImageWithDescription
 import de.westnordost.streetcomplete.ui.common.quest.AnswerItem
 import de.westnordost.streetcomplete.ui.common.quest.ItemSelectQuestForm
+import de.westnordost.streetcomplete.ui.common.quest.LocalQuestType
 import de.westnordost.streetcomplete.util.ktx.couldBeSteps
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -64,10 +65,7 @@ fun AddSmoothnessForm(
             }
         },
         itemsPerRow = 1,
-        title = stringResource(
-            if (element.tags["area"] == "yes") Res.string.quest_smoothness_square_title
-            else Res.string.quest_smoothness_road_title
-        ) + titleExtra,
+        title = stringResource(LocalQuestType.current!!.title) + titleExtra,
         otherAnswers = { listOfNotNull(
             AnswerItem(stringResource(Res.string.quest_smoothness_wrong_surface)) {
                 confirmSurface = surfaceTag?.let { parseSurface(it) }

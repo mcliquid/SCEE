@@ -22,16 +22,18 @@ class AddStepCount : OsmElementQuestType<Int> {
 
     val elementFilter by lazy { """
         nodes, ways with
-        (
           (
-            highway = steps
-            and (!indoor or indoor = no)
-            and (!conveying or conveying = no)
+            (
+              highway = steps
+              and (!indoor or indoor = no)
+              and (!conveying or conveying = no)
+            )
+            or man_made = tower and access ~ yes|customers and tower:type ~ observation|watchtower
           )
-          or man_made = tower and access ~ yes|customers and tower:type ~ observation|watchtower
-        )
-        and access !~ private|no
-        and !step_count
+          and access !~ private|no
+          and !step_count
+          and !steps
+          and !flat_steps
     """.toElementFilterExpression() }
     override val changesetComment = "Specify step counts"
     override val wikiLink = "Key:step_count"
@@ -46,6 +48,7 @@ class AddStepCount : OsmElementQuestType<Int> {
         CountInputQuestForm(
             on = on,
             icon = painterResource(Res.drawable.count_step),
+            minimum = if (element.tags["highway"] != null) 1 else 0
         )
     }
 

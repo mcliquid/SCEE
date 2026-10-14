@@ -649,7 +649,6 @@
     <string name="quest_fence_material_title">Hvilket materiale er dette hegn lavet af?</string>
     <string name="quest_material_wire">Wire</string>
     <string name="quest_service_times_title">Hvornår afholdes der gudstjeneste her?</string>
-    <string name="quest_service_times_resurvey_title">Er tidspunkterne for gudstjenesterne her stadig korrekte?</string>
     <string name="quest_kerb_type_title">Hvilken type kantsten er det her?</string>
     <string name="quest_orchard_type_title">Hvilken type frugtplantage er dette?</string>
     <string name="quest_orchard_type_meadow_orchard">Frugtplantage på græseng</string>

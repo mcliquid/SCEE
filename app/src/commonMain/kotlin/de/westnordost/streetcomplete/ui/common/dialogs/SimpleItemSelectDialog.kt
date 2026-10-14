@@ -34,6 +34,7 @@ fun <I> SimpleItemSelectDialog(
     backgroundColor: Color = MaterialTheme.colors.surface,
     contentColor: Color = contentColorFor(backgroundColor),
     properties: DialogProperties = DialogProperties(),
+    title: String = stringResource(Res.string.quest_select_hint),
 ) {
     val scrollState = rememberScrollState()
 
@@ -48,7 +49,7 @@ fun <I> SimpleItemSelectDialog(
     ) {
         AlertDialogLayout(
             modifier = modifier,
-            title = { Text(stringResource(Res.string.quest_select_hint)) },
+            title = { Text(title) },
             content = {
                 Column(Modifier
                     .fadingVerticalScrollEdges(scrollState, 64.dp)

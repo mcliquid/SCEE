@@ -23,6 +23,7 @@ fun SmoothnessAnswer.applyTo(tags: Tags, prefix: String? = null) {
     // similar tag as smoothness, will be wrong/outdated when smoothness is set
     tags.remove("${pre}surface:grade")
     when (this) {
+        is PartSmoothnessAnswer -> error("Part answers require their explicit scope")
         is SmoothnessValueAnswer -> {
             tags.updateWithCheckDate("${pre}smoothness", value.osmValue)
             if (tags.hasCheckDateForKey("${pre}surface")) {

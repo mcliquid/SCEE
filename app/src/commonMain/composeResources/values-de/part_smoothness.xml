@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="quest_partSmoothness_title">Wie eben sind die Rad- und Gehweganteile?</string>
+    <string name="quest_partSmoothness_left">Radweg auf der linken Seite</string>
+    <string name="quest_partSmoothness_right">Radweg auf der rechten Seite</string>
+    <string name="quest_partSmoothness_cycle">Radweganteil</string>
+    <string name="quest_partSmoothness_foot">Gehweganteil</string>
+    <string name="quest_partSmoothness_existing">Bisher eingetragen: %s</string>
+    <string name="quest_partSmoothness_unanswered">Nicht beurteilt</string>
+    <string name="quest_partSmoothness_clear">Nicht beurteilen: %s</string>
+    <string name="quest_partSmoothness_partial_hint">Bewerte nur die sichtbaren Teilflächen. Die übrigen bleiben unverändert.</string>
+    <string name="quest_partSmoothness_same">Alle offenen Teilflächen haben dieselbe Ebenheit</string>
+    <string name="quest_partSmoothness_direction">Links und rechts beziehen sich auf die OSM-Way-Richtung, die der Pfeil zeigt.</string>
+    <string name="quest_partSmoothness_both_hint">Für beide Seiten ist ein gemeinsamer Wert eingetragen. Bewerte beide Seiten, um ihn zu ändern oder zu bestätigen.</string>
+    <string name="quest_partSmoothness_split_both">Gemeinsamen Wert in zwei Seitenwerte aufteilen</string>
+    <string name="quest_partSmoothness_keep_both">Gemeinsamen Wert für beide Seiten beibehalten</string>
+    <string name="quest_partSmoothness_split_preview">Den gemeinsamen Smoothness-Eintrag und seine Datumsangaben entfernen und durch diese neu bewerteten Seitenwerte ersetzen:</string>
+    <string name="quest_partSmoothness_confirm_split">Aufteilung bestätigen und speichern</string>
+    <string name="quest_partSmoothness_back">Zurück</string>
+</resources>

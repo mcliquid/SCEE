@@ -48,6 +48,7 @@ inline fun <reified I> ItemSelectQuestForm(
     noinline otherAnswers: @Composable (() -> List<AnswerItem>) = { emptyList() },
     preferences: Preferences = koinInject(),
     submitOnSelection: Boolean = false,
+    noinline headerContent: @Composable () -> Unit = {},
 ) {
     val reorderedItems = remember(items, itemsPerRow, favoriteKey) {
         if (favoriteKey != null && items.size > preferences.getInt(Prefs.FAVS_FIRST_MIN_LINES, 1) * 2 * itemsPerRow) {
@@ -73,6 +74,7 @@ inline fun <reified I> ItemSelectQuestForm(
         otherAnswers = otherAnswers,
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            headerContent()
             CompositionLocalProvider(
                 LocalContentAlpha provides ContentAlpha.medium,
                 LocalTextStyle provides MaterialTheme.typography.body2

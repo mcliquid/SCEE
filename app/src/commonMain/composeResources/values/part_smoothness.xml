@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="quest_partSmoothness_title">How smooth are the cycleway and footway parts?</string>
+    <string name="quest_partSmoothness_left">Cycleway on the left</string>
+    <string name="quest_partSmoothness_right">Cycleway on the right</string>
+    <string name="quest_partSmoothness_cycle">Cycleway part</string>
+    <string name="quest_partSmoothness_foot">Footway part</string>
+    <string name="quest_partSmoothness_existing">Previously mapped: %s</string>
+    <string name="quest_partSmoothness_unanswered">Not assessed</string>
+    <string name="quest_partSmoothness_clear">Do not assess: %s</string>
+    <string name="quest_partSmoothness_partial_hint">Assess only the parts you can see. Other parts will remain unchanged.</string>
+    <string name="quest_partSmoothness_same">All open parts have the same smoothness</string>
+    <string name="quest_partSmoothness_direction">Left and right follow the OSM way direction shown by the arrow.</string>
+    <string name="quest_partSmoothness_both_hint">A common value is mapped for both sides. Assess both sides to change or confirm it.</string>
+    <string name="quest_partSmoothness_split_both">Split the common value into two side values</string>
+    <string name="quest_partSmoothness_keep_both">Keep a common value for both sides</string>
+    <string name="quest_partSmoothness_split_preview">Remove the common smoothness entry and its dates, and replace it with these newly assessed side values:</string>
+    <string name="quest_partSmoothness_confirm_split">Confirm split and save</string>
+    <string name="quest_partSmoothness_back">Back</string>
+</resources>

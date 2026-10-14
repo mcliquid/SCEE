@@ -315,9 +315,8 @@ class AddCyclewayPartSmoothnessTest {
         )
     }
 
-    // D4.1 does not exclude area=yes; same as the existing part-surface filters.
-    @Test fun `D4 1 policy currently applies on area=yes combined paths`() {
-        assertIsApplicable(
+    @Test fun `not applicable to area=yes combined paths`() {
+        assertIsNotApplicable(
             "highway" to "path",
             "bicycle" to "designated",
             "foot" to "designated",

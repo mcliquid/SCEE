@@ -55,21 +55,7 @@ fun AddSmoothnessForm(
             })
         },
         items = items,
-        itemContent = { item ->
-            val illustrationSurface = item.getIllustrationSurface(surfaceTag)
-            Box {
-                ImageWithDescription(
-                    painter = item.getImage(illustrationSurface)?.let { painterResource(it) },
-                    title = stringResource(item.title),
-                    description = item.getDescription(illustrationSurface)?.let { stringResource(it) }
-                )
-                Image(
-                    painter = painterResource(item.icon),
-                    contentDescription = item.emoji,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
-        },
+        itemContent = { SmoothnessAnswerItem(it, surfaceTag) },
         itemsPerRow = 1,
         submitOnSelection = true,
         // SC #7091: use quest title; keep SCEE expert-mode surface suffix
@@ -109,5 +95,19 @@ fun AddSmoothnessForm(
             onConfirmSurface = { on(Action.LeaveNote) },
             onWrongSurface = { on(Answer(WrongSurfaceAnswer)) }
         )
+    }
+}
+
+@Composable
+internal fun SmoothnessAnswerItem(item: Smoothness, surface: String?) {
+    val illustrationSurface = item.getIllustrationSurface(surface)
+    Box {
+        ImageWithDescription(
+            painter = item.getImage(illustrationSurface)?.let { painterResource(it) },
+            title = stringResource(item.title),
+            description = item.getDescription(illustrationSurface)?.let { stringResource(it) },
+        )
+        Image(painter = painterResource(item.icon), contentDescription = item.emoji,
+            modifier = Modifier.padding(8.dp))
     }
 }

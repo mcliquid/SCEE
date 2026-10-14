@@ -55,7 +55,7 @@ fun questPrefix(prefs: Preferences) = if (prefs.getBoolean(Prefs.QUEST_SETTINGS_
 else
     ""
 
-fun getLabelSources(defaultValue: String, questType: OsmFilterQuestType<*>, prefs: Preferences) =
+fun getLabelSources(defaultValue: String, questType: OsmElementQuestType<*>, prefs: Preferences) =
     prefs.getString(getPrefixedLabelSourcePref(questType, prefs),
         defaultValue
     ).split(",").map { it.trim() }

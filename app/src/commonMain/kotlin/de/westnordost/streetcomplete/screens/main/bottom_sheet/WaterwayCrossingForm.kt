@@ -174,11 +174,15 @@ private fun refreshCrossingContext(action: ElementEditAction, crossing: Waterway
     val data = MutableMapDataWithGeometry(nearby.toList() + road.toList() + water.toList(), emptyList())
     val current = findWaterwayCrossings(data, crossing.position, 0.05)
         .singleOrNull { it.road.id == crossing.road.id && it.waterway.id == crossing.waterway.id }
-        ?: run {
-            // Explain known safety failures without repeating a successful action validation.
-            crossing.validate(source, allowSharedFord = action is CreateWaterwayFordAction)
-            throw ConflictException("Crossing unavailable or ambiguous")
+    if (current == null) {
+        // Shared vertices are not quests (bridge/culvert impossible) but an explicit ford still tags the node.
+        if (action is CreateWaterwayFordAction) {
+            crossing.validate(source, allowSharedFord = true)
+            return action
         }
+        crossing.validate(source, allowSharedFord = false)
+        throw ConflictException("Crossing unavailable or ambiguous")
+    }
     return when (action) {
         is SetWaterwayStructureAction -> {
             val section = action.selectedPositions()

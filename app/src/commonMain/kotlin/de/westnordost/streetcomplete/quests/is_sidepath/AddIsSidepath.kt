@@ -106,6 +106,10 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer> {
                 if (!ofName.isNullOrEmpty()) {
                     tags["is_sidepath:of:name"] = ofName
                 }
+                val ofHighway = answer.ofHighway
+                if (!ofHighway.isNullOrEmpty()) {
+                    tags["is_sidepath:of"] = ofHighway
+                }
             }
 
             IsSidepathAnswer.No -> {

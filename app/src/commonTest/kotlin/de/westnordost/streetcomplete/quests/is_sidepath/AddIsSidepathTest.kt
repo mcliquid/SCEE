@@ -81,6 +81,31 @@ class AddIsSidepathTest {
         )
     }
 
+    @Test fun `apply yes with primary road highway`() {
+        assertEquals(
+            setOf(
+                StringMapEntryAdd("is_sidepath", "yes"),
+                StringMapEntryAdd("is_sidepath:of", "primary"),
+                StringMapEntryAdd("is_sidepath:of:name", "Hauptstraße"),
+            ),
+            questType.answerApplied(
+                IsSidepathAnswer.Yes(ofName = "Hauptstraße", ofHighway = "primary")
+            )
+        )
+    }
+
+    @Test fun `apply yes with secondary road highway only`() {
+        assertEquals(
+            setOf(
+                StringMapEntryAdd("is_sidepath", "yes"),
+                StringMapEntryAdd("is_sidepath:of", "secondary"),
+            ),
+            questType.answerApplied(
+                IsSidepathAnswer.Yes(ofName = null, ofHighway = "secondary")
+            )
+        )
+    }
+
     @Test fun `apply yes without road name`() {
         assertEquals(
             setOf(StringMapEntryAdd("is_sidepath", "yes")),
@@ -95,9 +120,15 @@ class AddIsSidepathTest {
         )
     }
 
-    @Test fun `apply yes never writes is_sidepath of or of ref`() {
+    @Test fun `apply yes without road highway does not write is_sidepath of`() {
         val changes = questType.answerApplied(IsSidepathAnswer.Yes(ofName = "Hauptstraße"))
         assertTrue(changes.none { it.key == "is_sidepath:of" })
+    }
+
+    @Test fun `apply yes never writes is_sidepath of ref`() {
+        val changes = questType.answerApplied(
+            IsSidepathAnswer.Yes(ofName = "Hauptstraße", ofHighway = "primary")
+        )
         assertTrue(changes.none { it.key == "is_sidepath:of:ref" })
     }
 

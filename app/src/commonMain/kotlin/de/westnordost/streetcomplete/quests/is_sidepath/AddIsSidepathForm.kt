@@ -117,7 +117,11 @@ private fun ChooseRoadForm(
         val mapData = withContext(Dispatchers.IO) {
             mapDataSource.getMapDataWithGeometry(bbox)
         }
-        candidates = findCandidateRoads(pathGeometry, mapData)
+        val found = findCandidateRoads(pathGeometry, mapData)
+        candidates = found
+        if (selection == null && found.isNotEmpty()) {
+            selection = SidepathRoadSelection.Road(found.first().element.id)
+        }
         loaded = true
     }
 
@@ -152,10 +156,15 @@ private fun ChooseRoadForm(
         onClickOk = {
             when (val selected = selection) {
                 is SidepathRoadSelection.Road -> {
-                    val name = candidates
-                        .firstOrNull { it.element.id == selected.elementId }
-                        ?.name
-                    on(Answer(IsSidepathAnswer.Yes(ofName = name)))
+                    val candidate = candidates.firstOrNull { it.element.id == selected.elementId }
+                    on(
+                        Answer(
+                            IsSidepathAnswer.Yes(
+                                ofName = candidate?.name,
+                                ofHighway = candidate?.highway,
+                            )
+                        )
+                    )
                 }
                 SidepathRoadSelection.CantSay, null ->
                     on(Answer(IsSidepathAnswer.Yes(ofName = null)))

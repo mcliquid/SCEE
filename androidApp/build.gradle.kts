@@ -2,8 +2,8 @@ import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.plugin.compose")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -100,42 +100,43 @@ dependencies {
     implementation(project(":app"))
 
     // Kotlin
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
+    implementation(libs.kotlinx.coroutines.android)
 
     // Android / UI
-    implementation("androidx.activity:activity-compose:1.13.0")
-    implementation("com.google.android.material:material:1.14.0")
-    implementation("androidx.appcompat:appcompat:1.8.0")
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.google.material)
+    implementation(libs.androidx.appcompat)
 
     // Compose
-    implementation("org.jetbrains.compose.runtime:runtime:1.12.1")
-    implementation("org.jetbrains.compose.ui:ui:1.12.1")
-    implementation("org.jetbrains.compose.material:material:1.12.1")
-    implementation("org.jetbrains.compose.components:components-resources:1.12.1")
-    add("legacyDebugImplementation", "androidx.compose.ui:ui-tooling:1.12.1")
+    implementation(libs.compose.runtime)
+    implementation(libs.compose.ui)
+    implementation(libs.compose.material)
+    implementation(libs.compose.resources)
+    add("legacyDebugImplementation", libs.androidx.compose.uiTooling)
 
     // location
-    implementation("org.maplibre.compose:location:0.20.0")
+    implementation(libs.maplibre.location)
 
     // Dependency Injection
-    implementation("io.insert-koin:koin-android:4.2.2")
-    implementation("io.insert-koin:koin-androidx-compose:4.2.2")
-    implementation("io.insert-koin:koin-androidx-workmanager:4.2.2")
+    implementation(platform(libs.koin.bom))
+    implementation(libs.koin.android)
+    implementation(libs.koin.androidxCompose)
+    implementation(libs.koin.androidxWorkmanager)
 
     // Settings (NearbyQuestMonitor and other SCEE androidApp code)
-    implementation("com.russhwolf:multiplatform-settings:1.3.0")
+    implementation(libs.multiplatform.settings)
 
     // Database / IO
-    implementation("androidx.sqlite:sqlite-bundled:2.7.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.9.1")
+    implementation(libs.androidx.sqliteBundled)
+    implementation(libs.kotlinx.io)
 
     // HTTP Client
-    implementation("io.ktor:ktor-client-android:3.6.0")
+    implementation(libs.ktor.client.android)
 
     // finding OSM features
-    implementation("de.westnordost:osmfeatures:8.1.0-SNAPSHOT")
+    implementation(libs.osmfeatures)
 
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    coreLibraryDesugaring(libs.desugar.jdkLibs)
 }
 
 val keystorePropertiesFile = rootProject.file("keystore.properties")

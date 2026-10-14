@@ -10,17 +10,17 @@ java {
 }
 
 dependencies {
-    implementation("com.beust:klaxon:5.6")
-    implementation("de.westnordost:countryboundaries:3.0.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-io-core:0.9.1")
-    implementation("com.esotericsoftware.yamlbeans:yamlbeans:1.17")
-    implementation("org.jsoup:jsoup:1.23.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.11.0")
-    implementation("com.charleskorn.kaml:kaml:0.104.0")
-    implementation("org.jetbrains:markdown:0.7.17")
+    implementation(libs.klaxon)
+    implementation(libs.countryboundaries)
+    implementation(libs.kotlinx.io)
+    implementation(libs.yamlbeans)
+    implementation(libs.jsoup)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kaml)
+    implementation(libs.markdown)
 }
 
 plugins {
     `kotlin-dsl`
-    kotlin("plugin.serialization") version "2.0.0"
+    alias(libs.plugins.kotlin.serialization)
 }

@@ -23,5 +23,6 @@ fun AddPathPartSurfaceForm(
             ImageWithLabel(item.icon?.let { painterResource(it) }, stringResource(item.title))
         },
         favoriteKey = "AddPathPartSurfaceForm",
+        submitOnSelection = true,
     )
 }

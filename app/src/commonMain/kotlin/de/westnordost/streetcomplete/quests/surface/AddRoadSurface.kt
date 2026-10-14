@@ -65,6 +65,7 @@ class AddRoadSurface : OsmFilterQuestType<Surface>() {
                 ImageWithLabel(item.icon?.let { painterResource(it) }, stringResource(item.title))
             },
             favoriteKey = "AddRoadSurfaceForm",
+            submitOnSelection = true,
             title = stringResource(
                 if (element.tags["area"] == "yes") Res.string.quest_streetSurface_square_title
                 else Res.string.quest_streetSurface_title

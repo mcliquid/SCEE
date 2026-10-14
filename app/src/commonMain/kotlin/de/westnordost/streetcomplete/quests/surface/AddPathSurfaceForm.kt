@@ -35,6 +35,7 @@ fun AddPathSurfaceForm(
             ImageWithLabel(item.icon?.let { painterResource(it) }, stringResource(item.title))
         },
         favoriteKey = "AddPathSurfaceForm",
+        submitOnSelection = true,
         otherAnswers = { listOfNotNull(
             if (element.couldBeSteps()) {
                 AnswerItem(stringResource(Res.string.quest_generic_answer_is_actually_steps)) {

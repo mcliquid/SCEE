@@ -45,6 +45,7 @@ class AddTracktype : OsmFilterQuestType<Tracktype>() {
             on = on,
             items = Tracktype.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },
+            submitOnSelection = true,
         )
     }
 

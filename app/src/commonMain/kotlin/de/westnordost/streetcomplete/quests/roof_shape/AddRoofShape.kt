@@ -79,6 +79,7 @@ class AddRoofShape(
             itemContent = { Image(painterResource(it.icon), null) },
             itemsPerRow = 4,
             favoriteKey = "AddRoofShapeForm",
+            submitOnSelection = true,
             otherAnswers = { listOf(
                 AnswerItem(stringResource(Res.string.quest_roofShape_answer_many)) { on(Answer(MANY)) }
             ) }

@@ -50,6 +50,7 @@ fun AddBuildingTypeForm(
             )
         },
         favoriteKey = "AddBuildingTypeForm",
+        submitOnSelection = true,
         otherAnswers = { listOf(
             AnswerItem(stringResource(Res.string.quest_buildingType_answer_multiple_types)) {
                 showMultipleTypesHint = true

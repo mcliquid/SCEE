@@ -71,6 +71,7 @@ fun AddSmoothnessForm(
             }
         },
         itemsPerRow = 1,
+        submitOnSelection = true,
         // SC #7091: use quest title; keep SCEE expert-mode surface suffix
         title = stringResource(titleRes) + titleExtra,
         otherAnswers = { listOfNotNull(

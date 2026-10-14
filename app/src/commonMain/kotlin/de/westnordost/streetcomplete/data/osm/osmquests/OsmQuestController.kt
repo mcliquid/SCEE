@@ -433,7 +433,8 @@ class OsmQuestController(
         val geometry = mapDataSource.getGeometry(entry.elementType, entry.elementId) ?: return null
         val quest = createOsmQuest(entry, geometry) ?: return null
         if (isBlacklistedPosition(quest.position)) return null
-        return if (quest.type is AddWaterwayCrossing) getValidated(quest) else quest
+        // Validation is explicit via [getValidated]; map pins and DB reads must not run crossing detection.
+        return quest
     }
 
     override fun getValidated(quest: OsmQuest): OsmQuest? {
@@ -450,19 +451,24 @@ class OsmQuestController(
         return null
     }
 
-    override fun getAllInBBox(bbox: BoundingBox, questTypes: Collection<QuestType>?): Collection<OsmQuest> {
+    override fun getAllInBBox(
+        bbox: BoundingBox,
+        questTypes: Collection<QuestType>?,
+        refreshCrossingQuests: Boolean,
+    ): Collection<OsmQuest> {
         val hiddenPositions = getBlacklistedPositions(bbox)
         if (prefs.getBoolean(Prefs.DYNAMIC_QUEST_CREATION, false)) {
             val mapData = mapDataSource.getMapDataWithGeometry(bbox.enlargedBy(ApplicationConstants.QUEST_FILTER_PADDING))
             val quests = createQuestsForBBox(bbox, mapData, questTypes?.filterIsInstance<OsmElementQuestType<*>>() ?: allQuestTypes)
             return quests.filter { it.position.truncateTo6Decimals() !in hiddenPositions }
         }
-        // Also generate this newly introduced quest for areas downloaded by an older build.
-        // Re-evaluation handles edits to either way without depending on dynamic quests settings.
-        val crossingTypes = (questTypes ?: allQuestTypes).filterIsInstance<AddWaterwayCrossing>()
-        if (crossingTypes.isNotEmpty()) {
-            val (_, removed) = refreshCrossingQuests(bbox, crossingTypes)
-            onUpdated(deleted = removed)
+        if (refreshCrossingQuests) {
+            // Also generate this newly introduced quest for areas downloaded by an older build.
+            val crossingTypes = (questTypes ?: allQuestTypes).filterIsInstance<AddWaterwayCrossing>()
+            if (crossingTypes.isNotEmpty()) {
+                val (_, removed) = refreshCrossingQuests(bbox, crossingTypes)
+                onUpdated(deleted = removed)
+            }
         }
         val entries = db.getAllInBBox(bbox, questTypes?.map { it.name }).filter {
             it.position.truncateTo6Decimals() !in hiddenPositions
@@ -585,7 +591,10 @@ class OsmQuestController(
             if (!water.isCrossingWaterway()) return@any false
             val wp = water.nodeIds.map { data.getNode(it)?.position ?: return@any false }
             val point = uniqueCrossingPoints(rp, wp).singleOrNull { it.equalsInOsm(entry.position) } ?: return@any false
-            try { checkEditableCrossing(data, road, water, rp, wp, point); false } catch (_: de.westnordost.streetcomplete.data.ConflictException) { true }
+            try {
+                checkEditableCrossing(data, road, water, rp, wp, point)
+                !crossingSupportsBridgeOrCulvert(road, water, rp, point)
+            } catch (_: de.westnordost.streetcomplete.data.ConflictException) { true }
         }
     }
 

@@ -301,8 +301,8 @@ fun MainScreen(
 
     val pinsMode = when (sheetSelection) {
         is MainSheetSelection.EditHistory -> PinsMode.EditHistory
-        null -> PinsMode.Quests // quest pins are only shown if no form is open
-        else -> PinsMode.None
+        null -> PinsMode.Quests
+        else -> if (shownBottomSheet != null) PinsMode.None else PinsMode.Quests
     }
 
     var formOverlayVisible by remember(sheet.id) { mutableStateOf(true) }

@@ -111,10 +111,23 @@ internal fun MainMapContent(
         lastPinsMode = pinsMode
     }
 
+    val questPins by viewModel.questPins.collectAsStateWithLifecycle()
     val pins: Collection<Pin> = if (!showPinsAtZoom) emptyList() else when (pinsMode) {
-        PinsMode.Quests -> viewModel.questPins.collectAsStateWithLifecycle().value
+        PinsMode.Quests -> questPins
         PinsMode.EditHistory -> viewModel.editHistoryPins.collectAsStateWithLifecycle().value
         PinsMode.None -> emptyList()
+    }
+    LaunchedEffect(pinsMode, showPinsAtZoom, questPins.size) {
+        when {
+            !showPinsAtZoom && questPins.isNotEmpty() ->
+                Perf.pinDiag("ui-suppressed reason=zoom-below-13 pinsInFlow=${questPins.size}")
+            pinsMode == PinsMode.None && questPins.isNotEmpty() ->
+                Perf.pinDiag("ui-suppressed reason=bottom-sheet pinsInFlow=${questPins.size}")
+            pinsMode == PinsMode.EditHistory && questPins.isNotEmpty() ->
+                Perf.pinDiag("ui-suppressed reason=edit-history pinsInFlow=${questPins.size}")
+            pinsMode == PinsMode.Quests && showPinsAtZoom && questPins.isEmpty() ->
+                Perf.pinDiag("ui-quest-pins-empty")
+        }
     }
     val styledElements: Collection<StyledElement> = if (showOverlay && showOverlayAtZoom) {
         viewModel.styleableElements.collectAsStateWithLifecycle().value

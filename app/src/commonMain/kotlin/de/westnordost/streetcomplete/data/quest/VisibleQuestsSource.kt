@@ -181,19 +181,20 @@ class VisibleQuestsSource(
     }
 
     fun get(questKey: QuestKey): Quest? {
-        val cached = cache.get(questKey)
-        val quest = cached ?: when (questKey) {
+        val quest = when (questKey) {
             is OsmNoteQuestKey -> osmNoteQuestSource.get(questKey.noteId)
-            is OsmQuestKey -> osmQuestSource.get(questKey)
+            is OsmQuestKey -> {
+                val loaded = cache.get(questKey) as? OsmQuest ?: osmQuestSource.get(questKey) ?: return null
+                if (loaded.type is AddWaterwayCrossing) {
+                    osmQuestSource.getValidated(loaded) ?: run {
+                        updateVisibleQuests(deleted = listOf(loaded.key))
+                        return null
+                    }
+                } else loaded
+            }
             is ExternalSourceQuestKey -> externalSourceQuestController.get(questKey)
         } ?: return null
-        val current = if (cached != null && quest is OsmQuest && quest.type is AddWaterwayCrossing) {
-            osmQuestSource.getValidated(quest) ?: run {
-                updateVisibleQuests(deleted = listOf(quest.key))
-                return null
-            }
-        } else quest
-        return if (isVisible(current, prefs.getBoolean(Prefs.HIDE_OVERLAY_QUESTS, true))) current else null
+        return if (isVisible(quest, prefs.getBoolean(Prefs.HIDE_OVERLAY_QUESTS, true))) quest else null
     }
 
     private fun isVisible(quest: Quest, hideOverlayQuests: Boolean): Boolean =

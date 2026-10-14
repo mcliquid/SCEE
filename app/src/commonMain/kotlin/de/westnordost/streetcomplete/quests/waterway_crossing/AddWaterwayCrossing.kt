@@ -88,6 +88,7 @@ class AddWaterwayCrossing : OsmElementQuestType<ElementEditAction> {
                     } catch (_: ConflictException) { return@flatMap emptySequence() }
                     geometryChecks.intersections(road, water, rp, wp).mapNotNull { point ->
                         try { checkEditableCrossing(data, road, water, rp, wp, point, geometryChecks) } catch (_: ConflictException) { return@mapNotNull null }
+                        if (!crossingSupportsBridgeOrCulvert(road, water, rp, point)) return@mapNotNull null
                         if (crossingContext(data, road, water, point) == null) return@mapNotNull null
                         // A ford/structure on the crossing vertex already describes this crossing.
                         if ((road.nodeIds + water.nodeIds).any { id -> data.getNode(id)?.let {

@@ -46,6 +46,11 @@ object Perf {
         }
     }
 
+    /** Rare pin-outage hints (not logged on every map move). */
+    fun pinDiag(message: String) {
+        log("pinDiag $message")
+    }
+
     fun armOpen() {
         armedOpen.value = PerfTrace("open", nextId(), mark())
     }

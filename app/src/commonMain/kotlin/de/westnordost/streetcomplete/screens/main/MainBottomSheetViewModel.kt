@@ -137,12 +137,7 @@ class MainBottomSheetViewModelImpl(
                 trace?.set("kind", "osm")
                 // VisibleQuestsSource serves dynamic quests from cache and falls back to the DB.
                 val questStart = Perf.mark()
-                if (visibleQuestsSource.get(key) == null) {
-                    trace?.addMs("questLookup", Perf.ms(questStart))
-                    return null
-                }
                 val quest = visibleQuestsSource.get(key) as? OsmQuest
-                    ?: osmQuestSource.get(key)
                 trace?.addMs("questLookup", Perf.ms(questStart))
                 if (quest == null) return null
                 val elementStart = Perf.mark()

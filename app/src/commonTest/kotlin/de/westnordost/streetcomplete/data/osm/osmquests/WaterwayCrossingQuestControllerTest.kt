@@ -69,13 +69,13 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
             override fun getMapDataWithGeometry(bbox: BoundingBox) = cache.getMapDataWithGeometry(bbox)
         }
         val controller = controller(bulk)
-        assertTrue(controller.getAllInBBox(area, listOf(type)).isEmpty())
+        assertTrue(controller.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).isEmpty())
         assertEquals(1, queries)
         val removed = (100L until 200L).map { ElementKey(ElementType.WAY, it) }
         cache.update(deletedKeys = removed)
         data.ways.filter { it.id >= 100 }.toList().forEach { data.remove(ElementType.WAY, it.id) }
         queries = 0
-        assertEquals(1, controller.getAllInBBox(area, listOf(type)).size)
+        assertEquals(1, controller.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).size)
         assertEquals(1, queries)
     }
 
@@ -89,7 +89,7 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         data.ways.toList().forEach { w -> data.put(w, ElementGeometryCreator().create(w, data)) }
         val oldCache = crossingTestCache(data, warm = true)
         every { source.getMapDataWithGeometry(any()) } calls { (bounds: BoundingBox) -> oldCache.getMapDataWithGeometry(bounds) }
-        val expected = controller().getAllInBBox(area, listOf(type)).map { it.key to it.position }.toSet()
+        val expected = controller().getAllInBBox(area, listOf(type), refreshCrossingQuests = true).map { it.key to it.position }.toSet()
         val newCache = crossingTestCache(data, warm = true)
         var queries = 0
         val bulk = object : MapDataWithEditsSource by source, MapDataAreasSource {
@@ -99,7 +99,7 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
             }
             override fun getMapDataWithGeometry(bbox: BoundingBox) = newCache.getMapDataWithGeometry(bbox)
         }
-        val actual = controller(bulk).getAllInBBox(area, listOf(type)).map { it.key to it.position }.toSet()
+        val actual = controller(bulk).getAllInBBox(area, listOf(type), refreshCrossingQuests = true).map { it.key to it.position }.toSet()
         assertEquals(3, expected.size)
         assertEquals(expected, actual)
         assertEquals(1, queries)
@@ -113,11 +113,11 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
             requests.add(bounds)
             data
         }
-        assertTrue(ctrl.getAllInBBox(area, listOf(type)).isEmpty()) // third way prevents editing
+        assertTrue(ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).isEmpty()) // third way prevents editing
         assertEquals(2, requests.size) // viewport and one shared full-anchor query, previously three
         requests.clear()
         data.remove(ElementType.WAY, 30)
-        val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+        val quest = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
         assertEquals(2, requests.size) // no full-anchor result reused across data changes
         assertEquals(f.road.id, quest.elementId)
     }
@@ -137,7 +137,7 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         data.ways.toList().forEach { w -> data.put(w, ElementGeometryCreator().create(w, data)) }
         val requests = mutableListOf<BoundingBox>()
         every { source.getMapDataWithGeometry(any()) } calls { (bounds: BoundingBox) -> requests.add(bounds); data }
-        val quests = ctrl.getAllInBBox(area, listOf(type))
+        val quests = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true)
         assertTrue(quests.none { it.elementId == f.road.id }) // relation forbids the shared ford
         assertEquals(2, quests.count { it.elementId == secondRoad.id })
         assertEquals(3, requests.size) // distinct overlapping anchors must not be collapsed
@@ -152,7 +152,7 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
             if (requests == 2) mapListener.onCleared()
             data
         }
-        assertTrue(ctrl.getAllInBBox(area, listOf(type)).isEmpty())
+        assertTrue(ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).isEmpty())
         assertEquals(3, requests)
     }
 
@@ -163,12 +163,12 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         every { source.getWaysForNode(any()) } calls { (id: Long) -> data.ways.filter { id in it.nodeIds } }
         val bounds = BoundingBox(47.75, 9.10, 47.77, 9.13)
         val original = MutableMapDataWithGeometry(data)
-        val quests = ctrl.getAllInBBox(bounds, listOf(type))
+        val quests = ctrl.getAllInBBox(bounds, listOf(type), refreshCrossingQuests = true)
         assertEquals(2, quests.size)
         val keys = quests.map { it.key }.toSet()
         assertEquals(2, keys.size)
         val originalListener = mapListener
-        assertEquals(keys, controller().getAllInBBox(bounds, listOf(type)).map { it.key }.toSet())
+        assertEquals(keys, controller().getAllInBBox(bounds, listOf(type), refreshCrossingQuests = true).map { it.key }.toSet())
         mapListener = originalListener
         val crossing = findWaterwayCrossings(data, quests.first().position, 1.0).single()
         val rp = crossing.roadPositions
@@ -187,13 +187,13 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
             override fun onInvalidated() {}
         })
         mapListener.onUpdated(updates, emptyList())
-        assertTrue(ctrl.getAllInBBox(bounds, listOf(type)).isEmpty())
+        assertTrue(ctrl.getAllInBBox(bounds, listOf(type), refreshCrossingQuests = true).isEmpty())
         assertTrue(deletedPins.containsAll(keys))
         keys.forEach { assertNull(dao.get(it)) }
         changes.creations.forEach { data.remove(it.type, it.id) }
         original.forEach { e -> data.put(e, original.getGeometry(e.type, e.id)) }
         mapListener.onUpdated(data, changes.creations.map { it.key })
-        assertEquals(keys, ctrl.getAllInBBox(bounds, listOf(type)).map { it.key }.toSet())
+        assertEquals(keys, ctrl.getAllInBBox(bounds, listOf(type), refreshCrossingQuests = true).map { it.key }.toSet())
     }
 
     @Test fun `partial bridge and upload ID replacement leave exactly the other crossing pin`() {
@@ -203,7 +203,7 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         val water = way(30, listOf(7, 8), mapOf("waterway" to "ditch"))
         data.put(water, ElementGeometryCreator().create(water, data))
         every { source.getWaysForNode(any()) } calls { (id: Long) -> data.ways.filter { id in it.nodeIds } }
-        val initial = ctrl.getAllInBBox(area, listOf(type))
+        val initial = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true)
         assertEquals(2, initial.size)
         val edits = f.bridge.copy(crossing = findWaterwayCrossings(data, p(), 1.0).single()).createUpdates(f.repo, f.idProvider())
         fun notify(elements: List<Element>, deleted: List<ElementKey>) {
@@ -213,7 +213,7 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
             mapListener.onUpdated(updates, deleted)
         }
         notify(edits.creations + edits.modifications, emptyList())
-        val remaining = ctrl.getAllInBBox(area, listOf(type)).single()
+        val remaining = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
         assertTrue(remaining.position.equalsInOsm(p(0.0, 0.001)))
         assertTrue(remaining.elementId < 0)
         initial.forEach { assertNull(dao.get(it.key)) }
@@ -228,7 +228,7 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         } }
         temporary.forEach { data.remove(it.type, it.id) }
         notify(replacements, temporary.map { it.key })
-        val uploaded = ctrl.getAllInBBox(area, listOf(type)).single()
+        val uploaded = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
         assertEquals(remaining.position, uploaded.position)
         assertEquals(remaining.key.discriminator, uploaded.key.discriminator)
         assertTrue(uploaded.elementId > 0)
@@ -239,7 +239,7 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
     @Test fun `legacy single pin is replaced with independent crossing keys`() {
         val legacy = BasicOsmQuestDaoEntry(ElementType.WAY, f.road.id, type.name, p())
         dao.put(legacy)
-        val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+        val quest = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
         assertTrue(quest.key.discriminator.isNotEmpty())
         assertNull(dao.get(legacy.key))
         assertEquals(quest.position, dao.get(quest.key)!!.position)
@@ -260,11 +260,11 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
             data.ways.toList().forEach { w -> data.put(w, ElementGeometryCreator().create(w, data)) }
             val bounds = BoundingBox(origin.latitude - 0.01, origin.longitude - 0.01, origin.latitude + 0.01, origin.longitude + 0.01)
             val c = findWaterwayCrossings(data, origin, 10.0).single()
-            val quest = ctrl.getAllInBBox(bounds, listOf(type)).single()
+            val quest = ctrl.getAllInBBox(bounds, listOf(type), refreshCrossingQuests = true).single()
             val changes = CreateWaterwayFordAction(c).createUpdates(fixture.repo, fixture.idProvider())
             (changes.creations + changes.modifications).forEach { data.putElement(it) }
             (changes.creations + changes.modifications).forEach { e -> data.put(e, ElementGeometryCreator().create(e, data)) }
-            assertTrue(ctrl.getAllInBBox(bounds, listOf(type)).isEmpty(), "case $i points=" + uniqueCrossingPoints(
+            assertTrue(ctrl.getAllInBBox(bounds, listOf(type), refreshCrossingQuests = true).isEmpty(), "case $i points=" + uniqueCrossingPoints(
                 data.getWay(c.road.id)!!.nodeIds.map { data.getNode(it)!!.position },
                 data.getWay(c.waterway.id)!!.nodeIds.map { data.getNode(it)!!.position }) + " expected=" + c.position)
             assertNull(dao.get(quest.key), "case $i")
@@ -284,7 +284,7 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         val bounds = BoundingBox(origin.latitude - 0.01, origin.longitude - 0.01, origin.latitude + 0.01, origin.longitude + 0.01)
         val original = MutableMapDataWithGeometry(data)
         val crossing = findWaterwayCrossings(data, origin, 10.0).single()
-        val quest = ctrl.getAllInBBox(bounds, listOf(type)).single()
+        val quest = ctrl.getAllInBBox(bounds, listOf(type), refreshCrossingQuests = true).single()
         val deletedPins = mutableListOf<de.westnordost.streetcomplete.data.quest.OsmQuestKey>()
         ctrl.addListener(object : OsmQuestSource.Listener {
             override fun onUpdated(added: Collection<OsmQuest>, deleted: Collection<de.westnordost.streetcomplete.data.quest.OsmQuestKey>) { deletedPins.addAll(deleted) }
@@ -300,13 +300,13 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
             (changes.creations + changes.modifications).forEach { data.putElement(it) }
             (changes.creations + changes.modifications).forEach { e -> val g = ElementGeometryCreator().create(e, data); data.put(e, g); updates.put(e, g) }
             mapListener.onUpdated(updates, emptyList())
-            assertTrue(ctrl.getAllInBBox(bounds, listOf(type)).isEmpty())
+            assertTrue(ctrl.getAllInBBox(bounds, listOf(type), refreshCrossingQuests = true).isEmpty())
             assertNull(dao.get(quest.key))
             assertTrue(quest.key in deletedPins)
             changes.creations.forEach { data.remove(it.type, it.id) }
             original.forEach { e -> data.put(e, original.getGeometry(e.type, e.id)) }
             mapListener.onUpdated(data, changes.creations.map { it.key })
-            assertEquals(quest.position, ctrl.getAllInBBox(bounds, listOf(type)).single().position)
+            assertEquals(quest.position, ctrl.getAllInBBox(bounds, listOf(type), refreshCrossingQuests = true).single().position)
         }
         val changes = CreateWaterwayFordAction(crossing).createUpdates(f.repo, f.idProvider())
         val ford = changes.creations.filterIsInstance<Node>().single()
@@ -324,7 +324,7 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         (changes.creations + changes.modifications).forEach { e -> val g = ElementGeometryCreator().create(e, data); data.put(e, g); updates.put(e, g) }
         deletedPins.clear()
         mapListener.onUpdated(updates, emptyList())
-        assertTrue(ctrl.getAllInBBox(bounds, listOf(type)).isEmpty())
+        assertTrue(ctrl.getAllInBBox(bounds, listOf(type), refreshCrossingQuests = true).isEmpty())
         assertNull(dao.get(quest.key))
         assertTrue(quest.key in deletedPins)
         assertNull(ctrl.get(quest.key))
@@ -334,7 +334,7 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         for (dynamic in listOf(false, true)) {
             dao.clear()
             data = MutableMapDataWithGeometry(f.data)
-            val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+            val quest = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
             data.putElement(f.road.copy(tags = f.road.tags + ("bridge" to "yes")))
             if (dynamic) dao.clear()
             // No map update notification: simulate a change between cache lookup and opening.
@@ -344,20 +344,19 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         }
     }
 
-    @Test fun `shared ford pin persists across tile queries and retires after tagging`() {
+    @Test fun `ford only shared crossing is never created and stale pins are retired`() {
         f.sharedCrossing()
-        val quest = ctrl.getAllInBBox(area, listOf(type)).single()
-        val tile = BoundingBox(-0.00001, -0.00001, 0.00001, 0.00001)
-        assertEquals(quest.position, ctrl.getAllInBBox(tile, listOf(type)).single().position)
-        assertEquals(quest.position, controller().getAllInBBox(tile, listOf(type)).single().position)
-        data.putElement(node(7, p(), tags = mapOf("ford" to "yes")))
-        assertTrue(ctrl.getAllInBBox(tile, listOf(type)).isEmpty())
+        assertTrue(ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).isEmpty())
+        val stale = OsmQuest(type, ElementType.WAY, f.road.id, ElementPointGeometry(p()))
+        dao.put(stale)
+        assertNull(ctrl.getValidated(stale))
+        assertNull(dao.get(stale.key))
     }
 
     @Test fun `irrelevant way and node tag updates do not rerun crossing queries`() {
         var queries = 0
         every { source.getMapDataWithGeometry(any()) } calls { queries++; data }
-        val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+        val quest = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
         val before = queries
         val renamed = f.road.copy(tags = f.road.tags + ("name" to "New name"))
         val geometry = data.getWayGeometry(f.road.id)
@@ -371,7 +370,7 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
     }
 
     @Test fun `deleting known selected counterpart retires its pin`() {
-        val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+        val quest = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
         data.remove(ElementType.WAY, f.water.id)
         mapListener.onUpdated(MutableMapDataWithGeometry(), listOf(f.water.key))
         assertNull(dao.get(quest.key))
@@ -398,41 +397,41 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         }
         val firstTile = BoundingBox(-0.0001, -0.0001, 0.0001, 0.0001)
         val otherTile = BoundingBox(-0.0001, 0.0059, 0.0001, 0.0061)
-        val otherQuest = ctrl.getAllInBBox(otherTile, listOf(type)).single()
-        val quest = ctrl.getAllInBBox(firstTile, listOf(type)).single()
+        val otherQuest = ctrl.getAllInBBox(otherTile, listOf(type), refreshCrossingQuests = true).single()
+        val quest = ctrl.getAllInBBox(firstTile, listOf(type), refreshCrossingQuests = true).single()
         assertEquals(p(), quest.position)
-        assertEquals(otherQuest, ctrl.getAllInBBox(otherTile, listOf(type)).single())
+        assertEquals(otherQuest, ctrl.getAllInBBox(otherTile, listOf(type), refreshCrossingQuests = true).single())
         assertEquals(quest.position, dao.get(quest.key)!!.position)
-        assertEquals(otherQuest, controller().getAllInBBox(otherTile, listOf(type)).single())
+        assertEquals(otherQuest, controller().getAllInBBox(otherTile, listOf(type), refreshCrossingQuests = true).single())
         assertNotEquals(quest.key, otherQuest.key)
-        assertEquals(quest, controller().getAllInBBox(firstTile, listOf(type)).single())
+        assertEquals(quest, controller().getAllInBBox(firstTile, listOf(type), refreshCrossingQuests = true).single())
     }
 
     @Test fun `incomplete counterpart data never retargets or deletes a saved pin`() {
-        val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+        val quest = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
         data.remove(ElementType.WAY, f.water.id)
         data.putElement(node(7, p(-0.002, 0.001)))
         data.putElement(node(8, p(0.002, 0.001)))
         val other = way(30, listOf(7, 8), mapOf("waterway" to "ditch"))
         data.put(other, ElementGeometryCreator().create(other, data))
-        ctrl.getAllInBBox(area, listOf(type))
+        ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true)
         assertEquals(quest.position, dao.get(quest.key)!!.position)
     }
 
     @Test fun `unchanged viewport skips expanded crossing queries and persistence`() {
         var queries = 0
         every { source.getMapDataWithGeometry(any()) } calls { queries++; data }
-        val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+        val quest = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
         val before = queries
-        assertEquals(quest, ctrl.getAllInBBox(area, listOf(type)).single())
+        assertEquals(quest, ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single())
         assertEquals(before + 1, queries)
         data.putElement(f.road.copy(tags = f.road.tags + ("name" to "New name")))
-        assertEquals(quest, ctrl.getAllInBBox(area, listOf(type)).single())
+        assertEquals(quest, ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single())
         assertEquals(before + 2, queries)
     }
 
     @Test fun `cached area from older build generates and persists new quest without dynamic quests`() {
-        val quests = ctrl.getAllInBBox(area, listOf(type))
+        val quests = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true)
         val quest = quests.single()
         assertEquals(f.road.id, quest.elementId)
         assertEquals(p(), quest.position)
@@ -444,10 +443,10 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         val shifted = node(4, p(0.0, 0.008))
         data.putElement(shifted)
         data.put(f.road, ElementGeometryCreator().create(f.road, data))
-        val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+        val quest = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
         assertNotEquals(quest.position, data.getGeometry(ElementType.WAY, f.road.id)!!.center)
         assertEquals(quest, controller().get(quest.key))
-        assertEquals(quest, controller().getAllInBBox(area, listOf(type)).single())
+        assertEquals(quest, controller().getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single())
     }
 
     @Test fun `normal download places quest at intersection even if road center is outside download`() {
@@ -460,19 +459,19 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
     }
 
     @Test fun `editing only counterpart removes quest and undo restores it`() {
-        val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+        val quest = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
         val changes = f.culvert.createUpdates(f.repo, f.idProvider())
         val creator = ElementGeometryCreator()
         (changes.creations + changes.modifications).forEach { data.putElement(it) }
         (changes.creations + changes.modifications).forEach { data.put(it, creator.create(it, data)) }
-        assertTrue(ctrl.getAllInBBox(area, listOf(type)).isEmpty())
+        assertTrue(ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).isEmpty())
         assertNull(dao.get(quest.key))
         data = WaterwayCrossingTestData().data
-        assertEquals(quest, ctrl.getAllInBBox(area, listOf(type)).single())
+        assertEquals(quest, ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single())
     }
 
     @Test fun `counterpart update notifies cached quest removal without invalidating all quest types`() {
-        val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+        val quest = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
         val listener = mock<OsmQuestSource.Listener>()
         ctrl.addListener(listener)
         val changedWater = f.water.copy(tags = f.water.tags + ("tunnel" to "culvert"))
@@ -493,10 +492,40 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         data.put(f.road, ElementGeometryCreator().create(f.road, data))
         val roadCenter = data.getGeometry(ElementType.WAY, f.road.id)!!.center
         every { notes.getAllPositions(any()) } returns listOf(roadCenter)
-        val quest = ctrl.getAllInBBox(area, listOf(type)).single()
+        val quest = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
         assertNotNull(ctrl.get(quest.key))
         every { notes.getAllPositions(any()) } returns listOf(p())
         assertNull(ctrl.get(quest.key))
-        assertTrue(ctrl.getAllInBBox(area, listOf(type)).isEmpty())
+        assertTrue(ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).isEmpty())
+    }
+
+    @Test fun `get returns persisted crossing without running detection`() {
+        val quest = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
+        var mapLoads = 0
+        every { source.getMapDataWithGeometry(any()) } calls {
+            mapLoads++
+            data
+        }
+        assertEquals(quest, ctrl.get(quest.key))
+        assertEquals(0, mapLoads)
+        ctrl.getValidated(quest)
+        assertTrue(mapLoads > 0)
+    }
+
+    @Test fun `getAllInBBox without refreshCrossingQuests does not re-query crossing areas`() {
+        var areaQueries = 0
+        val cache = crossingTestCache(data, warm = true)
+        val bulk = object : MapDataWithEditsSource by source, MapDataAreasSource {
+            override fun getMapDataForAreas(areas: List<BoundingBox>): MutableMapDataWithGeometry {
+                areaQueries++
+                return cache.getMapDataForAreas(areas)
+            }
+            override fun getMapDataWithGeometry(bbox: BoundingBox) = cache.getMapDataWithGeometry(bbox)
+        }
+        val c = controller(bulk)
+        c.getAllInBBox(area, listOf(type), refreshCrossingQuests = true)
+        val afterSeed = areaQueries
+        assertTrue(c.getAllInBBox(area, listOf(type), refreshCrossingQuests = false).isNotEmpty())
+        assertEquals(afterSeed, areaQueries)
     }
 }

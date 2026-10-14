@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -13,6 +14,7 @@ import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.data.meta.CountryInfos
 import de.westnordost.streetcomplete.data.meta.get
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditAction
+import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.edits.delete.DeletePoiNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.move.MoveNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitWayAction
@@ -99,6 +101,7 @@ fun <T> OsmQuestFormContainer(
     countryBoundaries: CountryBoundaries = koinInject(),
     featureDictionary: FeatureDictionary = koinInject(),
     countryInfos: CountryInfos = koinInject(),
+    mapSource: MapDataWithEditsSource = koinInject(),
 ) {
     val center = geometry.center
     val countryInfo = remember(center) { countryInfos.get(countryBoundaries, center) }
@@ -186,13 +189,18 @@ fun <T> OsmQuestFormContainer(
                     )
                 }
                 QuestFormState.SplitWay -> {
-                    SplitWayForm(
-                        onConfirmed = { onEdit(SplitWayAction(element, it), false, true) },
-                        onDismiss = onDismiss,
-                        mapPosition = mapPosition,
-                        way = element as Way,
-                        wayGeometry = geometry as ElementPolylinesGeometry,
-                    )
+                    val wayGeometry = wayPolylinesGeometryForSplit(element, geometry, mapSource)
+                    if (wayGeometry != null && element is Way) {
+                        SplitWayForm(
+                            onConfirmed = { onEdit(SplitWayAction(element, it), false, true) },
+                            onDismiss = onDismiss,
+                            mapPosition = mapPosition,
+                            way = element,
+                            wayGeometry = wayGeometry,
+                        )
+                    } else {
+                        LaunchedEffect(Unit) { showForm(QuestFormState.Quest) }
+                    }
                 }
                 QuestFormState.MoveNode -> {
                     MoveNodeForm(
@@ -294,6 +302,17 @@ fun <T> OsmQuestFormContainer(
             onEdit = { onEdit(UpdateElementTagsAction(element, it), false, true) }
         )
     }
+}
+
+/** Quest pins may use point geometry while split-way still needs the full way polyline. */
+internal fun wayPolylinesGeometryForSplit(
+    element: Element,
+    questGeometry: ElementGeometry,
+    mapSource: MapDataWithEditsSource,
+): ElementPolylinesGeometry? {
+    if (questGeometry is ElementPolylinesGeometry) return questGeometry
+    if (element !is Way) return null
+    return mapSource.getGeometry(element.type, element.id) as? ElementPolylinesGeometry
 }
 
 @Serializable

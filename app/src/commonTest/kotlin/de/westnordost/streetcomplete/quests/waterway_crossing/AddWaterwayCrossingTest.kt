@@ -18,7 +18,7 @@ class AddWaterwayCrossingTest {
         f.data.putElement(rel(30, listOf(member(ElementType.NODE, shared.road.nodeIds[2]))))
         assertTrue(type.getCrossings(MutableMapData(f.data)).isEmpty())
         f.data.remove(ElementType.RELATION, 30)
-        assertEquals(1, type.getCrossings(MutableMapData(f.data)).size)
+        assertTrue(type.getCrossings(MutableMapData(f.data)).isEmpty())
         f.data.putElement(way(40, listOf(999, 1000), mapOf("highway" to "service")))
         assertTrue(type.getCrossings(MutableMapData(f.data)).isEmpty())
     }
@@ -112,16 +112,22 @@ class AddWaterwayCrossingTest {
         }
     }
 
-    @Test fun `safe shared crossing vertex supports ford but existing tags exclude it`() {
+    @Test fun `shared crossing vertex at T junction is excluded because only ford would remain`() {
         val f = WaterwayCrossingTestData()
         f.data.putElement(node(7, p()))
         val road = f.road.copy(nodeIds = listOf(1, 2, 7, 3, 4))
         val water = f.water.copy(nodeIds = listOf(5, 7, 6))
         f.data.putElement(road); f.data.putElement(water)
-        assertEquals(1, type.getCrossings(f.data).size)
-        assertEquals(1, findWaterwayCrossings(f.data, p(), 1.0).size)
+        assertTrue(type.getCrossings(f.data).isEmpty())
+        assertTrue(findWaterwayCrossings(f.data, p(), 1.0).isEmpty())
         f.data.putElement(node(7, p(), tags = mapOf("ford" to "yes")))
         assertTrue(type.getCrossings(f.data).isEmpty())
+    }
+
+    @Test fun `unconnected crossing still offers bridge and culvert`() {
+        val f = WaterwayCrossingTestData()
+        val crossing = type.getCrossings(f.data).single()
+        assertTrue(crossingSupportsBridgeOrCulvert(crossing.road, crossing.waterway, f.roadPositions, crossing.position))
     }
 
     @Test fun `shared endpoint tangent major roads node tags and additional references have no answers`() {

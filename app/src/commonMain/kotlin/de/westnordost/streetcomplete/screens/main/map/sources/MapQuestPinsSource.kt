@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -76,7 +77,10 @@ class MapQuestPinsSource(
         var orders = emptyMap<QuestType, Int>()
 
         emitAll(displayedRect.combine(reversedOrder) { rect, _ -> rect }.flatMapLatest { rect ->
-            if (rect == null) return@flatMapLatest flowOf(emptyList())
+            if (rect == null) {
+                Perf.pinDiag("flow-empty reason=displayedRect-null")
+                return@flatMapLatest flowOf(emptyList())
+            }
             val bbox = rect.asBoundingBox(TILES_ZOOM)
             var firstReload = true
             events().map { event ->
@@ -92,27 +96,21 @@ class MapQuestPinsSource(
                         reload.ordersMs = Perf.ms(ordersStart)
 
 
-                        /* Usually, we would call pinsByQuest.clear() here. However,
-                           quests have only a single position, but may have multiple pins (see
-                           Quest::markerLocations), e.g. at the start and end of a long road. A pin
-                           of a quest whose center is outside the current view may hence be within
-                           the current view. Quest pins like these should not disappear when panning
-                           the map. Therefore, remove all quests that are not in view anymore that
-                           ... (#5802)
-                          */
-                        pinsByQuest.entries.removeAll { (key, pins) ->
-                            // only have one pin (pin position = quest position)
-                            pins.size == 1
-                            // or has no pins in the current view
-                            || pins.none { it.position in bbox }
-                        }
                         val getAllStart = Perf.mark()
-                        val quests = withContext(Dispatchers.IO) { visibleQuestsSource.getAll(bbox) }
+                        val quests = try {
+                            withContext(Dispatchers.IO) { visibleQuestsSource.getAll(bbox) }
+                        } catch (e: CancellationException) {
+                            Perf.pinDiag("reload-cancelled reason=${reload.reason}")
+                            throw e
+                        }
                         reload.getAllMs = Perf.ms(getAllStart)
                         val toPinsStart = Perf.mark()
-                        quests.forEach { pinsByQuest[it.key] = it.toPins(orders) }
+                        mergeQuestPinReload(pinsByQuest, bbox, quests) { quest -> quest.toPins(orders) }
                         reload.toPinsMs = Perf.ms(toPinsStart)
                         reload.quests = quests.size
+                        if (quests.isEmpty()) {
+                            Perf.pinDiag("reload-getAll-empty reason=${reload.reason} bbox=${bbox.min.latitude},${bbox.min.longitude}…")
+                        }
                     }
                     is Event.Updated -> {
                         event.removed.forEach { pinsByQuest.remove(it) }
@@ -133,6 +131,9 @@ class MapQuestPinsSource(
                         "pinsData#${it.id} reason=${it.reason} orders=${it.ordersMs}ms " +
                             "getAll=${it.getAllMs}ms toPins=${it.toPinsMs}ms quests=${it.quests} pins=${it.pins}"
                     )
+                    if (pins.isEmpty()) {
+                        Perf.pinDiag("flow-empty reason=reload-emitted-zero reload=${it.reason} quests=${it.quests}")
+                    }
                 }
                 pins
             }
@@ -169,7 +170,7 @@ class MapQuestPinsSource(
 
     fun onMapMoved(zoom: Double, displayedArea: BoundingBox?) {
         if (displayedArea == null) {
-            displayedRect.value = null
+            if (displayedRect.value != null) Perf.pinDiag("viewport-bounds-missing kept-previous-rect")
             return
         }
         // Keep the loaded data when zooming out, including clusters at zoom 13–14.
@@ -239,6 +240,24 @@ class MapQuestPinsSource(
     companion object {
         private const val TILES_ZOOM = 16
     }
+}
+
+/** Keys dropped on reload before merging [quests] (#5802: keep multi-pin quests with a pin still in view). */
+internal fun questPinKeysToEvictOnReload(
+    pinsByQuest: Map<QuestKey, List<Pin>>,
+    bbox: BoundingBox,
+): Set<QuestKey> = pinsByQuest.entries.filter { (_, pins) ->
+    pins.size == 1 || pins.none { it.position in bbox }
+}.map { it.key }.toSet()
+
+internal fun mergeQuestPinReload(
+    pinsByQuest: MutableMap<QuestKey, List<Pin>>,
+    bbox: BoundingBox,
+    quests: Collection<Quest>,
+    toPins: (Quest) -> List<Pin>,
+) {
+    questPinKeysToEvictOnReload(pinsByQuest, bbox).forEach { pinsByQuest.remove(it) }
+    quests.forEach { pinsByQuest[it.key] = toPins(it) }
 }
 
 private const val MARKER_QUEST_GROUP = "quest_group"

@@ -241,6 +241,7 @@ fun findWaterwayCrossings(data: MapDataWithGeometry, near: LatLon, radius: Doubl
             val wp = positions(water) ?: return@flatMap emptyList()
             uniqueCrossingPoints(rp, wp).filter { it.distanceTo(near) <= radius }.mapNotNull { pos ->
                 try { checkEditableCrossing(data, road, water, rp, wp, pos) } catch (_: ConflictException) { return@mapNotNull null }
+                if (!crossingSupportsBridgeOrCulvert(road, water, rp, pos)) return@mapNotNull null
                 val context = crossingContext(data, road, water, pos) ?: return@mapNotNull null
                 WaterwayCrossing(road, water, rp, wp, pos, context)
             }
@@ -273,6 +274,12 @@ fun uniqueCrossingPoints(first: List<LatLon>, second: List<LatLon>): List<LatLon
 
 internal fun Way.allowsSimpleWaterwayFord() = tags["highway"] in setOf(
     "residential", "unclassified", "service", "living_street", "track", "path", "footway", "cycleway", "bridleway", "pedestrian")
+
+/** Bridge and culvert need an interior crossing; a shared vertex at the crossing supports only ford. */
+fun crossingSupportsBridgeOrCulvert(road: Way, water: Way, roadPositions: List<LatLon>, position: LatLon): Boolean =
+    road.nodeIds.withIndex().none { (i, id) ->
+        id in water.nodeIds && roadPositions[i].distanceTo(position) < 0.01
+    }
 
 /** Only geometry and tags which influence crossing eligibility; versions and unrelated tags do not. */
 internal fun crossingDetectionElement(element: Element): Element? = when (element) {

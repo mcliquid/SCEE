@@ -120,7 +120,7 @@ fun WaterwayCrossingForm(
             hintImages = emptyList(),
             note = null,
             answers = if (submitted || saving) emptyList() else buildList {
-                if (crossing.road.nodeIds.withIndex().none { (i, id) -> id in crossing.waterway.nodeIds && crossing.roadPositions[i].distanceTo(crossing.position) < 0.01 }) addAll(listOf(
+                if (crossingSupportsBridgeOrCulvert(crossing.road, crossing.waterway, crossing.roadPositions, crossing.position)) addAll(listOf(
                     AnswerItem(stringResource(Res.string.waterway_crossing_bridge)) { structure = WaterwayStructure.BRIDGE },
                     AnswerItem(stringResource(Res.string.waterway_crossing_culvert)) { structure = WaterwayStructure.CULVERT },
                 ))

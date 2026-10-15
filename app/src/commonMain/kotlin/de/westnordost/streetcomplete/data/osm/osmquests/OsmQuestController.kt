@@ -41,6 +41,7 @@ import de.westnordost.streetcomplete.util.logs.currentPerfTrace
 import de.westnordost.streetcomplete.util.math.contains
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import de.westnordost.streetcomplete.util.math.enlargedBy
+import de.westnordost.streetcomplete.util.math.isCompletelyInside
 import kotlinx.atomicfu.locks.ReentrantLock
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.locks.withLock
@@ -75,6 +76,8 @@ class OsmQuestController(
     private val lock = ReentrantLock()
     private var lastCrossingQuery: Pair<BoundingBox, List<Element>>? = null
     private val crossingDataRevision = atomic(0L)
+    private var lastCrossingResolveKey: CrossingResolveKey? = null
+    private var lastCrossingResolve: WaterwayCrossing? = null
 
     private val wayOnlyFilterQuestTypes by lazy {
         // technically those could change if questTypeRegistry is reloaded, but that's unlikely enough to ignore it
@@ -91,6 +94,7 @@ class OsmQuestController(
          *  as well. */
         override fun onUpdated(updated: MapDataWithGeometry, deleted: Collection<ElementKey>) {
             crossingDataRevision.incrementAndGet()
+            lock.withLock { clearCrossingResolveCache() }
             val time = nowAsEpochMilliseconds()
             val start = Perf.mark()
             val crossingType = allQuestTypes.filterIsInstance<AddWaterwayCrossing>().singleOrNull()
@@ -215,6 +219,7 @@ class OsmQuestController(
             crossingDataRevision.incrementAndGet()
             lock.withLock {
                 lastCrossingQuery = null
+                clearCrossingResolveCache()
                 db.clear()
             }
             listeners.forEach { it.onInvalidated() }
@@ -439,17 +444,52 @@ class OsmQuestController(
 
     override fun getValidated(quest: OsmQuest): OsmQuest? {
         if (quest.type !is AddWaterwayCrossing) return get(quest.key)
-        val data = MutableMapDataWithGeometry(mapDataSource.getMapDataWithGeometry(quest.position.enclosingBoundingBox(500.0)))
-        mapDataSource.getWayComplete(quest.elementId)?.forEach { data.putElement(it) }
-        val valid = findWaterwayCrossings(data, quest.position, 0.5).any {
-            it.road.id == quest.elementId && it.position.equalsInOsm(quest.position)
-        }
-        if (valid) return quest
+        if (resolveWaterwayCrossing(quest.elementId, quest.position) != null) return quest
         Log.i(TAG, "Discard stale waterway crossing ${quest.key} at ${quest.position}")
-        lock.withLock { lastCrossingQuery = null }
+        lock.withLock {
+            lastCrossingQuery = null
+            clearCrossingResolveCache()
+        }
         delete(quest.key) // Removes persisted entry and notifies visible/pin caches, even for dynamic quests.
         return null
     }
+
+    override fun resolveWaterwayCrossing(roadId: Long, position: LatLon): WaterwayCrossing? {
+        val revision = crossingDataRevision.value
+        val key = CrossingResolveKey(roadId, position.latitude, position.longitude, revision)
+        lock.withLock {
+            if (lastCrossingResolveKey == key) {
+                Perf.log("crossingResolve cacheHit road=$roadId")
+                return lastCrossingResolve
+            }
+        }
+        val loadStart = Perf.mark()
+        val data = MutableMapDataWithGeometry(mapDataSource.getMapDataWithGeometry(position.enclosingBoundingBox(500.0)))
+        mapDataSource.getWayComplete(roadId)?.forEach { data.putElement(it) }
+        val loadMs = Perf.ms(loadStart)
+        val detectStart = Perf.mark()
+        val crossing = findWaterwayCrossings(data, position, 0.5).singleOrNull {
+            it.road.id == roadId && it.position.equalsInOsm(position)
+        }
+        Perf.log("crossingResolve load=${loadMs}ms detect=${Perf.ms(detectStart)}ms road=$roadId hit=${crossing != null}")
+        lock.withLock {
+            lastCrossingResolveKey = key
+            lastCrossingResolve = crossing
+        }
+        return crossing
+    }
+
+    private fun clearCrossingResolveCache() {
+        lastCrossingResolveKey = null
+        lastCrossingResolve = null
+    }
+
+    private data class CrossingResolveKey(
+        val roadId: Long,
+        val latitude: Double,
+        val longitude: Double,
+        val revision: Long,
+    )
 
     override fun getAllInBBox(
         bbox: BoundingBox,
@@ -496,7 +536,13 @@ class OsmQuestController(
     private fun refreshCrossingQuests(bbox: BoundingBox, types: List<AddWaterwayCrossing>): Pair<Collection<OsmQuest>, List<OsmQuestKey>> {
         // The map-data cache finds ways through their nodes. Include a wider area so that a
         // crossing whose waterway vertices are outside the visible tile is still discovered.
-        val data = mapDataSource.getMapDataWithGeometry(bbox.enlargedBy(500.0))
+        val needed = bbox.enlargedBy(500.0)
+        val data = mapDataSource.getMapDataWithGeometry(needed).also { loaded ->
+            // Ensure crossingCandidates can skip a second identical surroundings load.
+            if (loaded is MutableMapDataWithGeometry && loaded.boundingBox == null) {
+                loaded.boundingBox = needed
+            }
+        }
         val input = bbox to crossingDetectionInput(data)
         if (lock.withLock { lastCrossingQuery == input }) return emptyList<OsmQuest>() to emptyList()
         val crossings = createQuestsForBBox(bbox, data, types)
@@ -533,41 +579,57 @@ class OsmQuestController(
         val roads = original.ways.filter { type.isApplicableTo(it) == null }
         // Detection uses nodes, ways and relations, never the materialized geometry maps.
         val data = MutableMapData(original)
-        val areas = roads.mapNotNull { road ->
-            val positions = road.nodeIds.mapNotNull { original.getNode(it)?.position }
-            if (positions.size == road.nodeIds.size && positions.isNotEmpty())
-                positions.enclosingBoundingBox().enlargedBy(500.0) else null
-        }
-        val bulkSource = mapDataSource as? MapDataAreasSource
-        if (bulkSource != null) {
-            val queriedBounds = HashMap<BoundingBox, Long>()
-            // Exact union selection happens at the source, before way/relation closure and edits.
-            // Nothing is shared with another run or revision. Large anchors stay individual reads.
-            for (group in crossingAreaGroups(areas)) {
-                val revision = crossingDataRevision.value
-                val pending = group.distinct().filter { queriedBounds[it] != revision }
-                if (pending.isEmpty()) continue
-                val area = bulkSource.getMapDataForAreas(pending)
-                data.addAll(area)
-                if (crossingDataRevision.value == revision) pending.forEach { queriedBounds[it] = revision }
+        val loadStart = Perf.mark()
+        if (bbox != null) {
+            // Download / bbox refresh: one query of the quest area + 500 m. Per-road geometry+500 m
+            // balloons far outside the download for long ways and double-loads after refreshCrossingQuests.
+            val needed = bbox.enlargedBy(500.0)
+            val covered = original.boundingBox?.let { needed.isCompletelyInside(it) } == true
+                && !needed.crosses180thMeridian && original.boundingBox?.crosses180thMeridian != true
+            if (!covered) {
+                data.addAll(mapDataSource.getMapDataWithGeometry(needed))
             }
         } else {
-            // Sources without bulk-read support keep the original exact-query behavior.
-            val queriedBounds = HashMap<BoundingBox, Long>()
-            for (bounds in areas) {
-                val revision = crossingDataRevision.value
-                if (queriedBounds[bounds] != revision) {
-                    val area = mapDataSource.getMapDataWithGeometry(bounds)
+            val areas = roads.mapNotNull { road ->
+                val positions = road.nodeIds.mapNotNull { original.getNode(it)?.position }
+                if (positions.size == road.nodeIds.size && positions.isNotEmpty())
+                    positions.enclosingBoundingBox().enlargedBy(500.0) else null
+            }
+            val bulkSource = mapDataSource as? MapDataAreasSource
+            if (bulkSource != null) {
+                val queriedBounds = HashMap<BoundingBox, Long>()
+                // Exact union selection happens at the source, before way/relation closure and edits.
+                // Nothing is shared with another run or revision. Large anchors stay individual reads.
+                for (group in crossingAreaGroups(areas)) {
+                    val revision = crossingDataRevision.value
+                    val pending = group.distinct().filter { queriedBounds[it] != revision }
+                    if (pending.isEmpty()) continue
+                    val area = bulkSource.getMapDataForAreas(pending)
                     data.addAll(area)
-                    if (crossingDataRevision.value == revision) queriedBounds[bounds] = revision
+                    if (crossingDataRevision.value == revision) pending.forEach { queriedBounds[it] = revision }
+                }
+            } else {
+                // Sources without bulk-read support keep the original exact-query behavior.
+                val queriedBounds = HashMap<BoundingBox, Long>()
+                for (bounds in areas) {
+                    val revision = crossingDataRevision.value
+                    if (queriedBounds[bounds] != revision) {
+                        val area = mapDataSource.getMapDataWithGeometry(bounds)
+                        data.addAll(area)
+                        if (crossingDataRevision.value == revision) queriedBounds[bounds] = revision
+                    }
                 }
             }
         }
+        val loadMs = Perf.ms(loadStart)
         val persisted = lock.withLock { db.getAllForElements(roads.map { it.key }) }
             .filter { it.questTypeName == type.name }
         val preferred = persisted.filterNot { crossingResolved(it, data) }.groupBy { it.elementId }.mapValues { (_, entries) -> entries.map { it.position } }
         val roadIds = roads.map { it.id }.toSet()
-        return type.getCrossings(data, bbox, preferred).filter { it.road.id in roadIds }
+        val detectStart = Perf.mark()
+        val candidates = type.getCrossings(data, bbox, preferred).filter { it.road.id in roadIds }
+        Perf.log("crossingCandidates load=${loadMs}ms detect=${Perf.ms(detectStart)}ms roads=${roads.size} elements=${data.size}")
+        return candidates
     }
 
     /** Retire a saved pin only on positive evidence, never just on an incomplete viewport query. */

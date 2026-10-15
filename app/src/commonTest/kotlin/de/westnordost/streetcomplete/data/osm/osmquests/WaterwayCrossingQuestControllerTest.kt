@@ -18,6 +18,7 @@ import de.westnordost.streetcomplete.util.countryboundaries.Countries
 import de.westnordost.streetcomplete.util.countryboundaries.CountryBoundaries
 import de.westnordost.streetcomplete.util.ktx.equalsInOsm
 import de.westnordost.streetcomplete.util.math.contains
+import de.westnordost.streetcomplete.util.math.enlargedBy
 import dev.mokkery.answering.calls
 import dev.mokkery.answering.returns
 import dev.mokkery.every
@@ -57,16 +58,18 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
     private fun controller(mapSource: MapDataWithEditsSource = source) = OsmQuestController(dao, mapSource, notes,
         QuestTypeRegistry({ listOf(202 to type) }), lazyOf(boundaries), MapSettings())
 
-    @Test fun `bulk reads still reuse identical anchors across groups and invalidate between updates`() {
+    @Test fun `bbox refresh loads surroundings once and still sees updates after invalidation`() {
         repeat(100) { data.putElement(f.road.copy(id = 100L + it)) }
         val cache = crossingTestCache(data, warm = true)
         var queries = 0
         val bulk = object : MapDataWithEditsSource by source, MapDataAreasSource {
             override fun getMapDataForAreas(areas: List<BoundingBox>): MutableMapDataWithGeometry {
-                queries++
-                return cache.getMapDataForAreas(areas)
+                error("bbox refresh must not use per-road area groups")
             }
-            override fun getMapDataWithGeometry(bbox: BoundingBox) = cache.getMapDataWithGeometry(bbox)
+            override fun getMapDataWithGeometry(bbox: BoundingBox): MutableMapDataWithGeometry {
+                queries++
+                return cache.getMapDataWithGeometry(bbox)
+            }
         }
         val controller = controller(bulk)
         assertTrue(controller.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).isEmpty())
@@ -79,7 +82,7 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         assertEquals(1, queries)
     }
 
-    @Test fun `bulk source and original queries create exactly the same quest keys and positions`() {
+    @Test fun `bbox refresh and cache-backed source create exactly the same quest keys and positions`() {
         data.putElement(node(8, p(-0.002, 0.003)))
         data.putElement(node(9, p(0.002, 0.003)))
         data.putElement(way(40, listOf(8, 9), mapOf("waterway" to "ditch")))
@@ -91,10 +94,10 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         every { source.getMapDataWithGeometry(any()) } calls { (bounds: BoundingBox) -> oldCache.getMapDataWithGeometry(bounds) }
         val expected = controller().getAllInBBox(area, listOf(type), refreshCrossingQuests = true).map { it.key to it.position }.toSet()
         val newCache = crossingTestCache(data, warm = true)
-        var queries = 0
+        var areaQueries = 0
         val bulk = object : MapDataWithEditsSource by source, MapDataAreasSource {
             override fun getMapDataForAreas(areas: List<BoundingBox>): MutableMapDataWithGeometry {
-                queries++
+                areaQueries++
                 return newCache.getMapDataForAreas(areas)
             }
             override fun getMapDataWithGeometry(bbox: BoundingBox) = newCache.getMapDataWithGeometry(bbox)
@@ -102,10 +105,10 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         val actual = controller(bulk).getAllInBBox(area, listOf(type), refreshCrossingQuests = true).map { it.key to it.position }.toSet()
         assertEquals(3, expected.size)
         assertEquals(expected, actual)
-        assertEquals(1, queries)
+        assertEquals(0, areaQueries)
     }
 
-    @Test fun `identical anchor queries reuse the full result only within one run`() {
+    @Test fun `identical viewport refresh loads enlarged surroundings only once per run`() {
         // Identical bounds, but both ways and their references must remain in the data.
         data.putElement(f.road.copy(id = 30))
         val requests = mutableListOf<BoundingBox>()
@@ -114,15 +117,17 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
             data
         }
         assertTrue(ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).isEmpty()) // third way prevents editing
-        assertEquals(2, requests.size) // viewport and one shared full-anchor query, previously three
+        assertEquals(1, requests.size)
+        assertEquals(area.enlargedBy(500.0), requests.single())
         requests.clear()
+        data.boundingBox = null
         data.remove(ElementType.WAY, 30)
         val quest = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
-        assertEquals(2, requests.size) // no full-anchor result reused across data changes
+        assertEquals(1, requests.size)
         assertEquals(f.road.id, quest.elementId)
     }
 
-    @Test fun `overlapping distinct anchors retain outside tile candidates and relation checks`() {
+    @Test fun `overlapping roads still yield outside tile candidates and relation checks`() {
         val shared = f.sharedCrossing()
         data.putElement(node(8, p(-0.002, 0.003)))
         data.putElement(node(9, p(0.002, 0.003)))
@@ -140,20 +145,21 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         val quests = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true)
         assertTrue(quests.none { it.elementId == f.road.id }) // relation forbids the shared ford
         assertEquals(2, quests.count { it.elementId == secondRoad.id })
-        assertEquals(3, requests.size) // distinct overlapping anchors must not be collapsed
-        assertEquals(3, requests.distinct().size)
+        assertEquals(1, requests.size)
+        assertEquals(area.enlargedBy(500.0), requests.single())
     }
 
-    @Test fun `data invalidation during an anchor query prevents reuse within the run`() {
+    @Test fun `cleared map data during refresh does not leave stale crossing pins`() {
         data.putElement(f.road.copy(id = 30))
         var requests = 0
         every { source.getMapDataWithGeometry(any()) } calls {
             requests++
-            if (requests == 2) mapListener.onCleared()
+            mapListener.onCleared()
             data
         }
         assertTrue(ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).isEmpty())
-        assertEquals(3, requests)
+        assertEquals(1, requests)
+        assertTrue(dao.getAllInBBox(area, listOf(type.name)).isEmpty())
     }
 
     @Test fun `combined OSM bridge removes both persisted pins and undo restores the same keys`() {
@@ -510,6 +516,28 @@ class WaterwayCrossingQuestControllerTest : StreetCompleteDatabaseTestCase() {
         assertEquals(0, mapLoads)
         ctrl.getValidated(quest)
         assertTrue(mapLoads > 0)
+    }
+
+    @Test fun `resolveWaterwayCrossing shares one map load between validate and form`() {
+        val quest = ctrl.getAllInBBox(area, listOf(type), refreshCrossingQuests = true).single()
+        var mapLoads = 0
+        every { source.getMapDataWithGeometry(any()) } calls {
+            mapLoads++
+            data
+        }
+        every { source.getWayComplete(any()) } calls { (id: Long) ->
+            data.getWay(id)?.let { way ->
+                MutableMapData(listOf(way) + way.nodeIds.mapNotNull { data.getNode(it) })
+            }
+        }
+        val first = ctrl.resolveWaterwayCrossing(quest.elementId, quest.position)
+        assertNotNull(first)
+        val loadsAfterFirst = mapLoads
+        assertTrue(loadsAfterFirst > 0)
+        assertEquals(quest, ctrl.getValidated(quest))
+        assertEquals(loadsAfterFirst, mapLoads)
+        assertEquals(first, ctrl.resolveWaterwayCrossing(quest.elementId, quest.position))
+        assertEquals(loadsAfterFirst, mapLoads)
     }
 
     @Test fun `getAllInBBox without refreshCrossingQuests does not re-query crossing areas`() {

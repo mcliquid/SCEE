@@ -113,18 +113,13 @@ class VisibleQuestsSourceTest {
         source.addListener(listener)
     }
 
-    @Test fun `cached waterway crossing is revalidated before opening and stale pin is removed`() {
+    @Test fun `cached waterway crossing opens without sync revalidation`() {
         val type = de.westnordost.streetcomplete.quests.waterway_crossing.AddWaterwayCrossing()
         val quest = OsmQuest(type, ElementType.WAY, 151893630L, pGeom())
         every { questsHiddenSource.get(any()) } returns null
-        every { osmQuestSource.getValidated(quest) } returns quest
         questListener.onUpdated(listOf(quest), emptyList())
         assertEquals(quest, source.get(quest.key))
-        every { osmQuestSource.getValidated(quest) } returns null
-        every { osmQuestSource.get(quest.key) } returns null
-        assertNull(source.get(quest.key))
-        verify { listener.onUpdated(emptyList(), listOf(quest.key)) }
-        assertNull(source.get(quest.key))
+        verify(exactly = 0) { osmQuestSource.getValidated(any()) }
     }
 
     @Test fun getAll() {

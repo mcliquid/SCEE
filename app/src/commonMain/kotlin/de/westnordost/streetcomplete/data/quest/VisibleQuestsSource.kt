@@ -1,7 +1,6 @@
 package de.westnordost.streetcomplete.data.quest
 
 import com.russhwolf.settings.ObservableSettings
-import de.westnordost.streetcomplete.quests.waterway_crossing.AddWaterwayCrossing
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.EditType
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
@@ -184,13 +183,9 @@ class VisibleQuestsSource(
         val quest = when (questKey) {
             is OsmNoteQuestKey -> osmNoteQuestSource.get(questKey.noteId)
             is OsmQuestKey -> {
-                val loaded = cache.get(questKey) as? OsmQuest ?: osmQuestSource.get(questKey) ?: return null
-                if (loaded.type is AddWaterwayCrossing) {
-                    osmQuestSource.getValidated(loaded) ?: run {
-                        updateVisibleQuests(deleted = listOf(loaded.key))
-                        return null
-                    }
-                } else loaded
+                // Waterway-crossing revalidation is deferred to the form via resolveWaterwayCrossing /
+                // getValidated so opening the sheet is not blocked by a second 500 m map load.
+                cache.get(questKey) as? OsmQuest ?: osmQuestSource.get(questKey)
             }
             is ExternalSourceQuestKey -> externalSourceQuestController.get(questKey)
         } ?: return null

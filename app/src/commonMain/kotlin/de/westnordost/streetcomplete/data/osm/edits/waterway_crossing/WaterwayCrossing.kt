@@ -2,9 +2,11 @@ package de.westnordost.streetcomplete.data.osm.edits.waterway_crossing
 
 import de.westnordost.streetcomplete.data.ConflictException
 import de.westnordost.streetcomplete.data.osm.mapdata.*
+import de.westnordost.streetcomplete.util.math.contains
 import de.westnordost.streetcomplete.util.math.distanceTo
 import de.westnordost.streetcomplete.util.math.distanceToArc
 import de.westnordost.streetcomplete.util.math.distanceToArcs
+import de.westnordost.streetcomplete.util.math.enlargedBy
 import de.westnordost.streetcomplete.util.math.initialBearingTo
 import de.westnordost.streetcomplete.util.math.arcIntersection
 import de.westnordost.streetcomplete.util.math.toNormalOnSphere
@@ -192,6 +194,8 @@ internal fun checkSimpleCrossingWay(way: Way, positions: List<LatLon>) {
     }
     val normals = positions.map { it.toNormalOnSphere() }
     for (i in 0 until positions.lastIndex) for (j in i + 2 until positions.lastIndex) {
+        // Planar bbox reject is safe for short OSM segments; skip spherical work for far pairs.
+        if (!crossingSegmentBoundsOverlap(positions[i], positions[i + 1], positions[j], positions[j + 1])) continue
         crossingCheck(arcIntersection(normals[i], normals[i + 1], normals[j], normals[j + 1]) == null,
             "Self-intersecting way")
     }
@@ -251,16 +255,41 @@ fun findWaterwayCrossings(data: MapDataWithGeometry, near: LatLon, radius: Doubl
 
 internal fun crossingContext(data: MapData, road: Way, water: Way, pos: LatLon): List<CrossingContextWay>? {
     val context = mutableListOf<CrossingContextWay>()
-    for (other in data.ways.filter { it.id != road.id && it.id != water.id
-        && ("highway" in it.tags || "waterway" in it.tags || "railway" in it.tags) }) {
-        val positions = other.nodeIds.map { data.getNode(it)?.position ?: return null }
-        if (positions.size < 2) continue
+    for (other in data.ways) {
+        if (other.id == road.id || other.id == water.id) continue
+        if ("highway" !in other.tags && "waterway" !in other.tags && "railway" !in other.tags) continue
+        if (other.nodeIds.size < 2) continue
+        // Resolve nodes first so incomplete nearby transport geometry still rejects the candidate.
+        val positions = ArrayList<LatLon>(other.nodeIds.size)
+        var minLat = Double.POSITIVE_INFINITY
+        var maxLat = Double.NEGATIVE_INFINITY
+        var minLon = Double.POSITIVE_INFINITY
+        var maxLon = Double.NEGATIVE_INFINITY
+        for (id in other.nodeIds) {
+            val p = data.getNode(id)?.position ?: return null
+            positions.add(p)
+            if (p.latitude < minLat) minLat = p.latitude
+            if (p.latitude > maxLat) maxLat = p.latitude
+            if (p.longitude < minLon) minLon = p.longitude
+            if (p.longitude > maxLon) maxLon = p.longitude
+        }
+        // Far ways cannot contribute context; skip the arc-distance work.
+        if (pos !in BoundingBox(minLat, minLon, maxLat, maxLon).enlargedBy(CROSSING_CONTEXT_MARGIN)) continue
         val distance = pos.distanceToArcs(positions)
         if (distance < 0.01) return null
         if (distance <= CROSSING_CONTEXT_MARGIN)
             context.add(CrossingContextWay(other, positions))
     }
     return context
+}
+
+/** Axis-aligned segment bounds with a tiny epsilon; used only to skip impossible self-intersections. */
+private fun crossingSegmentBoundsOverlap(a: LatLon, b: LatLon, c: LatLon, d: LatLon): Boolean {
+    val eps = 1e-9
+    return maxOf(a.longitude, b.longitude) + eps >= minOf(c.longitude, d.longitude)
+        && minOf(a.longitude, b.longitude) - eps <= maxOf(c.longitude, d.longitude)
+        && maxOf(a.latitude, b.latitude) + eps >= minOf(c.latitude, d.latitude)
+        && minOf(a.latitude, b.latitude) - eps <= maxOf(c.latitude, d.latitude)
 }
 
 /** Adjacent segments can report the same crossing at an existing vertex more than once. */

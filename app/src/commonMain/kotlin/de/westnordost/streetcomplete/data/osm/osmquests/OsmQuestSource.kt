@@ -1,6 +1,8 @@
 package de.westnordost.streetcomplete.data.osm.osmquests
 
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.WaterwayCrossing
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
+import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.quest.OsmQuestKey
 import de.westnordost.streetcomplete.data.quest.QuestType
 
@@ -16,6 +18,12 @@ interface OsmQuestSource {
 
     /** Revalidate a cached quest before opening, including quests created dynamically. */
     fun getValidated(quest: OsmQuest): OsmQuest? = get(quest.key)
+
+    /**
+     * Resolve the editable crossing for a persisted pin. Results are cached for the current map
+     * revision so [getValidated] and the quest form share one 500 m load + detection.
+     */
+    fun resolveWaterwayCrossing(roadId: Long, position: LatLon): WaterwayCrossing? = null
 
     /** Get all quests of optionally the given types in given bounding box.
      *

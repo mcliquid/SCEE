@@ -16,12 +16,14 @@ import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.WaterwayCr
 import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.CreateWaterwayFordAction
 import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.SetWaterwayStructureAction
 import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.WaterwayStructure
+import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.findWaterwayCrossings
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.mapdata.MutableMapData
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.ui.common.quest.LocalMapMetersPerDp
 import de.westnordost.streetcomplete.util.sound.SoundEffectPlayer
 import de.westnordost.streetcomplete.util.ktx.equalsInOsm
+import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import com.russhwolf.settings.MapSettings
 import de.westnordost.streetcomplete.data.ConflictException
 import de.westnordost.osmfeatures.FeatureDictionary
@@ -72,7 +74,17 @@ class WaterwayCrossingFormTest {
         modules(module {
             single<MapDataWithEditsSource> { source }
             single<de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestSource> {
-                mock { every { getValidated(any()) } calls { null } }
+                mock {
+                    every { getValidated(any()) } calls { null }
+                    every { resolveWaterwayCrossing(any(), any()) } calls { (roadId: Long, position: de.westnordost.streetcomplete.data.osm.mapdata.LatLon) ->
+                        val data = de.westnordost.streetcomplete.data.osm.mapdata.MutableMapDataWithGeometry(source.getMapDataWithGeometry(
+                            position.enclosingBoundingBox(500.0)))
+                        source.getWayComplete(roadId)?.forEach { data.putElement(it) }
+                        findWaterwayCrossings(data, position, 0.5).singleOrNull {
+                            it.road.id == roadId && it.position.equalsInOsm(position)
+                        }
+                    }
+                }
             }
             single { Preferences(MapSettings()) }
             single<SoundEffectPlayer> { sound }

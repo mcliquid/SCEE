@@ -338,6 +338,10 @@
     <!-- water bottle fill quest (#510) -->
     <string name="quest_waterBottleFill_title">Can a water bottle be filled here?</string>
 
+    <!-- bicycle in elevator quest (#5315) -->
+    <string name="quest_elevatorBicycleAccess_title">Can bicycles be transported in this elevator?</string>
+    <string name="quest_elevatorBicycleAccess_answer_private">This elevator is private</string>
+
     <!-- sauna availability quest -->
     <string name="quest_saunaAvailability_title">Is there a sauna here?</string>
 

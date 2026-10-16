@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.quests
 import de.westnordost.osmfeatures.Feature
 import de.westnordost.streetcomplete.ApplicationConstants.EE_QUEST_OFFSET
 import de.westnordost.streetcomplete.quests.bicycle_in_pedestrian_street.AddBicycleInPedestrianStreet
+import de.westnordost.streetcomplete.quests.elevator_bicycle_access.AddElevatorBicycleAccess
 import de.westnordost.streetcomplete.quests.water_bottle_fill.AddWaterBottleFill
 import de.westnordost.streetcomplete.quests.waterway_crossing.AddWaterwayCrossing
 import de.westnordost.streetcomplete.data.meta.CountryInfo
@@ -720,6 +721,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 202 to AddWaterwayCrossing(),
     EE_QUEST_OFFSET + 203 to AddBicycleInPedestrianStreet(),
     EE_QUEST_OFFSET + 204 to AddWaterBottleFill(), // #510 bottle refill survey at water sources
+    EE_QUEST_OFFSET + 205 to AddElevatorBicycleAccess(), // #5315 bicycle access in elevators
     EE_QUEST_OFFSET + 62 to AddToiletsDisposal(),
     EE_QUEST_OFFSET + 63 to AddEvseId(),
     EE_QUEST_OFFSET + 66 to AddServiceTimes(),

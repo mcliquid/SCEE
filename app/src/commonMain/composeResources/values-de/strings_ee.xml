@@ -578,6 +578,8 @@
     <string name="quest_valves_schrader">AV: Schrader / Autoventil</string>
     <string name="quest_valves_regina">RV: Regina / Italienisches Ventil</string>
     <string name="quest_waterBottleFill_title">Kann man hier eine Trinkflasche auffüllen?</string>
+    <string name="quest_elevatorBicycleAccess_title">Kann man in diesem Aufzug ein Fahrrad transportieren?</string>
+    <string name="quest_elevatorBicycleAccess_answer_private">Dieser Aufzug ist privat</string>
     <string name="quest_saunaAvailability_title">Gibt es hier eine Sauna?</string>
     <string name="quest_bicycle_parking_type_saddleholder">Sattelhalter</string>
     <string name="quest_swimming_pool_indoor_and_outdoor">Beides (innen und außen)</string>

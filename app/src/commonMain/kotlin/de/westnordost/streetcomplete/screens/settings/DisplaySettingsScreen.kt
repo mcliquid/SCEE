@@ -35,7 +35,6 @@ import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeControlle
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.BackIcon
 import de.westnordost.streetcomplete.ui.common.ToastPopup
-import de.westnordost.streetcomplete.ui.common.dialogs.SimpleListPickerDialog
 import de.westnordost.streetcomplete.ui.common.settings.Preference
 import de.westnordost.streetcomplete.ui.common.settings.SwitchPreference
 import io.github.vinceglb.filekit.FileKit
@@ -63,7 +62,6 @@ fun DisplaySettingsScreen(
     val visibleEditTypeController: VisibleEditTypeController = koinInject()
     val prefs: Preferences = koinInject()
     val scope = rememberCoroutineScope()
-    var showBackgroundDialog by remember { mutableStateOf(false) }
     var showGpxDialog by remember { mutableStateOf(false) }
     var showGeometryDialog by remember { mutableStateOf(false) }
     Column(Modifier.fillMaxSize()) {
@@ -116,13 +114,7 @@ fun DisplaySettingsScreen(
                 default = true,
                 pref = Prefs.SHOW_SOLVED_ANIMATION
             )
-            Preference(
-                name = stringResource(Res.string.pref_background_type_select),
-                description = if (prefs.getString(Prefs.THEME_BACKGROUND, "MAP") == "MAP")
-                        stringResource(Res.string.background_type_map)
-                    else stringResource(Res.string.background_type_aerial_esri),
-                onClick = { showBackgroundDialog = true }
-            )
+            BackgroundImageryPreference(mapCenter = prefs.mapPosition)
             Preference(
                 name = stringResource(Res.string.pref_gpx_track_title),
                 onClick = { showGpxDialog = true },
@@ -131,17 +123,6 @@ fun DisplaySettingsScreen(
                 name = stringResource(Res.string.pref_custom_geometry_title),
                 onClick = { showGeometryDialog = true },
             )
-            if (showBackgroundDialog)
-                SimpleListPickerDialog(
-                    onDismissRequest = { showBackgroundDialog = false },
-                    items = listOf("MAP", "AERIAL"),
-                    onItemSelected = { prefs.putString(Prefs.THEME_BACKGROUND, it) },
-                    getItemName = {
-                        if (it == "MAP") stringResource(Res.string.background_type_map)
-                        else stringResource(Res.string.background_type_aerial_esri)
-                    },
-                    selectedItem = prefs.getString(Prefs.THEME_BACKGROUND, "MAP")
-                )
             if (showGpxDialog) {
                 suspend fun getFile() {
                     val file = FileKit.openFilePicker(FileKitType.File(".gpx")) ?: return

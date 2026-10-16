@@ -83,6 +83,9 @@ val androidModule = module {
     factory(named("AvatarsCacheDirectory")) {
         Path(androidContext().cacheDir.path, ApplicationConstants.AVATARS_CACHE_DIRECTORY)
     }
+    factory(named("EliIndexCacheDirectory")) {
+        Path(androidContext().cacheDir.path, ApplicationConstants.ELI_CACHE_DIRECTORY)
+    }
 
     // app store info
 

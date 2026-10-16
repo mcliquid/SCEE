@@ -134,9 +134,19 @@
     <string name="tree_custom_quest_import_export_message">Get currently used file or provide a new one? Check the corresponding quest enable message for details.</string>
     <string name="tree_custom_quest_import">Provide</string>
     <string name="tree_custom_quest_export">Get</string>
-    <string name="pref_tile_source_title">Source for satellite / aerial images</string>
-    <string name="pref_tile_source_message">Tile source the URL must contain {x}, {y} and either {z} or {zoom}. WMS source needs to support EPSG:3857 and URL must contain either {bbox-epsg-3857} or both {bbox} and {proj}.</string>
+    <string name="pref_tile_source_title">Custom aerial imagery</string>
+    <string name="pref_tile_source_screen_summary">Add, edit or delete your own aerial tile sources</string>
+    <string name="pref_tile_source_add">Add aerial imagery source</string>
+    <string name="pref_tile_source_edit_title">Edit aerial imagery source</string>
+    <string name="pref_tile_source_name">Name</string>
+    <string name="pref_tile_source_delete">Delete</string>
+    <string name="pref_tile_source_message">Tile source URL must contain {x}, {y} and either {z} or {zoom}. WMS source needs to support EPSG:3857 and URL must contain {bbox-epsg-3857}, {bbox} (optionally with {proj}/{wkid}).</string>
     <string name="pref_tile_source_hide_labels">Hide labels</string>
+    <string name="pref_tile_source_prefer_auto">Prefer in Auto mode</string>
+    <string name="pref_tile_source_prefer_auto_summary">Use this source automatically where its coverage applies (requires coverage)</string>
+    <string name="pref_tile_source_coverage">Geographic coverage</string>
+    <string name="pref_tile_source_coverage_hint">Optional GeoJSON polygon/multipolygon or bounding box. Without coverage the source is never chosen by Auto worldwide.</string>
+    <string name="pref_tile_source_import_geojson">Import GeoJSON…</string>
     <string name="pref_tile_maxzoom">Max supported zoom</string>
     <string name="pref_tree_custom_quest_summary">See message when enabling quest for details</string>
     <string name="pref_update_local_statistics">Update statistics on upload</string>
@@ -222,6 +232,7 @@
     <string name="level_filter_hint">Leave empty to show not tagged</string>
     <string name="level_filter_enable">Enable level filter</string>
     <string name="quick_switch_map_background">Toggle aerial / map background</string>
+    <string name="quick_switch_aerial_source">Select aerial imagery</string>
     <string name="quick_switch_preset">Switch preset</string>
 
 
@@ -323,6 +334,9 @@
     <string name="quest_utility_gas">Gas</string>
     <string name="quest_utility_sewerage">Sewerage</string>
     <string name="quest_utility_telecom">Telecommunication</string>
+
+    <!-- water bottle fill quest (#510) -->
+    <string name="quest_waterBottleFill_title">Can a water bottle be filled here?</string>
 
     <!-- sauna availability quest -->
     <string name="quest_saunaAvailability_title">Is there a sauna here?</string>

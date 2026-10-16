@@ -1,25 +1,20 @@
 package de.westnordost.streetcomplete.screens.settings
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.safeDrawing
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AppBarDefaults
 import androidx.compose.material.Button
 import androidx.compose.material.IconButton
-import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
@@ -29,12 +24,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.ConflictAlgorithm
 import de.westnordost.streetcomplete.data.Database
@@ -60,7 +51,6 @@ import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.BackIcon
 import de.westnordost.streetcomplete.ui.common.CheckboxGroup
-import de.westnordost.streetcomplete.ui.common.TextField2
 import de.westnordost.streetcomplete.ui.common.ToastPopup
 import de.westnordost.streetcomplete.ui.common.dialogs.AlertDialog
 import de.westnordost.streetcomplete.ui.common.dialogs.WheelPickerDialog
@@ -94,6 +84,7 @@ import org.koin.compose.koinInject
 @Composable
 fun DataManagementScreen(
     onClickBack: () -> Unit,
+    onClickManualRasterSources: () -> Unit,
 ) {
     val prefs: Preferences = koinInject()
     val db: Database = koinInject()
@@ -107,7 +98,6 @@ fun DataManagementScreen(
     var showGpsIntervalDialog by remember { mutableStateOf(false) }
     var showExportDialog by remember { mutableStateOf(false) }
     var showImportDialog by remember { mutableStateOf(false) }
-    var showRasterUrlDialog by remember { mutableStateOf(false) }
     var exportPresetsFile by remember { mutableStateOf<PlatformFile?>(null) }
     var exportOverlaysFile by remember { mutableStateOf<PlatformFile?>(null) }
     var importPresetsFile by remember { mutableStateOf<PlatformFile?>(null) }
@@ -142,7 +132,8 @@ fun DataManagementScreen(
             )
             Preference(
                 name = stringResource(Res.string.pref_tile_source_title),
-                onClick = { showRasterUrlDialog = true },
+                description = stringResource(Res.string.pref_tile_source_screen_summary),
+                onClick = onClickManualRasterSources,
             )
             Preference(
                 name = stringResource(Res.string.pref_delete_old_data_after),
@@ -235,57 +226,6 @@ fun DataManagementScreen(
                         { Text(stringResource(Res.string.import_export_presets)) }
                         Button({ loadFile { importOverlaysFile = it } }, Modifier.fillMaxWidth())
                         { Text(stringResource(Res.string.import_export_custom_overlays)) }
-                    }
-                }
-            )
-        }
-        if (showRasterUrlDialog) {
-            var maxZoom by remember { mutableStateOf(TextFieldValue(prefs.getInt(Prefs.RASTER_TILE_MAXZOOM, ApplicationConstants.RASTER_DEFAULT_MAXZOOM).toString())) }
-            var hideLabels by remember { mutableStateOf(prefs.getBoolean(Prefs.NO_SATELLITE_LABEL, false)) }
-            var url  by remember { mutableStateOf(TextFieldValue(prefs.getString(Prefs.RASTER_TILE_URL, ApplicationConstants.RASTER_DEFAULT_URL))) }
-            AlertDialog(
-                onDismissRequest = { showRasterUrlDialog = false },
-                title = { Text(stringResource(Res.string.pref_tile_source_title)) },
-                buttonRow = {
-                    TextButton({
-                        prefs.remove(Prefs.RASTER_TILE_URL)
-                        prefs.remove(Prefs.RASTER_TILE_MAXZOOM)
-                        prefs.remove(Prefs.NO_SATELLITE_LABEL)
-                        showRasterUrlDialog = false
-                    }) { Text(stringResource(Res.string.action_reset)) }
-                    TextButton({ showRasterUrlDialog = false }) { Text(stringResource(Res.string.cancel)) }
-                    TextButton({
-                        prefs.putString(Prefs.RASTER_TILE_URL, url.text)
-                        prefs.putInt(Prefs.RASTER_TILE_MAXZOOM, maxZoom.text.toInt())
-                        prefs.putBoolean(Prefs.NO_SATELLITE_LABEL, hideLabels)
-
-                        // trigger the listener in MapFragment (if it exists)
-                        val map = prefs.getString(Prefs.THEME_BACKGROUND, "MAP")
-                        prefs.putString(Prefs.THEME_BACKGROUND, if (map == "MAP") "AERIAL" else "MAP")
-                        prefs.putString(Prefs.THEME_BACKGROUND, map)
-                        showRasterUrlDialog = false
-                    },
-                        enabled = maxZoom.text.toIntOrNull() != null && (url.text.contains("{x}") && url.text.contains("{y}")
-                            && (url.text.contains("{z}") || url.text.contains("{zoom}")))
-                            || url.text.contains("{bbox-epsg-3857}")
-                            || (url.text.contains("{bbox}") && url.text.contains("{proj}"))
-                    ) { Text(stringResource(Res.string.ok)) }
-                },
-                text = {
-                    Column {
-                        Text(stringResource(Res.string.pref_tile_source_message))
-                        TextField2(value = url, onValueChange = { url = it })
-                        Spacer(Modifier.size(6.dp))
-                        TextField2(
-                            value = maxZoom,
-                            onValueChange = { maxZoom = it },
-                            label = { Text(stringResource(Res.string.pref_tile_maxzoom)) },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                        )
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { hideLabels = !hideLabels }) {
-                            Text(stringResource(Res.string.pref_tile_source_hide_labels))
-                            Switch(hideLabels, { hideLabels = it })
-                        }
                     }
                 }
             )

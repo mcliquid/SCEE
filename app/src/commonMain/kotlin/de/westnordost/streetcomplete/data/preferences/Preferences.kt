@@ -55,7 +55,10 @@ class Preferences(val prefs: ObservableSettings) {
     fun getBoolean(key: String, default: Boolean) = prefs.getBoolean(key, default)
     fun putBoolean(key: String, value: Boolean) = prefs.putBoolean(key, value)
     fun getString(key: String, default: String) = prefs.getString(key, default)
+    fun getStringOrNull(key: String): String? = prefs.getStringOrNull(key)
     fun putString(key: String, value: String) = prefs.putString(key, value)
+    fun addStringListener(key: String, default: String, callback: (String) -> Unit): SettingsListener =
+        prefs.addStringListener(key, default, callback)
     fun getLong(key: String, default: Long) = prefs.getLong(key, default)
     fun putLong(key: String, value: Long) = prefs.putLong(key, value)
     fun getInt(key: String, default: Int) = prefs.getInt(key, default)

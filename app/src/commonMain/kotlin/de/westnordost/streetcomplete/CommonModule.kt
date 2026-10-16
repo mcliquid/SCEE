@@ -20,6 +20,9 @@ import de.westnordost.streetcomplete.data.edithistory.EditHistorySource
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceDao
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceHiddenDao
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
+import de.westnordost.streetcomplete.data.imagery.AerialImageryResolver
+import de.westnordost.streetcomplete.data.imagery.ManualRasterSourcesStore
+import de.westnordost.streetcomplete.data.imagery.eli.EliIndexClient
 import de.westnordost.streetcomplete.data.location.SurveyChecker
 import de.westnordost.streetcomplete.data.logs.LogsController
 import de.westnordost.streetcomplete.data.logs.LogsDao
@@ -356,6 +359,10 @@ val commonModule = module {
     //region notes
 
     factory { AvatarsDownloader(get(), get(), get(), get(named("AvatarsCacheDirectory"))) }
+
+    single { ManualRasterSourcesStore(get()) }
+    single { EliIndexClient(get(), get(), get(), get(named("EliIndexCacheDirectory"))) }
+    single { AerialImageryResolver(get(), get(), get()) }
     factory { AvatarsInNotesUpdater(get()) }
     factory { NoteDao(get()) }
     factory { NotesDownloader(get(), get()) }

@@ -33,6 +33,8 @@ import org.maplibre.compose.layers.FillLayer
 import org.maplibre.compose.layers.LineLayer
 import org.maplibre.compose.layers.RasterLayer
 import org.maplibre.compose.layers.SymbolLayer
+import de.westnordost.streetcomplete.data.imagery.RasterTileScheme
+import org.maplibre.compose.sources.TileScheme
 import org.maplibre.compose.sources.VectorSource
 import org.maplibre.compose.sources.rememberRasterTileSource
 import org.maplibre.compose.sources.rememberVectorTileSource
@@ -58,9 +60,11 @@ fun MapStyle(
     colors: MapColors,
     languages: List<String>,
     hiddenLabels: Set<MapLabel> = emptySet(),
-    /** XYZ tile URL for an aerial background. Null keeps the vector basemap only. */
-    rasterTiles: String? = null,
+    /** Tile URL templates for an aerial background. Null/empty keeps the vector basemap only. */
+    rasterTiles: List<String>? = null,
+    rasterMinZoom: Int = 0,
     rasterMaxZoom: Int = 21,
+    rasterScheme: RasterTileScheme = RasterTileScheme.Xyz,
     /** When set together with [rasterTiles], the vector basemap is omitted. */
     rasterOnly: Boolean = false,
     belowRoadsContent: @Composable @MaplibreComposable () -> Unit = {},
@@ -155,9 +159,15 @@ fun MapStyle(
     }
     val roads = listOf(pedestrian, serviceRoads, minorRoads, majorRoads, motorways, motorwayLinks)
 
-    if (rasterTiles != null) {
-        val rasterSource = rememberRasterTileSource(listOf(rasterTiles)) {
+    if (!rasterTiles.isNullOrEmpty()) {
+        val scheme = when (rasterScheme) {
+            RasterTileScheme.Tms -> TileScheme.Tms
+            RasterTileScheme.Xyz -> TileScheme.Xyz
+        }
+        val rasterSource = rememberRasterTileSource(tiles = rasterTiles, tileSize = 256) {
+            minZoom = rasterMinZoom
             maxZoom = rasterMaxZoom
+            this.scheme = scheme
         }
         RasterLayer(id = "raster-background", source = rasterSource)
     }

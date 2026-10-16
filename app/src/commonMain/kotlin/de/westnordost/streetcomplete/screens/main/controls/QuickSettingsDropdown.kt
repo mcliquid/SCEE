@@ -1,9 +1,11 @@
-package de.westnordost.streetcomplete.screens.main.controls
+﻿package de.westnordost.streetcomplete.screens.main.controls
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.DropdownMenu
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +22,8 @@ import de.westnordost.streetcomplete.data.visiblequests.LevelFilter
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.screens.main.MainViewModel
+import de.westnordost.streetcomplete.screens.settings.BackgroundImageryPickerDialog
+import de.westnordost.streetcomplete.screens.settings.rememberBackgroundImageryDescription
 import de.westnordost.streetcomplete.ui.common.DropdownMenuItem
 import de.westnordost.streetcomplete.util.ProfileSelectionDialog
 import de.westnordost.streetcomplete.util.LevelFilterDialog
@@ -39,6 +43,9 @@ fun QuickSettingsDropdown(
     val prefs: Preferences = koinInject()
     var levelFilterDialog by remember { mutableStateOf(false) }
     var presetsDialog by remember { mutableStateOf(false) }
+    var aerialPickerDialog by remember { mutableStateOf(false) }
+    val mapCenter = prefs.mapPosition
+    val aerialDescription = rememberBackgroundImageryDescription(mapCenter)
 
     DropdownMenu(
         expanded = expanded,
@@ -64,6 +71,20 @@ fun QuickSettingsDropdown(
             Text(text = stringResource(Res.string.quick_switch_map_background))
         }
         DropdownMenuItem(onClick = {
+            aerialPickerDialog = true
+        }) {
+            Column {
+                Text(text = stringResource(Res.string.quick_switch_aerial_source))
+                if (aerialDescription != null) {
+                    Text(
+                        text = aerialDescription,
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.onSurface.copy(alpha = 0.7f),
+                    )
+                }
+            }
+        }
+        DropdownMenuItem(onClick = {
             onDismissRequest()
             viewModel.reverseQuestOrder.value = !viewModel.reverseQuestOrder.value
         }) {
@@ -80,4 +101,13 @@ fun QuickSettingsDropdown(
         )
     if (presetsDialog)
         ProfileSelectionDialog({ onDismissRequest(); presetsDialog = false })
+    if (aerialPickerDialog) {
+        BackgroundImageryPickerDialog(
+            mapCenter = mapCenter,
+            onDismissRequest = {
+                aerialPickerDialog = false
+                onDismissRequest()
+            },
+        )
+    }
 }

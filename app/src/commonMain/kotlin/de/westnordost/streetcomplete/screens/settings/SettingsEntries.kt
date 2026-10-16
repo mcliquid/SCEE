@@ -81,6 +81,12 @@ fun EntryProviderScope<Route>.settingsEntries(backStack: NavBackStack<Route>) {
         NoteSettingsScreen(onClickBack = ::goBack)
     }
     entry<Route.DataManagementSettings> {
-        DataManagementScreen(onClickBack = ::goBack)
+        DataManagementScreen(
+            onClickBack = ::goBack,
+            onClickManualRasterSources = { backStack.add(Route.ManualRasterSourcesSettings) },
+        )
+    }
+    entry<Route.ManualRasterSourcesSettings> {
+        ManualRasterSourcesScreen(onClickBack = ::goBack)
     }
 }

@@ -63,6 +63,8 @@ object ApplicationConstants {
     /** default maximum zoom for satellite imagery */
     const val RASTER_DEFAULT_MAXZOOM = 21
     const val RASTER_DEFAULT_URL = "https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?blankTile=false"
+    const val ELI_DEFAULT_INDEX_URL = "https://osmlab.github.io/editor-layer-index/imagery.geojson"
+    const val ELI_CACHE_DIRECTORY = "eli_index"
 
     /** when new quests that are appearing due to download of an area, show the hint that he can
      *  disable quests in the settings if more than X quests did appear */

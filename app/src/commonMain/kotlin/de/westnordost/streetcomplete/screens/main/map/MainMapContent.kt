@@ -16,6 +16,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.westnordost.streetcomplete.data.routing.PedestrianRoute
 import de.westnordost.streetcomplete.data.download.tiles.TilePos
 import de.westnordost.streetcomplete.data.edithistory.EditKey
+import de.westnordost.streetcomplete.data.imagery.AerialImageryResolver
+import de.westnordost.streetcomplete.data.imagery.AerialSourceSelection
+import de.westnordost.streetcomplete.data.imagery.ResolvedAerialSource
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.quest.QuestKey
@@ -23,7 +26,6 @@ import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.screens.main.ShownBottomSheet
 import de.westnordost.streetcomplete.screens.main.ShownEdit
 import de.westnordost.streetcomplete.screens.main.edithistory.icon
-import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.preferences.Theme
@@ -44,9 +46,11 @@ import de.westnordost.streetcomplete.screens.main.map.layers.PedestrianRouteLaye
 import de.westnordost.streetcomplete.screens.main.map.layers.getIcon
 import de.westnordost.streetcomplete.screens.main.map.layers.toGeoJsonFeatures
 import de.westnordost.streetcomplete.ui.common.quest.Marker
+import de.westnordost.streetcomplete.util.ktx.rememberPreferenceString
 import de.westnordost.streetcomplete.util.ktx.toLatLon
 import de.westnordost.streetcomplete.util.logs.Perf
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
@@ -62,6 +66,7 @@ import org.maplibre.spatialk.geojson.Feature
 import org.maplibre.spatialk.geojson.FeatureCollection
 import org.maplibre.spatialk.geojson.Geometry
 import org.maplibre.spatialk.units.International
+import kotlin.math.roundToInt
 
 /** Which pins the map shows */
 enum class PinsMode { Quests, EditHistory, None }
@@ -161,16 +166,45 @@ internal fun MainMapContent(
         LocaleList.current.localeList.map { it.language }.distinct()
     }
     val prefs: Preferences = koinInject()
-    val background = prefs.getString(Prefs.THEME_BACKGROUND, "MAP")
-    val hideSatelliteLabels = prefs.getBoolean(Prefs.NO_SATELLITE_LABEL, false)
+    val aerialResolver: AerialImageryResolver = koinInject()
+    val background = rememberPreferenceString(prefs, Prefs.THEME_BACKGROUND, "MAP")
+    val aerialSourceKey = rememberPreferenceString(
+        prefs, Prefs.AERIAL_SOURCE, AerialSourceSelection.DEFAULT_ENCODED
+    )
+    val mapCenterRounded by remember(mapState) {
+        derivedStateOf {
+            val center = mapState.cameraPosition.center
+            // ~11 m grid so tiny pans do not thrash auto-resolution
+            LatLon(
+                latitude = (center.latitude * 10_000.0).roundToInt() / 10_000.0,
+                longitude = (center.longitude * 10_000.0).roundToInt() / 10_000.0,
+            )
+        }
+    }
+    val aerialSelection = remember(aerialSourceKey) { AerialSourceSelection.decode(aerialSourceKey) }
+    val resolveCenter = if (aerialSelection is AerialSourceSelection.Auto) mapCenterRounded else null
+    val resolvedAerial by produceState<ResolvedAerialSource?>(
+        initialValue = null,
+        background, aerialSourceKey, resolveCenter,
+    ) {
+        if (background == "MAP") {
+            value = null
+            return@produceState
+        }
+        if (aerialSelection is AerialSourceSelection.Auto) {
+            delay(400)
+        }
+        value = withContext(Dispatchers.Default) {
+            aerialResolver.resolve(mapCenterRounded)
+        }
+    }
+    val hideSatelliteLabels = resolvedAerial?.hideLabels == true
     val colors = when {
         background != "MAP" && !hideSatelliteLabels -> MapColors.Aerial
         prefs.theme == Theme.DARK_CONTRAST -> MapColors.DarkContrast
         isSystemInDarkTheme() -> MapColors.Night
         else -> MapColors.Light
     }
-    val rasterTiles = if (background == "MAP") null else rasterTileUrl(prefs)
-    val rasterMaxZoom = prefs.getInt(Prefs.RASTER_TILE_MAXZOOM, ApplicationConstants.RASTER_DEFAULT_MAXZOOM)
 
     val mapImages = rememberMapImages(mapState)
     val overlayIcons = remember(styledElements) {
@@ -189,9 +223,11 @@ internal fun MainMapContent(
         colors = colors,
         languages = languages,
         hiddenLabels = hiddenLabels,
-        rasterTiles = rasterTiles,
-        rasterMaxZoom = rasterMaxZoom,
-        rasterOnly = rasterTiles != null && hideSatelliteLabels,
+        rasterTiles = resolvedAerial?.tiles,
+        rasterMinZoom = resolvedAerial?.minZoom ?: 0,
+        rasterMaxZoom = resolvedAerial?.maxZoom ?: 21,
+        rasterScheme = resolvedAerial?.scheme ?: de.westnordost.streetcomplete.data.imagery.RasterTileScheme.Xyz,
+        rasterOnly = resolvedAerial != null && hideSatelliteLabels,
         belowRoadsContent = {
             // left-and-right lines should be rendered behind the actual road
             if (showOverlay) {
@@ -287,15 +323,6 @@ internal fun MainMapContent(
             }
         }
     )
-}
-
-private fun rasterTileUrl(prefs: Preferences): String {
-    val url = prefs.getString(Prefs.RASTER_TILE_URL, ApplicationConstants.RASTER_DEFAULT_URL)
-    return url.replace("{zoom}", "{z}")
-        .replace("{bbox}", "{bbox-epsg-3857}")
-        .replace("{width}", "256")
-        .replace("{height}", "256")
-        .replace("{proj}", "EPSG:3857")
 }
 
 // need to refer to the local (font) resources platform-independently

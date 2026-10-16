@@ -785,6 +785,7 @@ Die Daten werden nach %1$s Tagen aktualisiert und ungenutzte Daten werden nach %
     <string name="pref_background_type_select">Hintergrund auswählen</string>
     <string name="background_type_map">Karte</string>
     <string name="background_type_aerial_esri">Luftbild (Esri)</string>
+    <string name="background_type_aerial_auto">Luftbild (automatisch regional)</string>
     <string name="quest_barrier_type_title">Was für eine Barriere ist das?</string>
     <string name="quest_barrier_type_lift_gate">Schranke</string>
     <string name="quest_barrier_type_bollard">Poller / Pfosten</string>

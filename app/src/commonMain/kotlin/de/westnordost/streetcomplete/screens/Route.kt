@@ -28,6 +28,7 @@ sealed interface Route : NavKey {
     @Serializable data object DisplaySettings : Route
     @Serializable data object NoteSettings : Route
     @Serializable data object DataManagementSettings : Route
+    @Serializable data object ManualRasterSourcesSettings : Route
 
     @Serializable data object About : Route
     @Serializable data object Changelog : Route

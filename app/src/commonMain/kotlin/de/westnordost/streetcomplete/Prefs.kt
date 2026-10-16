@@ -51,8 +51,14 @@ object Prefs {
     const val QUEST_MONITOR_RADIUS = "quest_monitor_radius"
     const val QUEST_MONITOR_DOWNLOAD = "quest_monitor_download"
     const val SHOW_GPX_TRACK = "show_gpx_track"
-    const val RASTER_TILE_URL = "raster_tile_url"
-    const val RASTER_TILE_MAXZOOM = "raster_tile_maxzoom"
+    const val RASTER_TILE_URL = "raster_tile_url" // legacy; migrated to MANUAL_RASTER_SOURCES
+    const val RASTER_TILE_MAXZOOM = "raster_tile_maxzoom" // legacy
+    const val MANUAL_RASTER_SOURCES = "manual_raster_sources"
+    /** Bump when new built-in manual aerial sources should be seeded for existing installs. */
+    const val MANUAL_RASTER_BUILTINS_VERSION = "manual_raster_builtins_version"
+    const val AERIAL_SOURCE = "aerial_source"
+    const val ELI_INDEX_URL = "eli_index_url"
+    const val ELI_INDEX_CACHED_AT = "eli_index_cached_at"
     const val CREATE_EXTERNAL_QUESTS = "create_external_quests"
     const val SAVE_PHOTOS = "save_photos"
     const val EXPERT_MODE = "expert_mode"

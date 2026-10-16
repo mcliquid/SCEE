@@ -103,6 +103,17 @@ val iosModule = module {
         val avatarsCacheUrl = cacheUrl.URLByAppendingPathComponent(ApplicationConstants.AVATARS_CACHE_DIRECTORY)!!
         Path(avatarsCacheUrl.path!!)
     }
+    factory(named("EliIndexCacheDirectory")) {
+        val cacheUrl = NSFileManager.defaultManager.URLForDirectory(
+            directory = NSCachesDirectory,
+            inDomain = NSUserDomainMask,
+            appropriateForURL = null,
+            create = true,
+            error = null
+        )!!
+        val eliCacheUrl = cacheUrl.URLByAppendingPathComponent(ApplicationConstants.ELI_CACHE_DIRECTORY)!!
+        Path(eliCacheUrl.path!!)
+    }
 
     // app store info
 

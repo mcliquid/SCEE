@@ -74,7 +74,10 @@
     <string name="quest_settings_osmose_level_title">Wähle den Schweregrad des Problems zum Herunterladen und Anzeigen</string>
     <string name="quest_settings_eligible_highways">Lege die für diese Aufgabe berechtigten Straßen fest, durch Kommas getrennt</string>
     <string name="pref_read_log_title">Fehlerprotokoll</string>
-    <string name="pref_tile_source_message">Die URL für die Kachelquelle muss {x}, {y} und entweder {z} oder {zoom} enthalten. Die WMS-Quelle muss EPSG:3857 unterstützen und die URL muss entweder {bbox-epsg-3857} oder sowohl {bbox} als auch {proj} enthalten.</string>
+    <string name="pref_tile_source_message">Die URL für die Kachelquelle muss {x}, {y} und entweder {z} oder {zoom} enthalten. Die WMS-Quelle muss EPSG:3857 unterstützen und die URL muss {bbox-epsg-3857} oder {bbox} (optional mit {proj}/{wkid}) enthalten.</string>
+    <string name="pref_tile_source_edit_title">Luftbildquelle bearbeiten</string>
+    <string name="pref_tile_source_name">Name</string>
+    <string name="pref_tile_source_delete">Löschen</string>
     <string name="pref_recent_answers_first_min_lines_summary">Wenn das Formular mehr als %1$d Zeile(n) hat</string>
     <string name="pref_main_menu_grid">Alle Hauptmenüpunkte als Raster anzeigen</string>
     <string name="quest_settings_sidewalk_cycleway_distance_message">Lege den Mindestabstand zwischen den einzelnen Pfaden fest, bei Unterschreitung wird die Aufgabe nicht angezeigt</string>
@@ -150,6 +153,7 @@
     <string name="action_scee_quests">Nur SCEE-Aufgaben anzeigen</string>
     <string name="quest_buildingType_elevator">Aufzug</string>
     <string name="quick_switch_map_background">Luftbild-/Kartenhintergrund umschalten</string>
+    <string name="quick_switch_aerial_source">Luftbild auswählen</string>
     <string name="pref_advanced_resurvey_title">Erweiterte Neuvermessung</string>
     <string name="pref_quest_settings_preset_title">Aufgabeneinstellungen pro Vorlage</string>
     <string name="export_warning_db_version">Warnung: Datenbankversion unbekannt, der Import funktioniert möglicherweise nicht. Bitte frage nach einer Aktualisierung der App.</string>
@@ -329,7 +333,14 @@
     <string name="import_export_custom_overlays">Benutzerdefinierte Overlays</string>
     <string name="quest_roofColour_title">Welche Farbe hat dieses Gebäudedach\?</string>
     <string name="advanced_resurvey_hint_date">Format verwenden: YYYY-MM-DD</string>
-    <string name="pref_tile_source_title">Quelle für Satelliten-/Luftbilder</string>
+    <string name="pref_tile_source_title">Eigene Luftbilder</string>
+    <string name="pref_tile_source_screen_summary">Eigene Luftbildquellen hinzufügen, bearbeiten oder löschen</string>
+    <string name="pref_tile_source_add">Luftbildquelle hinzufügen</string>
+    <string name="pref_tile_source_prefer_auto">Im Auto-Modus bevorzugen</string>
+    <string name="pref_tile_source_prefer_auto_summary">Diese Quelle automatisch nutzen, wo ihre Abdeckung gilt (Abdeckung erforderlich)</string>
+    <string name="pref_tile_source_coverage">Geografische Abdeckung</string>
+    <string name="pref_tile_source_coverage_hint">Optionales GeoJSON-Polygon/MultiPolygon oder Bounding Box. Ohne Abdeckung wird die Quelle im Auto-Modus nicht weltweit gewählt.</string>
+    <string name="pref_tile_source_import_geojson">GeoJSON importieren…</string>
     <string name="quest_seating_pedestrian_zone">In einer Fußgängerzone</string>
     <string name="quest_seating_balcony">Auf einem Balkon (nicht im Erdgeschoss)</string>
     <string name="tag_editor_duplicate_key">Änderung des Zweitschlüssels %1$s ignorieren</string>
@@ -566,6 +577,7 @@
     <string name="quest_valves_dunlop">DV/NV: Dunlop / Woods</string>
     <string name="quest_valves_schrader">AV: Schrader / Autoventil</string>
     <string name="quest_valves_regina">RV: Regina / Italienisches Ventil</string>
+    <string name="quest_waterBottleFill_title">Kann man hier eine Trinkflasche auffüllen?</string>
     <string name="quest_saunaAvailability_title">Gibt es hier eine Sauna?</string>
     <string name="quest_bicycle_parking_type_saddleholder">Sattelhalter</string>
     <string name="quest_swimming_pool_indoor_and_outdoor">Beides (innen und außen)</string>

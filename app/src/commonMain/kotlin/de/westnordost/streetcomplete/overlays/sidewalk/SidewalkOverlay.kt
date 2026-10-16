@@ -12,7 +12,9 @@ import de.westnordost.streetcomplete.data.overlays.OverlayAction
 import de.westnordost.streetcomplete.data.overlays.OverlayColor
 import de.westnordost.streetcomplete.data.overlays.OverlayStyle
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
+import de.westnordost.streetcomplete.osm.ALL_PATHS
 import de.westnordost.streetcomplete.osm.ALL_ROADS
+import de.westnordost.streetcomplete.overlays.cycleway.SeparateCyclewayForm
 import de.westnordost.streetcomplete.osm.any
 import de.westnordost.streetcomplete.osm.isPrivateOnFoot
 import de.westnordost.streetcomplete.osm.maxspeed.MAX_SPEED_TYPE_KEYS
@@ -44,7 +46,7 @@ class SidewalkOverlay : Overlay {
             ways with
               highway ~ footway|steps|path|bridleway|cycleway
               and area != yes
-        """).map { it to getFootwayStyle(it).copy(disabled = true) }
+        """).map { it to getFootwayStyle(it) }
 
     @Composable
     override fun Form(
@@ -54,7 +56,11 @@ class SidewalkOverlay : Overlay {
         countryInfo: CountryInfo,
     ) {
         requireNotNull(element)
-        SidewalkOverlayForm(on, element, geometry, countryInfo)
+        if (element.tags["highway"] in ALL_ROADS) {
+            SidewalkOverlayForm(on, element, geometry, countryInfo)
+        } else if (element.tags["highway"] in ALL_PATHS) {
+            SeparateCyclewayForm(on, element, countryInfo)
+        }
     }
 }
 

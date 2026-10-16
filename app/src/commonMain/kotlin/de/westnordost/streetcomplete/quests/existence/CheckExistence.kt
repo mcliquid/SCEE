@@ -69,6 +69,7 @@ class CheckExistence(
             (
               traffic_calming ~ bump|mini_bumps|hump|cushion|rumble_strip|dip|double_dip
               or traffic_calming = table and !highway and !crossing
+              or highway = speed_camera
             )
             and (${lastChecked(14.0)})
           ))

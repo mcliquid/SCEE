@@ -38,6 +38,7 @@ class CheckExistence(
           ) or (
             (
               amenity ~ clock|post_box|bbq|car_sharing|ticket_validator|bicycle_repair_station
+              or amenity = bicycle_rental and bicycle_rental = docking_station
               or leisure ~ firepit|fitness_station|picnic_table
               or (leisure = pitch and sport ~ table_tennis|chess|table_soccer|teqball)
               or amenity = grit_bin and seasonal = no

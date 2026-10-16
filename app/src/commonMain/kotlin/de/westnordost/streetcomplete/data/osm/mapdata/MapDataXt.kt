@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.data.osm.mapdata
 
 import de.westnordost.streetcomplete.data.elementfilter.ElementFilterExpression
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
+import de.westnordost.streetcomplete.util.SynchronizedLazyCache
 
 fun MapData.filter(expr: String): Sequence<Element> =
     filter(FilterExpressionCache.get(expr))
@@ -18,8 +19,10 @@ fun MapData.filter(expr: ElementFilterExpression): Sequence<Element> {
 }
 
 private object FilterExpressionCache {
-    private val cache = mutableMapOf<String, Lazy<ElementFilterExpression>>()
+    // used concurrently by all quest types during quest creation, hence synchronized
+    private val cache = SynchronizedLazyCache<String, ElementFilterExpression> {
+        it.toElementFilterExpression()
+    }
 
-    fun get(expr: String): ElementFilterExpression =
-        cache.getOrPut(expr) { lazy { expr.toElementFilterExpression() } }.value
+    fun get(expr: String): ElementFilterExpression = cache.get(expr)
 }

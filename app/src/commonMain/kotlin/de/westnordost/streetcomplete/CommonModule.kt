@@ -486,7 +486,7 @@ val commonModule = module {
     //region metadata
 
     single { NameSuggestionsSource(get()) }
-    single { CountryInfos(get()) }
+    single { CountryInfos(get<Res>()) }
 
     single<CountryBoundaries> { CountryBoundariesImpl(get()) }
     single<Lazy<CountryBoundaries>>(named("CountryBoundariesLazy")) {

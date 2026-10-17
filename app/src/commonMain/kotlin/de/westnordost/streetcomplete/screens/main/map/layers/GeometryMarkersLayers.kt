@@ -91,6 +91,7 @@ fun GeometryMarkersLayers(markers: Collection<Marker>, haloColor: Color, mapImag
         iconSize = byZoom(17 to 0.66f, 19 to 1f),
         iconAllowOverlap = const(true),
         iconRotate = feature["rotation"].convertToNumber(const(0)),
+        iconRotationAlignment = const(IconRotationAlignment.Map),
         textField = feature["label"].convertToString(),
         textColor = feature["color"].convertToColor(const(Color.GeometryMarker)),
         textSize = const(16.sp),

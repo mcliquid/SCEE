@@ -50,6 +50,9 @@ material = "1.14.0"
 appcompat = "1.8.0"
 work = "2.12.0"
 desugarJdkLibs = "2.1.5"
+# Android SDK tools, only used to convert SVGs in the updateTrafficSigns task. Keep at the version
+# that belongs to agp (agp 9.x.y <-> 32.x.y) so that no additional tool version is downloaded
+androidTools = "32.4.1"
 
 # Testing
 robolectric = "4.17"
@@ -210,6 +213,9 @@ androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref
 
 # Core library desugaring (Android)
 desugar-jdkLibs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugarJdkLibs" }
+
+# SVG to vector drawable conversion (build tooling only, see updateTrafficSigns task)
+android-sdkCommon = { module = "com.android.tools:sdk-common", version.ref = "androidTools" }
 
 # Testing
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }

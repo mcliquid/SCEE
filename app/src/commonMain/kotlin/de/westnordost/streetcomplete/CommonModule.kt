@@ -118,6 +118,7 @@ import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.data.quest.VisibleQuestsSource
 import de.westnordost.streetcomplete.data.routing.PedestrianRoutingClient
 import de.westnordost.streetcomplete.data.routing.RouteQuestService
+import de.westnordost.streetcomplete.data.traffic_signs.TrafficSignCatalogues
 import de.westnordost.streetcomplete.data.upload.UploadProgressSource
 import de.westnordost.streetcomplete.data.upload.Uploader
 import de.westnordost.streetcomplete.data.upload.VersionIsBannedChecker
@@ -487,6 +488,7 @@ val commonModule = module {
 
     single { NameSuggestionsSource(get()) }
     single { CountryInfos(get<Res>()) }
+    single { TrafficSignCatalogues(get<Res>()) }
 
     single<CountryBoundaries> { CountryBoundariesImpl(get()) }
     single<Lazy<CountryBoundaries>>(named("CountryBoundariesLazy")) {

@@ -28,6 +28,12 @@ val presetsVersion = "v7.2.0"
  *  */
 val nsiVersion = "8.0.20260918"
 
+/** Version of the traffic sign catalogue (npm package @osm-traffic-signs/converter) to use and the
+ *  SHA-256 of its npm tarball
+ *  see https://www.npmjs.com/package/@osm-traffic-signs/converter for latest version */
+val trafficSignsVersion = "0.8.0"
+val trafficSignsSha256 = "f0f112f9f7daaf0801000104fac17f19c58fc872016afc7b6930d2f3a23ad70f"
+
 /** Project ID of the crowdsource translation platform (from where to pull translations from) */
 val poEditorProjectId = "97843"
 
@@ -320,10 +326,14 @@ compose {
     }
 }
 
+// only used by the updateTrafficSigns task, not part of the app
+val svgToVectorConverter by configurations.creating
+
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
     // see comment in android.compileOptions.isCoreLibraryDesugaringEnabled
     coreLibraryDesugaring(libs.desugar.jdkLibs)
+    svgToVectorConverter(libs.android.sdkCommon)
 }
 
 // run tests in a fixed time zone so that results don't depend on the host's time zone
@@ -455,6 +465,16 @@ tasks.register<GenerateMetadataByCountryTask>("generateMetadataByCountry") {
     )
     sourceDir = rootDir.resolve("res/country_metadata")
     targetDir = projectDir.resolve("src/commonMain/composeResources/files/country_metadata")
+}
+
+// SCEE: traffic sign catalogue (currently only DE) and its signs converted to vector drawables
+tasks.register<UpdateTrafficSignsTask>("updateTrafficSigns") {
+    group = "streetcomplete"
+    version = trafficSignsVersion
+    sha256 = trafficSignsSha256
+    countries = listOf("DE")
+    converterClasspath = svgToVectorConverter
+    targetDir = projectDir.resolve("src/commonMain/composeResources/files/traffic_signs")
 }
 
 tasks.register("copyDefaultStringsToEnStrings") {

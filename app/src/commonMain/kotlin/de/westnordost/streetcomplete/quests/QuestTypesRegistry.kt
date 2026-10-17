@@ -207,6 +207,7 @@ import de.westnordost.streetcomplete.quests.seating.AddSeating
 import de.westnordost.streetcomplete.quests.segregated.AddCyclewaySegregation
 import de.westnordost.streetcomplete.quests.self_service.AddSelfServiceLaundry
 import de.westnordost.streetcomplete.quests.shelter_capacity.AddShelterCapacity
+import de.westnordost.streetcomplete.quests.shoulder.AddShoulder
 import de.westnordost.streetcomplete.quests.service_building.AddServiceBuildingOperator
 import de.westnordost.streetcomplete.quests.service_building.AddServiceBuildingType
 import de.westnordost.streetcomplete.quests.shelter_type.AddShelterType
@@ -637,7 +638,7 @@ fun getQuestTypeList(
     181 to AddLaneMarkings(),
     138 to AddLanes(), // abstreet, certainly most routing engines - often requires way to be split
 
-    // 139 to AddShoulder(), - removed in https://github.com/streetcomplete/StreetComplete/commit/2819a8d440fdf33fc1bff178679ae1fcfd739998
+    139 to AddShoulder(),
 
     140 to AddRoadWidth(arSupportChecker),
     141 to AddRoadSmoothness(),

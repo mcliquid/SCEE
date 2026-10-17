@@ -720,6 +720,11 @@ Erfolge</string>
     <string name="quest_buildingType_ruins">Ruine</string>
     <string name="quest_buildingType_ruins_description">verfallenes oder zerstörtes Gebäude</string>
     <string name="link_disaster_ninja_description">Karte, die jüngste Naturkatastrophen zeigt. Interessant für humanitäre Mapper. Zeigt außerdem viele weitere interessante Statistiken, um zu analysieren, wie vollständig und aktuell Orte kartiert sind.</string>
+    <string name="quest_shoulder_title">Hat diese Straße einen Seitenstreifen oder Pannenstreifen?</string>
+    <string name="quest_shoulder_explanation2">Ein Seiten- oder Pannenstreifen ist ein klar markierter Notfall-Stoppstreifen. Der als Seitenstreifen ausgewiesene Bereich ist nicht notwendigerweise über die gesamte Breite befestigt und nicht notwendigerweise breit genug, damit ein Auto vollständig neben der Fahrspur anhalten kann.</string>
+    <string name="quest_shoulder_value_yes">Seitenstreifen</string>
+    <string name="quest_shoulder_value_no">kein Seitenstreifen</string>
+
     <string name="quest_lanes_title">Wie viele Fahrstreifen für Autos hat diese Fahrbahn?</string>
     <string name="quest_lanes_answer_noLanes">Keine markierten Fahrstreifen</string>
     <string name="quest_lanes_answer_lanes_center_left_turn_lane">Hat eine gemeinsame Linksabbiegerspur für beide Richtungen</string>

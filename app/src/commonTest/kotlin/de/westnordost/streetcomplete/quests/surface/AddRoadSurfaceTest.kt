@@ -79,4 +79,32 @@ class AddRoadSurfaceTest {
     @Test fun `not applicable where tracktype and very good surface match is suspicious but not conflicting`() {
         assertIsNotApplicable("highway" to "track", "surface" to "asphalt", "tracktype" to "grade2")
     }
+
+    @Test fun `applicable to trunk without bicycle restrictions`() {
+        assertIsApplicable("highway" to "trunk")
+        assertIsApplicable("highway" to "trunk_link")
+        assertIsApplicable("highway" to "trunk", "bicycle" to "yes")
+        assertIsApplicable("highway" to "trunk", "motorroad" to "no", "expressway" to "no")
+    }
+
+    @Test fun `not applicable to trunk with motorroad or expressway`() {
+        assertIsNotApplicable("highway" to "trunk", "motorroad" to "yes")
+        assertIsNotApplicable("highway" to "trunk", "expressway" to "yes")
+        assertIsNotApplicable("highway" to "trunk_link", "motorroad" to "yes")
+    }
+
+    @Test fun `not applicable to trunk where bicycles are not allowed or on separate path`() {
+        assertIsNotApplicable("highway" to "trunk", "bicycle" to "no")
+        assertIsNotApplicable("highway" to "trunk", "bicycle" to "use_sidepath")
+        assertIsNotApplicable("highway" to "trunk", "bicycle" to "private")
+        assertIsNotApplicable("highway" to "trunk", "bicycle:forward" to "no")
+        assertIsNotApplicable("highway" to "trunk", "bicycle:backward" to "no")
+        assertIsNotApplicable("highway" to "trunk", "bicycle:forward" to "use_sidepath")
+        assertIsNotApplicable("highway" to "trunk_link", "bicycle:backward" to "use_sidepath")
+    }
+
+    @Test fun `not applicable to trunk with surface or no access`() {
+        assertIsNotApplicable("highway" to "trunk", "surface" to "asphalt")
+        assertIsNotApplicable("highway" to "trunk", "access" to "no")
+    }
 }

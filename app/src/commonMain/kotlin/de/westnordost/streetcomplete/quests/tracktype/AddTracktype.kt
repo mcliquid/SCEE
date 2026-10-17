@@ -17,6 +17,12 @@ import de.westnordost.streetcomplete.ui.common.quest.ItemSelectQuestForm
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
+// sealed surfaces contradict a tracktype of grade2-5 only mildly (grade2) or clearly (grade3-5): ask again
+// (without changing any tag automatically), but at most once a year, as the check date is updated on confirmation
+private val SEALED_SURFACES = setOf(
+    "asphalt", "concrete", "chipseal", "paved", "concrete:plates", "concrete:lanes",
+)
+
 class AddTracktype : OsmFilterQuestType<Tracktype>() {
 
     override val elementFilter = """
@@ -27,6 +33,7 @@ class AddTracktype : OsmFilterQuestType<Tracktype>() {
             or tracktype != grade1 and tracktype older today -6 years
             or surface ~ ${UNPAVED_SURFACES.joinToString("|")} and tracktype older today -6 years
             or tracktype older today -8 years
+            or tracktype ~ grade2|grade3|grade4|grade5 and surface ~ ${SEALED_SURFACES.joinToString("|")} and tracktype older today -1 years
           )
           and (access !~ private|no or (foot and foot !~ private|no))
           and !bridge

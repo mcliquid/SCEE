@@ -92,4 +92,5 @@ private val highwaySelection = """
 ).joinToString("|")
 }
           or highway = service and service !~ driveway|slipway
+          or highway ~ trunk|trunk_link and motorroad != yes and expressway != yes and ~bicycle|bicycle:forward|bicycle:backward !~ no|use_sidepath|private
 """.trimIndent()

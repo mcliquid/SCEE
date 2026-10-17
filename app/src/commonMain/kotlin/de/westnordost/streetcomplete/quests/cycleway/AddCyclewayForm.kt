@@ -15,6 +15,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.osmquests.Answer
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.preferences.Preferences
+import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenController
 import de.westnordost.streetcomplete.data.preferences.getLastPicked
 import de.westnordost.streetcomplete.data.preferences.setLastPicked
 import de.westnordost.streetcomplete.osm.Sides
@@ -23,6 +24,9 @@ import de.westnordost.streetcomplete.osm.cycleway.Cycleway
 import de.westnordost.streetcomplete.osm.cycleway.CyclewayAndDirection
 import de.westnordost.streetcomplete.osm.cycleway.CyclewayForm
 import de.westnordost.streetcomplete.osm.cycleway.CyclewayFormSelectionMode
+import de.westnordost.streetcomplete.osm.cycleway.SidepathUsageDialogs
+import de.westnordost.streetcomplete.osm.cycleway.hideSidepathUsageQuest
+import de.westnordost.streetcomplete.osm.cycleway.needsSidepathFollowUp
 import de.westnordost.streetcomplete.osm.cycleway.isSelectable
 import de.westnordost.streetcomplete.osm.cycleway.parseCyclewaySides
 import de.westnordost.streetcomplete.osm.cycleway.selectableOrNullValues
@@ -34,6 +38,7 @@ import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.dialogs.AreYouSureDialog
 import de.westnordost.streetcomplete.ui.common.quest.AnswerItem
 import de.westnordost.streetcomplete.ui.common.quest.LocalMapRotation
+import de.westnordost.streetcomplete.ui.common.quest.LocalQuestType
 import de.westnordost.streetcomplete.ui.common.quest.LocalMapTilt
 import de.westnordost.streetcomplete.ui.common.quest.QuestForm
 import de.westnordost.streetcomplete.ui.util.ReplaceBottomSheetTransitionSpec
@@ -50,6 +55,13 @@ fun AddCyclewayForm(
     geometry: ElementGeometry,
     countryInfo: CountryInfo,
     preferences: Preferences = koinInject(),
+    questsHiddenController: QuestsHiddenController = koinInject(),
+    /** to use this form for another quest type than AddCycleway: its own title... */
+    title: String? = null,
+    /** ...whether to show the hint of the quest type... */
+    showQuestHint: Boolean = true,
+    /** ...and not to ask whether the current tagging is still correct but to edit it right away */
+    startEditing: Boolean = false,
 ) {
     val favKey = "AddCyclewayForm"
 
@@ -92,6 +104,7 @@ fun AddCyclewayForm(
     var isDisplayingPrevious by rememberSaveable(originalCycleway) {
         // only show as re-survey (yes/no button) if the previous tagging was complete
         mutableStateOf(
+            !startEditing &&
             (originalCycleway.left != null || !isLeftSideVisible) &&
             (originalCycleway.right != null || !isRightSideVisible)
         )
@@ -102,7 +115,9 @@ fun AddCyclewayForm(
     var confirmNotOnewayForCyclists by remember { mutableStateOf(false) }
     var confirmSelectReverseCyclewayDirection by remember { mutableStateOf(false) }
 
-    fun saveAndApplyCycleway(sides: Sides<CyclewayAndDirection>) {
+    var pendingSidepathSides by remember { mutableStateOf<Sides<CyclewayAndDirection>?>(null) }
+
+    fun finishSaveCycleway(sides: Sides<CyclewayAndDirection>, hideSidepathQuest: Boolean = false) {
         if (sides.left != null && sides.right != null) {
             // only persist the cycleway selection, not the direction. For any road that deviates
             // from the default, the user should select this specifically. Simply carrying over the
@@ -111,6 +126,17 @@ fun AddCyclewayForm(
             preferences.setLastPicked(favKey, listOf(cycleways))
         }
         on(Answer(sides))
+        // "No / can't tell": do not ask the same again. After the answer, so it can not get in the way
+        if (hideSidepathQuest) runCatching { questsHiddenController.hideSidepathUsageQuest(element) }
+    }
+
+    fun saveAndApplyCycleway(sides: Sides<CyclewayAndDirection>) {
+        // separate cycleway: ask whether it is compulsory to use (only in supported countries)
+        if (needsSidepathFollowUp(element.tags, originalCycleway, sides, countryInfo.isLeftHandTraffic, countryInfo.countryCode)) {
+            pendingSidepathSides = sides
+        } else {
+            finishSaveCycleway(sides)
+        }
     }
 
     val content: @Composable () -> Unit = {
@@ -133,6 +159,9 @@ fun AddCyclewayForm(
         )
     }
 
+    val questTitle = title ?: stringResource(LocalQuestType.current!!.title)
+    val questHint = if (showQuestHint) LocalQuestType.current!!.hint?.let { stringResource(it) } else null
+
     AnimatedContent(
         targetState = isDisplayingPrevious,
         transitionSpec = ReplaceBottomSheetTransitionSpec
@@ -140,6 +169,8 @@ fun AddCyclewayForm(
         if (isDisplayingPrevious2) {
             QuestForm(
                 on = on,
+                title = questTitle,
+                hintText = questHint,
                 answers = listOf(
                     AnswerItem(stringResource(Res.string.quest_generic_hasFeature_no)) {
                         isDisplayingPrevious = false
@@ -155,6 +186,8 @@ fun AddCyclewayForm(
         } else {
             QuestForm(
                 on = on,
+                title = questTitle,
+                hintText = questHint,
                 isComplete =
                     (cycleways.left != null || !isLeftSideVisible) &&
                     (cycleways.right != null || !isRightSideVisible),
@@ -202,6 +235,22 @@ fun AddCyclewayForm(
             onConfirmed = { saveAndApplyCycleway(cycleways) },
             titleText = null,
             text = { Text(stringResource(Res.string.quest_cycleway_confirmation_oneway_for_cyclists_too)) }
+        )
+    }
+
+    pendingSidepathSides?.let { pending ->
+        SidepathUsageDialogs(
+            tags = element.tags,
+            original = originalCycleway,
+            sides = pending,
+            geometryRotation = geometryRotation,
+            isLeftHandTraffic = countryInfo.isLeftHandTraffic,
+            countryCode = countryInfo.countryCode,
+            onResult = {
+                pendingSidepathSides = null
+                finishSaveCycleway(it.sides, it.hideQuest)
+            },
+            onDismiss = { pendingSidepathSides = null },
         )
     }
 

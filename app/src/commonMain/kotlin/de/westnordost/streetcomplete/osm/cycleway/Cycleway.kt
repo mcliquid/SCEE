@@ -58,7 +58,14 @@ fun Sides<CyclewayAndDirection>.isNotOnewayForCyclistsNow(tags: Map<String, Stri
 }
 
 @Serializable
-data class CyclewayAndDirection(val cycleway: Cycleway, val direction: Direction)
+data class CyclewayAndDirection(
+    val cycleway: Cycleway,
+    val direction: Direction,
+    /** Answer whether it is compulsory to use the separately mapped cycleways of the road. It is
+     *  about the road, so it is the same on both sides. Not parsed from tags, null (the default)
+     *  never changes any tags. See Sidepath.kt */
+    val roadSidepath: RoadSidepath? = null,
+)
 
 fun CyclewayAndDirection.isSelectable(countryInfo: CountryInfo): Boolean =
     cycleway.isSelectable(countryInfo) &&

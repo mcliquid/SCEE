@@ -1186,6 +1186,16 @@ Jetzt verschieben?</string>
     <string name="cycleway_reverse_direction">Richtung des Radweges umdrehen</string>
     <string name="cycleway_reverse_direction_warning">Dass ein Radweg in die andere Richtung geht, ist extrem selten.</string>
     <string name="cycleway_reverse_direction_toast">Tippe auf die Seite, die umgedreht werden soll</string>
+    <string name="cycleway_sidepath_title">Besteht hier eine Radwegbenutzungspflicht?</string>
+    <string name="cycleway_sidepath_hint">Prüfe die Radwege neben der Straße, auf beiden Seiten. Nur ein Schild schreibt die Benutzung vor, zum Beispiel ein blaues Rundschild mit Fahrrad. Die Pfeile zeigen die Richtung, in der die Straße auf der Karte gezeichnet ist.</string>
+    <string name="cycleway_sidepath_answer_direction">Ja, nur in Pfeilrichtung</string>
+    <string name="cycleway_sidepath_answer_oneway">Ja, in Fahrtrichtung dieser Einbahnstraße</string>
+    <string name="cycleway_sidepath_answer_both">Ja, in beide Richtungen</string>
+    <string name="cycleway_sidepath_answer_none">Nein / Kann ich nicht beurteilen</string>
+    <string name="cycleway_sidepath_remove_confirmation">Die Straße ist mit einem benutzungspflichtigen Radweg (use_sidepath) getaggt, was dazu nicht passt. Ändern?</string>
+    <string name="cycleway_sidepath_answer">Radwegbenutzungspflicht?</string>
+    <string name="quest_sidepath_usage_title">Besteht hier eine Radwegbenutzungspflicht?</string>
+    <string name="quest_sidepath_usage_answer_no_cycleway">Hier gibt es keinen getrennten Radweg</string>
     <string name="separate_cycleway_path">Unspezifischer Weg oder Pfad (ohne Kennzeichnung, für wen er bestimmt ist)</string>
     <string name="quest_fireHydrant_type_pipe">Rohr</string>
     <string name="measure_info_title">Optimale Genauigkeit erreichen</string>

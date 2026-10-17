@@ -17,6 +17,7 @@ import de.westnordost.streetcomplete.osm.updateCheckDateForKey
 
 fun Sides<CyclewayAndDirection>.applyTo(tags: Tags, isLeftHandTraffic: Boolean) {
     if (left == null && right == null) return
+    val originalTags = tags.toMap()
     /* for being able to modify only one side (e.g. `left` is null while `right` is not null),
        the sides conflated in `:both` keys need to be separated first. E.g. `cycleway=no`
        when left side is made `separate` should become
@@ -45,6 +46,8 @@ fun Sides<CyclewayAndDirection>.applyTo(tags: Tags, isLeftHandTraffic: Boolean) 
     tags.mergeSides("sidewalk", "bicycle")
     tags.mergeSides("sidewalk", "bicycle:signed")
     tags.mergeSides("sidewalk", "oneway:bicycle")
+
+    applySidepathUsage(originalTags, tags, isLeftHandTraffic)
 
     // update check date
     if (!tags.hasChanges || tags.hasCheckDateForKey("cycleway")) {

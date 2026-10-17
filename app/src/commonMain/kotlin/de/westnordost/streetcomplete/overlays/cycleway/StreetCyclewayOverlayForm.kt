@@ -20,6 +20,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.overlays.Edit
 import de.westnordost.streetcomplete.data.overlays.OverlayAction
 import de.westnordost.streetcomplete.data.preferences.Preferences
+import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenController
 import de.westnordost.streetcomplete.data.preferences.getLastPicked
 import de.westnordost.streetcomplete.data.preferences.setLastPicked
 import de.westnordost.streetcomplete.osm.Sides
@@ -38,6 +39,10 @@ import de.westnordost.streetcomplete.osm.cycleway.Cycleway
 import de.westnordost.streetcomplete.osm.cycleway.CyclewayAndDirection
 import de.westnordost.streetcomplete.osm.cycleway.CyclewayForm
 import de.westnordost.streetcomplete.osm.cycleway.CyclewayFormSelectionMode
+import de.westnordost.streetcomplete.osm.cycleway.SidepathUsageDialogs
+import de.westnordost.streetcomplete.osm.cycleway.hideSidepathUsageQuest
+import de.westnordost.streetcomplete.osm.cycleway.needsSidepathQuestion
+import de.westnordost.streetcomplete.osm.cycleway.needsSidepathFollowUp
 import de.westnordost.streetcomplete.osm.cycleway.applyTo
 import de.westnordost.streetcomplete.osm.cycleway.isSelectable
 import de.westnordost.streetcomplete.osm.cycleway.parseCyclewaySides
@@ -62,7 +67,8 @@ fun StreetCyclewayOverlayForm(
     element: Element,
     geometry: ElementGeometry,
     countryInfo: CountryInfo,
-    preferences: Preferences = koinInject()
+    preferences: Preferences = koinInject(),
+    questsHiddenController: QuestsHiddenController = koinInject(),
 ) {
     val favKey = "StreetCyclewayOverlayForm"
     val lastPicked = remember {
@@ -99,9 +105,10 @@ fun StreetCyclewayOverlayForm(
     var confirmNotOnewayForCyclists by remember { mutableStateOf(false) }
     var confirmSelectReverseCyclewayDirection by remember { mutableStateOf(false) }
 
-    fun saveAndApplyCycleway() {
+    var pendingSidepathSides by remember { mutableStateOf<Sides<CyclewayAndDirection>?>(null) }
+
+    fun finishSaveCycleway(sides: Sides<CyclewayAndDirection>, hideSidepathQuest: Boolean = false) {
         val tags = StringMapChangesBuilder(element.tags)
-        val sides = cycleways
 
         if (sides.left != null && sides.right != null) {
             // only persist the cycleway selection, not the direction. For any road that deviates from
@@ -121,7 +128,25 @@ fun StreetCyclewayOverlayForm(
         }
 
         on(Edit(UpdateElementTagsAction(element, tags.create())))
+        // "No / can't tell": do not ask the same again. After the edit, so it can not get in the way
+        if (hideSidepathQuest) runCatching { questsHiddenController.hideSidepathUsageQuest(element) }
     }
+
+    fun saveAndApplyCycleway(sides: Sides<CyclewayAndDirection> = cycleways, forceSidepathFollowUp: Boolean = false) {
+        // separate cycleway: ask whether it is compulsory to use (only in supported countries)
+        if (
+            forceSidepathFollowUp ||
+            needsSidepathFollowUp(element.tags, originalCycleway, sides, countryInfo.isLeftHandTraffic, countryInfo.countryCode)
+        ) {
+            pendingSidepathSides = sides
+        } else {
+            finishSaveCycleway(sides)
+        }
+    }
+
+    val canAskSidepathUsage = needsSidepathQuestion(
+        element.tags, originalCycleway, cycleways, countryInfo.isLeftHandTraffic, countryInfo.countryCode
+    )
 
     @Composable
     fun createOtherAnswers(): List<AnswerItem> {
@@ -160,6 +185,12 @@ fun StreetCyclewayOverlayForm(
                     }
                 )
             }
+        }
+
+        if (canAskSidepathUsage) {
+            result.add(AnswerItem(stringResource(Res.string.cycleway_sidepath_answer)) {
+                saveAndApplyCycleway(forceSidepathFollowUp = true)
+            })
         }
 
         result.add(AnswerItem(stringResource(Res.string.cycleway_reverse_direction)) {
@@ -239,6 +270,22 @@ fun StreetCyclewayOverlayForm(
             onDismissRequest = { confirmNotOnewayForCyclists = false },
             onConfirmed = { saveAndApplyCycleway() },
             text = { Text(stringResource(Res.string.quest_cycleway_confirmation_oneway_for_cyclists_too)) }
+        )
+    }
+
+    pendingSidepathSides?.let { pending ->
+        SidepathUsageDialogs(
+            tags = element.tags,
+            original = originalCycleway,
+            sides = pending,
+            geometryRotation = geometryRotation,
+            isLeftHandTraffic = countryInfo.isLeftHandTraffic,
+            countryCode = countryInfo.countryCode,
+            onResult = {
+                pendingSidepathSides = null
+                finishSaveCycleway(it.sides, it.hideQuest)
+            },
+            onDismiss = { pendingSidepathSides = null },
         )
     }
 

@@ -1825,6 +1825,16 @@
     <string name="cycleway_reverse_direction">Reverse bike path direction</string>
     <string name="cycleway_reverse_direction_warning">A bike path that goes into the other direction is extremely rare.</string>
     <string name="cycleway_reverse_direction_toast">Tap which side to reverse</string>
+    <string name="cycleway_sidepath_title">Is it compulsory to use a cycle path here?</string>
+    <string name="cycleway_sidepath_hint">Check the cycle paths next to the road, on both sides. Only a sign makes using it compulsory, for example a blue round sign with a bicycle. The arrows show the direction in which the road is drawn on the map.</string>
+    <string name="cycleway_sidepath_answer_direction">Yes, only in the direction of the arrow</string>
+    <string name="cycleway_sidepath_answer_oneway">Yes, in the direction of this one-way street</string>
+    <string name="cycleway_sidepath_answer_both">Yes, in both directions</string>
+    <string name="cycleway_sidepath_answer_none">No / I can’t tell</string>
+    <string name="cycleway_sidepath_remove_confirmation">The road is tagged as having a compulsory cycle path (use_sidepath) that does not match this. Change it?</string>
+    <string name="cycleway_sidepath_answer">Compulsory cycle path?</string>
+    <string name="quest_sidepath_usage_title">Is it compulsory to use a cycle path here?</string>
+    <string name="quest_sidepath_usage_answer_no_cycleway">There is no separate cycle path here</string>
 
     <string name="overlay_none">None</string>
     <string name="overlay_lit">Street lighting</string>

@@ -15,6 +15,9 @@ import de.westnordost.streetcomplete.testutils.mockPrefs
 import de.westnordost.streetcomplete.ui.util.measure.ArSupportChecker
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import de.westnordost.streetcomplete.quests.cycleway.AddCycleway
+import de.westnordost.streetcomplete.quests.sidepath_usage.AddSidepathUsage
 
 class QuestTypesRegistryTest {
 
@@ -53,6 +56,36 @@ class QuestTypesRegistryTest {
                 .sorted()
 
             assertEquals(emptyList(), duplicates, "Duplicate quest type ordinals: $duplicates")
+        } finally {
+            connection.close()
+        }
+    }
+
+    @Test
+    fun `AddSidepathUsage directly follows AddCycleway in quest order`() {
+        Prefs.sharedPreferences = mockPrefs()
+        Prefs.preferences = inMemoryPrefs()
+
+        val connection = BundledSQLiteDriver().open(":memory:")
+        try {
+            val database = DatabaseImpl(connection).apply { initialize(StreetCompleteDatabaseConfigurator) }
+            val registry = QuestTypeRegistry(
+                load = {
+                    getQuestTypeList(
+                        arSupportChecker = arSupportChecker,
+                        getCountryInfoByLocation = { countryInfo },
+                        getCountryOrSubdivisionCode = { null },
+                        getFeature = { null },
+                        osmoseDao = OsmoseDao(database, Prefs.preferences),
+                        customQuestList = CustomQuestList(),
+                    )
+                }
+            )
+            val order = registry.toList()
+            val cyclewayIndex = order.indexOfFirst { it is AddCycleway }
+            val sidepathIndex = order.indexOfFirst { it is AddSidepathUsage }
+            assertTrue(cyclewayIndex >= 0 && sidepathIndex >= 0)
+            assertEquals(cyclewayIndex + 1, sidepathIndex)
         } finally {
             connection.close()
         }

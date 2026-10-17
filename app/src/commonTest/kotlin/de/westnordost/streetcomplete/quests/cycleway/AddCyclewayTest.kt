@@ -6,6 +6,7 @@ import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAd
 import de.westnordost.streetcomplete.osm.Sides
 import de.westnordost.streetcomplete.osm.cycleway.Cycleway
 import de.westnordost.streetcomplete.osm.cycleway.CyclewayAndDirection
+import de.westnordost.streetcomplete.osm.cycleway.RoadSidepath
 import de.westnordost.streetcomplete.osm.cycleway.parseCyclewaySides
 import de.westnordost.streetcomplete.osm.cycleway.selectableOrNullValues
 import de.westnordost.streetcomplete.osm.oneway.Direction.BACKWARD
@@ -167,6 +168,39 @@ class AddCyclewayTest {
         )
         val changes = questType.answerAppliedTo(answer, original).map { it.key }.toSet()
         assertFalse("oneway:bicycle" in changes)
+    }
+
+    @Test fun `separate answer without usage writes no bicycle tags`() {
+        val answer = Sides(
+            left = null,
+            right = CyclewayAndDirection(Cycleway.SEPARATE, FORWARD),
+        )
+        val changes = questType.answerAppliedTo(answer, mapOf("highway" to "secondary"))
+        assertEquals(setOf("cycleway:right"), changes.map { it.key }.toSet())
+    }
+
+    @Test fun `separate answer with compulsory usage writes directional use_sidepath`() {
+        val answer = Sides(
+            left = null,
+            right = CyclewayAndDirection(Cycleway.SEPARATE, FORWARD, RoadSidepath.FORWARD),
+        )
+        val changes = questType.answerAppliedTo(answer, mapOf("highway" to "secondary"))
+        assertTrue(changes.contains(StringMapEntryAdd("cycleway:right", "separate")))
+        assertTrue(changes.contains(StringMapEntryAdd("bicycle:forward", "use_sidepath")))
+    }
+
+    @Test fun `compulsory usage does not overwrite bicycle yes`() {
+        val answer = Sides(
+            left = null,
+            right = CyclewayAndDirection(Cycleway.SEPARATE, FORWARD, RoadSidepath.FORWARD),
+        )
+        val changes = questType.answerAppliedTo(answer, mapOf("highway" to "secondary", "bicycle" to "yes"))
+        assertEquals(setOf("cycleway:right"), changes.map { it.key }.toSet())
+    }
+
+    @Test fun `road with use_sidepath stays excluded from initial survey`() {
+        assertApplicability(mapOf("bicycle:forward" to "use_sidepath", "cycleway:right" to "separate"), bulk = false, single = false)
+        assertApplicability(mapOf("bicycle" to "use_sidepath"), bulk = false, single = false)
     }
 
     private var countryInfo = CountryInfo(

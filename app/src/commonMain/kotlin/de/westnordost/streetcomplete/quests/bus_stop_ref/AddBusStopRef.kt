@@ -24,6 +24,7 @@ class AddBusStopRef : OsmFilterQuestType<BusStopRefAnswer>() {
           and access !~ no|private
           and !ref and noref != yes and ref:signed != no and !~"ref:.*"
     """
+    override val isCountryRestrictionOverridable = true
     override val enabledInCountries = NoCountriesExcept(
         "AU", // https://github.com/streetcomplete/StreetComplete/issues/4487
         "CA",

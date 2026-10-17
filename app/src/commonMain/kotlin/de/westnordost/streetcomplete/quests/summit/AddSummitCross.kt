@@ -33,6 +33,7 @@ class AddSummitCross : OsmElementQuestType<Boolean> {
     override val icon = Res.drawable.quest_summit_cross
     override val title = Res.string.quest_summit_cross_title
     override val achievements = listOf(RARE, OUTDOORS)
+    override val isCountryRestrictionOverridable = true
     override val enabledInCountries = NoCountriesExcept(
         // Europe
         "AT", // https://de.wikipedia.org/wiki/Gipfelkreuz

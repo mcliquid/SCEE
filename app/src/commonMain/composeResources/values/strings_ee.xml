@@ -167,6 +167,8 @@
     <string name="day_night_visibility">Don’t show quests unsuitable for current daytime</string>
     <string name="pref_quest_settings_preset_title">Per-preset quest settings</string>
     <string name="pref_quest_settings_preset_summary">When enabled, quest settings are only valid for the current quest preset</string>
+    <string name="pref_override_country_restrictions_title">Ask quests outside their intended countries</string>
+    <string name="pref_override_country_restrictions_summary">Quests that are limited to certain countries because they are spammy or need local knowledge are asked everywhere. Quests that are limited because of local tagging conventions or community consensus stay limited. Only use this if you know the local conventions and the community accepts such edits.</string>
     <string name="pref_dynamic_quest_creation_title">Create quests dynamically</string>
     <string name="pref_dynamic_quest_creation_summary">Quests are created when loading the viewed area. Somewhat slow, but immediately applies changed quest settings.</string>
     <string name="quest_settings_per_preset_rescan">For properly applying all changed quest settings, re-scanning for quests is necessary.</string>

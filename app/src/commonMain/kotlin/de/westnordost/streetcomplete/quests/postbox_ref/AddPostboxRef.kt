@@ -25,6 +25,7 @@ class AddPostboxRef : OsmFilterQuestType<PostboxRefAnswer>() {
     override val icon = Res.drawable.quest_mail_ref
     override val title = Res.string.quest_genericRef_title
     override val achievements = listOf(POSTMAN)
+    override val isCountryRestrictionOverridable = true
     override val enabledInCountries = NoCountriesExcept(
         // source: https://commons.wikimedia.org/wiki/Category:Post_boxes_by_country
         "FR", "GB", "GG", "IM", "JE", "MT", "IE", "SG", "CZ", "SK", "CH", "US",

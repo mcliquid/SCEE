@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.data.osm.edits.EditType
+import de.westnordost.streetcomplete.data.osm.osmquests.CountryRestrictionOverride
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.presets.EditTypePreset
@@ -194,7 +195,8 @@ class QuestSelectionViewModelImpl(
 
     private fun isQuestEnabledInCurrentCountry(questType: QuestType): Boolean {
         if (questType !is OsmElementQuestType<*>) return true
-        return when (val countries = questType.enabledInCountries) {
+        val overrideActive = CountryRestrictionOverride.isActive(prefs.expertMode, prefs.overrideCountryRestrictions)
+        return when (val countries = CountryRestrictionOverride.effectiveCountries(questType, overrideActive)) {
             is AllCountries -> true
             is AllCountriesExcept -> !countries.exceptions.containsAny(currentCountryCodes)
             is NoCountriesExcept -> countries.exceptions.containsAny(currentCountryCodes)

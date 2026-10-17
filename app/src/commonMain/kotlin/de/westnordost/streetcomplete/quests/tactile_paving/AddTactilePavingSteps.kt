@@ -41,6 +41,7 @@ class AddTactilePavingSteps : OsmFilterQuestType<TactilePavingStepsAnswer>() {
     override val wikiLink = "Key:tactile_paving"
     override val icon = Res.drawable.quest_steps_tactile_paving
     override val title = Res.string.quest_tactilePaving_title_steps
+    override val isCountryRestrictionOverridable = true
     override val enabledInCountries = COUNTRIES_WHERE_TACTILE_PAVING_IS_COMMON
     override val achievements = listOf(BLIND)
     override val hint = Res.string.quest_generic_looks_like_this

@@ -33,6 +33,7 @@ class AddSummitRegister : OsmElementQuestType<Boolean> {
     override val icon = Res.drawable.quest_peak
     override val title = Res.string.quest_summit_register_title2
     override val achievements = listOf(RARE, OUTDOORS)
+    override val isCountryRestrictionOverridable = true
     override val enabledInCountries = NoCountriesExcept(
         // regions gathered in
         // https://github.com/streetcomplete/StreetComplete/issues/561#issuecomment-325623974

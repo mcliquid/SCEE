@@ -36,6 +36,15 @@ interface OsmElementQuestType<T> : QuestType, ElementEditType {
      * The reason why a country is excluded or included here should be documented. */
     val enabledInCountries: Countries get() = AllCountries
 
+    /** Whether the user may, through the expert setting [Prefs.OVERRIDE_COUNTRY_RESTRICTIONS],
+     *  have this quest asked outside of [enabledInCountries]. Default: false.
+     *
+     *  Only set this to true if the country restriction exists because the quest is spammy, needs
+     *  local knowledge or has too few relevant elements, and the form, the answers and the
+     *  resulting tags are valid in every country. Do NOT set it if the restriction exists because
+     *  of community consensus, country-specific semantics, units, formats or legal prerequisites. */
+    val isCountryRestrictionOverridable: Boolean get() = false
+
     /** Whether the markers should be at the ends instead of the center. By default: false.
      *
      * For example, street name signs are expected to be at the ends of the street, so the pins

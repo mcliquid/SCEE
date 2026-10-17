@@ -42,6 +42,7 @@ class AddCycleway(
     override val icon = Res.drawable.quest_bicycleway
     override val title = Res.string.quest_cycleway_title2
     override val achievements = listOf(BICYCLIST)
+    override val isCountryRestrictionOverridable = true
     // See overview here: https://ent8r.github.io/blacklistr/?streetcomplete=cycleway/AddCycleway.kt
     // #749. sources:
     // Google Street View (driving around in virtual car)

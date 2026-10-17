@@ -154,7 +154,13 @@ class SettingsViewModelImpl(
     override fun setKeepScreenOn(value: Boolean) { prefs.keepScreenOn = value }
     override fun setShowZoomButtons(value: Boolean) { prefs.showZoomButtons = value }
 
-    override fun setExpertMode(value: Boolean) { prefs.expertMode = value }
+    override fun setExpertMode(value: Boolean) {
+        prefs.expertMode = value
+        // the country restriction override only applies in expert mode
+        if (prefs.overrideCountryRestrictions) {
+            launch(Dispatchers.IO) { OsmQuestController.refreshCountryRestrictedQuests() }
+        }
+    }
 
     override fun unhideQuests() {
         launch(Dispatchers.IO) {

@@ -45,6 +45,8 @@ object Prefs {
     const val MAIN_MENU_FULL_GRID = "main_menu_full_grid"
     const val CREATE_POI_RECENT_FEATURE_IDS = "create_poi_recent_feature_ids"
     const val DYNAMIC_QUEST_CREATION = "dynamic_quest_creation"
+    /** Expert only: ask quests in all countries, for quest types that explicitly allow it */
+    const val OVERRIDE_COUNTRY_RESTRICTIONS = "override_country_restrictions"
     const val QUEST_MONITOR = "quest_monitor"
     const val QUEST_MONITOR_GPS = "quest_monitor_gps"
     const val QUEST_MONITOR_NET = "quest_monitor_net"

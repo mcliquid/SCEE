@@ -70,6 +70,7 @@ class Preferences(val prefs: ObservableSettings) {
     val all: Map<String, *> get() = Prefs.sharedPreferences.all
 
     var expertMode: Boolean by prefs.boolean(Prefs.EXPERT_MODE, false)
+    var overrideCountryRestrictions: Boolean by prefs.boolean(Prefs.OVERRIDE_COUNTRY_RESTRICTIONS, false)
     var showQuickSettings: Boolean by prefs.boolean(Prefs.QUICK_SETTINGS, false)
     fun onShowQuickSettingsChanged(callback: (Boolean) -> Unit): SettingsListener =
         prefs.addBooleanListener(Prefs.QUICK_SETTINGS, false, callback)

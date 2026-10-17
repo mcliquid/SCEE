@@ -29,6 +29,7 @@ class AddFuelSelfService : OsmFilterQuestType<Boolean>() {
     override val icon = Res.drawable.quest_fuel_self_service
     override val title = Res.string.quest_fuelSelfService_title
     override val achievements = listOf(CAR)
+    override val isCountryRestrictionOverridable = true
     override val enabledInCountries = NoCountriesExcept(
         "IT",
         "JP", // see e.g. https://genkicars.jp/gas-stations-in-japan/

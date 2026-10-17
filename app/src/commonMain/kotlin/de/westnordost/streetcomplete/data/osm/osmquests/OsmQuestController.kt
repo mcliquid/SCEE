@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.data.osm.osmquests
 import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesSource
 import de.westnordost.streetcomplete.data.elementfilter.ElementsTypeFilter
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
@@ -49,6 +50,9 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -64,6 +68,7 @@ class OsmQuestController(
     private val questTypeRegistry: QuestTypeRegistry,
     private val countryBoundaries: Lazy<CountryBoundaries>,
     private val prefs: ObservableSettings,
+    private val downloadedTiles: DownloadedTilesSource? = null,
 ) : OsmQuestSource {
 
     private val listeners = Listeners<OsmQuestSource.Listener>()
@@ -74,6 +79,7 @@ class OsmQuestController(
         .sortedBy { getAnalyzePriority(it) }
 
     private val lock = ReentrantLock()
+    private var countryOverrideRefreshJob: Job? = null
     private var lastCrossingQuery: Pair<BoundingBox, List<Element>>? = null
     private val crossingDataRevision = atomic(0L)
     private var lastCrossingResolveKey: CrossingResolveKey? = null
@@ -250,6 +256,7 @@ class OsmQuestController(
         val time = nowAsEpochMilliseconds()
 
         val countryBoundaries = countryBoundaries.value
+        val overrideActive = isCountryOverrideActive()
 
         // Remove elements without tags, to be used for quests that are never applicable without
         // tags. These quests are usually OsmFilterQuestType, where questType.filter.mayEvaluateToTrueWithNoTags
@@ -265,7 +272,7 @@ class OsmQuestController(
             scope.async {
                 val questsForType = ArrayList<OsmQuest>()
                 val questTypeName = questType.name
-                if (!countryBoundaries.intersects(bbox, questType.enabledInCountries)) {
+                if (!countryBoundaries.intersects(bbox, CountryRestrictionOverride.effectiveCountries(questType, overrideActive))) {
                     Log.d(TAG, "$questTypeName: Skipped because it is disabled for this country")
                     emptyList()
                 } else {
@@ -285,7 +292,7 @@ class OsmQuestController(
                         }
                     }
                     for ((element, geometry) in candidates) {
-                        if (!mayCreateQuest(questType, geometry, bbox)) continue
+                        if (!mayCreateQuest(questType, geometry, bbox, overrideActive)) continue
                         questsForType.add(OsmQuest(questType, element.type, element.id, geometry))
                         questCount++
                     }
@@ -320,11 +327,12 @@ class OsmQuestController(
             }
         }
 
+        val overrideActive = isCountryOverrideActive()
         return questTypes.filterNot { it is AddWaterwayCrossing }.map { questType ->
             scope.async {
                 val typeStart = Perf.mark()
                 var surroundingWaitMs = 0L
-                val result = if (questType.enabledInCountries != AllCountries && !mayCreateQuest(questType, geometry, null)) {
+                val result = if (CountryRestrictionOverride.effectiveCountries(questType, overrideActive) != AllCountries && !mayCreateQuest(questType, geometry, null, overrideActive)) {
                     null // check whether it's disabled before creating the quest
                 } else {
                     var appliesToElement = questType.isApplicableTo(element)
@@ -414,7 +422,8 @@ class OsmQuestController(
     private fun mayCreateQuest(
         questType: OsmElementQuestType<*>,
         geometry: ElementGeometry,
-        downloadedBoundingBox: BoundingBox?
+        downloadedBoundingBox: BoundingBox?,
+        overrideActive: Boolean,
     ): Boolean {
         val pos = geometry.center
 
@@ -422,7 +431,7 @@ class OsmQuestController(
         if (downloadedBoundingBox != null && !downloadedBoundingBox.contains(pos)) return false
 
         // do not create quests in countries where the quest is not activated
-        val countries = questType.enabledInCountries
+        val countries = CountryRestrictionOverride.effectiveCountries(questType, overrideActive)
         if (!countryBoundaries.value.isInAny(pos, countries)) return false
 
         return true
@@ -707,10 +716,51 @@ class OsmQuestController(
         onInvalidated()
     }
 
+    private fun isCountryOverrideActive(): Boolean = CountryRestrictionOverride.isActive(
+        expertMode = prefs.getBoolean(Prefs.EXPERT_MODE, false),
+        overrideEnabled = prefs.getBoolean(Prefs.OVERRIDE_COUNTRY_RESTRICTIONS, false),
+    )
+
+    private fun refreshCountryRestrictedQuests(bbox: BoundingBox, types: List<OsmElementQuestType<*>>) {
+        val mapData = mapDataSource.getMapDataWithGeometry(bbox.enlargedBy(ApplicationConstants.QUEST_FILTER_PADDING))
+        val quests = createQuestsForBBox(bbox, mapData, types)
+        lock.withLock {
+            val previous = db.getAllInBBox(bbox, types.map { it.name })
+            updateQuests(quests, getObsoleteQuestKeys(quests, previous, emptyList()))
+        }
+    }
+
+    /** To be called after the country restriction override (or expert mode, which it depends on)
+     *  has been switched. Quests are persisted when data is downloaded, so quests of the
+     *  overridable types are re-evaluated for all downloaded tiles: created where they are now
+     *  allowed, removed where they no longer are. Only the geographic check differs, element
+     *  filters are the same. The user's quest selection and presets are not touched. */
+    fun refreshCountryRestrictedQuests(): Job? {
+        countryOverrideRefreshJob?.cancel()
+        val types = allQuestTypes.filter { it.isCountryRestrictionOverridable && it.enabledInCountries != AllCountries }
+        val tiles = downloadedTiles
+        if (types.isEmpty() || tiles == null || prefs.getBoolean(Prefs.DYNAMIC_QUEST_CREATION, false)) {
+            // with dynamic quest creation (or nothing to refresh), nothing is persisted: just reload
+            onInvalidated()
+            return null
+        }
+        val job = scope.launch(Dispatchers.IO) {
+            val zoom = ApplicationConstants.DOWNLOAD_TILE_ZOOM
+            for (tile in tiles.getAll(0L)) {
+                ensureActive()
+                refreshCountryRestrictedQuests(tile.asBoundingBox(zoom), types)
+            }
+            onInvalidated()
+        }
+        countryOverrideRefreshJob = job
+        return job
+    }
+
     companion object {
         private const val TAG = "OsmQuestController"
         private var instance: OsmQuestController? = null
         fun reloadQuestTypes() = instance?.reloadQuestTypes()
+        fun refreshCountryRestrictedQuests() = instance?.refreshCountryRestrictedQuests()
     }
 }
 

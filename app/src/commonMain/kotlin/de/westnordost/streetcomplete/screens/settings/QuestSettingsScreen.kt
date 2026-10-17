@@ -114,6 +114,14 @@ fun QuestSettingsScreen(
                 )
             if (prefs.expertMode)
                 SwitchPreference(
+                    name = stringResource(Res.string.pref_override_country_restrictions_title),
+                    description = stringResource(Res.string.pref_override_country_restrictions_summary),
+                    pref = Prefs.OVERRIDE_COUNTRY_RESTRICTIONS,
+                    default = false,
+                    onCheckedChange = { scope.launch(Dispatchers.IO) { OsmQuestController.refreshCountryRestrictedQuests() } }
+                )
+            if (prefs.expertMode)
+                SwitchPreference(
                     name = stringResource(Res.string.pref_dynamic_quest_creation_title),
                     description = stringResource(Res.string.pref_dynamic_quest_creation_summary),
                     pref = Prefs.DYNAMIC_QUEST_CREATION,

@@ -52,6 +52,7 @@ class AddEntranceReference : OsmElementQuestType<EntranceReferenceAnswer> {
     override val icon = Res.drawable.quest_door_address
     override val title = Res.string.quest_entrance_reference
     override val achievements = listOf(CITIZEN, BLIND)
+    override val isCountryRestrictionOverridable = true
     override val enabledInCountries = NoCountriesExcept(
         "PL", // Poland - own knowledge of Mateusz Konieczny https://github.com/streetcomplete/StreetComplete/issues/3064#issuecomment-879447168
         "RU", // Russia - https://github.com/streetcomplete/StreetComplete/issues/3064#issuecomment-880231076

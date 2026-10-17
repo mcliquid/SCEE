@@ -53,6 +53,7 @@ class AddAcceptsCash : OsmFilterQuestType<Boolean>() {
     override val wikiLink = "Key:payment"
     override val icon = Res.drawable.quest_cash
     override val title = Res.string.quest_accepts_cash_title2
+    override val isCountryRestrictionOverridable = true
     override val enabledInCountries = NoCountriesExcept(
         "FI", // https://github.com/streetcomplete/StreetComplete/issues/5500
         "GB", // https://github.com/streetcomplete/StreetComplete/issues/4517

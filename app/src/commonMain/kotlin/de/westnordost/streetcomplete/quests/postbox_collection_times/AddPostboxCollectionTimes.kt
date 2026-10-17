@@ -37,6 +37,7 @@ class AddPostboxCollectionTimes : OsmElementQuestType<CollectionTimesAnswer> {
     override val title = Res.string.quest_postboxCollectionTimes_title
     override val achievements = listOf(POSTMAN)
 
+    override val isCountryRestrictionOverridable = true
     // See overview here: https://ent8r.github.io/blacklistr/?streetcomplete=postbox_collection_times/AddPostboxCollectionTimes.kt
     // sources:
     // https://www.itinerantspirit.com/home/2016/5/22/post-boxes-from-around-the-world

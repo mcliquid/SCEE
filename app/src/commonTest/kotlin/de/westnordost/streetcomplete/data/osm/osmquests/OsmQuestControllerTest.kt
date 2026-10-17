@@ -2,6 +2,9 @@ package de.westnordost.streetcomplete.data.osm.osmquests
 
 import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.ApplicationConstants
+import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesSource
+import de.westnordost.streetcomplete.data.download.tiles.enclosingTilePos
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometryEntry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
@@ -35,6 +38,7 @@ import dev.mokkery.matcher.any
 import dev.mokkery.matcher.matches
 import dev.mokkery.mock
 import dev.mokkery.verify
+import kotlinx.coroutines.runBlocking
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -49,6 +53,9 @@ class OsmQuestControllerTest {
     private lateinit var questTypeRegistry: QuestTypeRegistry
     private lateinit var countryBoundaries: CountryBoundaries
     private lateinit var prefs: ObservableSettings
+    private lateinit var downloadedTiles: DownloadedTilesSource
+    private var expertMode = false
+    private var overrideCountryRestrictions = false
 
     private lateinit var ctrl: OsmQuestController
     private lateinit var listener: OsmQuestSource.Listener
@@ -76,7 +83,9 @@ class OsmQuestControllerTest {
             1 to NotApplicableQuestType,
             2 to ComplexQuestTypeApplicableToNode42,
             3 to ApplicableQuestTypeNotInAnyCountry,
-            4 to ApplicableQuestType2
+            4 to ApplicableQuestType2,
+            5 to OverridableQuestTypeNotInAnyCountry,
+            6 to NotApplicableOverridableQuestTypeNotInAnyCountry,
         ) })
         countryBoundaries = object : CountryBoundaries {
             override fun isInAny(position: LatLon, countries: Countries): Boolean =
@@ -88,12 +97,17 @@ class OsmQuestControllerTest {
                 countries !is NoCountriesExcept
         }
 
+        expertMode = false
+        overrideCountryRestrictions = false
         prefs = mock {
             every { getBoolean(Prefs.DYNAMIC_QUEST_CREATION, false) } returns false
+            every { getBoolean(Prefs.EXPERT_MODE, false) } calls { expertMode }
+            every { getBoolean(Prefs.OVERRIDE_COUNTRY_RESTRICTIONS, false) } calls { overrideCountryRestrictions }
         }
         listener = mock()
+        downloadedTiles = mock()
 
-        ctrl = OsmQuestController(db, mapDataSource, notesSource, questTypeRegistry, lazyOf(countryBoundaries), prefs)
+        ctrl = OsmQuestController(db, mapDataSource, notesSource, questTypeRegistry, lazyOf(countryBoundaries), prefs, downloadedTiles)
         ctrl.addListener(listener)
     }
 
@@ -288,6 +302,8 @@ class OsmQuestControllerTest {
             persistedObsoleteQuest.key,
             osmQuestKey(NODE, element.id, ComplexQuestTypeApplicableToNode42.name),
             osmQuestKey(NODE, element.id, ApplicableQuestTypeNotInAnyCountry.name),
+            osmQuestKey(NODE, element.id, OverridableQuestTypeNotInAnyCountry.name),
+            osmQuestKey(NODE, element.id, NotApplicableOverridableQuestTypeNotInAnyCountry.name),
         )
         verify { db.deleteAll(listOf(persistedObsoleteQuest.key)) }
         verify {
@@ -372,6 +388,101 @@ class OsmQuestControllerTest {
             )
         }
     }
+
+    private fun replaceForBBoxWithOneNode(): Set<String> {
+        val geom = pGeom()
+        val mapData = MutableMapDataWithGeometry(
+            listOf(node(1, tags = mapOf("a" to "b"))),
+            listOf(ElementGeometryEntry(NODE, 1L, geom))
+        )
+        val bbox = bbox()
+        every { db.getAllInBBox(bbox) } returns emptyList()
+        every { notesSource.getAllPositions(any()) } returns emptyList()
+        mapDataListener.onReplacedForBBox(bbox, mapData)
+        var created: Collection<OsmQuestDaoEntry> = emptyList()
+        verify { db.putAll(matches { created = it; true }) }
+        return created.map { it.questTypeName }.toSet()
+    }
+
+    @Test fun `country restrictions are kept by default`() {
+        assertEquals(setOf("ApplicableQuestType", "ApplicableQuestType2"), replaceForBBoxWithOneNode())
+    }
+
+    @Test fun `override creates quests of overridable types outside their countries`() {
+        expertMode = true
+        overrideCountryRestrictions = true
+        // the non-overridable restriction is kept and element filters are unchanged
+        // (the not applicable overridable type is still absent)
+        assertEquals(
+            setOf("ApplicableQuestType", "ApplicableQuestType2", "OverridableQuestTypeNotInAnyCountry"),
+            replaceForBBoxWithOneNode()
+        )
+    }
+
+    @Test fun `override setting is ignored when expert mode is off`() {
+        expertMode = false
+        overrideCountryRestrictions = true
+        assertEquals(setOf("ApplicableQuestType", "ApplicableQuestType2"), replaceForBBoxWithOneNode())
+    }
+
+    @Test fun `expert mode alone does not override country restrictions`() {
+        expertMode = true
+        overrideCountryRestrictions = false
+        assertEquals(setOf("ApplicableQuestType", "ApplicableQuestType2"), replaceForBBoxWithOneNode())
+    }
+
+    private val refreshPos = p(0.0003, 0.0003)
+
+    private fun prepareRefresh(previous: List<OsmQuestDaoEntry>) {
+        // a position well inside a tile
+        val tile = refreshPos.enclosingTilePos(ApplicationConstants.DOWNLOAD_TILE_ZOOM)
+        val mapData = MutableMapDataWithGeometry(
+            listOf(node(1, tags = mapOf("a" to "b"))),
+            listOf(ElementGeometryEntry(NODE, 1L, ElementPointGeometry(refreshPos)))
+        )
+        every { downloadedTiles.getAll(any()) } returns listOf(tile)
+        every { mapDataSource.getMapDataWithGeometry(any()) } returns mapData
+        every { notesSource.getAllPositions(any()) } returns emptyList()
+        every { db.getAllInBBox(any(), any()) } returns previous
+    }
+
+    @Test fun `refresh after enabling override creates quests for downloaded tiles`() {
+        prepareRefresh(emptyList())
+        expertMode = true
+        overrideCountryRestrictions = true
+
+        runBlocking { ctrl.refreshCountryRestrictedQuests()?.join() }
+
+        verify { db.putAll(listOf(OsmQuest(OverridableQuestTypeNotInAnyCountry, NODE, 1, ElementPointGeometry(refreshPos)))) }
+        verify { listener.onInvalidated() }
+    }
+
+    @Test fun `refresh after disabling override removes quests outside the countries`() {
+        val existing = osmQuest(OverridableQuestTypeNotInAnyCountry, NODE, 1)
+        prepareRefresh(listOf(existing))
+        expertMode = true
+        overrideCountryRestrictions = false
+
+        runBlocking { ctrl.refreshCountryRestrictedQuests()?.join() }
+
+        verify { db.deleteAll(listOf(existing.key)) }
+        verify { listener.onInvalidated() }
+    }
+
+    @Test fun `refresh only looks at overridable restricted quest types`() {
+        prepareRefresh(emptyList())
+        expertMode = true
+        overrideCountryRestrictions = true
+
+        runBlocking { ctrl.refreshCountryRestrictedQuests()?.join() }
+
+        verify {
+            db.getAllInBBox(
+                any(),
+                listOf("OverridableQuestTypeNotInAnyCountry", "NotApplicableOverridableQuestTypeNotInAnyCountry")
+            )
+        }
+    }
 }
 
 private fun questEntry(
@@ -392,6 +503,18 @@ private object ApplicableQuestType2 : TestQuestTypeA() {
 private object ApplicableQuestTypeNotInAnyCountry : TestQuestTypeA() {
     override fun isApplicableTo(element: Element) = true
     override val enabledInCountries: Countries get() = NoCountriesExcept(emptyList())
+}
+
+private object OverridableQuestTypeNotInAnyCountry : TestQuestTypeA() {
+    override fun isApplicableTo(element: Element) = true
+    override val enabledInCountries: Countries get() = NoCountriesExcept(emptyList())
+    override val isCountryRestrictionOverridable get() = true
+}
+
+private object NotApplicableOverridableQuestTypeNotInAnyCountry : TestQuestTypeA() {
+    override fun isApplicableTo(element: Element) = false
+    override val enabledInCountries: Countries get() = NoCountriesExcept(emptyList())
+    override val isCountryRestrictionOverridable get() = true
 }
 
 private object NotApplicableQuestType : TestQuestTypeA() {

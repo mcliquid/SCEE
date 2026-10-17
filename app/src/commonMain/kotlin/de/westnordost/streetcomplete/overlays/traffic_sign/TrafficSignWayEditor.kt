@@ -16,6 +16,17 @@ import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import de.westnordost.streetcomplete.osm.traffic_sign.confirmedChanges
+import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignTagChange
+import de.westnordost.streetcomplete.osm.traffic_sign.TagProposal
+import de.westnordost.streetcomplete.osm.traffic_sign.ProposalKind
+import de.westnordost.streetcomplete.osm.traffic_sign.ConfirmedChanges
+import de.westnordost.streetcomplete.util.math.getOrientationOrZero
+import de.westnordost.streetcomplete.ui.util.ClipCirclePainter
+import de.westnordost.streetcomplete.ui.common.quest.LocalMapRotation
+import androidx.compose.ui.draw.rotate
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.Image
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.DisposableEffect
@@ -92,6 +103,8 @@ fun rememberTrafficSignCatalogueState(
 /** The access tags ([tags]) that hint at a sign and apply to the [directions] */
 class NoneAccessWarning(val directions: List<TrafficSignDirection>, val tags: Map<String, String>)
 
+private const val CHOICE_SEPARATOR = "\u0001"
+
 /** The state of the editor. Nothing is written anywhere: [tagging] is only the proposal. */
 class TrafficSignWayEditorState(
     val catalogue: TrafficSignCatalogue,
@@ -101,10 +114,47 @@ class TrafficSignWayEditorState(
     val needsNoneConfirmation: Boolean,
     /** the tags of the way, to look for access tags that are at odds with "no signs" */
     val tags: Map<String, String> = emptyMap(),
+    /** what the user chose for proposals: "id<SEP>fingerprint<SEP>1|0". A choice is only valid for
+     *  the proposal it was made for (same fingerprint) */
+    private val choiceList: List<String> = emptyList(),
+    private val setChoices: (List<String>) -> Unit = {},
     private val setEncoded: (TrafficSignDirection?, String) -> Unit,
 ) {
     val isEdited: Boolean get() = selection.forward.encode() != original.forward.encode() || selection.backward.encode() != original.backward.encode()
-    val hasChanges: Boolean get() = isEdited && tagging.changes.isNotEmpty()
+    val hasChanges: Boolean get() = isEdited && confirmedChanges.applied.isNotEmpty()
+
+    /* ------------------------- tags that follow from the signs: proposals ------------------------- */
+
+    val proposals: List<TagProposal> get() = tagging.proposals
+
+    private val choices: Map<String, Pair<String, Boolean>> get() = choiceList.mapNotNull {
+        val parts = it.split(CHOICE_SEPARATOR)
+        if (parts.size == 3) parts[0] to (parts[1] to (parts[2] == "1")) else null
+    }.toMap()
+
+    /** whether the user wants the proposal: the choice for exactly this proposal, otherwise the
+     *  default (only proposals that add tags are pre-selected) */
+    fun isAccepted(proposal: TagProposal): Boolean =
+        choices[proposal.id]?.takeIf { it.first == proposal.fingerprint }?.second ?: proposal.isPreselected
+
+    fun setProposalAccepted(proposal: TagProposal, accepted: Boolean) {
+        val others = choiceList.filter { !it.startsWith(proposal.id + CHOICE_SEPARATOR) }
+        setChoices(others + listOf(listOf(proposal.id, proposal.fingerprint, if (accepted) "1" else "0").joinToString(CHOICE_SEPARATOR)))
+    }
+
+    /** id -> fingerprint of the accepted proposals: this is what is confirmed and what the engine
+     *  checks again when it writes */
+    val confirmed: Map<String, String> get() = proposals.filter { isAccepted(it) }.associate { it.id to it.fingerprint }
+
+    val confirmedChanges: ConfirmedChanges get() = tagging.confirmedChanges(confirmed)
+
+    /** the proposals that are written (accepted, and the one they depend on is written too) */
+    val appliedProposals: List<TagProposal> get() = confirmedChanges.let { c -> proposals.filter { p -> p.changes.all { it in c.applied } } }
+
+    fun isEffective(proposal: TagProposal) = proposal in appliedProposals
+
+    /** the preview for the dialog: what is not already listed as proposal */
+    val confirmationPreview: TrafficSignPreviewModel get() = tagging.toPreviewModel().copy(adjusted = emptyList(), highwayChange = null)
 
     /** Set if "no signs" is newly chosen for a direction and the way has access tags that hint at
      *  a sign (see [TrafficSignAccess]): a hint only, the answer can be saved nevertheless. An
@@ -142,9 +192,10 @@ class TrafficSignWayEditorState(
 
     /** Whether the user should be asked before saving: relevant changes to other tags, replaced
      *  signs, or things that need checking. A plain new entry does not need a second confirmation. */
-    val needsConfirmation: Boolean get() = needsNoneConfirmation || noneAccessWarning != null || replacedUnreadable.isNotEmpty() || replacesSigns() || tagging.toPreviewModel().let {
-        it.highwayChange != null || it.adjusted.isNotEmpty() || it.needsCheck.isNotEmpty()
-    }
+    val needsConfirmation: Boolean get() = needsNoneConfirmation || noneAccessWarning != null || replacedUnreadable.isNotEmpty() ||
+        replacesSigns() || tagging.resolvedConflicts.any { it.key.startsWith("traffic_sign") } || tagging.unresolvedConflicts.isNotEmpty() ||
+        // a conflict or removal that the user chose, or a change of the way type
+        appliedProposals.any { it.kind != ProposalKind.NEW || it.changesWayType }
 
     private fun replacesSigns(): Boolean = TrafficSignDirection.entries.any { d ->
         val old = original[d]
@@ -168,7 +219,8 @@ fun rememberTrafficSignWayEditorState(way: Way, catalogue: TrafficSignCatalogue)
     }
     val tagging = remember(selection, way.tags, catalogue) { selection.toWaySigns(original).deriveWayTags(way.tags) }
     val needsNone = remember(selection, way.tags, catalogue) { selection.replacesSignsWithNone(way.tags, catalogue) }
-    return TrafficSignWayEditorState(catalogue, original, selection, tagging, needsNone, way.tags) { direction, encoded ->
+    var choices by rememberSaveable { mutableStateOf(listOf<String>()) }
+    return TrafficSignWayEditorState(catalogue, original, selection, tagging, needsNone, way.tags, choices, { choices = it }) { direction, encoded ->
         when (direction) {
             TrafficSignDirection.FORWARD -> forwardEncoded = encoded
             TrafficSignDirection.BACKWARD -> backwardEncoded = encoded
@@ -215,6 +267,10 @@ fun TrafficSignWayEditor(
 ) {
     var editedDirection by rememberSaveable { mutableStateOf<TrafficSignDirection?>(null) }
     if (showDirectionArrows) TrafficSignDirectionMarkers(geometry)
+    // like in the other forms (AddOnewayForm, SidepathChoiceGrid): the arrows in the form point the
+    // way the way runs on the map, also if the map is rotated
+    val geometryRotation = remember(geometry) { geometry.getOrientationOrZero() }
+    val rotation = geometryRotation - LocalMapRotation.current
 
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         for (direction in TrafficSignDirection.entries) {
@@ -223,10 +279,18 @@ fun TrafficSignWayEditor(
                 selection = state.selection[direction],
                 hasExistingValue = !state.original[direction].isNotSurveyed(),
                 onClick = { editedDirection = direction },
+                rotation = rotation,
                 // the same selection as "no signs" in the direction dialog; the confirmations
                 // (access warning etc.) happen when the user presses OK
                 onNone = { state.set(direction, DirectionSelection.None) },
             )
+        }
+        // one action for the common case: there are no signs in either direction
+        TextButton(
+            onClick = { state.set(null, DirectionSelection.None) },
+            enabled = state.selection.forward != DirectionSelection.None || state.selection.backward != DirectionSelection.None,
+        ) {
+            Text(stringResource(Res.string.traffic_sign_overlay_none_both))
         }
         if (showDirectionArrows) {
             Text(
@@ -234,12 +298,10 @@ fun TrafficSignWayEditor(
                 style = MaterialTheme.typography.caption,
             )
         }
-        if (state.isEdited) {
-            val preview = state.tagging.toPreviewModel()
-            if (preview.hasContent) {
-                Divider()
-                TrafficSignPreview(preview)
-            }
+        // the tags that will be saved, always shown before the user confirms
+        if (state.isEdited && (state.tagging.changes.isNotEmpty() || state.confirmationPreview.hasContent)) {
+            Divider()
+            TrafficSignChangesPreview(state)
         }
     }
 
@@ -268,11 +330,14 @@ fun TrafficSignConfirmDialog(
     preview: TrafficSignPreviewModel?,
     unreadable: List<Pair<TrafficSignDirection, String>> = emptyList(),
     accessWarning: NoneAccessWarning? = null,
+    /** the proposals that are saved together with the signs */
+    proposals: List<TagProposal> = emptyList(),
+    remainingExceptions: List<TrafficSignTagChange.Remove> = emptyList(),
     onEditTags: () -> Unit = {},
     onCancel: () -> Unit,
     onConfirm: () -> Unit,
 ) {
-    val simpleNoneWarning = showNoneWarning && unreadable.isEmpty() && accessWarning == null
+    val simpleNoneWarning = showNoneWarning && unreadable.isEmpty() && accessWarning == null && proposals.isEmpty()
     AlertDialog(
         onDismissRequest = onCancel,
         title = {
@@ -297,6 +362,11 @@ fun TrafficSignConfirmDialog(
                     Text(stringResource(Res.string.traffic_sign_confirm_unreadable, stringResource(direction.label), value))
                 }
                 if (showNoneWarning) Text(stringResource(Res.string.traffic_sign_overlay_confirm_none_text))
+                if (proposals.isNotEmpty()) {
+                    Text(stringResource(Res.string.traffic_sign_confirm_proposals), style = MaterialTheme.typography.body2)
+                    for (p in proposals) for (change in p.changes) ChangeLine(change, p.kind)
+                    if (remainingExceptions.isNotEmpty()) RemainingExceptions(remainingExceptions)
+                }
                 if (preview != null) TrafficSignPreview(preview)
             }
         },
@@ -318,6 +388,13 @@ fun TrafficSignConfirmDialog(
 
 private fun DirectionSelection.isNotSurveyed() = this == DirectionSelection.NotSurveyed
 
+/** the standard icons for the direction of a way, like the other forms use them */
+private val TrafficSignDirection.rowIcon: DrawableResource get() = when (this) {
+    TrafficSignDirection.FORWARD -> Res.drawable.oneway_yes
+    TrafficSignDirection.BACKWARD -> Res.drawable.oneway_yes_reverse
+}
+
+/** the arrows for the markers on the map (overlay) */
 internal val TrafficSignDirection.icon: DrawableResource get() = when (this) {
     TrafficSignDirection.FORWARD -> Res.drawable.ic_traffic_sign_direction_forward
     TrafficSignDirection.BACKWARD -> Res.drawable.ic_traffic_sign_direction_backward
@@ -330,13 +407,19 @@ private fun DirectionRow(
     hasExistingValue: Boolean,
     onClick: () -> Unit,
     onNone: () -> Unit,
+    rotation: Float,
 ) {
     Row(
         Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(painterResource(direction.icon), null, Modifier.height(40.dp))
+        val painter = painterResource(direction.rowIcon)
+        Image(
+            painter = remember(painter) { ClipCirclePainter(painter) },
+            contentDescription = null,
+            modifier = Modifier.size(48.dp).rotate(rotation),
+        )
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(stringResource(direction.label), fontWeight = FontWeight.Bold)
             when (selection) {
@@ -522,5 +605,81 @@ private fun ModeRow(selected: Boolean, label: String, description: String?, onCl
             Text(label, fontWeight = FontWeight.Bold)
             if (description != null) Text(description, style = MaterialTheme.typography.caption)
         }
+    }
+}
+
+
+/* ------------------------------------ tags that will be saved ------------------------------------ */
+
+/** The signs and the tags that follow from them, each group with a checkbox. New tags are selected,
+ *  conflicts and removals are not and only done if the user selects them. */
+@Composable
+fun TrafficSignChangesPreview(state: TrafficSignWayEditorState) {
+    val tagging = state.tagging
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (tagging.signChanges.isNotEmpty()) {
+            Text(stringResource(Res.string.traffic_sign_proposal_signs_header), style = MaterialTheme.typography.subtitle2)
+            for (change in tagging.signChanges) ChangeLine(change, ProposalKind.NEW)
+        }
+        if (state.proposals.isNotEmpty()) {
+            Text(stringResource(Res.string.traffic_sign_proposal_tags_header), style = MaterialTheme.typography.subtitle2)
+            for (p in state.proposals) {
+                val dependency = state.proposals.firstOrNull { it.id == p.dependsOn }
+                val enabled = dependency == null || state.isEffective(dependency)
+                Row(verticalAlignment = Alignment.Top) {
+                    Checkbox(
+                        checked = enabled && state.isAccepted(p),
+                        onCheckedChange = { state.setProposalAccepted(p, it) },
+                        enabled = enabled,
+                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        p.highwayChange(tagging)?.let { (old, new) ->
+                            Text(
+                                stringResource(Res.string.traffic_sign_overlay_way_type_change, stringResource(wayTypeName(old)), stringResource(wayTypeName(new))),
+                                style = MaterialTheme.typography.body2,
+                            )
+                        }
+                        for (change in p.changes) ChangeLine(change, p.kind)
+                        when (p.kind) {
+                            ProposalKind.CONFLICT -> Text(stringResource(Res.string.traffic_sign_proposal_conflict), style = MaterialTheme.typography.caption, color = MaterialTheme.colors.error)
+                            ProposalKind.REMOVAL -> Text(stringResource(Res.string.traffic_sign_proposal_removal), style = MaterialTheme.typography.caption, color = MaterialTheme.colors.error)
+                            ProposalKind.NEW -> {}
+                        }
+                    }
+                }
+            }
+            val remaining = state.confirmedChanges.remainingExceptions
+            if (remaining.isNotEmpty()) RemainingExceptions(remaining)
+        }
+        val preview = state.confirmationPreview
+        if (preview.hasContent) TrafficSignPreview(preview)
+    }
+}
+
+private fun TagProposal.highwayChange(tagging: TrafficSignWayTagging): Pair<String, String>? =
+    if (changesWayType) tagging.highwayChange else null
+
+@Composable
+private fun ChangeLine(change: TrafficSignTagChange, kind: ProposalKind) {
+    val text = when (change) {
+        is TrafficSignTagChange.Set ->
+            if (change.previousValue == null) "${change.key}=${change.value}"
+            else stringResource(Res.string.traffic_sign_proposal_changed, change.key, change.value, change.previousValue)
+        is TrafficSignTagChange.Remove -> stringResource(Res.string.traffic_sign_proposal_removed, change.key, change.previousValue)
+    }
+    Text(
+        text,
+        fontFamily = FontFamily.Monospace,
+        style = MaterialTheme.typography.body2,
+        color = if (kind == ProposalKind.NEW) MaterialTheme.colors.onSurface else MaterialTheme.colors.error,
+    )
+}
+
+/** tags that stay and still allow what the sign forbids */
+@Composable
+private fun RemainingExceptions(remaining: List<TrafficSignTagChange.Remove>) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(stringResource(Res.string.traffic_sign_proposal_remaining), style = MaterialTheme.typography.caption)
+        for (r in remaining) Text("${r.key}=${r.previousValue}", fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.body2)
     }
 }

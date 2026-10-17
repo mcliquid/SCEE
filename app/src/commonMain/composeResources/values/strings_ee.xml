@@ -958,4 +958,13 @@ Out of the box SCEE is configured to behave very similar to StreetComplete.</str
     <string name="traffic_sign_access_warning_text">You are about to save that no traffic signs apply (%1$s). This way has access restrictions or special permissions, which are often based on signs. This is only a hint, nothing is changed. Existing tags:</string>
     <string name="traffic_sign_access_edit_tags">Edit tags</string>
     <string name="traffic_sign_access_save_anyway">Save anyway</string>
+    <string name="traffic_sign_overlay_none_both">No signs in both directions</string>
+    <string name="traffic_sign_proposal_signs_header">Traffic signs</string>
+    <string name="traffic_sign_proposal_tags_header">Tags that follow from the signs</string>
+    <string name="traffic_sign_proposal_conflict">Contradicts an existing value. Only changed if you select it.</string>
+    <string name="traffic_sign_proposal_removal">Removes existing tags. Only done if you select it.</string>
+    <string name="traffic_sign_proposal_changed">%1$s=%2$s (was %3$s)</string>
+    <string name="traffic_sign_proposal_removed">%1$s=%2$s will be removed</string>
+    <string name="traffic_sign_proposal_remaining">These existing tags stay and still allow what the sign forbids:</string>
+    <string name="traffic_sign_confirm_proposals">These tags are saved together with the signs:</string>
 </resources>

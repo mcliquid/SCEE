@@ -89,7 +89,14 @@ data class TrafficSignWayTagging(
     val unresolvedConflicts: List<TrafficSignTagConflict>,
     /** what could not be derived from the signs and why */
     val notDerived: List<TrafficSignNotDerived>,
+    /** the tags other than traffic_sign that follow from the signs, as groups the user can accept or
+     *  decline. [changes] contains all of them (the complete derivation), see [confirmedChanges] for
+     *  what is written for a confirmation */
+    val proposals: List<TagProposal> = emptyList(),
 ) {
+    /** the changes of traffic_sign*, which are always written */
+    val signChanges: List<TrafficSignTagChange> get() = changes.filter { it.key in TRAFFIC_SIGN_KEYS }
+
     fun applyTo(tags: Tags) {
         for (change in changes) {
             when (change) {
@@ -314,16 +321,21 @@ fun TrafficSignWaySigns.deriveWayTags(tags: Map<String, String>): TrafficSignWay
         else -> TrafficSignDerivation.PARTIAL
     }
     val newHighway = result["highway"]
+    val allChanges = diff(original, result)
+    val familyOf = directions.associateWith { d -> rules[d]?.let { if (it.isPathRule) ProposalFamily.PATH else ProposalFamily.BAN } }
     return TrafficSignWayTagging(
         trafficSign = if (isSame) forwardValue else null,
         trafficSignForward = forwardValue,
         trafficSignBackward = backwardValue,
         derivation = derivation,
-        changes = diff(original, result),
+        changes = allChanges,
         highwayChange = if (highway != null && newHighway != null && highway != newHighway) highway to newHighway else null,
         resolvedConflicts = resolved,
         unresolvedConflicts = unresolved,
         notDerived = notDerived,
+        proposals = buildProposals(allChanges) { scope ->
+            (if (scope == null) directions else listOf(scope)).mapNotNull { familyOf[it] }.toSet()
+        },
     )
 }
 

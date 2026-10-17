@@ -13,6 +13,7 @@ import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignAccess
 import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignWaySigns
+import de.westnordost.streetcomplete.osm.traffic_sign.applyConfirmed
 import de.westnordost.streetcomplete.osm.traffic_sign.deriveWayTags
 import de.westnordost.streetcomplete.osm.traffic_sign.isWayInGermany
 import de.westnordost.streetcomplete.osm.traffic_sign.needsTrafficSignSurvey
@@ -20,6 +21,13 @@ import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
 import de.westnordost.streetcomplete.quests.getPrefixedFullElementSelectionPref
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.util.countryboundaries.NoCountriesExcept
+
+/** The answer to [AddTrafficSignType]: the signs and the proposals for other tags that the user
+ *  confirmed (id -> fingerprint, see TagProposal). null: only the proposals that add tags */
+data class TrafficSignAnswer(
+    val signs: TrafficSignWaySigns,
+    val confirmed: Map<String, String>? = null,
+)
 
 /** Asks which traffic signs apply to a way, separately for both directions of the OSM way.
  *
@@ -37,7 +45,7 @@ import de.westnordost.streetcomplete.util.countryboundaries.NoCountriesExcept
 class AddTrafficSignType(
     /** returns the ISO 3166-1 (or subdivision) code of the country at the given position */
     private val getCountryCode: (LatLon) -> String?,
-) : OsmElementQuestType<TrafficSignWaySigns> {
+) : OsmElementQuestType<TrafficSignAnswer> {
 
     private val filter by lazy {
         prefs
@@ -87,7 +95,7 @@ class AddTrafficSignType(
 
     @Composable
     override fun Form(
-        on: (QuestAction<TrafficSignWaySigns>) -> Unit,
+        on: (QuestAction<TrafficSignAnswer>) -> Unit,
         element: Element,
         geometry: ElementGeometry,
         countryInfo: CountryInfo,
@@ -95,10 +103,12 @@ class AddTrafficSignType(
         AddTrafficSignTypeForm(on, element, geometry)
     }
 
-    override fun applyAnswerTo(answer: TrafficSignWaySigns, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+    override fun applyAnswerTo(answer: TrafficSignAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         // The tags may have changed since the form was shown. Everything is derived from the current
         // tags; if nothing is left to change, the tags are left alone.
-        answer.deriveWayTags(tags).applyTo(tags)
+        // The proposals are derived again from the tags as they are now. A proposal is only written if
+        // the user confirmed exactly this one: if tags or values changed since, it is left out.
+        answer.signs.deriveWayTags(tags).applyConfirmed(tags, answer.confirmed)
     }
 
     companion object {

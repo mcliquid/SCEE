@@ -8,6 +8,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import de.westnordost.streetcomplete.osm.traffic_sign.applyConfirmed
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,7 +70,7 @@ private fun TrafficSignOverlayFormContent(
 
     fun confirm() {
         val changes = StringMapChangesBuilder(way.tags)
-        state.tagging.applyTo(changes)
+        state.tagging.applyConfirmed(changes, state.confirmed)
         on(Edit(UpdateElementTagsAction(way, changes.create())))
     }
 
@@ -78,11 +79,7 @@ private fun TrafficSignOverlayFormContent(
         isComplete = state.isEdited,
         hasChanges = state.hasChanges,
         onClickOk = {
-            if (state.needsNoneConfirmation || state.replacedUnreadable.isNotEmpty() || state.noneAccessWarning != null) {
-                confirmNone = true
-            } else {
-                confirm()
-            }
+            if (state.needsConfirmation) confirmNone = true else confirm()
         },
     ) {
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -103,9 +100,11 @@ private fun TrafficSignOverlayFormContent(
     if (confirmNone) {
         TrafficSignConfirmDialog(
             showNoneWarning = state.needsNoneConfirmation,
-            preview = null,
+            preview = state.confirmationPreview,
             unreadable = state.replacedUnreadable,
             accessWarning = state.noneAccessWarning,
+            proposals = state.appliedProposals,
+            remainingExceptions = state.confirmedChanges.remainingExceptions,
             // nothing is saved when the tag editor is opened
             onEditTags = { confirmNone = false; on(Action.EditTags) },
             onCancel = { confirmNone = false },

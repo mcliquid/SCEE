@@ -152,7 +152,7 @@ val TrafficSignDirection.label: StringResource get() = when (this) {
     TrafficSignDirection.BACKWARD -> Res.string.traffic_sign_overlay_direction_backward
 }
 
-private fun wayTypeName(highway: String): StringResource = when (highway) {
+internal fun wayTypeName(highway: String): StringResource = when (highway) {
     "path" -> Res.string.traffic_sign_overlay_highway_path
     "footway" -> Res.string.traffic_sign_overlay_highway_footway
     "cycleway" -> Res.string.traffic_sign_overlay_highway_cycleway

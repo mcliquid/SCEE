@@ -182,6 +182,89 @@ class TrafficSignWayEditorNoneTest {
         assertEquals(viaDialog.result(), viaButton.result())
     }
 
+    /* --------------------------- "no signs in both directions" (3.6a) --------------------------- */
+
+    private fun Editor.pressNoneBoth() = state.set(null, DirectionSelection.None)
+    private fun Editor.canPressNoneBoth() = state.selection.forward != DirectionSelection.None || state.selection.backward != DirectionSelection.None
+
+    @Test fun `both directions not surveyed become none with one action`() {
+        val e = editor(road)
+        assertTrue(e.canPressNoneBoth())
+        e.pressNoneBoth()
+        assertEquals(DirectionSelection.None, e.state.selection.forward)
+        assertEquals(DirectionSelection.None, e.state.selection.backward)
+        assertEquals(mapOf(road, "traffic_sign" to "none"), e.result())
+        assertFalse(e.canPressNoneBoth())
+        // nothing was written by the state, only the result of the confirmed tagging differs
+        assertEquals(mapOf(road), e.tags)
+    }
+
+    @Test fun `one direction already none`() {
+        val e = editor(road, "traffic_sign:forward" to "none")
+        assertTrue(e.canPressNoneBoth())
+        e.pressNoneBoth()
+        assertEquals(mapOf(road, "traffic_sign" to "none"), e.result())
+        assertEquals(TrafficSignValue.NONE, e.state.waySigns.backward)
+        assertNull(e.state.waySigns.forward)
+    }
+
+    @Test fun `both directions already none give no change and no button`() {
+        for (tags in listOf(arrayOf(road, "traffic_sign" to "none"), arrayOf(road, "traffic_sign" to "no"), arrayOf(road, "traffic_sign:forward" to "none", "traffic_sign:backward" to "no"))) {
+            val e = editor(*tags)
+            assertFalse(e.canPressNoneBoth())
+            e.pressNoneBoth()
+            assertFalse(e.state.hasChanges)
+            assertEquals(e.tags, e.result())
+            assertEquals(TrafficSignWaySigns2.nothing(), e.state.waySigns)
+        }
+    }
+
+    @Test fun `signs in one or both directions need the existing confirmation`() {
+        val one = editor(road, "traffic_sign:forward" to "DE:250")
+        one.pressNoneBoth()
+        assertTrue(one.state.needsNoneConfirmation)
+        assertTrue(one.state.needsConfirmation)
+        // forward and backward differ and are replaced by one general value
+        val different = editor(road, "traffic_sign:forward" to "DE:250", "traffic_sign:backward" to "DE:274-30")
+        different.pressNoneBoth()
+        assertTrue(different.state.needsNoneConfirmation)
+        assertEquals(mapOf(road, "traffic_sign" to "none"), different.result())
+        // the general value
+        val general = editor(road, "traffic_sign" to "DE:250")
+        general.pressNoneBoth()
+        assertTrue(general.state.needsNoneConfirmation)
+        assertEquals(mapOf(road, "traffic_sign" to "none"), general.result())
+    }
+
+    @Test fun `unreadable raw values are shown before they are replaced`() {
+        val e = editor(road, "traffic_sign" to "AT:52")
+        e.pressNoneBoth()
+        assertEquals(listOf(F to "AT:52", B to "AT:52"), e.state.replacedUnreadable)
+        assertTrue(e.state.needsConfirmation)
+    }
+
+    @Test fun `access warning names both directions`() {
+        val e = editor("highway" to "residential", "motor_vehicle" to "destination")
+        e.pressNoneBoth()
+        assertEquals(listOf(F, B), e.state.noneAccessWarning!!.directions)
+        assertTrue(e.state.needsConfirmation)
+        // only the direction that is newly none is named
+        val partly = editor("highway" to "residential", "motor_vehicle" to "destination", "traffic_sign:forward" to "none")
+        partly.pressNoneBoth()
+        assertEquals(listOf(B), partly.state.noneAccessWarning!!.directions)
+    }
+
+    @Test fun `the common action is idempotent and does not touch the tags before confirming`() {
+        val e = editor(road, "traffic_sign:backward" to "DE:250")
+        e.pressNoneBoth()
+        val once = e.result()
+        e.pressNoneBoth()
+        assertEquals(once, e.result())
+        val again = Editor(once, catalogue)
+        assertFalse(again.canPressNoneBoth())
+        assertFalse(again.state.hasChanges)
+    }
+
     /* ----------------------------------- preview texts ----------------------------------- */
 
     @Test fun `the preview only has content if there are consequences to tell`() {
@@ -194,6 +277,7 @@ class TrafficSignWayEditorNoneTest {
     }
 
     private object TrafficSignWaySigns2 {
+        fun nothing() = de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignWaySigns(null, null)
         fun both(v: String) = de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignWaySigns.both(parseDE(v))
         fun of(f: String, b: String) = de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignWaySigns(parseDE(f), parseDE(b))
     }

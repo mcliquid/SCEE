@@ -48,6 +48,10 @@ class AddTrafficSignTypeTest {
     private val country: (LatLon) -> String? = { lookups++; if (it.longitude < 10.0) "DE" else "PL" }
     private lateinit var questType: AddTrafficSignType
 
+    /** the answers of these tests are the signs only: only the proposals that add tags are written */
+    private fun AddTrafficSignType.answerAppliedTo(signs: TrafficSignWaySigns, tags: Map<String, String>) =
+        answerAppliedTo(TrafficSignAnswer(signs), tags)
+
     @BeforeTest fun setUp() {
         Prefs.sharedPreferences = mockPrefs()
         Prefs.preferences = mockPrefs3()
@@ -282,14 +286,14 @@ class AddTrafficSignTypeTest {
         // answering what is already there
         assertTrue(questType.answerAppliedTo(answer("DE:274-30", null), original).isEmpty())
         val builder = StringMapChangesBuilder(original)
-        questType.applyAnswerTo(TrafficSignWaySigns(null, null), builder, ElementPointGeometry(de1), 0)
+        questType.applyAnswerTo(TrafficSignAnswer(TrafficSignWaySigns(null, null)), builder, ElementPointGeometry(de1), 0)
         assertTrue(builder.create().changes.isEmpty())
     }
 
     @Test fun `answers are idempotent`() {
         val original = mapOf("highway" to "path", "bicycle" to "designated", "foot" to "designated")
         val a = answer("DE:240", "DE:239,1022-10")
-        val first = StringMapChangesBuilder(original).also { questType.applyAnswerTo(a, it, ElementPointGeometry(de1), 0) }
+        val first = StringMapChangesBuilder(original).also { questType.applyAnswerTo(TrafficSignAnswer(a), it, ElementPointGeometry(de1), 0) }
         val tagsAfter = original.toMutableMap().also { m ->
             first.create().changes.forEach { c ->
                 when (c) {

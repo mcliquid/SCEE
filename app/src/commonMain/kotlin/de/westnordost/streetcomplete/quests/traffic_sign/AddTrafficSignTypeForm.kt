@@ -13,13 +13,11 @@ import de.westnordost.streetcomplete.data.osm.osmquests.Action
 import de.westnordost.streetcomplete.data.osm.osmquests.Answer
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.traffic_signs.TrafficSignCatalogues
-import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignWaySigns
 import de.westnordost.streetcomplete.overlays.traffic_sign.TrafficSignCatalogueState
 import de.westnordost.streetcomplete.overlays.traffic_sign.TrafficSignConfirmDialog
 import de.westnordost.streetcomplete.overlays.traffic_sign.TrafficSignWayEditor
 import de.westnordost.streetcomplete.overlays.traffic_sign.rememberTrafficSignCatalogueState
 import de.westnordost.streetcomplete.overlays.traffic_sign.rememberTrafficSignWayEditorState
-import de.westnordost.streetcomplete.overlays.traffic_sign.toPreviewModel
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.quest.QuestForm
 import org.jetbrains.compose.resources.stringResource
@@ -30,7 +28,7 @@ private const val COUNTRY = "DE"
 /** The quest form around the shared traffic sign editor of the traffic sign overlay */
 @Composable
 fun AddTrafficSignTypeForm(
-    on: (QuestAction<TrafficSignWaySigns>) -> Unit,
+    on: (QuestAction<TrafficSignAnswer>) -> Unit,
     element: Element,
     geometry: ElementGeometry,
     catalogues: TrafficSignCatalogues = koinInject(),
@@ -45,7 +43,7 @@ fun AddTrafficSignTypeForm(
         is TrafficSignCatalogueState.Ready -> {
             val state = rememberTrafficSignWayEditorState(element as Way, s.catalogue)
             var confirm by rememberSaveable { mutableStateOf(false) }
-            fun answer() = on(Answer(state.waySigns))
+            fun answer() = on(Answer(TrafficSignAnswer(state.waySigns, state.confirmed)))
 
             QuestForm(
                 on = on,
@@ -59,9 +57,11 @@ fun AddTrafficSignTypeForm(
             if (confirm) {
                 TrafficSignConfirmDialog(
                     showNoneWarning = state.needsNoneConfirmation,
-                    preview = state.tagging.toPreviewModel(),
+                    preview = state.confirmationPreview,
                     unreadable = state.replacedUnreadable,
                     accessWarning = state.noneAccessWarning,
+                    proposals = state.appliedProposals,
+                    remainingExceptions = state.confirmedChanges.remainingExceptions,
                     // nothing is saved when the tag editor is opened
                     onEditTags = { confirm = false; on(Action.EditTags) },
                     onCancel = { confirm = false },

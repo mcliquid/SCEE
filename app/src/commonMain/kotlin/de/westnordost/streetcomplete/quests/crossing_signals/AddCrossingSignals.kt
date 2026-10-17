@@ -61,5 +61,17 @@ class AddCrossingSignals : OsmElementQuestType<Boolean> {
 
     override fun applyAnswerTo(answer: Boolean, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         tags["crossing:signals"] = answer.toYesNo()
+        if (!answer) return
+
+        /* Additionally write the widely-supported legacy tag crossing=traffic_signals (e.g.
+         * BRouter only knows that one), but never overwrite an existing crossing=* value.
+         * The obsolete crossing=island is migrated to crossing:island=yes so the info is kept. */
+        when (tags["crossing"]) {
+            null -> tags["crossing"] = "traffic_signals"
+            "island" -> {
+                if (tags["crossing:island"] == null) tags["crossing:island"] = "yes"
+                tags["crossing"] = "traffic_signals"
+            }
+        }
     }
 }

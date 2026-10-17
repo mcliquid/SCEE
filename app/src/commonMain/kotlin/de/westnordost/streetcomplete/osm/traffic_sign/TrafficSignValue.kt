@@ -137,12 +137,8 @@ data class TrafficSignPart(
  *  than the catalogue's are returned as unparseable. */
 fun parseTrafficSignValue(value: String, catalogue: TrafficSignCatalogue): TrafficSignValue {
     val country = catalogue.country
-    var input = value.trim()
-    // like removeKeys of the converter: "traffic_sign=DE:250" -> "DE:250"
-    val equalsIndex = input.indexOf('=')
-    if (equalsIndex >= 0 && "traffic_sign" in input.substring(0, equalsIndex)) {
-        input = input.substring(equalsIndex + 1).trim()
-    }
+    // a leading key is removed: "traffic_sign=DE:250" -> "DE:250"
+    val input = removeLeadingKey(value.trim())
 
     val unparseable = TrafficSignValue(null, emptyList(), isUnparseable = true, originalValue = value)
     val rawParts = splitIntoParts(input) ?: return unparseable
@@ -153,7 +149,7 @@ fun parseTrafficSignValue(value: String, catalogue: TrafficSignCatalogue): Traff
         val text = raw.trim()
         if (text.isEmpty()) continue
         val prefix = COUNTRY_PREFIX_REGEX.find(text)?.groupValues?.get(1)
-        val withoutPrefix = if (prefix != null) text.substring(prefix.length + 1) else text
+        val withoutPrefix = (if (prefix != null) text.substring(prefix.length + 1) else text).trim()
         if (withoutPrefix.isBlank()) return unparseable
         if (prefix != null) {
             // signs of other countries or a mix of countries are not supported
@@ -179,6 +175,15 @@ fun parseTrafficSignValue(value: String, catalogue: TrafficSignCatalogue): Traff
     if (valueCountry == null && parts.any { !it.isNamedValue }) return unparseable
     return TrafficSignValue(valueCountry, parts)
 }
+
+/** The tag key in front of a value, e.g. "traffic_sign=", "traffic_sign:forward =" or
+ *  "bicycle:right:traffic_sign=": only a key that consists of lower case words separated by ":"
+ *  with "traffic_sign" as one of them, directly at the start of the input and followed by "=".
+ *  Unlike removeKeys of the converter (which cuts at the first "=" wherever it is), a "=" later in
+ *  the value, e.g. in a quoted free text like DE:250,"traffic_sign=x", never removes anything. */
+private val LEADING_KEY_REGEX = Regex("^(?:[a-z_]+:)*traffic_sign(?::[a-z_]+)*\\s*=\\s*")
+
+private fun removeLeadingKey(input: String): String = LEADING_KEY_REGEX.find(input)?.let { input.substring(it.range.last + 1) } ?: input
 
 /** country prefixes are two uppercase (or lowercase) letters followed by ':' */
 private val COUNTRY_PREFIX_REGEX = Regex("^([A-Za-z]{2}):")

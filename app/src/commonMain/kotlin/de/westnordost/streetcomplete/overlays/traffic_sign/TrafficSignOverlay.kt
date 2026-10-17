@@ -3,7 +3,6 @@ package de.westnordost.streetcomplete.overlays.traffic_sign
 import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
-import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
@@ -14,6 +13,7 @@ import de.westnordost.streetcomplete.data.overlays.OverlayAction
 import de.westnordost.streetcomplete.data.overlays.OverlayStyle
 import de.westnordost.streetcomplete.osm.ALL_PATHS
 import de.westnordost.streetcomplete.osm.ALL_ROADS
+import de.westnordost.streetcomplete.osm.traffic_sign.isWayInGermany
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.ic_overlay_traffic_sign
 import de.westnordost.streetcomplete.resources.traffic_sign_overlay_title
@@ -34,18 +34,8 @@ class TrafficSignOverlay(
     override fun getStyledElements(mapData: MapDataWithGeometry): Sequence<Pair<Element, OverlayStyle>> =
         mapData.filter("ways with highway ~ ${(ALL_ROADS + ALL_PATHS).joinToString("|")}")
             .filter { it is Way && !it.isArea() && it.tags["area"] != "yes" }
-            .filter { isInGermany(mapData.getWayGeometry(it.id)) }
+            .filter { isWayInGermany(mapData.getWayGeometry(it.id), getCountryCodeByLocation) }
             .map { it to trafficSignWayStyle(it.tags) }
-
-    /** The center and both end points must be in Germany. Ways that cross the border are
-     *  excluded: the signs of such a way would be partly of another country, whose catalogue is not
-     *  available. (Three lookups in the country boundaries grid per way are cheap) */
-    private fun isInGermany(geometry: ElementGeometry?): Boolean {
-        if (geometry !is ElementPolylinesGeometry) return false
-        val line = geometry.polylines.singleOrNull() ?: return false
-        if (line.size < 2) return false
-        return listOf(geometry.center, line.first(), line.last()).all { getCountryCodeByLocation(it) == "DE" }
-    }
 
     @Composable
     override fun Form(

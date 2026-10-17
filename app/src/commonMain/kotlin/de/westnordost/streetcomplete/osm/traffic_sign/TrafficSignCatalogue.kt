@@ -2,7 +2,9 @@ package de.westnordost.streetcomplete.osm.traffic_sign
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
@@ -89,11 +91,133 @@ class TrafficSignCatalogue(
         defaultValue == value || !hasVariableValue
 
     companion object {
-        /** parse the catalogue from the JSON as published in @osm-traffic-signs/converter under
-         *  dist/data/{country}.json */
-        fun parse(json: String): TrafficSignCatalogue =
-            jsonParser.decodeFromString<CatalogueJson>(json).toCatalogue()
+        /** Parse the catalogue from the JSON as published in @osm-traffic-signs/converter under
+         *  dist/data/{country}.json. Strict: throws an [IllegalArgumentException] naming all
+         *  problems if any sign or relation can not be read (use this for checking data).
+         *  See [parseLenient] for the run time variant. */
+        fun parse(json: String): TrafficSignCatalogue {
+            val result = parseLenient(json)
+            val errors = result.problems.filter { it.isError }
+            require(result.catalogue != null && errors.isEmpty()) { describeProblems(errors) }
+            return result.catalogue
+        }
+
+        /** Parse the catalogue, but isolate broken entries: a sign or relation that can not be
+         *  read (missing required field, unknown kind, wrong structure, duplicate osm value part)
+         *  is left out and reported as a problem, all others stay usable. The catalogue is null if
+         *  the file as a whole can not be used (no JSON object, no country, version or list of
+         *  signs, no readable sign at all). Never throws because of the content. */
+        fun parseLenient(json: String): CatalogueParseResult = try {
+            parseCatalogue(json)
+        } catch (e: Exception) {
+            CatalogueParseResult(null, listOf(CatalogueProblem(null, null, "unexpected error: $e", true)))
+        }
+
+        /** Check all rules of the catalogue data, for the build and tests, not for the app:
+         *  everything of [parseLenient] plus: redirects to something that is not in the catalogue,
+         *  contradicting redirects, signs that would share an image, and (if [hasImage] is given)
+         *  signs without image. An empty list means that the data is fine. */
+        fun validate(json: String, hasImage: ((TrafficSign) -> Boolean)? = null): List<CatalogueProblem> {
+            val result = parseLenient(json)
+            val catalogue = result.catalogue ?: return result.problems
+            val problems = ArrayList(result.problems)
+            val knownTargets = catalogue.signs.flatMapTo(HashSet()) { listOf(it.osmValuePart, it.signId) } + NAMED_TRAFFIC_SIGN_VALUES
+            val redirectTargets = HashMap<String, String>()
+            for (sign in catalogue.signs) {
+                for (redirect in sign.redirects) {
+                    if (redirect.to !in knownTargets && splitSignIdAndValue(redirect.to).first !in knownTargets) {
+                        problems.add(CatalogueProblem(null, sign.osmValuePart, "redirect \"${redirect.from}\" leads to \"${redirect.to}\", which is not in the catalogue", true))
+                    }
+                    val previous = redirectTargets.put(redirect.from.lowercase(), redirect.to)
+                    if (previous != null && previous != redirect.to) {
+                        problems.add(CatalogueProblem(null, sign.osmValuePart, "redirect \"${redirect.from}\" leads to \"$previous\" and to \"${redirect.to}\"", true))
+                    }
+                }
+            }
+            val byImageName = catalogue.signs.groupBy { trafficSignImageName(catalogue.country, it.osmValuePart) }
+            for ((name, signs) in byImageName) {
+                if (signs.size > 1) {
+                    problems.add(CatalogueProblem(null, null, "image name $name is used by ${signs.joinToString { it.osmValuePart }}", true))
+                }
+            }
+            if (hasImage != null) {
+                for (sign in catalogue.signs) {
+                    if (!hasImage(sign)) problems.add(CatalogueProblem(null, sign.osmValuePart, "no image", false))
+                }
+            }
+            return problems
+        }
     }
+}
+
+/** A problem found in the data of a catalogue. [isError]: the entry was left out (or, for checks
+ *  of [TrafficSignCatalogue.validate], the data must not be released like this) */
+data class CatalogueProblem(
+    /** position of the sign in the list of signs, if known */
+    val index: Int?,
+    /** osm value part of the sign, if known */
+    val id: String?,
+    val message: String,
+    val isError: Boolean,
+) {
+    override fun toString() = "${listOfNotNull(index?.let { "#$it" }, id).joinToString(" ")}: $message"
+}
+
+class CatalogueParseResult(val catalogue: TrafficSignCatalogue?, val problems: List<CatalogueProblem>)
+
+private fun describeProblems(problems: List<CatalogueProblem>): String =
+    "${problems.size} problems in the traffic sign catalogue: ${problems.take(10).joinToString("; ")}" +
+        if (problems.size > 10) "; ..." else ""
+
+private fun parseCatalogue(json: String): CatalogueParseResult {
+    val root = try {
+        jsonParser.parseToJsonElement(json) as? JsonObject
+    } catch (e: SerializationException) {
+        null
+    } ?: return CatalogueParseResult(null, listOf(CatalogueProblem(null, null, "not a JSON object", true)))
+
+    fun JsonObject.string(key: String): String? = (this[key] as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull
+    val country = root.string("country")?.takeIf { it.isNotBlank() }
+    val version = root.string("version")
+    val signsJson = root["signs"] as? JsonArray
+    if (country == null || version == null || signsJson == null) {
+        return CatalogueParseResult(null, listOf(CatalogueProblem(null, null, "country, version or list of signs is missing", true)))
+    }
+
+    val problems = ArrayList<CatalogueProblem>()
+    val signs = ArrayList<TrafficSign>()
+    val seen = HashSet<String>()
+    signsJson.forEachIndexed { index, element ->
+        val id = (element as? JsonObject)?.string("osmValuePart")
+        try {
+            val sign = jsonParser.decodeFromJsonElement<SignJson>(element).toTrafficSign()
+            if (sign.osmValuePart.isBlank() || sign.signId.isBlank()) {
+                problems.add(CatalogueProblem(index, id, "osmValuePart or signId is empty", true))
+            } else if (!seen.add(sign.osmValuePart)) {
+                problems.add(CatalogueProblem(index, id, "duplicate osmValuePart", true))
+            } else {
+                signs.add(sign)
+            }
+        } catch (e: Exception) {
+            problems.add(CatalogueProblem(index, id, e.message ?: e.toString(), true))
+        }
+    }
+
+    val relations = ArrayList<TrafficSignRelation>()
+    ((root["relations"] as? JsonArray) ?: JsonArray(emptyList())).forEachIndexed { index, element ->
+        try {
+            val r = jsonParser.decodeFromJsonElement<RelationJson>(element)
+            relations.add(TrafficSignRelation(r.kind, r.topic, r.start, r.end))
+        } catch (e: Exception) {
+            problems.add(CatalogueProblem(null, "relation #$index", e.message ?: e.toString(), true))
+        }
+    }
+
+    if (signs.isEmpty()) {
+        problems.add(CatalogueProblem(null, null, "no readable sign", true))
+        return CatalogueParseResult(null, problems)
+    }
+    return CatalogueParseResult(TrafficSignCatalogue(country, version, signs, relations), problems)
 }
 
 data class ResolvedTrafficSign(
@@ -188,13 +312,6 @@ private data class RelationJson(
     val topic: String,
     val start: String? = null,
     val end: String? = null,
-)
-
-private fun CatalogueJson.toCatalogue() = TrafficSignCatalogue(
-    country = country,
-    version = version,
-    signs = signs.map { it.toTrafficSign() },
-    relations = relations.map { TrafficSignRelation(it.kind, it.topic, it.start, it.end) },
 )
 
 private fun SignJson.toTrafficSign() = TrafficSign(

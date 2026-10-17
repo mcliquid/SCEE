@@ -254,6 +254,7 @@ import de.westnordost.streetcomplete.quests.toilets_fee.AddToiletsFee
 import de.westnordost.streetcomplete.quests.tourism_information.AddInformationToTourism
 import de.westnordost.streetcomplete.quests.tracktype.AddTracktype
 import de.westnordost.streetcomplete.quests.traffic_calming_type.AddTrafficCalmingType
+import de.westnordost.streetcomplete.quests.traffic_sign.AddTrafficSignType
 import de.westnordost.streetcomplete.quests.traffic_signals_button.AddTrafficSignalsButton
 import de.westnordost.streetcomplete.quests.traffic_signals_sound.AddTrafficSignalsSound
 import de.westnordost.streetcomplete.quests.traffic_signals_vibrate.AddTrafficSignalsVibration
@@ -643,6 +644,7 @@ fun getQuestTypeList(
     139 to AddShoulder(),
 
     140 to AddRoadWidth(arSupportChecker),
+    EE_QUEST_OFFSET + 207 to AddTrafficSignType(getCountryOrSubdivisionCode), // Germany only, disabled by default: nearly every road is a candidate
     141 to AddRoadSmoothness(),
     142 to AddPathSmoothness(),
     170 to AddBarrierOpening(arSupportChecker),

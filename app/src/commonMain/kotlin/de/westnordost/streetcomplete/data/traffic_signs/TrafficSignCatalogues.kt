@@ -16,12 +16,20 @@ class TrafficSignCatalogues internal constructor(
     constructor(res: Res) : this({ country -> load(res, country) })
 
     private val catalogues = SynchronizedLazyCache<String, TrafficSignCatalogue?> { country ->
-        val json = loadJson(country) ?: return@SynchronizedLazyCache null
         try {
-            TrafficSignCatalogue.parse(json)
-        } catch (e: IllegalArgumentException) {
-            // also kotlinx.serialization.SerializationException is an IllegalArgumentException
-            Log.e(TAG, "Unable to parse traffic sign catalogue of $country", e)
+            val json = loadJson(country)
+            if (json == null) {
+                null
+            } else {
+                // a broken sign is left out and logged, the others stay usable (see parseLenient)
+                val result = TrafficSignCatalogue.parseLenient(json)
+                for (problem in result.problems) Log.w(TAG, "Problem in traffic sign catalogue of $country: $problem")
+                if (result.catalogue == null) Log.e(TAG, "Unable to use traffic sign catalogue of $country")
+                result.catalogue
+            }
+        } catch (e: Exception) {
+            // never an error for the one who opens the quest or overlay
+            Log.e(TAG, "Unable to load traffic sign catalogue of $country", e)
             null
         }
     }

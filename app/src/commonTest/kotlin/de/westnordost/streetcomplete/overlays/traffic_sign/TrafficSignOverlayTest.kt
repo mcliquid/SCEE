@@ -7,6 +7,8 @@ import de.westnordost.streetcomplete.data.overlays.OverlayStyle
 import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignDerivation
 import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignDirection
 import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignNotDerived
+import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignTagState
+import de.westnordost.streetcomplete.osm.traffic_sign.trafficSignTagState
 import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignTagConflict
 import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignTestData
 import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignWaySigns

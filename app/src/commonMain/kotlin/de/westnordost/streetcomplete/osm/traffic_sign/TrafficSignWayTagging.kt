@@ -48,15 +48,21 @@ data class TrafficSignWaySigns(
     }
 }
 
+/** The value of traffic_sign:forward / traffic_sign:backward, otherwise of traffic_sign, as it is
+ *  tagged. A tag that is empty or only consists of whitespace counts as not set, so it does not
+ *  hide the general value. null if there is no value for this direction. */
+fun effectiveTrafficSignValue(tags: Map<String, String>, direction: TrafficSignDirection): String? =
+    tags["traffic_sign:${direction.osmSuffix}"]?.takeIf { it.isNotBlank() }
+        ?: tags["traffic_sign"]?.takeIf { it.isNotBlank() }
+
 /** The traffic signs currently tagged on a way, per direction. null if nothing is tagged for that
- *  direction. To prefill a form. */
+ *  direction (also if the tag is empty, see [effectiveTrafficSignValue]). To prefill a form. */
 fun parseTrafficSignWaySigns(
     tags: Map<String, String>,
     catalogue: TrafficSignCatalogue,
 ): Pair<TrafficSignValue?, TrafficSignValue?> {
-    val both = tags["traffic_sign"]
-    val forward = tags["traffic_sign:forward"] ?: both
-    val backward = tags["traffic_sign:backward"] ?: both
+    val forward = effectiveTrafficSignValue(tags, TrafficSignDirection.FORWARD)
+    val backward = effectiveTrafficSignValue(tags, TrafficSignDirection.BACKWARD)
     return forward?.let { parseTrafficSignValue(it, catalogue) } to
         backward?.let { parseTrafficSignValue(it, catalogue) }
 }
@@ -258,8 +264,8 @@ fun TrafficSignWaySigns.deriveWayTags(tags: Map<String, String>): TrafficSignWay
     val resolvedTrafficSign = ArrayList<TrafficSignTagConflict>()
     // a direction that is not surveyed keeps the signs it has now (also if they are only tagged in
     // the general traffic_sign)
-    val oldForwardValue = original["traffic_sign:forward"] ?: original["traffic_sign"]
-    val oldBackwardValue = original["traffic_sign:backward"] ?: original["traffic_sign"]
+    val oldForwardValue = effectiveTrafficSignValue(original, TrafficSignDirection.FORWARD)
+    val oldBackwardValue = effectiveTrafficSignValue(original, TrafficSignDirection.BACKWARD)
     val forwardValue = forward?.toOsmValue() ?: oldForwardValue
     val backwardValue = backward?.toOsmValue() ?: oldBackwardValue
     val isSame = forwardValue != null && forwardValue == backwardValue
@@ -277,13 +283,15 @@ fun TrafficSignWaySigns.deriveWayTags(tags: Map<String, String>): TrafficSignWay
             result[key] = newValue
         } else {
             val oldValue = original[key] ?: continue
+            // an empty tag says nothing and is not part of the signs, so it is not touched
+            if (oldValue.isBlank()) continue
             result.remove(key)
             // only a conflict if the removed value does not still apply to its direction(s)
             val stillApplies = when (key) {
                 // the general value only applied to directions without own value
                 "traffic_sign" ->
-                    ("traffic_sign:forward" in original || oldValue == forwardValue) &&
-                    ("traffic_sign:backward" in original || oldValue == backwardValue)
+                    (!original["traffic_sign:forward"].isNullOrBlank() || oldValue == forwardValue) &&
+                    (!original["traffic_sign:backward"].isNullOrBlank() || oldValue == backwardValue)
                 "traffic_sign:forward" -> oldValue == forwardValue
                 else -> oldValue == backwardValue
             }

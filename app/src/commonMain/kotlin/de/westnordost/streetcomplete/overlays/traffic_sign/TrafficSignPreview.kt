@@ -70,6 +70,10 @@ data class TrafficSignPreviewModel(
     val notDerived: List<PreviewNotDerived>,
 )
 
+/** whether there is anything to tell about the consequences of the signs */
+val TrafficSignPreviewModel.hasContent: Boolean get() =
+    highwayChange != null || adjusted.isNotEmpty() || needsCheck.isNotEmpty() || notDerived.isNotEmpty()
+
 fun TrafficSignWayTagging.toPreviewModel() = TrafficSignPreviewModel(
     derivation = derivation,
     highwayChange = highwayChange,
@@ -81,7 +85,6 @@ fun TrafficSignWayTagging.toPreviewModel() = TrafficSignPreviewModel(
 @Composable
 fun TrafficSignPreview(model: TrafficSignPreviewModel, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(model.derivation.summary), style = MaterialTheme.typography.body2)
         model.highwayChange?.let { (old, new) ->
             Text(
                 stringResource(
@@ -154,12 +157,6 @@ private fun wayTypeName(highway: String): StringResource = when (highway) {
     "footway" -> Res.string.traffic_sign_overlay_highway_footway
     "cycleway" -> Res.string.traffic_sign_overlay_highway_cycleway
     else -> Res.string.traffic_sign_overlay_highway_other
-}
-
-private val TrafficSignDerivation.summary: StringResource get() = when (this) {
-    TrafficSignDerivation.FULL -> Res.string.traffic_sign_overlay_summary_full
-    TrafficSignDerivation.PARTIAL -> Res.string.traffic_sign_overlay_summary_partial
-    TrafficSignDerivation.TRAFFIC_SIGN_ONLY -> Res.string.traffic_sign_overlay_summary_sign_only
 }
 
 private val PreviewSubject.text: StringResource get() = when (this) {

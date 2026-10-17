@@ -728,7 +728,6 @@
     <string name="traffic_sign_overlay_unusual_combination">Der Katalog führt diese Kombination nicht auf. Du kannst sie trotzdem speichern.</string>
     <string name="traffic_sign_overlay_scope_hint">Die Schilder werden für den ganzen Weg erfasst. Gelten sie nur für einen Teil, teile den Weg zuerst.</string>
     <string name="traffic_sign_overlay_split_way">Weg teilen</string>
-    <string name="traffic_sign_overlay_preview_title">Das ändert sich</string>
     <string name="traffic_sign_overlay_confirm_none_title">Schilder durch „keine Schilder“ ersetzen?</string>
     <string name="traffic_sign_overlay_confirm_none_text">Vorhandene Schilder dieses Weges werden durch die Angabe ersetzt, dass es keine Schilder gibt. Stimmt das?</string>
     <string name="traffic_sign_overlay_confirm_none_yes">Ja, keine Schilder</string>
@@ -737,9 +736,6 @@
     <string name="traffic_sign_overlay_highway_footway">Gehweg</string>
     <string name="traffic_sign_overlay_highway_cycleway">Radweg</string>
     <string name="traffic_sign_overlay_highway_other">anderer Wegtyp</string>
-    <string name="traffic_sign_overlay_summary_full">Alles, was die Schilder aussagen, wird erfasst.</string>
-    <string name="traffic_sign_overlay_summary_partial">Die Schilder werden erfasst. Einige Folgen konnten nicht automatisch abgeleitet werden (siehe unten).</string>
-    <string name="traffic_sign_overlay_summary_sign_only">Es werden nur die Schilder erfasst. Weiteres wird daraus nicht abgeleitet.</string>
     <string name="traffic_sign_overlay_header_adjusted">Vorhandene Angaben, die angepasst werden</string>
     <string name="traffic_sign_overlay_header_check">Bitte prüfen – nicht automatisch lösbar</string>
     <string name="traffic_sign_overlay_header_not_derived">Nicht aus den Schildern abgeleitet</string>
@@ -777,4 +773,13 @@
     <string name="traffic_sign_overlay_not_derived_highway_classification_hint">Das Schild deutet auf eine andere Straßenklasse hin. Bitte selbst prüfen.</string>
     <string name="traffic_sign_overlay_not_derived_conflicting_highway_classification">Die Schilder beider Richtungen verlangen unterschiedliche Wegtypen.</string>
     <string name="traffic_sign_overlay_not_derived_highway_change_not_in_both_directions">Der Wegtyp ändert sich nur, wenn beide Richtungen Geh- oder Radwegschilder haben.</string>
+    <string name="quest_traffic_sign_title">Welche Verkehrszeichen gelten für diesen Weg?</string>
+    <string name="quest_traffic_sign_hint">Wähle die Schilder getrennt für jede Richtung des Weges, wie von den Pfeilen auf der Karte gezeigt. Eine Richtung, die du unverändert lässt, wird nicht geändert. Wähle \"Keine Schilder\" nur, wenn du sicher bist, dass es keine gibt.</string>
+    <string name="traffic_sign_confirm_title">Diese Änderungen speichern?</string>
+    <string name="traffic_sign_confirm_yes">Speichern</string>
+    <string name="traffic_sign_confirm_unreadable">Die vorhandenen Schilder der Richtung „%1$s“ sind nicht lesbar und werden vollständig ersetzt: %2$s</string>
+    <string name="traffic_sign_access_warning_title">Keine Schilder, aber Zugangsregeln vorhanden</string>
+    <string name="traffic_sign_access_warning_text">Du willst speichern, dass keine Verkehrszeichen gelten (%1$s). Dieser Weg hat Zugangsbeschränkungen oder besondere Freigaben, die oft auf Schildern beruhen. Das ist nur ein Hinweis, es wird nichts geändert. Vorhandene Tags:</string>
+    <string name="traffic_sign_access_edit_tags">Tags bearbeiten</string>
+    <string name="traffic_sign_access_save_anyway">Trotzdem speichern</string>
 </resources>

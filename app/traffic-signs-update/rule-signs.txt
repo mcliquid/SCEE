@@ -1,0 +1,15 @@
+# The signs the curated tag rules of the app are made of (WAY_RULES in
+# osm/traffic_sign/TrafficSignWayTagging.kt), one osm value part per line.
+# TrafficSignRuleCatalogueTest checks that this list is exactly the signs of the rules.
+# The update task compares these signs (and the redirects that touch them) between the old and the new
+# catalogue and does not apply a change to them without -PtrafficSignsAcceptReview=true.
+237
+239
+240
+241-30
+241-31
+250
+260
+1020-30
+1022-10
+1026-36

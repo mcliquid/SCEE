@@ -467,14 +467,26 @@ tasks.register<GenerateMetadataByCountryTask>("generateMetadataByCountry") {
     targetDir = projectDir.resolve("src/commonMain/composeResources/files/country_metadata")
 }
 
-// SCEE: traffic sign catalogue (currently only DE) and its signs converted to vector drawables
+// SCEE: traffic sign catalogue (currently only DE) and its signs converted to vector drawables.
+// Dry run (default): ./gradlew :app:updateTrafficSigns -PtrafficSignsVersion=latest
+// Apply:             ./gradlew :app:updateTrafficSigns -PtrafficSignsVersion=<v> -PtrafficSignsSha256=<sha> -PtrafficSignsApply=true
+// See app/traffic-signs-update/README.md
 tasks.register<UpdateTrafficSignsTask>("updateTrafficSigns") {
     group = "streetcomplete"
-    version = trafficSignsVersion
-    sha256 = trafficSignsSha256
+    val requestedVersion = providers.gradleProperty("trafficSignsVersion").orNull
+    version = requestedVersion ?: trafficSignsVersion
+    // the pinned hash belongs to the pinned version only
+    sha256 = providers.gradleProperty("trafficSignsSha256").orNull
+        ?: if (requestedVersion == null || requestedVersion == trafficSignsVersion) trafficSignsSha256 else null
+    apply = providers.gradleProperty("trafficSignsApply").orNull == "true"
+    acceptReview = providers.gradleProperty("trafficSignsAcceptReview").orNull == "true"
     countries = listOf("DE")
+    ruleSignsFile = projectDir.resolve("traffic-signs-update/rule-signs.txt")
     converterClasspath = svgToVectorConverter
     targetDir = projectDir.resolve("src/commonMain/composeResources/files/traffic_signs")
+    reportDir = layout.buildDirectory.dir("traffic-signs-update").get().asFile
+    backupDir = layout.buildDirectory.dir("traffic-signs-update/backup").get().asFile
+    historyDir = projectDir.resolve("traffic-signs-update/history")
 }
 
 tasks.register("copyDefaultStringsToEnStrings") {

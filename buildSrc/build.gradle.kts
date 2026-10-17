@@ -10,6 +10,8 @@ java {
 }
 
 dependencies {
+    testImplementation(kotlin("test"))
+    testImplementation("junit:junit:4.13.2")
     implementation(libs.klaxon)
     implementation(libs.countryboundaries)
     implementation(libs.kotlinx.io)

@@ -38,6 +38,7 @@ import de.westnordost.streetcomplete.resources.action_scee_quests
 fun QuestSelectionTopAppBar(
     currentPresetName: String,
     onClickBack: () -> Unit,
+    onSelectAll: () -> Unit,
     onUnselectAll: () -> Unit,
     onReset: () -> Unit,
     onSceeOnly: () -> Unit,
@@ -59,6 +60,7 @@ fun QuestSelectionTopAppBar(
         navigationIcon = { IconButton(onClick = onClickBack) { BackIcon() } },
         actions = {
             QuestSelectionTopBarActions(
+                onSelectAll = onSelectAll,
                 onUnselectAll = onUnselectAll,
                 onReset = onReset,
                 onSceeOnly = onSceeOnly,
@@ -103,6 +105,7 @@ private fun QuestSelectionTitle(currentPresetName: String) {
 
 @Composable
 private fun QuestSelectionTopBarActions(
+    onSelectAll: () -> Unit,
     onUnselectAll: () -> Unit,
     onReset: () -> Unit,
     onSceeOnly: () -> Unit,
@@ -125,6 +128,12 @@ private fun QuestSelectionTopBarActions(
                 showActionsDropdown = false
             }) {
                 Text(stringResource(Res.string.action_reset))
+            }
+            DropdownMenuItem(onClick = {
+                onSelectAll()
+                showActionsDropdown = false
+            }) {
+                Text(stringResource(Res.string.action_select_all))
             }
             DropdownMenuItem(onClick = {
                 showDeselectAllDialog = true
@@ -165,6 +174,7 @@ private fun PreviewQuestSelectionTopBar() {
     QuestSelectionTopAppBar(
         currentPresetName = "Test",
         onClickBack = {},
+        onSelectAll = {},
         onUnselectAll = {},
         onReset = {},
         onSceeOnly = {},

@@ -16,6 +16,7 @@ import de.westnordost.streetcomplete.data.visiblequests.QuestTypeOrderController
 import de.westnordost.streetcomplete.data.visiblequests.QuestTypeOrderSource
 import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeController
 import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeSource
+import de.westnordost.streetcomplete.quests.osmose.OsmoseQuest
 import de.westnordost.streetcomplete.util.countryboundaries.AllCountries
 import de.westnordost.streetcomplete.util.countryboundaries.AllCountriesExcept
 import de.westnordost.streetcomplete.util.countryboundaries.CountryBoundaries
@@ -34,6 +35,12 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import org.jetbrains.compose.resources.getString
 
+/** Visibility map for "select all": every quest type except Osmose. */
+fun selectAllQuestVisibilities(questTypes: Iterable<QuestType>): Map<EditType, Boolean> =
+    questTypes
+        .filter { it !is OsmoseQuest && it.name != "OsmoseQuest" }
+        .associate { it as EditType to true }
+
 @Stable
 abstract class QuestSelectionViewModel : ViewModel() {
     abstract val searchText: StateFlow<String>
@@ -44,6 +51,7 @@ abstract class QuestSelectionViewModel : ViewModel() {
 
     abstract fun select(questType: QuestType, selected: Boolean)
     abstract fun order(questType: QuestType, toAfter: QuestType)
+    abstract fun selectAll()
     abstract fun unselectAll()
     abstract fun resetAll()
     abstract fun updateSearchText(text: String)
@@ -158,6 +166,12 @@ class QuestSelectionViewModelImpl(
     override fun order(questType: QuestType, toAfter: QuestType) {
         launch(Dispatchers.IO) {
             questTypeOrderController.addOrderItem(questType, toAfter)
+        }
+    }
+
+    override fun selectAll() {
+        launch(Dispatchers.IO) {
+            visibleEditTypeController.setVisibilities(selectAllQuestVisibilities(questTypeRegistry))
         }
     }
 

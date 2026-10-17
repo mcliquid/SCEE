@@ -31,7 +31,6 @@ import de.westnordost.streetcomplete.quests.police_type.AddPoliceType
 import de.westnordost.streetcomplete.quests.seating.AddSeating
 import de.westnordost.streetcomplete.quests.tactile_paving.AddTactilePavingBusStop
 import de.westnordost.streetcomplete.resources.*
-import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmationDialog
 import de.westnordost.streetcomplete.ui.theme.titleMedium
 import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
@@ -48,8 +47,6 @@ fun QuestSelectionList(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues.Zero,
 ) {
-    var showEnableQuestDialog by remember { mutableStateOf<QuestType?>(null) }
-
     var reorderableItems by remember(items) { mutableStateOf(items) }
 
     var dragItem by remember { mutableStateOf<Pair<QuestType, QuestType>?>(null) }
@@ -116,12 +113,7 @@ fun QuestSelectionList(
                             QuestSelectionRow(
                                 item = item,
                                 onToggleSelection = { isSelected ->
-                                    // when enabling quest that is disabled by default, require confirmation
-                                    if (isSelected && item.questType.defaultDisabledMessage != null) {
-                                        showEnableQuestDialog = item.questType
-                                    } else {
-                                        onSelect(item.questType, isSelected)
-                                    }
+                                    onSelect(item.questType, isSelected)
                                 },
                                 displayCountry = displayCountry,
                                 modifier = Modifier.padding(vertical = 8.dp)
@@ -131,15 +123,6 @@ fun QuestSelectionList(
                 }
             }
         }
-    }
-
-    showEnableQuestDialog?.let { questType ->
-        ConfirmationDialog(
-            onDismissRequest = { showEnableQuestDialog = null },
-            onConfirmed = { onSelect(questType, true) },
-            title = { Text(stringResource(Res.string.enable_quest_confirmation_title)) },
-            text = { Text(questType.defaultDisabledMessage?.let { stringResource(it) }.orEmpty()) }
-        )
     }
 }
 

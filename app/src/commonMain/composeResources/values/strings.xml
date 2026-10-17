@@ -619,6 +619,7 @@
     <string name="action_search">Search</string>
     <string name="no_search_results">Nothing found</string>
 
+    <string name="action_select_all">Select all</string>
     <string name="action_deselect_all">Deselect all</string>
     <string name="pref_quests_deselect_all">Deselect all quests?</string>
 

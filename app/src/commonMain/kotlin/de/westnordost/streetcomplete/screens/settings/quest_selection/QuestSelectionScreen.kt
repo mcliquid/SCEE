@@ -40,6 +40,7 @@ fun QuestSelectionScreen(
         QuestSelectionTopAppBar(
             currentPresetName = currentPresetName ?: stringResource(Res.string.quest_presets_default_name),
             onClickBack = onClickBack,
+            onSelectAll = { viewModel.selectAll() },
             onUnselectAll = { viewModel.unselectAll() },
             onReset = { viewModel.resetAll() },
             onSceeOnly = { viewModel.onlySceeQuests.value = !onlySceeQuests; },

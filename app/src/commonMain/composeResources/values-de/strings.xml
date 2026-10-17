@@ -449,6 +449,7 @@ Teilweise bedeutet, dass man die Toilette schon im Rollstuhl benutzen kann, aber
     <string name="quest_noteDiscussion_reopen2">Wieder geöffnet von %1$s, %2$s</string>
     <string name="quest_noteDiscussion_hide2">Verborgen von %1$s, %2$s</string>
     <string name="privacy_html_image_upload2">&lt;p&gt;Fotos, die an Hinweise angehängt werden, werden auf meinen Server hochgeladen und einige Tage, nachdem der Hinweis geschlossen wurde, gelöscht. Ihre Metadaten werden vor dem Hochladen entfernt.&lt;/p&gt;</string>
+    <string name="action_select_all">Alle auswählen</string>
     <string name="action_deselect_all">Alle abwählen</string>
     <string name="quest_buildingType_retail_description">inklusive Gebäude für Restaurants, Cafés, Geschäfte …</string>
     <string name="quest_tracktype_title">Wie gut ist dieser Weg befestigt?</string>

@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.ui.common.auto_complete_text
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -36,12 +37,16 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toIntRect
 import androidx.compose.ui.window.Popup
 import de.westnordost.streetcomplete.ui.common.DropdownMenuItem
+import de.westnordost.streetcomplete.ui.common.TextField2
 import de.westnordost.streetcomplete.ui.ktx.pxToDp
-import de.westnordost.streetcomplete.util.logs.Log
 import kotlin.math.max
+
+private val CompactMinHeight = 40.dp
+private val CompactContentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
 
 /** A TextField that suggests auto-completion based on the supplied [suggestions] */
 @Composable
@@ -71,6 +76,8 @@ fun AutoCompleteTextField(
     startExpandedWithoutFocus: Boolean = false,
     onSelectedSuggestion: () -> Unit = {},
     filterSuggestions: Boolean = true,
+    /** When true, uses a shorter field (~40 dp) for dense layouts such as the tag editor. */
+    compact: Boolean = false,
 ) {
     val windowInfo = LocalWindowInfo.current
     val density = LocalDensity.current
@@ -104,31 +111,62 @@ fun AutoCompleteTextField(
             ) - verticalMarginInPx
         }
     ) {
-        TextField(
-            value = value,
-            onValueChange = {
-                onValueChange(it)
-                if (!isExpanded) isExpanded = true
-            },
-            modifier = Modifier.onFocusChanged { isFocused = it.isFocused },
-            enabled = enabled,
-            readOnly = readOnly,
-            textStyle = textStyle,
-            label = label,
-            placeholder = placeholder,
-            leadingIcon = leadingIcon,
-            trailingIcon = trailingIcon,
-            isError = isError,
-            visualTransformation = visualTransformation,
-            keyboardOptions = keyboardOptions,
-            keyboardActions = keyboardActions,
-            singleLine = singleLine,
-            maxLines = maxLines,
-            minLines = minLines,
-            interactionSource = interactionSource,
-            shape = shape,
-            colors = colors,
-        )
+        val fieldModifier = Modifier.onFocusChanged { isFocused = it.isFocused }
+        if (compact) {
+            TextField2(
+                value = value,
+                onValueChange = {
+                    onValueChange(it)
+                    if (!isExpanded) isExpanded = true
+                },
+                modifier = fieldModifier,
+                enabled = enabled,
+                readOnly = readOnly,
+                textStyle = textStyle,
+                label = label,
+                placeholder = placeholder,
+                leadingIcon = leadingIcon,
+                trailingIcon = trailingIcon,
+                isError = isError,
+                visualTransformation = visualTransformation,
+                keyboardOptions = keyboardOptions,
+                keyboardActions = keyboardActions,
+                singleLine = singleLine,
+                maxLines = maxLines,
+                minLines = minLines,
+                interactionSource = interactionSource,
+                shape = shape,
+                colors = colors,
+                contentPadding = CompactContentPadding,
+                minHeight = CompactMinHeight,
+            )
+        } else {
+            TextField(
+                value = value,
+                onValueChange = {
+                    onValueChange(it)
+                    if (!isExpanded) isExpanded = true
+                },
+                modifier = fieldModifier,
+                enabled = enabled,
+                readOnly = readOnly,
+                textStyle = textStyle,
+                label = label,
+                placeholder = placeholder,
+                leadingIcon = leadingIcon,
+                trailingIcon = trailingIcon,
+                isError = isError,
+                visualTransformation = visualTransformation,
+                keyboardOptions = keyboardOptions,
+                keyboardActions = keyboardActions,
+                singleLine = singleLine,
+                maxLines = maxLines,
+                minLines = minLines,
+                interactionSource = interactionSource,
+                shape = shape,
+                colors = colors,
+            )
+        }
 
         val expanded = (isFocused || startExpandedWithoutFocus) && isExpanded && suggestions.isNotEmpty()
 

@@ -4,6 +4,7 @@ import android.content.res.Resources
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -33,6 +34,8 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
@@ -143,7 +146,7 @@ fun EditTagsForm(
                         // todo: width is weird, why is 0.4 and 0.8 necessary to have almost equal widths? this has weird effect on AutoCompleteTextField dropdown
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             var key by remember { mutableStateOf(TextFieldValue(k)) }
@@ -168,6 +171,7 @@ fun EditTagsForm(
 
                             val valueFocusRequester = remember { FocusRequester() }
                             val keyFocusRequester = remember { FocusRequester() }
+                            val deleteDescription = stringResource(Res.string.quest_openingHours_delete)
                             LaunchedEffect(Unit) {
                                 if (k.isEmpty() && v.isEmpty()) keyFocusRequester.requestFocus()
                             }
@@ -187,6 +191,7 @@ fun EditTagsForm(
                                 onSelectedSuggestion = { valueFocusRequester.requestFocus() },
                                 keyboardActions = KeyboardActions(onDone = { valueFocusRequester.requestFocus() }),
                                 singleLine = true,
+                                compact = true,
                             )
                             AutoCompleteTextField(
                                 value = value,
@@ -200,21 +205,32 @@ fun EditTagsForm(
                                 suggestions = valueSuggestions,
                                 startExpanded = true,
                                 singleLine = true,
+                                compact = true,
                             )
-                            Icon(
-                                painter = painterResource(Res.drawable.ic_delete_24),
-                                contentDescription = stringResource(Res.string.quest_openingHours_delete),
-                                modifier = Modifier.size(32.dp).combinedClickable(
-                                    onClick = {
-                                        if (value.text.isNotEmpty()) {
-                                            value = TextFieldValue()
-                                            updatedTags += key.text to ""
-                                        }
-                                        else updatedTags -= key.text
-                                    },
-                                    onLongClick = { updatedTags -= key.text }
+                            // ≥48 dp touch target; compact icon
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .combinedClickable(
+                                        onClick = {
+                                            if (value.text.isNotEmpty()) {
+                                                value = TextFieldValue()
+                                                updatedTags += key.text to ""
+                                            } else {
+                                                updatedTags -= key.text
+                                            }
+                                        },
+                                        onLongClick = { updatedTags -= key.text }
+                                    )
+                                    .semantics { contentDescription = deleteDescription },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    painter = painterResource(Res.drawable.ic_delete_24),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
                                 )
-                            )
+                            }
                         }
                     }
                     if (originalElement.id != 0L) {

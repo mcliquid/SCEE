@@ -29,6 +29,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 
 enum class TextFieldStyle { Filled, Outlined }
@@ -66,6 +67,7 @@ fun TextField2(
     shape: Shape = style.shape,
     colors: TextFieldColors = style.colors,
     contentPadding: PaddingValues = style.getContentPadding(label != null),
+    minHeight: Dp = TextFieldDefaults.MinHeight,
 ) {
     @Suppress("NAME_SHADOWING")
     val interactionSource = interactionSource ?: remember { MutableInteractionSource() }
@@ -85,6 +87,7 @@ fun TextField2(
             interactionSource = interactionSource,
             colors = colors,
             density = LocalDensity.current,
+            minHeight = minHeight,
         ),
         enabled = enabled,
         readOnly = readOnly,
@@ -139,6 +142,7 @@ fun TextField2(
     shape: Shape = style.shape,
     colors: TextFieldColors = style.colors,
     contentPadding: PaddingValues = style.getContentPadding(label != null),
+    minHeight: Dp = TextFieldDefaults.MinHeight,
 ) {
     @Suppress("NAME_SHADOWING")
     val interactionSource = interactionSource ?: remember { MutableInteractionSource() }
@@ -158,6 +162,7 @@ fun TextField2(
             interactionSource = interactionSource,
             colors = colors,
             density = LocalDensity.current,
+            minHeight = minHeight,
         ),
         enabled = enabled,
         readOnly = readOnly,
@@ -197,6 +202,7 @@ private fun Modifier.textFieldDefaults(
     interactionSource: MutableInteractionSource,
     colors: TextFieldColors,
     density: Density,
+    minHeight: Dp = TextFieldDefaults.MinHeight,
 ): Modifier =
     when (style) {
         TextFieldStyle.Filled -> indicatorLine(enabled, isError, interactionSource, colors)
@@ -215,7 +221,7 @@ private fun Modifier.textFieldDefaults(
         .defaultErrorSemantics(isError, "Error")
         .defaultMinSize(
             minWidth = TextFieldDefaults.MinWidth,
-            minHeight = TextFieldDefaults.MinHeight
+            minHeight = minHeight
         )
 
 private val OutlinedTextFieldTopPadding = 8.sp

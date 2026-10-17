@@ -110,6 +110,9 @@
     <string name="pref_screen_data_management">Data management</string>
     <string name="pref_auto_download_title">Auto download</string>
     <string name="pref_auto_download_summary">Automatically download data in the nearby area</string>
+    <string name="pref_continuous_map_download_title">Continuous map download</string>
+    <string name="pref_continuous_map_download_summary">When browsing the map at high zoom, automatically download missing data for the visible area after a short pause</string>
+    <string name="quick_switch_continuous_map_download">Continuous map download</string>
     <string name="pref_manual_download_cache_title">Always re-download data</string>
     <string name="pref_manual_download_cache_summary">When disabled, data will not be re-downloaded on manual download unless it’s older than 12 hours</string>
     <string name="pref_export">Export settings</string>

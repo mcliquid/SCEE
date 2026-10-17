@@ -21,6 +21,9 @@
     <string name="pref_quest_monitor_title">Benachrichtigung bei Aufgaben in der Nähe</string>
     <string name="pref_create_node_show_keyboard_title">Tastatur beim Hinzufügen eines Knotens automatisch einblenden</string>
     <string name="pref_auto_download_title">Automatischer Download</string>
+    <string name="pref_continuous_map_download_title">Kontinuierlicher Kartendownload</string>
+    <string name="pref_continuous_map_download_summary">Beim Erkunden der Karte mit hohem Zoom fehlende Daten für den sichtbaren Ausschnitt nach kurzer Pause automatisch herunterladen</string>
+    <string name="quick_switch_continuous_map_download">Kontinuierlicher Kartendownload</string>
     <string name="pref_export">Einstellungen exportieren</string>
     <string name="pref_import">Einstellungen importieren</string>
     <string name="time_limited_to">bis</string>

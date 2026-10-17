@@ -12,6 +12,8 @@ object Prefs {
     // 3D building extrusion is intentionally not exposed: MapLibre style uses flat fills only (see strings_ee.xml).
     const val QUEST_GEOMETRIES = "quest_geometries"
     const val AUTO_DOWNLOAD = "auto_download"
+    /** Viewport continuous download while browsing the map (independent of GPS auto download). Default off. */
+    const val CONTINUOUS_MAP_DOWNLOAD = "continuous_map_download"
     const val LOCATION_INTERVAL = "gps_interval"
     const val HIDE_NOTES_BY_USERS = "hide_notes_by_users2"
     const val MANUAL_DOWNLOAD_OVERRIDE_CACHE = "manual_download_override_cache"

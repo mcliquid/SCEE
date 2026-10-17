@@ -125,6 +125,12 @@ fun DataManagementScreen(
                 default = true,
             )
             SwitchPreference(
+                name = stringResource(Res.string.pref_continuous_map_download_title),
+                description = stringResource(Res.string.pref_continuous_map_download_summary),
+                pref = Prefs.CONTINUOUS_MAP_DOWNLOAD,
+                default = false,
+            )
+            SwitchPreference(
                 name = stringResource(Res.string.pref_manual_download_cache_title),
                 description = stringResource(Res.string.pref_manual_download_cache_summary),
                 pref = Prefs.MANUAL_DOWNLOAD_OVERRIDE_CACHE,

@@ -93,6 +93,27 @@ fun QuickSettingsDropdown(
                 Switch(viewModel.reverseQuestOrder.collectAsState().value, { viewModel.reverseQuestOrder.value = it; onDismissRequest() })
             }
         }
+        var continuousMapDownload by remember(expanded) {
+            mutableStateOf(prefs.getBoolean(Prefs.CONTINUOUS_MAP_DOWNLOAD, false))
+        }
+        DropdownMenuItem(onClick = {
+            val next = !continuousMapDownload
+            continuousMapDownload = next
+            prefs.putBoolean(Prefs.CONTINUOUS_MAP_DOWNLOAD, next)
+            onDismissRequest()
+        }) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+                Text(text = stringResource(Res.string.quick_switch_continuous_map_download))
+                Switch(
+                    checked = continuousMapDownload,
+                    onCheckedChange = {
+                        continuousMapDownload = it
+                        prefs.putBoolean(Prefs.CONTINUOUS_MAP_DOWNLOAD, it)
+                        onDismissRequest()
+                    },
+                )
+            }
+        }
     }
     if (levelFilterDialog)
         LevelFilterDialog(

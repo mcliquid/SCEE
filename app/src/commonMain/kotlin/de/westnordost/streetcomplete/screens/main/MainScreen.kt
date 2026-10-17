@@ -94,6 +94,7 @@ import de.westnordost.streetcomplete.quests.tree.AddTreeGenus
 import de.westnordost.streetcomplete.quests.custom.CustomQuestList
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.data.download.ContinuousMapDownloadController
 import de.westnordost.streetcomplete.data.messages.Message
 import de.westnordost.streetcomplete.data.osmtracks.Trackpoint
 import de.westnordost.streetcomplete.resources.*
@@ -225,6 +226,7 @@ fun MainScreen(
     val reloadGpxTrack by viewModel.reloadGpxTrack.collectAsState()
     val reloadCustomGeometry by viewModel.reloadCustomGeometry.collectAsState()
     val prefs: Preferences = koinInject()
+    val continuousMapDownload: ContinuousMapDownloadController = koinInject()
     var gpxTrack by remember { mutableStateOf<List<LatLon>>(emptyList()) }
     var customGeoJson by remember { mutableStateOf<String?>(null) }
     val reversedQuestOrder by viewModel.reverseQuestOrder.collectAsState()
@@ -522,10 +524,18 @@ fun MainScreen(
     // Apply the MapLibre viewport to StreetComplete's quest and overlay data sources.
     LaunchedEffect(mapState, mapViewModel) {
         snapshotFlow { mapState.cameraPosition.zoom to mapState.viewport?.visibleBounds }
-            .collect { (zoom, bounds) -> mapViewModel.onViewportChanged(zoom, bounds?.toStreetCompleteBoundingBox()) }
+            .collect { (zoom, bounds) ->
+                val scBounds = bounds?.toStreetCompleteBoundingBox()
+                mapViewModel.onViewportChanged(zoom, scBounds)
+                continuousMapDownload.onViewportChanged(zoom, scBounds)
+            }
     }
 
+    LifecycleEventEffect(Lifecycle.Event.ON_START) {
+        continuousMapDownload.setForeground(true)
+    }
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) {
+        continuousMapDownload.setForeground(false)
         viewModel.saveCamera(
             camera = mapState.cameraPosition,
             following = cameraState.isFollowingPosition,

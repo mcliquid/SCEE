@@ -8,6 +8,7 @@ import de.westnordost.streetcomplete.data.Cleaner
 import de.westnordost.streetcomplete.data.FeedsUpdater
 import de.westnordost.streetcomplete.data.Preloader
 import de.westnordost.streetcomplete.data.UnsyncedChangesCountSource
+import de.westnordost.streetcomplete.data.download.ContinuousMapDownloadController
 import de.westnordost.streetcomplete.data.download.DownloadProgressSource
 import de.westnordost.streetcomplete.data.download.Downloader
 import de.westnordost.streetcomplete.data.download.strategy.MobileDataAutoDownloadStrategy
@@ -311,6 +312,10 @@ val commonModule = module {
     factory { DownloadedTilesDao(get()) }
     factory { MobileDataAutoDownloadStrategy(get(), get()) }
     factory { WifiAutoDownloadStrategy(get(), get()) }
+
+    single {
+        ContinuousMapDownloadController(get(), get(), get(), get(), get())
+    }
 
     single { Downloader(get(), get(), get(), get(), get(), get(named("SerializeSync")), get()) }
 

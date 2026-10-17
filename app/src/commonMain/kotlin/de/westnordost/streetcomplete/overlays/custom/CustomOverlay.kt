@@ -18,7 +18,8 @@ import androidx.core.graphics.toColorInt
 import de.westnordost.streetcomplete.ui.theme.titleLarge
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.elementfilter.ElementFilterExpression
-import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
+import de.westnordost.streetcomplete.data.elementfilter.ParseException
+import de.westnordost.streetcomplete.data.elementfilter.cachedElementFilterExpression
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
@@ -26,7 +27,6 @@ import de.westnordost.streetcomplete.data.osm.mapdata.filter
 import de.westnordost.streetcomplete.data.overlays.Overlay
 import de.westnordost.streetcomplete.data.overlays.OverlayColor
 import de.westnordost.streetcomplete.data.overlays.OverlayStyle
-import de.westnordost.streetcomplete.data.elementfilter.ParseException
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.edits.create.CreateNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.delete.DeletePoiNodeAction
@@ -58,26 +58,10 @@ class CustomOverlay(val prefs: Preferences) : Overlay {
     override val isCreateNodeEnabled get() = prefs.getString(getCurrentCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_FILTER, prefs), "").startsWith("nodes")
 
     override fun getStyledElements(mapData: MapDataWithGeometry): Sequence<Pair<Element, OverlayStyle>> {
-        val filter = try {
-            prefs.getString(getCurrentCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_FILTER, prefs), "").toElementFilterExpression()
-        } catch (_: ParseException) { return emptySequence() }
-        val colorKeyPref = prefs.getString(getCurrentCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_COLOR_KEY, prefs), "").let {
-            if (it.startsWith("!")) it.substringAfter("!")
-            else it
-        }
-        val colorKeySelector = try { colorKeyPref.takeIf { it.isNotBlank() }?.toRegex() }
-            catch (_: Exception) { null }
-        val dashFilter = try {
-            val string = prefs.getString(getCurrentCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_DASH_FILTER, prefs), "").takeIf { it.isNotBlank() }
-            string?.let { "ways with $it".toElementFilterExpression() }
-        } catch (_: Exception) { null }
-        val missingColor = if (prefs.getBoolean(getCurrentCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_HIGHLIGHT_MISSING_DATA, prefs), true))
-                OverlayColor.Red
-            else
-                OverlayColor.Invisible
+        val resolved = resolveCustomOverlayFilters(prefs) ?: return emptySequence()
         return mapData
-            .filter(filter)
-            .map { it to getStyle(it, colorKeySelector, dashFilter, missingColor) }
+            .filter(resolved.filter)
+            .map { it to getStyle(it, resolved.colorKeySelector, resolved.dashFilter, resolved.missingColor) }
     }
 
     @Composable
@@ -155,6 +139,38 @@ class CustomOverlay(val prefs: Preferences) : Overlay {
 
 internal fun formatCustomOverlayColorTags(colorTags: Map<String, String>): String =
     colorTags.entries.sortedBy { it.key }.joinToString("\n") { "${it.key} = ${it.value}" }
+
+internal data class ResolvedCustomOverlayFilters(
+    val filter: ElementFilterExpression,
+    val colorKeySelector: Regex?,
+    val dashFilter: ElementFilterExpression?,
+    val missingColor: Color,
+)
+
+internal fun resolveCustomOverlayFilters(prefs: Preferences): ResolvedCustomOverlayFilters? {
+    val filterString = prefs.getString(getCurrentCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_FILTER, prefs), "")
+    val filter = try {
+        cachedElementFilterExpression(filterString)
+    } catch (_: ParseException) {
+        return null
+    }
+    val colorKeyPref = prefs.getString(getCurrentCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_COLOR_KEY, prefs), "").let {
+        if (it.startsWith("!")) it.substringAfter("!")
+        else it
+    }
+    val colorKeySelector = try { colorKeyPref.takeIf { it.isNotBlank() }?.toRegex() }
+        catch (_: Exception) { null }
+    val dashFilter = try {
+        val string = prefs.getString(getCurrentCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_DASH_FILTER, prefs), "")
+            .takeIf { it.isNotBlank() }
+        string?.let { cachedElementFilterExpression("ways with $it") }
+    } catch (_: Exception) { null }
+    val missingColor = if (prefs.getBoolean(getCurrentCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_HIGHLIGHT_MISSING_DATA, prefs), true))
+        OverlayColor.Red
+    else
+        OverlayColor.Invisible
+    return ResolvedCustomOverlayFilters(filter, colorKeySelector, dashFilter, missingColor)
+}
 
 private fun getStyle(element: Element, colorKeySelector: Regex?, dashFilter: ElementFilterExpression?, defaultMissingColor: Color): OverlayStyle {
     val color by lazy {

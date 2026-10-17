@@ -1,11 +1,10 @@
 package de.westnordost.streetcomplete.data.osm.mapdata
 
 import de.westnordost.streetcomplete.data.elementfilter.ElementFilterExpression
-import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
-import de.westnordost.streetcomplete.util.SynchronizedLazyCache
+import de.westnordost.streetcomplete.data.elementfilter.cachedElementFilterExpression
 
 fun MapData.filter(expr: String): Sequence<Element> =
-    filter(FilterExpressionCache.get(expr))
+    filter(cachedElementFilterExpression(expr))
 
 fun MapData.filter(expr: ElementFilterExpression): Sequence<Element> {
     /* this is a considerate performance improvement over just iterating over the whole MapData
@@ -16,13 +15,4 @@ fun MapData.filter(expr: ElementFilterExpression): Sequence<Element> {
         if (expr.includesElementType(ElementType.WAY)) yieldAll(ways)
         if (expr.includesElementType(ElementType.RELATION)) yieldAll(relations)
     }.filter(expr::matches)
-}
-
-private object FilterExpressionCache {
-    // used concurrently by all quest types during quest creation, hence synchronized
-    private val cache = SynchronizedLazyCache<String, ElementFilterExpression> {
-        it.toElementFilterExpression()
-    }
-
-    fun get(expr: String): ElementFilterExpression = cache.get(expr)
 }

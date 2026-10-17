@@ -2,6 +2,8 @@ package de.westnordost.streetcomplete.quests.shoulder
 
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
+import de.westnordost.streetcomplete.data.preferences.getLastPicked
+import de.westnordost.streetcomplete.data.preferences.setLastPicked
 import de.westnordost.streetcomplete.quests.answerAppliedTo
 import de.westnordost.streetcomplete.testutils.inMemoryPrefs
 import de.westnordost.streetcomplete.testutils.way
@@ -113,6 +115,14 @@ class AddShoulderTest {
         assertEquals(
             setOf(StringMapEntryAdd("shoulder", "no")),
             questType.answerAppliedTo(ShoulderSides(left = false, right = false), emptyMap()),
+        )
+    }
+
+    @Test fun `stores last shoulder answer for reuse`() {
+        Prefs.preferences.setLastPicked("AddShoulderForm", listOf(ShoulderSides(left = true, right = false)))
+        assertEquals(
+            listOf(ShoulderSides(left = true, right = false)),
+            Prefs.preferences.getLastPicked<ShoulderSides>("AddShoulderForm"),
         )
     }
 

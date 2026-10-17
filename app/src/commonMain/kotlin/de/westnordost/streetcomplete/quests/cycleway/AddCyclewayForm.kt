@@ -76,15 +76,13 @@ fun AddCyclewayForm(
     }
     val showBothSides = sideRelevance.left && sideRelevance.right
 
-    val lastPicked = remember(showBothSides) {
-        if (showBothSides) {
+    val lastPicked = remember(sideRelevance, countryInfo) {
+        mapStoredCyclewayPicksToFormChips(
             preferences.getLastPicked<Sides<Cycleway>>(favKey)
-                .takeFavorites(n = 5, history = 15, first = 1)
-                .map { it.withDefaultDirection(countryInfo.isLeftHandTraffic) }
-                .filter { sides -> sides.all { it?.isSelectable(countryInfo) != false } }
-        } else {
-            emptyList()
-        }
+                .takeFavorites(n = 5, history = 15, first = 1),
+            sideRelevance,
+            countryInfo,
+        )
     }
 
     val geometryRotation = remember(geometry) { geometry.getOrientationOrZero() }
@@ -118,12 +116,11 @@ fun AddCyclewayForm(
     var pendingSidepathSides by remember { mutableStateOf<Sides<CyclewayAndDirection>?>(null) }
 
     fun finishSaveCycleway(sides: Sides<CyclewayAndDirection>, hideSidepathQuest: Boolean = false) {
-        if (sides.left != null && sides.right != null) {
+        cyclewayAnswerToStoredPick(sides, sideRelevance)?.let { stored ->
             // only persist the cycleway selection, not the direction. For any road that deviates
             // from the default, the user should select this specifically. Simply carrying over the
             // non-default direction to the next answer might result in mistakes
-            val cycleways = Sides(left = sides.left.cycleway, right = sides.right.cycleway)
-            preferences.setLastPicked(favKey, listOf(cycleways))
+            preferences.setLastPicked(favKey, listOf(stored))
         }
         on(Answer(sides))
         // "No / can't tell": do not ask the same again. After the answer, so it can not get in the way

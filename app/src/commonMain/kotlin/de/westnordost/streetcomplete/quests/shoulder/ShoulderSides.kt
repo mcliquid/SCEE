@@ -1,5 +1,8 @@
 package de.westnordost.streetcomplete.quests.shoulder
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class ShoulderSides(val left: Boolean, val right: Boolean)
 
 val ShoulderSides.osmValue: String get() = when {

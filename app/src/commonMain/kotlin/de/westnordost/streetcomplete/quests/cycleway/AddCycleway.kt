@@ -16,13 +16,16 @@ import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.
 import de.westnordost.streetcomplete.osm.FILTER_BICYCLE_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Sides
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.osm.all
 import de.westnordost.streetcomplete.osm.any
 import de.westnordost.streetcomplete.osm.cycleway.Cycleway
 import de.westnordost.streetcomplete.osm.cycleway.CyclewayAndDirection
 import de.westnordost.streetcomplete.osm.cycleway.applyTo
 import de.westnordost.streetcomplete.osm.cycleway.isAmbiguous
 import de.westnordost.streetcomplete.osm.cycleway.parseCyclewaySides
+import de.westnordost.streetcomplete.osm.cycleway.isSelectable
 import de.westnordost.streetcomplete.osm.cycleway.selectableOrNullValues
+import de.westnordost.streetcomplete.osm.cycleway.withDefaultDirection
 import de.westnordost.streetcomplete.osm.maxspeed.FILTER_IS_IMPLICIT_MAX_SPEED_BUT_NOT_SLOW_ZONE
 import de.westnordost.streetcomplete.osm.oneway.isNotOnewayForCyclists
 import de.westnordost.streetcomplete.osm.oneway.isReversedOneway
@@ -158,7 +161,7 @@ private val initialSurveyRoadsFilter by lazy { """
       or (
         (
           highway ~ residential|living_street
-          or highway = service and service !~ driveway|parking_aisle|slipway
+          or highway = service and service !~ driveway|parking_aisle|slipway|drive-through
         )
         and oneway ~ yes|1|true|-1
         and !oneway:bicycle
@@ -188,7 +191,7 @@ private val untaggedMinorOnewayLikelyNoBicycleContraflow by lazy { """
     ways with
       (
         oneway ~ yes|1|true|-1 and highway ~ residential|living_street
-        or oneway ~ yes|1|true|-1 and highway = service and service !~ driveway|parking_aisle|slipway
+        or oneway ~ yes|1|true|-1 and highway = service and service !~ driveway|parking_aisle|slipway|drive-through
       )
       and oneway !~ no|0|false
 """.toElementFilterExpression() }
@@ -197,6 +200,41 @@ internal data class CyclewaySideRelevance(val left: Boolean, val right: Boolean)
 
 internal fun CyclewaySideRelevance.isComplete(cycleways: Sides<CyclewayAndDirection>): Boolean =
     (!left || cycleways.left != null) && (!right || cycleways.right != null)
+
+internal fun mapStoredCyclewayPicksToFormChips(
+    history: List<Sides<Cycleway>>,
+    sideRelevance: CyclewaySideRelevance,
+    countryInfo: CountryInfo,
+): List<Sides<CyclewayAndDirection>> {
+    fun isSelectable(sides: Sides<CyclewayAndDirection>): Boolean =
+        sides.all { it?.isSelectable(countryInfo) != false }
+
+    val withDirection = history.map { it.withDefaultDirection(countryInfo.isLeftHandTraffic) }
+    return if (sideRelevance.left && sideRelevance.right) {
+        withDirection.filter { isSelectable(it) }
+    } else {
+        withDirection.mapNotNull { sides ->
+            when {
+                sideRelevance.left && !sideRelevance.right ->
+                    sides.left?.let { Sides(it, null) }
+                sideRelevance.right && !sideRelevance.left ->
+                    sides.right?.let { Sides(null, it) }
+                else -> null
+            }?.takeIf { isSelectable(it) }
+        }.distinctBy { "${it.left?.cycleway}/${it.right?.cycleway}" }
+    }
+}
+
+internal fun cyclewayAnswerToStoredPick(
+    sides: Sides<CyclewayAndDirection>,
+    sideRelevance: CyclewaySideRelevance,
+): Sides<Cycleway>? {
+    if (!sideRelevance.isComplete(sides)) return null
+    return Sides(
+        left = if (sideRelevance.left) sides.left?.cycleway else null,
+        right = if (sideRelevance.right) sides.right?.cycleway else null,
+    )
+}
 
 internal fun getCyclewaySideRelevance(
     element: Element,

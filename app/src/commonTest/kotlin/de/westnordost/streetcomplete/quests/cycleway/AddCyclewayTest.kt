@@ -61,6 +61,13 @@ class AddCyclewayTest {
         assertMinorOnewayApplicability(mapOf("highway" to "service", "service" to "alley", "oneway" to "yes"), true)
     }
 
+    @Test fun `oneway service drive-through is not applicable`() {
+        assertMinorOnewayApplicability(
+            mapOf("highway" to "service", "service" to "drive-through", "oneway" to "yes"),
+            false,
+        )
+    }
+
     @Test fun `oneway minor road contraflow survey stays narrowly filtered`() {
         assertMinorOnewayApplicability(mapOf("highway" to "residential", "maxspeed" to "30"), false)
         assertMinorOnewayApplicability(mapOf("highway" to "residential", "maxspeed" to "30", "oneway" to "yes", "oneway:bicycle" to "no"), false)
@@ -75,6 +82,30 @@ class AddCyclewayTest {
         assertEquals(
             CyclewaySideRelevance(left = false, right = true),
             getCyclewaySideRelevance(way, Sides(null, null), false),
+        )
+    }
+
+    @Test fun `maps stored cycleway picks to single-side last picked chips`() {
+        val history = listOf(
+            Sides(Cycleway.EXCLUSIVE_LANE, Cycleway.TRACK),
+            Sides(Cycleway.NONE, Cycleway.TRACK),
+        )
+        val relevance = CyclewaySideRelevance(left = false, right = true)
+        val chips = mapStoredCyclewayPicksToFormChips(history, relevance, countryInfo)
+        assertEquals(1, chips.size)
+        assertNull(chips.single().left)
+        assertEquals(Cycleway.TRACK, chips.single().right?.cycleway)
+    }
+
+    @Test fun `stores single-side cycleway answer for reuse`() {
+        val relevance = CyclewaySideRelevance(left = false, right = true)
+        val answer = Sides<CyclewayAndDirection>(
+            left = null,
+            right = CyclewayAndDirection(Cycleway.TRACK, FORWARD),
+        )
+        assertEquals(
+            Sides<Cycleway>(null, Cycleway.TRACK),
+            cyclewayAnswerToStoredPick(answer, relevance),
         )
     }
 

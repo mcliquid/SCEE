@@ -12,6 +12,9 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.osmquests.Answer
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
+import de.westnordost.streetcomplete.data.preferences.Preferences
+import de.westnordost.streetcomplete.data.preferences.getLastPicked
+import de.westnordost.streetcomplete.data.preferences.setLastPicked
 import de.westnordost.streetcomplete.osm.Sides
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.dialogs.SimpleItemSelectDialog
@@ -24,8 +27,10 @@ import de.westnordost.streetcomplete.ui.common.street_side_select.StreetSideForm
 import de.westnordost.streetcomplete.ui.util.rememberSerializable
 import de.westnordost.streetcomplete.util.ktx.shoulderLineStyleDrawable
 import de.westnordost.streetcomplete.util.math.getOrientationOrZero
+import de.westnordost.streetcomplete.util.takeFavorites
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 @Composable
 fun AddShoulderForm(
@@ -33,14 +38,23 @@ fun AddShoulderForm(
     @Suppress("UNUSED_PARAMETER") element: Element,
     geometry: ElementGeometry,
     countryInfo: CountryInfo,
+    preferences: Preferences = koinInject(),
 ) {
+    val favKey = "AddShoulderForm"
+    val lastPicked = remember {
+        preferences.getLastPicked<ShoulderSides>(favKey)
+            .takeFavorites(n = 5, history = 15, first = 1)
+            .map { Sides<Boolean?>(it.left, it.right) }
+    }
+
     var shoulders by rememberSerializable { mutableStateOf(Sides<Boolean?>(null, null)) }
     var pickerSide by remember { mutableStateOf<Side?>(null) }
 
     val geometryRotation = remember(geometry) { geometry.getOrientationOrZero() }
     val shoulderLinePainter = painterResource(countryInfo.shoulderLineStyleDrawable)
+    val noShoulderIllustrationPainter = painterResource(Res.drawable.shoulder_illustration_no)
     val noShoulderPainter = painterResource(Res.drawable.shoulder_no)
-    val bareRoadPainter = painterResource(Res.drawable.street_broad)
+    val noShoulderFloatingPainter = painterResource(Res.drawable.floating_no)
 
     val hintText = stringResource(Res.string.quest_shoulder_explanation2) + "\n" +
         stringResource(Res.string.quest_street_side_puzzle_tutorial)
@@ -52,6 +66,7 @@ fun AddShoulderForm(
         hintText = hintText,
         onClickOk = {
             on(Answer(ShoulderSides(shoulders.left!!, shoulders.right!!)))
+            preferences.setLastPicked(favKey, listOf(ShoulderSides(shoulders.left!!, shoulders.right!!)))
         },
         contentPadding = PaddingValues.Zero,
     ) {
@@ -61,18 +76,19 @@ fun AddShoulderForm(
             getIllustrationPainter = { hasShoulder, _ ->
                 when (hasShoulder) {
                     true -> shoulderLinePainter
-                    false -> noShoulderPainter
+                    false -> noShoulderIllustrationPainter
                     null -> null
                 }
             },
             getFloatingPainter = { hasShoulder, _ ->
-                if (hasShoulder == false) bareRoadPainter else null
+                if (hasShoulder == false) noShoulderFloatingPainter else null
             },
             onClickSide = { pickerSide = it },
             geometryRotation = geometryRotation,
             mapRotation = LocalMapRotation.current,
             mapTilt = LocalMapTilt.current,
             isLeftHandTraffic = countryInfo.isLeftHandTraffic,
+            lastPicked = lastPicked,
         )
     }
 
@@ -89,7 +105,7 @@ fun AddShoulderForm(
             },
             itemContent = { hasShoulder ->
                 ImageWithLabel(
-                    painter = if (hasShoulder) shoulderLinePainter else bareRoadPainter,
+                    painter = if (hasShoulder) shoulderLinePainter else noShoulderPainter,
                     label = stringResource(
                         if (hasShoulder) Res.string.quest_shoulder_value_yes
                         else Res.string.quest_shoulder_value_no

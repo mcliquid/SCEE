@@ -23,22 +23,25 @@ import kotlin.test.assertTrue
 
 class TestQuestFilters {
 
-    @Test
-    fun getHighlightedElements_filters_are_valid_and_parsed_correctly() {
+    private fun createRegistry(connection: androidx.sqlite.SQLiteConnection): QuestTypeRegistry {
         Prefs.sharedPreferences = mockPrefs()
         Prefs.preferences = inMemoryPrefs()
+        val database = DatabaseImpl(connection).apply { initialize(StreetCompleteDatabaseConfigurator) }
+        return questTypeRegistry(
+            arSupportChecker = object : ArSupportChecker { override fun invoke() = false },
+            getCountryInfoByLocation = { CountryInfo("DE", emptyList()) },
+            getCountryOrSubdivisionCode = { null },
+            getFeature = { null },
+            osmoseDao = OsmoseDao(database, Prefs.preferences),
+            customQuestList = CustomQuestList(),
+        )
+    }
 
+    @Test
+    fun getHighlightedElements_filters_are_valid_and_parsed_correctly() {
         val connection = BundledSQLiteDriver().open(":memory:")
         try {
-            val database = DatabaseImpl(connection).apply { initialize(StreetCompleteDatabaseConfigurator) }
-            val registry = questTypeRegistry(
-                arSupportChecker = object : ArSupportChecker { override fun invoke() = false },
-                getCountryInfoByLocation = { CountryInfo("DE", emptyList()) },
-                getCountryOrSubdivisionCode = { null },
-                getFeature = { null },
-                osmoseDao = OsmoseDao(database, Prefs.preferences),
-                customQuestList = CustomQuestList(),
-            )
+            val registry = createRegistry(connection)
 
             val elementQuestTypes = registry.filterIsInstance<OsmElementQuestType<*>>()
             assertTrue(elementQuestTypes.isNotEmpty())
@@ -65,21 +68,21 @@ class TestQuestFilters {
 
     @Test
     fun element_filters_are_valid_and_parsed_correctly() {
-        val registry = questTypeRegistry(
-            arSupportChecker = object : ArSupportChecker { override fun invoke() = false },
-            getCountryInfoByLocation = { CountryInfo("DE", emptyList()) },
-            getCountryOrSubdivisionCode = { null },
-            getFeature = { null }
-        )
+        val connection = BundledSQLiteDriver().open(":memory:")
+        try {
+            val registry = createRegistry(connection)
 
-        val elementQuestTypes = registry.filterIsInstance<OsmFilterQuestType<*>>()
-        assertTrue(elementQuestTypes.isNotEmpty())
+            val elementQuestTypes = registry.filterIsInstance<OsmFilterQuestType<*>>()
+            assertTrue(elementQuestTypes.isNotEmpty())
 
-        val mapData = TestMapDataWithGeometry(emptyList())
+            val mapData = TestMapDataWithGeometry(emptyList())
 
-        for (questType in elementQuestTypes) {
-            val filteredElements = questType.getApplicableElements(mapData)
-            filteredElements.toList()
+            for (questType in elementQuestTypes) {
+                val filteredElements = questType.getApplicableElements(mapData)
+                filteredElements.toList()
+            }
+        } finally {
+            connection.close()
         }
     }
 }

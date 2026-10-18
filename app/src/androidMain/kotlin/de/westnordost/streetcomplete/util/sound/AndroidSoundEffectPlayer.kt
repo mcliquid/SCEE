@@ -56,8 +56,8 @@ class AndroidSoundEffectPlayer(
 
     private suspend fun load(resourcePath: String): Int = suspendCancellableCoroutine { cont ->
         // only complete after the sound has actually been loaded
-        val afd = context.assets.openFd("$baseDir/$resourcePath")
-        val soundId = soundPool.load(afd, 1)
+        // SoundPool dups the fd internally, so the descriptor can be closed right after load()
+        val soundId = context.assets.openFd("$baseDir/$resourcePath").use { soundPool.load(it, 1) }
         loadCompleteContinuations[soundId] = cont
     }
 

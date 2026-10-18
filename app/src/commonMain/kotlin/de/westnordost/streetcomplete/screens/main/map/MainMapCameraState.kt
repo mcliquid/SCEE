@@ -141,6 +141,8 @@ class MainMapCameraState internal constructor(
         map.animateCamera(CameraUpdate(bearing = 0.0, pitch = 0.0), SnapAnimation)
     }
 
+    val isSheetOpen: Boolean get() = mode is CameraMode.Sheet
+
     /** Stop the camera from following the position while a sheet is open. */
     fun openSheet() {
         if (mode !is CameraMode.Sheet) mode = CameraMode.Sheet()

@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -29,7 +27,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.datasource.LoremIpsum
@@ -53,7 +50,6 @@ import de.westnordost.streetcomplete.ui.common.quest.LocalLastMapClick
 import de.westnordost.streetcomplete.ui.common.quest.MapClick
 import de.westnordost.streetcomplete.ui.common.quest.elementWithoutAccessTagsFilter
 import de.westnordost.streetcomplete.ui.common.quest.pathsAndRoadsFilter
-import de.westnordost.streetcomplete.ui.theme.Dimensions
 import de.westnordost.streetcomplete.ui.theme.titleMedium
 import de.westnordost.streetcomplete.util.ktx.containsAnyKey
 import de.westnordost.streetcomplete.util.ktx.isSplittable
@@ -147,15 +143,9 @@ fun OverlayForm(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        val openFormPadding = Dimensions.getOpenQuestFormMapPadding(
-            LocalWindowInfo.current,
-            WindowInsets.safeDrawing.asPaddingValues()
-        )
+        // the pin is at the center of the map, like the crosshair, which is where the element is created
         if (pinContent != null) {
-            Box(Modifier
-                .padding(openFormPadding)
-                .align(Alignment.Center)
-            ) {
+            Box(Modifier.align(Alignment.Center)) {
                 pinContent()
             }
         }

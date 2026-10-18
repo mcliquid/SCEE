@@ -385,8 +385,9 @@ fun MainScreen(
     fun getOffset(position: LatLon): Offset? =
         mapState.offsetInWindow(position, mapPositionInWindow, density)
 
+    // the crosshair is at the map center, see Crosshair()
     fun getCrosshairPosition(): LatLon? =
-        mapState.positionAtCenter(sheetPadding)
+        mapState.positionAtCenter(DpPadding.Zero)
 
     fun getMetersPerDp(): Double =
         mapState.metersPerDpAtLatitude(mapState.cameraPosition.center.latitude) ?: 0.0
@@ -455,7 +456,8 @@ fun MainScreen(
         } else if (locationState == LocationState.ALLOWED) {
             if (systemSettingsLauncher.canOpenLocationServicesSettings) showLocationSettingsDialog = true
             else showToast = Toast.NoLocation
-        } else if (!cameraState.isFollowingPosition) {
+        // while the placement crosshair is shown, the GPS button also recenters an open form while following
+        } else if (!cameraState.isFollowingPosition || (isCreateNodeEnabled && cameraState.isSheetOpen)) {
             followPosition()
         } else {
             toggleNavigationMode()

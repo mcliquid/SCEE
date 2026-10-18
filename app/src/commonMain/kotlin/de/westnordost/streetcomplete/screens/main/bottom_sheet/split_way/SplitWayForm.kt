@@ -13,6 +13,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,12 +30,15 @@ import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtLinePosition
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtPoint
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitPolylineAtPosition
+import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.crosshair
+import de.westnordost.streetcomplete.resources.ic_check_32
+import de.westnordost.streetcomplete.resources.ok
 import de.westnordost.streetcomplete.resources.quest_split_way_many_splits_confirmation_description
 import de.westnordost.streetcomplete.resources.scissors_cut
 import de.westnordost.streetcomplete.resources.scissors_cut_preview
@@ -46,6 +50,8 @@ import de.westnordost.streetcomplete.ui.common.dialogs.AreYouSureDialog
 import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmDiscardDialog
 import de.westnordost.streetcomplete.ui.common.quest.LocalMapMetersPerDp
 import de.westnordost.streetcomplete.ui.common.quest.LocalMapRotation
+import de.westnordost.streetcomplete.ui.common.quest.LocalMapMarkersCallback
+import de.westnordost.streetcomplete.ui.common.quest.Marker
 import de.westnordost.streetcomplete.ui.common.quest.OnMap
 import de.westnordost.streetcomplete.ui.ktx.toPx
 import de.westnordost.streetcomplete.ui.theme.Dimensions
@@ -78,6 +84,7 @@ fun SplitWayForm(
     additionalMarkers: (suspend (List<SplitPolylineAtPosition>) -> List<Marker>)? = null,
 ) {
     val prefs: Preferences = koinInject()
+    val mapMarkersCallback = LocalMapMarkersCallback.current
     val initialBackground = rememberSaveable { prefs.getString(Prefs.THEME_BACKGROUND, "MAP") }
     val restoreBackgroundAndDismiss = {
         if (prefs.getString(Prefs.THEME_BACKGROUND, "MAP") != initialBackground) {
@@ -137,7 +144,7 @@ fun SplitWayForm(
 
     LaunchedEffect(cuts, contextMarkers) {
         mapMarkersCallback?.invoke(
-            contextMarkers + (additionalMarkers?.invoke(cuts) ?: emptyList()) + cuts.map { Marker(ElementPointGeometry(it.pos), Res.drawable.scissors_cut) }
+            contextMarkers + (additionalMarkers?.invoke(cuts.map { it.first }) ?: emptyList()) + cuts.map { Marker(ElementPointGeometry(it.first.pos), Res.drawable.scissors_cut) }
         )
     }
 

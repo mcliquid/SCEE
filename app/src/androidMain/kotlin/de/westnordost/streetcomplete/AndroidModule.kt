@@ -53,8 +53,9 @@ val androidModule = module {
     // metadata
 
     single<de.westnordost.countryboundaries.CountryBoundaries> {
-        val source = androidContext().assets.open(COMPOSE_FILES_DIR + "/boundaries.ser").asSource().buffered()
-        de.westnordost.countryboundaries.CountryBoundaries.deserializeFrom(source)
+        androidContext().assets.open(COMPOSE_FILES_DIR + "/boundaries.ser").asSource().buffered().use {
+            de.westnordost.countryboundaries.CountryBoundaries.deserializeFrom(it)
+        }
     }
 
     single<FeatureDictionary> {

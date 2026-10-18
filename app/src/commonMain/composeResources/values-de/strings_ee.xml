@@ -508,6 +508,7 @@
     <string name="quest_guidepost_sports_answer_simple_description">Dies ist nur ein einfacher Wegweiser ohne spezifische Sportarten.</string>
     <string name="quest_guidepostEle_hint">Verwende nicht die GPS-Höhe, da diese in der Regel zu ungenau ist und nicht im richtigen Höhenreferenzsystem angegeben wird.</string>
     <string name="quest_guidepostEle_title">Wie hoch ist die Höhe hier?</string>
+    <string name="quest_guidepostEle_no_ele_answer">Keine Höhe angegeben</string>
     <string name="quest_guidepost_disabled_msg">Diese Aufgabe ist standardmäßig deaktiviert, weil das, was angegeben wird, je nach Region und Betreiber stark variiert. Möglicherweise musst du die Elementauswahl für dein Gebiet verfeinern (z. B. Karten hinzufügen oder entfernen, nur Elemente mit hiking=yes auswählen usw.)</string>
     <string name="quest_guidepost_sports_nordic_walking">Nordic Walking</string>
     <string name="quest_guidepost_sports_bicycle">Radfahren</string>

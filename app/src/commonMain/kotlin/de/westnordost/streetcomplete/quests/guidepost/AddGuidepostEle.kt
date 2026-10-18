@@ -7,6 +7,7 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
+import de.westnordost.streetcomplete.data.osm.osmquests.Answer
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
@@ -15,10 +16,13 @@ import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.ic_quest_guidepost_ele
 import de.westnordost.streetcomplete.resources.quest_guidepostEle_hint
 import de.westnordost.streetcomplete.resources.quest_guidepostEle_title
+import de.westnordost.streetcomplete.resources.quest_guidepostEle_no_ele_answer
 import de.westnordost.streetcomplete.resources.quest_guidepost_disabled_msg
+import de.westnordost.streetcomplete.ui.common.quest.AnswerItem
 import de.westnordost.streetcomplete.ui.common.quest.TextInputForm
+import org.jetbrains.compose.resources.stringResource
 
-class AddGuidepostEle : OsmFilterQuestType<String>() {
+class AddGuidepostEle : OsmFilterQuestType<GuidepostEleAnswer>() {
 
     override val elementFilter = """
         nodes with
@@ -40,11 +44,21 @@ class AddGuidepostEle : OsmFilterQuestType<String>() {
     override val defaultDisabledMessage = Res.string.quest_guidepost_disabled_msg
 
     @Composable
-    override fun Form(on: (QuestAction<String>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
-        TextInputForm(on, keyboardType = KeyboardType.Decimal)
+    override fun Form(on: (QuestAction<GuidepostEleAnswer>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
+        TextInputForm(
+            on,
+            stringToAnswer = { GuidepostEle(it) },
+            keyboardType = KeyboardType.Decimal,
+            otherAnswers = {
+                listOf(AnswerItem(stringResource(Res.string.quest_guidepostEle_no_ele_answer)) { on(Answer(NoSignedGuidepostEle)) })
+            }
+        )
     }
 
-    override fun applyAnswerTo(answer: String, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
-        tags["ele"] = answer
+    override fun applyAnswerTo(answer: GuidepostEleAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+        when (answer) {
+            is NoSignedGuidepostEle -> tags["ele:signed"] = "no"
+            is GuidepostEle ->         tags["ele"] = answer.ele
+        }
     }
 }

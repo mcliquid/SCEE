@@ -13,6 +13,9 @@ enum class ProposalFamily {
     PATH,
     /** DE:250, 260 (with exceptions): a ban for vehicle or motor_vehicle */
     BAN,
+    /** DE:274.1: maxspeed, zone:maxspeed. Not pre-selected: that the sign applies to the whole way
+     *  (and not only to a part of it) is not known */
+    ZONE,
 }
 
 enum class ProposalKind {
@@ -50,9 +53,10 @@ data class TagProposal(
         }
     }
 
-    val isPreselected: Boolean get() = kind == ProposalKind.NEW
+    val isPreselected: Boolean get() = kind == ProposalKind.NEW && family != ProposalFamily.ZONE
 }
 
+private val ZONE_KEYS = setOf("maxspeed", "zone:maxspeed")
 private val PATH_GLOBAL_KEYS = setOf("highway", "segregated")
 private val PATH_ACCESS_KEYS = setOf("foot", "bicycle")
 
@@ -70,6 +74,7 @@ internal fun buildProposals(
     familiesOf: (TrafficSignDirection?) -> Set<ProposalFamily>,
 ): List<TagProposal> {
     val path = ArrayList<TrafficSignTagChange>()
+    val zone = ArrayList<TrafficSignTagChange>()
     val banSets = LinkedHashMap<TrafficSignDirection?, MutableList<TrafficSignTagChange>>()
     val removals = ArrayList<Pair<TrafficSignDirection?, TrafficSignTagChange.Remove>>()
 
@@ -81,8 +86,9 @@ internal fun buildProposals(
         val base = key.substringBefore(':')
         val isPath = key in PATH_GLOBAL_KEYS || key.startsWith("bicycle:signed") ||
             (ProposalFamily.PATH in families && base in PATH_ACCESS_KEYS) ||
-            (families.isNotEmpty() && ProposalFamily.BAN !in families)
+            (families.isNotEmpty() && ProposalFamily.BAN !in families && ProposalFamily.ZONE !in families)
         when {
+            ProposalFamily.ZONE in families && key in ZONE_KEYS -> zone.add(change)
             isPath -> path.add(change)
             change is TrafficSignTagChange.Set -> banSets.getOrPut(scope) { ArrayList() }.add(change)
             change is TrafficSignTagChange.Remove -> removals.add(scope to change)
@@ -97,6 +103,10 @@ internal fun buildProposals(
             else -> ProposalKind.NEW
         }
         result.add(TagProposal("path", kind, ProposalFamily.PATH, null, path, null, path.any { it.key == "highway" }))
+    }
+    if (zone.isNotEmpty()) {
+        val kind = if (zone.any { it is TrafficSignTagChange.Set && it.previousValue != null }) ProposalKind.CONFLICT else ProposalKind.NEW
+        result.add(TagProposal("zone", kind, ProposalFamily.ZONE, null, zone, null, false))
     }
     val banIds = HashMap<TrafficSignDirection?, String>()
     for ((scope, sets) in banSets) {

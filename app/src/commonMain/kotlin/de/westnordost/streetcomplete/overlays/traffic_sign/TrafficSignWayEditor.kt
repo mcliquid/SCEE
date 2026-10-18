@@ -7,12 +7,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Button
 import androidx.compose.material.Checkbox
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
@@ -41,18 +41,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
-import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
-import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.traffic_signs.TrafficSignCatalogues
 import de.westnordost.streetcomplete.osm.traffic_sign.DirectionSelection
+import de.westnordost.streetcomplete.data.preferences.Preferences
+import de.westnordost.streetcomplete.data.preferences.getLastPicked
+import de.westnordost.streetcomplete.data.preferences.setLastPicked
+import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignCombination
+import de.westnordost.streetcomplete.osm.traffic_sign.withPicked
+import de.westnordost.streetcomplete.ui.common.last_picked.LastPickedChipsRow
+import org.koin.compose.koinInject
 import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignCatalogue
 import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignDirection
 import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignGroup
 import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignPickerKind
 import de.westnordost.streetcomplete.osm.traffic_sign.WaySignSelection
 import de.westnordost.streetcomplete.osm.traffic_sign.deriveWayTags
-import de.westnordost.streetcomplete.osm.traffic_sign.directionArrows
 import de.westnordost.streetcomplete.osm.traffic_sign.isCompatibleModifierOf
 import de.westnordost.streetcomplete.osm.traffic_sign.parseTrafficSignValue
 import de.westnordost.streetcomplete.osm.traffic_sign.toValueOrNull
@@ -62,9 +66,6 @@ import de.westnordost.streetcomplete.osm.traffic_sign.withoutGroup
 import de.westnordost.streetcomplete.osm.traffic_sign.withoutModifier
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.dialogs.AlertDialog
-import de.westnordost.streetcomplete.ui.common.dialogs.ScrollableAlertDialog
-import de.westnordost.streetcomplete.ui.common.quest.LocalMapMarkersCallback
-import de.westnordost.streetcomplete.ui.common.quest.Marker
 import de.westnordost.streetcomplete.ui.common.traffic_sign.TrafficSignGroupImage
 import de.westnordost.streetcomplete.ui.common.traffic_sign.TrafficSignValueImage
 import kotlinx.coroutines.Dispatchers
@@ -186,6 +187,12 @@ class TrafficSignWayEditorState(
             }
         }
 
+    /** a previously used combination, for both directions */
+    fun applyCombination(combination: TrafficSignCombination) {
+        setEncoded(TrafficSignDirection.FORWARD, combination.forward)
+        setEncoded(TrafficSignDirection.BACKWARD, combination.backward)
+    }
+
     /** [direction] = null: both */
     internal fun set(direction: TrafficSignDirection?, selection: DirectionSelection) =
         setEncoded(direction, selection.encode())
@@ -229,61 +236,65 @@ fun rememberTrafficSignWayEditorState(way: Way, catalogue: TrafficSignCatalogue)
     }
 }
 
-/** Shows the way and arrows for both directions on the map while the editor is shown */
-@Composable
-fun TrafficSignDirectionMarkers(geometry: ElementGeometry) {
-    val mapMarkersCallback = LocalMapMarkersCallback.current
-    LaunchedEffect(geometry) {
-        val markers = mutableListOf(Marker(geometry))
-        val line = (geometry as? ElementPolylinesGeometry)?.polylines?.firstOrNull()
-        if (line != null) {
-            // Arrows at several places along the real geometry, each rotated like the way segment
-            // it is on, so that they follow curves. Forward: solid, backward: hollow.
-            for (direction in TrafficSignDirection.entries) {
-                for (arrow in line.directionArrows(direction)) {
-                    markers += Marker(
-                        geometry = ElementPointGeometry(arrow.position),
-                        icon = direction.icon,
-                        rotation = arrow.bearing,
-                    )
-                }
-            }
-        }
-        mapMarkersCallback?.invoke(markers)
-    }
-    DisposableEffect(Unit) {
-        onDispose { mapMarkersCallback?.invoke(emptyList()) }
-    }
-}
-
-/** The two direction rows, the direction hint, the preview of the consequences and the dialogs */
+/** The signs (by default for both directions, optionally per direction), the last used
+ *  combinations, the direction hint, the preview of the consequences */
 @Composable
 fun TrafficSignWayEditor(
     state: TrafficSignWayEditorState,
     geometry: ElementGeometry,
-    /** whether to show the way and the arrows of both directions on the map, with an explanation.
-     *  The quest does not: it has the highlighted element and the global geometry arrows */
-    showDirectionArrows: Boolean = true,
+    preferences: Preferences = koinInject(),
 ) {
-    var editedDirection by rememberSaveable { mutableStateOf<TrafficSignDirection?>(null) }
-    if (showDirectionArrows) TrafficSignDirectionMarkers(geometry)
+    // existing signs that differ per direction are never merged: they are shown per direction
+    var perDirection by rememberSaveable {
+        mutableStateOf(state.original.forward.encode() != state.original.backward.encode())
+    }
+    val lastPicked = remember { preferences.lastPickedTrafficSigns() }
     // like in the other forms (AddOnewayForm, SidepathChoiceGrid): the arrows in the form point the
     // way the way runs on the map, also if the map is rotated
     val geometryRotation = remember(geometry) { geometry.getOrientationOrZero() }
     val rotation = geometryRotation - LocalMapRotation.current
 
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        for (direction in TrafficSignDirection.entries) {
-            DirectionRow(
-                direction = direction,
-                selection = state.selection[direction],
-                hasExistingValue = !state.original[direction].isNotSurveyed(),
-                onClick = { editedDirection = direction },
-                rotation = rotation,
-                // the same selection as "no signs" in the direction dialog; the confirmations
-                // (access warning etc.) happen when the user presses OK
-                onNone = { state.set(direction, DirectionSelection.None) },
+        if (lastPicked.isNotEmpty()) {
+            LastPickedChipsRow(
+                items = lastPicked,
+                onClick = {
+                    state.applyCombination(it)
+                    if (!it.isSameInBothDirections) perDirection = true
+                },
+            ) { CombinationChip(it, state.catalogue) }
+        }
+        if (perDirection) {
+            for (direction in TrafficSignDirection.entries) {
+                DirectionRow(
+                    direction = direction,
+                    noneEnabled = state.selection[direction] != DirectionSelection.None,
+                    // the confirmations (access warning etc.) happen when the user presses OK
+                    onNone = { state.set(direction, DirectionSelection.None) },
+                    rotation = rotation,
+                )
+                SignsEditor(
+                    catalogue = state.catalogue,
+                    selection = state.selection[direction],
+                    hasExistingValue = !state.original[direction].isNotSurveyed(),
+                    onChange = { state.set(direction, it) },
+                )
+            }
+        } else {
+            SignsEditor(
+                catalogue = state.catalogue,
+                selection = state.selection.forward,
+                hasExistingValue = !state.original.forward.isNotSurveyed(),
+                onChange = { state.set(null, it) },
             )
+        }
+        Row(
+            Modifier.fillMaxWidth().clickable(enabled = !perDirection || state.selection.forward == state.selection.backward) { perDirection = !perDirection },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            // back to "both" only when both directions are the same, nothing is overwritten
+            Checkbox(perDirection, { perDirection = it }, enabled = !perDirection || state.selection.forward == state.selection.backward)
+            Text(stringResource(Res.string.traffic_sign_overlay_per_direction))
         }
         // one action for the common case: there are no signs in either direction
         TextButton(
@@ -292,31 +303,11 @@ fun TrafficSignWayEditor(
         ) {
             Text(stringResource(Res.string.traffic_sign_overlay_none_both))
         }
-        if (showDirectionArrows) {
-            Text(
-                stringResource(Res.string.traffic_sign_overlay_direction_hint),
-                style = MaterialTheme.typography.caption,
-            )
-        }
         // the tags that will be saved, always shown before the user confirms
         if (state.isEdited && (state.tagging.changes.isNotEmpty() || state.confirmationPreview.hasContent)) {
             Divider()
             TrafficSignChangesPreview(state)
         }
-    }
-
-    editedDirection?.let { direction ->
-        DirectionDialog(
-            direction = direction,
-            catalogue = state.catalogue,
-            initial = state.selection[direction],
-            hasExistingValue = !state.original[direction].isNotSurveyed(),
-            onDismiss = { editedDirection = null },
-            onConfirm = { newSelection, both ->
-                editedDirection = null
-                state.set(if (both) null else direction, newSelection)
-            },
-        )
     }
 }
 
@@ -394,23 +385,16 @@ private val TrafficSignDirection.rowIcon: DrawableResource get() = when (this) {
     TrafficSignDirection.BACKWARD -> Res.drawable.oneway_yes_reverse
 }
 
-/** the arrows for the markers on the map (overlay) */
-internal val TrafficSignDirection.icon: DrawableResource get() = when (this) {
-    TrafficSignDirection.FORWARD -> Res.drawable.ic_traffic_sign_direction_forward
-    TrafficSignDirection.BACKWARD -> Res.drawable.ic_traffic_sign_direction_backward
-}
-
+/** Header of one direction (per-direction mode): arrow, name and "no signs" */
 @Composable
 private fun DirectionRow(
     direction: TrafficSignDirection,
-    selection: DirectionSelection,
-    hasExistingValue: Boolean,
-    onClick: () -> Unit,
+    noneEnabled: Boolean,
     onNone: () -> Unit,
     rotation: Float,
 ) {
     Row(
-        Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 4.dp),
+        Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -418,164 +402,84 @@ private fun DirectionRow(
         Image(
             painter = remember(painter) { ClipCirclePainter(painter) },
             contentDescription = null,
-            modifier = Modifier.size(48.dp).rotate(rotation),
+            modifier = Modifier.size(40.dp).rotate(rotation),
         )
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(stringResource(direction.label), fontWeight = FontWeight.Bold)
-            when (selection) {
-                DirectionSelection.NotSurveyed -> Text(
-                    stringResource(
-                        if (hasExistingValue) Res.string.traffic_sign_overlay_state_keep
-                        else Res.string.traffic_sign_overlay_state_not_surveyed
-                    ),
-                    color = MaterialTheme.colors.error.takeUnless { hasExistingValue }
-                        ?: MaterialTheme.colors.onSurface.copy(alpha = ContentAlpha.medium)
-                )
-                DirectionSelection.None -> Text(stringResource(Res.string.traffic_sign_overlay_state_none))
-                is DirectionSelection.Signed -> {
-                    TrafficSignValueImage(selection.value, signHeight = 56.dp)
-                    if (selection.value.isUnparseable) {
-                        Text(
-                            stringResource(Res.string.traffic_sign_overlay_unreadable_value),
-                            style = MaterialTheme.typography.caption,
-                        )
-                    }
-                }
-            }
-        }
-        TextButton(onClick = onNone, enabled = selection != DirectionSelection.None) {
+        Text(stringResource(direction.label), fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+        TextButton(onClick = onNone, enabled = noneEnabled) {
             Text(stringResource(Res.string.traffic_sign_overlay_state_none))
         }
     }
 }
 
-/** Dialog to enter the state and signs of one direction */
+/** The signs of one direction (or of both), edited in place: no dialog in between, the catalogue is
+ *  one tap away. "No signs" is a separate action of the editor, not an option of the picker. */
 @Composable
-private fun DirectionDialog(
-    direction: TrafficSignDirection,
+private fun SignsEditor(
     catalogue: TrafficSignCatalogue,
-    initial: DirectionSelection,
+    selection: DirectionSelection,
     hasExistingValue: Boolean,
-    onDismiss: () -> Unit,
-    onConfirm: (DirectionSelection, applyToBoth: Boolean) -> Unit,
+    onChange: (DirectionSelection) -> Unit,
 ) {
-    // 0 = not surveyed, 1 = none, 2 = signed
-    var mode by rememberSaveable {
-        mutableStateOf(when (initial) {
-            DirectionSelection.NotSurveyed -> 0
-            DirectionSelection.None -> 1
-            is DirectionSelection.Signed -> 2
-        })
-    }
-    // the draft is saved as text, too
-    var draftEncoded by rememberSaveable {
-        mutableStateOf((initial as? DirectionSelection.Signed)?.value?.takeIf { !it.isUnparseable }?.toOsmValue().orEmpty())
-    }
-    var both by rememberSaveable { mutableStateOf(false) }
     // (null = add main sign, n = add additional sign to group n)
     var adding by rememberSaveable { mutableStateOf<Int?>(null) }
     var showCatalogue by rememberSaveable { mutableStateOf(false) }
-
-    val groups: List<TrafficSignGroup> = remember(draftEncoded, catalogue) {
-        if (draftEncoded.isEmpty()) emptyList() else parseTrafficSignValue(draftEncoded, catalogue).groups
+    val signed = selection as? DirectionSelection.Signed
+    val groups: List<TrafficSignGroup> = remember(selection, catalogue) {
+        signed?.value?.takeIf { !it.isUnparseable }?.groups.orEmpty()
     }
-    fun setGroups(newGroups: List<TrafficSignGroup>) {
-        draftEncoded = newGroups.toValueOrNull(catalogue.country)?.toOsmValue().orEmpty()
-    }
+    // nothing left: back to "not surveyed", which leaves the existing tags alone
+    fun setGroups(newGroups: List<TrafficSignGroup>) = onChange(
+        newGroups.toValueOrNull(catalogue.country)?.let { DirectionSelection.Signed(it) } ?: DirectionSelection.NotSurveyed
+    )
     val isUnusual = groups.any { g ->
         val main = g.main?.sign
         main != null && g.modifiers.any { m -> m.sign != null && !m.sign.isCompatibleModifierOf(main) }
     }
 
-    val result: DirectionSelection? = when (mode) {
-        0 -> DirectionSelection.NotSurveyed
-        1 -> DirectionSelection.None
-        // signs chosen: otherwise (e.g. an existing entry that can't be displayed) OK stays disabled
-        else -> groups.toValueOrNull(catalogue.country)?.let { DirectionSelection.Signed(it) }
-    }
-
-    ScrollableAlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(direction.label)) },
-        content = {
-            Column(
-                Modifier.padding(horizontal = 24.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                ModeRow(
-                    selected = mode == 0,
-                    label = stringResource(
-                        if (hasExistingValue) Res.string.traffic_sign_overlay_state_keep
-                        else Res.string.traffic_sign_overlay_state_not_surveyed
-                    ),
-                    description = stringResource(Res.string.traffic_sign_overlay_not_surveyed_description),
-                    onClick = { mode = 0 },
-                )
-                ModeRow(
-                    selected = mode == 1,
-                    label = stringResource(Res.string.traffic_sign_overlay_state_none),
-                    description = stringResource(Res.string.traffic_sign_overlay_none_description),
-                    onClick = { mode = 1 },
-                )
-                ModeRow(
-                    selected = mode == 2,
-                    label = stringResource(Res.string.traffic_sign_overlay_state_signed),
-                    description = null,
-                    onClick = { mode = 2 },
-                )
-                if (mode == 2) {
-                    if (initial is DirectionSelection.Signed && initial.value.isUnparseable && groups.isEmpty()) {
-                        Text(
-                            stringResource(Res.string.traffic_sign_overlay_unreadable_value),
-                            style = MaterialTheme.typography.caption,
-                        )
-                    }
-                    groups.forEachIndexed { index, group ->
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            TrafficSignGroupImage(group, catalogue.country, signHeight = 64.dp)
-                            Row {
-                                TextButton(onClick = { adding = index; showCatalogue = true }) {
-                                    Text(stringResource(Res.string.traffic_sign_overlay_add_modifier))
-                                }
-                                TextButton(onClick = { setGroups(groups.withoutGroup(index)) }) {
-                                    Text(stringResource(Res.string.traffic_sign_overlay_remove))
-                                }
-                            }
-                            group.modifiers.forEachIndexed { modifierIndex, modifier ->
-                                TextButton(onClick = { setGroups(groups.withoutModifier(index, modifierIndex)) }) {
-                                    Text("${stringResource(Res.string.traffic_sign_overlay_remove)}: ${modifier.description}")
-                                }
-                            }
-                        }
-                        Divider()
-                    }
-                    TextButton(onClick = { adding = null; showCatalogue = true }) {
-                        Text(stringResource(Res.string.traffic_sign_overlay_add_main))
-                    }
-                    if (isUnusual) {
-                        Text(
-                            stringResource(Res.string.traffic_sign_overlay_unusual_combination),
-                            style = MaterialTheme.typography.caption,
-                        )
-                    }
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        when {
+            selection == DirectionSelection.NotSurveyed -> Text(
+                stringResource(
+                    if (hasExistingValue) Res.string.traffic_sign_overlay_state_keep
+                    else Res.string.traffic_sign_overlay_state_not_surveyed
+                ),
+                color = MaterialTheme.colors.error.takeUnless { hasExistingValue }
+                    ?: MaterialTheme.colors.onSurface.copy(alpha = ContentAlpha.medium)
+            )
+            selection == DirectionSelection.None -> Text(stringResource(Res.string.traffic_sign_overlay_state_none))
+            groups.isEmpty() -> Text(
+                stringResource(Res.string.traffic_sign_overlay_unreadable_value),
+                style = MaterialTheme.typography.caption,
+            )
+        }
+        groups.forEachIndexed { index, group ->
+            TrafficSignGroupImage(group, catalogue.country, signHeight = 64.dp)
+            Row {
+                TextButton(onClick = { adding = index; showCatalogue = true }) {
+                    Text(stringResource(Res.string.traffic_sign_overlay_add_modifier))
                 }
-                Row(
-                    Modifier.fillMaxWidth().clickable { both = !both },
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Checkbox(both, { both = it })
-                    Text(stringResource(Res.string.traffic_sign_overlay_same_both))
+                TextButton(onClick = { setGroups(groups.withoutGroup(index)) }) {
+                    Text(stringResource(Res.string.traffic_sign_overlay_remove))
                 }
             }
-        },
-        buttonRow = {
-            TextButton(onClick = onDismiss) { Text(stringResource(Res.string.cancel)) }
-            TextButton(
-                onClick = { result?.let { onConfirm(it, both) } },
-                enabled = result != null,
-            ) { Text(stringResource(Res.string.ok)) }
-        },
-    )
+            group.modifiers.forEachIndexed { modifierIndex, modifier ->
+                TextButton(onClick = { setGroups(groups.withoutModifier(index, modifierIndex)) }) {
+                    Text("${stringResource(Res.string.traffic_sign_overlay_remove)}: ${modifier.description}")
+                }
+            }
+            Divider()
+        }
+        // after "no signs" the signs are added to nothing
+        Button(onClick = { adding = null; showCatalogue = true }) {
+            Text(stringResource(Res.string.traffic_sign_overlay_add_main))
+        }
+        if (isUnusual) {
+            Text(
+                stringResource(Res.string.traffic_sign_overlay_unusual_combination),
+                style = MaterialTheme.typography.caption,
+            )
+        }
+    }
 
     if (showCatalogue) {
         val target = adding
@@ -588,24 +492,36 @@ private fun DirectionDialog(
             onPick = { part ->
                 showCatalogue = false
                 setGroups(if (target == null) groups.withMainSign(part) else groups.withModifier(target, part))
-                mode = 2
             },
         )
     }
 }
 
+/** The content of a chip for a previously used combination */
 @Composable
-private fun ModeRow(selected: Boolean, label: String, description: String?, onClick: () -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().clickable(onClick = onClick),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        RadioButton(selected, onClick)
-        Column {
-            Text(label, fontWeight = FontWeight.Bold)
-            if (description != null) Text(description, style = MaterialTheme.typography.caption)
+private fun CombinationChip(combination: TrafficSignCombination, catalogue: TrafficSignCatalogue) {
+    val selection = combination.toSelection(catalogue)
+    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+        val directions = if (combination.isSameInBothDirections) listOf(TrafficSignDirection.FORWARD) else TrafficSignDirection.entries
+        for (d in directions) {
+            when (val s = selection[d]) {
+                is DirectionSelection.Signed -> TrafficSignValueImage(s.value, signHeight = 32.dp)
+                DirectionSelection.None -> Text(stringResource(Res.string.traffic_sign_overlay_state_none), style = MaterialTheme.typography.caption)
+                DirectionSelection.NotSurveyed -> Text("–")
+            }
         }
     }
+}
+
+private const val HISTORY_KEY = "TrafficSignWayEditor"
+
+/** The last used combinations, newest first. Shared by quest and overlay. */
+fun Preferences.lastPickedTrafficSigns(): List<TrafficSignCombination> = getLastPicked(HISTORY_KEY)
+
+/** Remembers the signs of [this] for the next time. Call when the user has saved, not on cancel. */
+fun TrafficSignWayEditorState.rememberPicked(preferences: Preferences) {
+    val combination = TrafficSignCombination.of(selection) ?: return
+    preferences.setLastPicked(HISTORY_KEY, preferences.lastPickedTrafficSigns().withPicked(combination))
 }
 
 

@@ -193,6 +193,8 @@ data class TrafficSignNotDerived(
          *  changed if the signs of both directions are foot- and cycleway signs: otherwise the
          *  access implied by highway=* would silently change for the other direction */
         HIGHWAY_CHANGE_NOT_IN_BOTH_DIRECTIONS,
+        /** a speed zone (DE:274.1) is only derived if the signs of both directions say so */
+        ZONE_NOT_IN_BOTH_DIRECTIONS,
     }
 }
 
@@ -228,6 +230,12 @@ fun TrafficSignWaySigns.deriveWayTags(tags: Map<String, String>): TrafficSignWay
     val derived = directions.associateWith { dir ->
         rules[dir]?.derive(views.getValue(dir), null, notDerivedByDir.getValue(dir))
     }.toMutableMap()
+
+    // a zone sign facing one direction only does not say that the way is in the zone
+    directions.filter { rules[it] is ZoneRule && derived[it] != null }.singleOrNull()?.let { dir ->
+        notDerivedByDir.getValue(dir).add(TrafficSignNotDerived(TrafficSignNotDerived.Reason.ZONE_NOT_IN_BOTH_DIRECTIONS))
+        derived[dir] = null
+    }
 
     // decide on a common highway=*
     val highway = original["highway"]
@@ -322,7 +330,7 @@ fun TrafficSignWaySigns.deriveWayTags(tags: Map<String, String>): TrafficSignWay
     }
     val newHighway = result["highway"]
     val allChanges = diff(original, result)
-    val familyOf = directions.associateWith { d -> rules[d]?.let { if (it.isPathRule) ProposalFamily.PATH else ProposalFamily.BAN } }
+    val familyOf = directions.associateWith { d -> rules[d]?.let { if (it.isPathRule) ProposalFamily.PATH else if (it is ZoneRule) ProposalFamily.ZONE else ProposalFamily.BAN } }
     return TrafficSignWayTagging(
         trafficSign = if (isSame) forwardValue else null,
         trafficSignForward = forwardValue,
@@ -547,6 +555,7 @@ private val WAY_RULES: Map<String, Map<List<String>, WayRule>> = mapOf(
         listOf("260") to AccessBanRule("motor_vehicle", null),
         listOf("260", "1020-30") to AccessBanRule("motor_vehicle", "destination", "1020-30"),
         listOf("260", "1026-36") to AccessBanRule("motor_vehicle", "agricultural", "1026-36"),
+        listOf("274.1") to ZoneRule(30),
     )
 )
 
@@ -850,6 +859,52 @@ private class AccessBanRule(
         }
         if (classificationHintSign != null) {
             notDerived.add(TrafficSignNotDerived(TrafficSignNotDerived.Reason.HIGHWAY_CLASSIFICATION_HINT, classificationHintSign))
+        }
+        return Derived(t, resolved, unresolved)
+    }
+}
+
+/* ------------------------------------------ speed zones ------------------------------------------ */
+
+/** DE:274.1 (Tempo 30-Zone): maxspeed=30 and zone:maxspeed=DE:30, as on
+ *  https://wiki.openstreetmap.org/wiki/Key:zone:maxspeed (checked 2026-10). source:maxspeed and
+ *  maxspeed:type overlap with zone:maxspeed: they are not written, but an existing zone value is
+ *  accepted and any other value is reported. The proposal is not pre-selected, see [ProposalFamily.ZONE] */
+private class ZoneRule(private val speed: Int) : WayRule {
+    override val isPathRule get() = false
+    override val requiredHighway: String? get() = null
+
+    override fun derive(tags: Map<String, String>, targetHighway: String?, notDerived: MutableList<TrafficSignNotDerived>): Derived? {
+        val highway = tags["highway"]
+        if (highway == null) {
+            notDerived.add(TrafficSignNotDerived(TrafficSignNotDerived.Reason.NOT_A_HIGHWAY))
+            return null
+        }
+        if (highway !in ALL_ROADS) {
+            notDerived.add(TrafficSignNotDerived(TrafficSignNotDerived.Reason.UNSUPPORTED_HIGHWAY, highway))
+            return null
+        }
+        val conditional = tags.keys.filter { isConditionalKeyOf(it, setOf("maxspeed")) }
+        val lanes = tags.keys.filter { it.startsWith("maxspeed:lanes") }
+        if (conditional.isNotEmpty()) notDerived.add(TrafficSignNotDerived(TrafficSignNotDerived.Reason.CONDITIONAL_TAGS_PRESENT, conditional.joinToString(",")))
+        if (lanes.isNotEmpty()) notDerived.add(TrafficSignNotDerived(TrafficSignNotDerived.Reason.LANE_TAGS_PRESENT, lanes.joinToString(",")))
+        if (conditional.isNotEmpty() || lanes.isNotEmpty()) return null
+
+        val t = tags.toMutableMap()
+        val resolved = ArrayList<TrafficSignTagConflict>()
+        val unresolved = ArrayList<TrafficSignTagConflict>()
+        val zoneValue = "DE:$speed"
+        for ((key, value) in mapOf("maxspeed" to "$speed", "zone:maxspeed" to zoneValue)) {
+            val previous = tags[key]
+            if (previous != null && previous != value) resolved.add(TrafficSignTagConflict(key, previous, TrafficSignTagConflict.Reason.CONTRADICTS_SIGN))
+            t[key] = value
+        }
+        // other ways to say the speed are left alone, a different one is reported
+        val zoneTypes = setOf(zoneValue, "DE:zone$speed")
+        for (key in listOf("source:maxspeed", "maxspeed:type", "maxspeed:forward", "maxspeed:backward")) {
+            val value = tags[key] ?: continue
+            val matches = if (key.startsWith("maxspeed:") && key.endsWith("ward")) value == "$speed" else value in zoneTypes
+            if (!matches) unresolved.add(TrafficSignTagConflict(key, value, TrafficSignTagConflict.Reason.CONTRADICTS_SIGN))
         }
         return Derived(t, resolved, unresolved)
     }

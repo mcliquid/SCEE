@@ -532,7 +532,7 @@ class TrafficSignWayTaggingTest {
         assertEquals(
             setOf(
                 listOf("237"), listOf("239"), listOf("239", "1022-10"), listOf("240"), listOf("241-30"), listOf("241-31"),
-                listOf("250"), listOf("250", "1020-30"), listOf("260"), listOf("260", "1020-30"), listOf("260", "1026-36"),
+                listOf("250"), listOf("250", "1020-30"), listOf("260"), listOf("260", "1020-30"), listOf("260", "1026-36"), listOf("274.1"),
             ),
             SUPPORTED_WAY_TRAFFIC_SIGNS.getValue("DE")
         )

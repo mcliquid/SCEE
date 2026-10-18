@@ -707,7 +707,6 @@
     <string name="traffic_sign_overlay_loading">Verkehrszeichen werden geladen…</string>
     <string name="traffic_sign_overlay_direction_forward">Richtung des Weges</string>
     <string name="traffic_sign_overlay_direction_backward">Gegenrichtung</string>
-    <string name="traffic_sign_overlay_direction_hint">Die Pfeile auf der Karte zeigen die beiden Richtungen entlang des Weges. Der ausgefüllte Pfeil ist die Richtung, in der der Weg gezeichnet wurde.</string>
     <string name="traffic_sign_overlay_state_not_surveyed">Nicht erfasst</string>
     <string name="traffic_sign_overlay_state_keep">Unverändert lassen</string>
     <string name="traffic_sign_overlay_state_none">Keine Schilder</string>
@@ -716,6 +715,7 @@
     <string name="traffic_sign_overlay_none_description">Ich habe geprüft: In dieser Richtung gibt es keine Verkehrszeichen.</string>
     <string name="traffic_sign_overlay_unreadable_value">Es gibt einen vorhandenen Eintrag, der nicht angezeigt werden kann. Wähle Schilder, um ihn zu ersetzen.</string>
     <string name="traffic_sign_overlay_same_both">Für beide Richtungen übernehmen</string>
+    <string name="traffic_sign_overlay_per_direction">Je Fahrtrichtung unterschiedlich</string>
     <string name="traffic_sign_overlay_add_main">Verkehrszeichen hinzufügen</string>
     <string name="traffic_sign_overlay_add_modifier">Zusatzzeichen hinzufügen</string>
     <string name="traffic_sign_overlay_remove">Entfernen</string>
@@ -729,8 +729,6 @@
     <string name="traffic_sign_overlay_value_title">Wert eingeben</string>
     <string name="traffic_sign_overlay_value_invalid">Bitte einen gültigen Wert eingeben.</string>
     <string name="traffic_sign_overlay_unusual_combination">Der Katalog führt diese Kombination nicht auf. Du kannst sie trotzdem speichern.</string>
-    <string name="traffic_sign_overlay_scope_hint">Die Schilder werden für den ganzen Weg erfasst. Gelten sie nur für einen Teil, teile den Weg zuerst.</string>
-    <string name="traffic_sign_overlay_split_way">Weg teilen</string>
     <string name="traffic_sign_overlay_confirm_none_title">Schilder durch „keine Schilder“ ersetzen?</string>
     <string name="traffic_sign_overlay_confirm_none_text">Vorhandene Schilder dieses Weges werden durch die Angabe ersetzt, dass es keine Schilder gibt. Stimmt das?</string>
     <string name="traffic_sign_overlay_confirm_none_yes">Ja, keine Schilder</string>
@@ -776,6 +774,7 @@
     <string name="traffic_sign_overlay_not_derived_highway_classification_hint">Das Schild deutet auf eine andere Straßenklasse hin. Bitte selbst prüfen.</string>
     <string name="traffic_sign_overlay_not_derived_conflicting_highway_classification">Die Schilder beider Richtungen verlangen unterschiedliche Wegtypen.</string>
     <string name="traffic_sign_overlay_not_derived_highway_change_not_in_both_directions">Der Wegtyp ändert sich nur, wenn beide Richtungen Geh- oder Radwegschilder haben.</string>
+    <string name="traffic_sign_overlay_not_derived_zone_not_in_both_directions">Die Tempo-Zone wird nur abgeleitet, wenn die Schilder beider Richtungen sie anzeigen.</string>
     <string name="quest_traffic_sign_title">Welche Verkehrszeichen gelten für diesen Weg?</string>
     <string name="quest_traffic_sign_hint">Wähle die Schilder getrennt für jede Richtung des Weges, wie von den Pfeilen auf der Karte gezeigt. Eine Richtung, die du unverändert lässt, wird nicht geändert. Wähle \"Keine Schilder\" nur, wenn du sicher bist, dass es keine gibt.</string>
     <string name="traffic_sign_confirm_title">Diese Änderungen speichern?</string>

@@ -3,10 +3,7 @@ package de.westnordost.streetcomplete.overlays.traffic_sign
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import de.westnordost.streetcomplete.osm.traffic_sign.applyConfirmed
 import androidx.compose.runtime.getValue
@@ -23,11 +20,11 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.overlays.Action
 import de.westnordost.streetcomplete.data.overlays.Edit
 import de.westnordost.streetcomplete.data.overlays.OverlayAction
+import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.traffic_signs.TrafficSignCatalogues
 import de.westnordost.streetcomplete.osm.traffic_sign.TrafficSignCatalogue
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.overlay.OverlayForm
-import de.westnordost.streetcomplete.util.ktx.isSplittable
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -66,11 +63,13 @@ private fun TrafficSignOverlayFormContent(
     catalogue: TrafficSignCatalogue,
 ) {
     val state = rememberTrafficSignWayEditorState(way, catalogue)
+    val preferences: Preferences = koinInject()
     var confirmNone by rememberSaveable { mutableStateOf(false) }
 
     fun confirm() {
         val changes = StringMapChangesBuilder(way.tags)
         state.tagging.applyConfirmed(changes, state.confirmed)
+        state.rememberPicked(preferences)
         on(Edit(UpdateElementTagsAction(way, changes.create())))
     }
 
@@ -84,16 +83,6 @@ private fun TrafficSignOverlayFormContent(
     ) {
         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             TrafficSignWayEditor(state, geometry)
-            Divider()
-            Text(
-                stringResource(Res.string.traffic_sign_overlay_scope_hint),
-                style = MaterialTheme.typography.caption,
-            )
-            if (way.isSplittable()) {
-                TextButton(onClick = { on(Action.SplitWay) }) {
-                    Text(stringResource(Res.string.traffic_sign_overlay_split_way))
-                }
-            }
         }
     }
 

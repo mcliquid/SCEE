@@ -165,7 +165,7 @@ class TrafficSignOverlayTest {
         // the texts are chosen with exhaustive when expressions; this makes sure the enums are not
         // empty and that a new reason would be noticed in review of this test
         assertEquals(9, TrafficSignTagConflict.Reason.entries.size)
-        assertEquals(13, TrafficSignNotDerived.Reason.entries.size)
+        assertEquals(14, TrafficSignNotDerived.Reason.entries.size)
     }
 
     @Test fun `preview model of the example does not contain tags`() {

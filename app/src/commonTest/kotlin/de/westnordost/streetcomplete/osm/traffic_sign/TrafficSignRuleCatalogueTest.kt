@@ -12,12 +12,12 @@ class TrafficSignRuleCatalogueTest {
 
     private val catalogue = TrafficSignTestData.catalogueDE
 
-    @Test fun `exactly the 11 reviewed rules exist`() {
+    @Test fun `exactly the 12 reviewed rules exist`() {
         val rules = SUPPORTED_WAY_TRAFFIC_SIGNS.getValue("DE")
         assertEquals(
             setOf(
                 listOf("237"), listOf("239"), listOf("239", "1022-10"), listOf("240"), listOf("241-30"), listOf("241-31"),
-                listOf("250"), listOf("250", "1020-30"), listOf("260"), listOf("260", "1020-30"), listOf("260", "1026-36"),
+                listOf("250"), listOf("250", "1020-30"), listOf("260"), listOf("260", "1020-30"), listOf("260", "1026-36"), listOf("274.1"),
             ),
             rules
         )

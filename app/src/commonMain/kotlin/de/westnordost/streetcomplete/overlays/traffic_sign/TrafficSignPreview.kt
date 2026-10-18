@@ -198,4 +198,5 @@ private val TrafficSignNotDerived.Reason.text: StringResource get() = when (this
     TrafficSignNotDerived.Reason.HIGHWAY_CLASSIFICATION_HINT -> Res.string.traffic_sign_overlay_not_derived_highway_classification_hint
     TrafficSignNotDerived.Reason.CONFLICTING_HIGHWAY_CLASSIFICATION -> Res.string.traffic_sign_overlay_not_derived_conflicting_highway_classification
     TrafficSignNotDerived.Reason.HIGHWAY_CHANGE_NOT_IN_BOTH_DIRECTIONS -> Res.string.traffic_sign_overlay_not_derived_highway_change_not_in_both_directions
+    TrafficSignNotDerived.Reason.ZONE_NOT_IN_BOTH_DIRECTIONS -> Res.string.traffic_sign_overlay_not_derived_zone_not_in_both_directions
 }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -57,6 +58,7 @@ fun TrafficSignCatalogueDialog(
     var category by rememberSaveable { mutableStateOf<String?>(null) }
     var showAll by rememberSaveable { mutableStateOf(false) }
     var customText by rememberSaveable { mutableStateOf("") }
+    var showCustom by rememberSaveable { mutableStateOf(false) }
     var valueFor by remember { mutableStateOf<TrafficSign?>(null) }
 
     val categories = remember(catalogue, kind) { catalogue.categories(kind) }
@@ -89,7 +91,7 @@ fun TrafficSignCatalogueDialog(
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
                     placeholder = { Text(stringResource(Res.string.traffic_sign_overlay_search)) },
                     singleLine = true,
                 )
@@ -112,7 +114,7 @@ fun TrafficSignCatalogueDialog(
                 if (results.isEmpty()) {
                     Text(stringResource(Res.string.traffic_sign_overlay_no_results))
                 }
-                LazyColumn(Modifier.heightIn(max = 360.dp)) {
+                LazyColumn(Modifier.heightIn(max = 460.dp)) {
                     items(results, key = { it.osmValuePart }) { sign ->
                         Row(
                             Modifier
@@ -130,21 +132,26 @@ fun TrafficSignCatalogueDialog(
                         }
                     }
                 }
-                Text(
-                    stringResource(Res.string.traffic_sign_overlay_custom_sign),
-                    style = MaterialTheme.typography.body2,
-                    fontWeight = FontWeight.Bold,
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    OutlinedTextField(
-                        value = customText,
-                        onValueChange = { customText = it },
-                        modifier = Modifier.weight(1f),
-                        placeholder = { Text(stringResource(Res.string.traffic_sign_overlay_custom_sign_hint)) },
-                        singleLine = true,
+                // the manual input is folded away until it is needed
+                TextButton(onClick = { showCustom = !showCustom }) {
+                    Text(
+                        stringResource(Res.string.traffic_sign_overlay_custom_sign),
+                        style = MaterialTheme.typography.body2,
+                        fontWeight = FontWeight.Bold,
                     )
-                    TextButton(onClick = { custom?.let(onPick) }, enabled = custom != null) {
-                        Text(stringResource(Res.string.traffic_sign_overlay_custom_sign_add))
+                }
+                if (showCustom) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(
+                            value = customText,
+                            onValueChange = { customText = it },
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            placeholder = { Text(stringResource(Res.string.traffic_sign_overlay_custom_sign_hint)) },
+                            singleLine = true,
+                        )
+                        TextButton(onClick = { custom?.let(onPick) }, enabled = custom != null) {
+                            Text(stringResource(Res.string.traffic_sign_overlay_custom_sign_add))
+                        }
                     }
                 }
             }

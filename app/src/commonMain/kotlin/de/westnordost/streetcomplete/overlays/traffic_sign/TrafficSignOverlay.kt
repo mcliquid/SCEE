@@ -15,7 +15,7 @@ import de.westnordost.streetcomplete.osm.ALL_PATHS
 import de.westnordost.streetcomplete.osm.ALL_ROADS
 import de.westnordost.streetcomplete.osm.traffic_sign.isWayInGermany
 import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.ic_overlay_traffic_sign
+import de.westnordost.streetcomplete.resources.quest_traffic_sign
 import de.westnordost.streetcomplete.resources.traffic_sign_overlay_title
 import de.westnordost.streetcomplete.util.ktx.isArea
 
@@ -27,7 +27,7 @@ class TrafficSignOverlay(
 ) : Overlay {
 
     override val title = Res.string.traffic_sign_overlay_title
-    override val icon = Res.drawable.ic_overlay_traffic_sign
+    override val icon = Res.drawable.quest_traffic_sign
     override val changesetComment = "Survey traffic signs"
     override val wikiLink: String = "Key:traffic_sign"
 

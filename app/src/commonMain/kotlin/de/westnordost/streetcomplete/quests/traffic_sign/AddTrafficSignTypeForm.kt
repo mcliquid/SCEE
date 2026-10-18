@@ -12,7 +12,9 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.osmquests.Action
 import de.westnordost.streetcomplete.data.osm.osmquests.Answer
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
+import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.traffic_signs.TrafficSignCatalogues
+import de.westnordost.streetcomplete.overlays.traffic_sign.rememberPicked
 import de.westnordost.streetcomplete.overlays.traffic_sign.TrafficSignCatalogueState
 import de.westnordost.streetcomplete.overlays.traffic_sign.TrafficSignConfirmDialog
 import de.westnordost.streetcomplete.overlays.traffic_sign.TrafficSignWayEditor
@@ -32,6 +34,7 @@ fun AddTrafficSignTypeForm(
     element: Element,
     geometry: ElementGeometry,
     catalogues: TrafficSignCatalogues = koinInject(),
+    preferences: Preferences = koinInject(),
 ) {
     when (val s = rememberTrafficSignCatalogueState(catalogues, COUNTRY)) {
         TrafficSignCatalogueState.Loading -> QuestForm(on = on, isComplete = false, onClickOk = {}) {
@@ -43,7 +46,10 @@ fun AddTrafficSignTypeForm(
         is TrafficSignCatalogueState.Ready -> {
             val state = rememberTrafficSignWayEditorState(element as Way, s.catalogue)
             var confirm by rememberSaveable { mutableStateOf(false) }
-            fun answer() = on(Answer(TrafficSignAnswer(state.waySigns, state.confirmed)))
+            fun answer() {
+                state.rememberPicked(preferences)
+                on(Answer(TrafficSignAnswer(state.waySigns, state.confirmed)))
+            }
 
             QuestForm(
                 on = on,
@@ -52,7 +58,7 @@ fun AddTrafficSignTypeForm(
                 // a plain new entry is saved directly
                 onClickOk = { if (state.needsConfirmation) confirm = true else answer() },
             ) {
-                TrafficSignWayEditor(state, geometry, showDirectionArrows = false)
+                TrafficSignWayEditor(state, geometry)
             }
             if (confirm) {
                 TrafficSignConfirmDialog(

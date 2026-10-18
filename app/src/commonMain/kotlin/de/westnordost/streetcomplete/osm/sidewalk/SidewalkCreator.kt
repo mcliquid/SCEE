@@ -31,6 +31,14 @@ fun Sides<Sidewalk>.applyTo(tags: Tags) {
     if (left != null) tags["sidewalk:left"] = left.osmValue
     if (right != null) tags["sidewalk:right"] = right.osmValue
 
+    // a side explicitly without sidewalk must not keep the surface tags of that side
+    if (left == NO || right == NO) {
+        // split :both variants first, so that only the side without sidewalk is cleared
+        listOf("surface", "surface:note", "smoothness").forEach { tags.expandSides("sidewalk", it, includeBareTag = false) }
+    }
+    if (left == NO) tags.removeSidewalkSurfaceTags("left")
+    if (right == NO) tags.removeSidewalkSurfaceTags("right")
+
     // prefer sidewalk:<sides> syntax (i.e. don't `tags.conflateSidewalk()`), iD editor also prefers
     // it and this tagging schema shows a greater growth than the old conflated schema (because of
     // that, maybe 🤷. In any case, let's not play ping-pong with iD)
@@ -39,6 +47,13 @@ fun Sides<Sidewalk>.applyTo(tags: Tags) {
     if (!tags.hasChanges || tags.hasCheckDateForKey("sidewalk")) {
         tags.updateCheckDateForKey("sidewalk")
     }
+}
+
+/** Side has no sidewalk on this way (no, or separately mapped), so it must not carry surface tags. */
+internal fun Tags.removeSidewalkSurfaceTags(side: String) {
+    remove("sidewalk:$side:surface")
+    remove("sidewalk:$side:surface:note")
+    remove("sidewalk:$side:smoothness")
 }
 
 /** converts sidewalk=both to sidewalk:left=yes + sidewalk:right=yes etc. */

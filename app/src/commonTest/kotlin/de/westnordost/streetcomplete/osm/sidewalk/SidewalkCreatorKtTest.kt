@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.osm.sidewalk
 
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChanges
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryChange
@@ -260,10 +261,103 @@ class SidewalkCreatorKtTest {
             Sides(null, Sidewalk.INVALID).applyTo(StringMapChangesBuilder(mapOf()))
         }
     }
+
+    @Test fun `no sidewalk on both sides removes both surfaces`() {
+        assertEquals(
+            mapOf("sidewalk:both" to "no"),
+            Sides(Sidewalk.NO, Sidewalk.NO).resultingTags(mapOf(
+                "sidewalk" to "both",
+                "sidewalk:left:surface" to "asphalt",
+                "sidewalk:right:surface" to "paving_stones",
+            ))
+        )
+    }
+
+    @Test fun `no sidewalk on both sides removes surface of one-sided sidewalk`() {
+        assertEquals(
+            mapOf("sidewalk:both" to "no"),
+            Sides(Sidewalk.NO, Sidewalk.NO).resultingTags(mapOf(
+                "sidewalk" to "left",
+                "sidewalk:left:surface" to "asphalt",
+            ))
+        )
+    }
+
+    @Test fun `no sidewalk on left side removes only left surface`() {
+        assertEquals(
+            mapOf(
+                "sidewalk:left" to "no",
+                "sidewalk:right" to "yes",
+                "sidewalk:right:surface" to "asphalt",
+            ),
+            Sides(Sidewalk.NO, null).resultingTags(mapOf(
+                "sidewalk" to "both",
+                "sidewalk:left:surface" to "asphalt",
+                "sidewalk:right:surface" to "asphalt",
+            ))
+        )
+    }
+
+    @Test fun `no sidewalk on left side removes surface of both variant`() {
+        assertEquals(
+            mapOf(
+                "sidewalk:left" to "no",
+                "sidewalk:right" to "yes",
+                "sidewalk:right:surface" to "asphalt",
+            ),
+            Sides(Sidewalk.NO, null).resultingTags(mapOf(
+                "sidewalk:both" to "yes",
+                "sidewalk:both:surface" to "asphalt",
+            ))
+        )
+    }
+
+    @Test fun `no sidewalk on right side removes only right surface`() {
+        assertEquals(
+            mapOf(
+                "sidewalk:left" to "yes",
+                "sidewalk:right" to "no",
+                "sidewalk:left:surface" to "asphalt",
+            ),
+            Sides(null, Sidewalk.NO).resultingTags(mapOf(
+                "sidewalk" to "both",
+                "sidewalk:left:surface" to "asphalt",
+                "sidewalk:right:surface" to "asphalt",
+            ))
+        )
+    }
+
+    @Test fun `sidewalk remaining on side keeps its surface`() {
+        assertEquals(
+            mapOf(
+                "sidewalk:left" to "yes",
+                "sidewalk:right" to "no",
+                "sidewalk:left:surface" to "asphalt",
+            ),
+            Sides(Sidewalk.YES, null).resultingTags(mapOf(
+                "sidewalk" to "left",
+                "sidewalk:left:surface" to "asphalt",
+            ))
+        )
+    }
+
+    @Test fun `unknown sidewalk situation does not remove surfaces`() {
+        val tags = mapOf(
+            "sidewalk" to "left",
+            "sidewalk:left:surface" to "asphalt",
+        )
+        assertEquals(tags, Sides<Sidewalk>(null, null).resultingTags(tags))
+    }
 }
 
 private fun Sides<Sidewalk>.appliedTo(tags: Map<String, String>): Set<StringMapEntryChange> {
     val cb = StringMapChangesBuilder(tags)
     applyTo(cb)
     return cb.create().changes
+}
+
+private fun Sides<Sidewalk>.resultingTags(tags: Map<String, String>): Map<String, String> {
+    val result = tags.toMutableMap()
+    StringMapChanges(appliedTo(tags)).applyTo(result)
+    return result
 }

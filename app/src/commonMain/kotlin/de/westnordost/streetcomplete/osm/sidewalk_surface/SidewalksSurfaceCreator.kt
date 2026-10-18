@@ -6,6 +6,7 @@ import de.westnordost.streetcomplete.osm.hasCheckDateForKey
 import de.westnordost.streetcomplete.osm.mergeSides
 import de.westnordost.streetcomplete.osm.sidewalk.Sidewalk
 import de.westnordost.streetcomplete.osm.sidewalk.parseSidewalkSides
+import de.westnordost.streetcomplete.osm.sidewalk.removeSidewalkSurfaceTags
 import de.westnordost.streetcomplete.osm.surface.applyTo
 import de.westnordost.streetcomplete.osm.updateCheckDateForKey
 
@@ -30,11 +31,4 @@ fun SidewalkSurface.applyTo(tags: Tags) {
     if (!tags.hasChanges || tags.hasCheckDateForKey("sidewalk:surface")) {
         tags.updateCheckDateForKey("sidewalk:surface")
     }
-}
-
-// Side has no sidewalk on this way (no, or separately mapped), so it must not carry surface tags.
-private fun Tags.removeSidewalkSurfaceTags(side: String) {
-    remove("sidewalk:$side:surface")
-    remove("sidewalk:$side:surface:note")
-    remove("sidewalk:$side:smoothness")
 }

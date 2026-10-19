@@ -3,7 +3,7 @@
 # Build plugins
 kotlin = "2.4.21"
 agp = "9.4.1"
-compose = "1.12.1"
+compose = "1.12.2"
 buildkonfig = "0.23.0"
 # Keep compatible with Kotlin: https://mokkery.dev/docs/Setup/#compatibility
 mokkery = "3.5.1"

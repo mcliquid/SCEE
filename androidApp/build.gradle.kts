@@ -21,7 +21,7 @@ android {
         applicationId = "de.westnordost.streetcomplete.expert"
         minSdk = 25
         targetSdk = 37
-        versionCode = 6404
+        versionCode = 6405
         versionName = providers.gradleProperty("app.streetcomplete.versionName").get()
 
         // no x86: the MapLibre Compose runtime has no x86 build, and other native libraries must

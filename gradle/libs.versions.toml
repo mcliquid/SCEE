@@ -9,7 +9,7 @@ buildkonfig = "0.23.0"
 mokkery = "3.5.1"
 # A development build of Nucleus 3.0, as it fixes some issues with maplibre-compose. Update to 3.0
 # once released
-nucleus = "3.0.0-dev-202610121021"
+nucleus = "3.0.0-dev-202610132318"
 
 # Kotlin
 kotlinxCoroutines = "1.11.0"
@@ -32,7 +32,7 @@ osmfeatures = "8.1.0-SNAPSHOT"
 osmOpeningHours = "0.4.0"
 moshi = "1.15.2"
 sunriseSunsetCalculator = "1.2"
-javaDiffUtils = "4.17"
+javaDiffUtils = "4.18"
 androidGpxParser = "2.3.1"
 
 # UI
@@ -166,9 +166,9 @@ compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
 compose-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
 compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
 compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
-androidx-compose-uiTooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose" }
-composeUiTestJunit4 = { module = "androidx.compose.ui:ui-test-junit4", version.ref = "compose" }
-composeUiTestManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "compose" }
+androidx-compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
+composeUiTestJunit4 = { module = "org.jetbrains.compose.ui:ui-test-junit4", version.ref = "compose" }
+composeUiTestManifest = { module = "androidx.compose.ui:ui-test-manifest", version = "1.7.8" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
 google-material = { module = "com.google.android.material:material", version.ref = "material" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }

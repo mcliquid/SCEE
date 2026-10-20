@@ -27,6 +27,7 @@ class AddAerialwayBicycleAccess : OsmFilterQuestType<AerialwayBicycleAccessAnswe
           and !aerialway:bicycle and !bicycle
           and !aerialway:bicycle:signed
           and !aerialway:bicycle:conditional and !bicycle:conditional
+          and access !~ private|no
     """
 
     override val changesetComment = "Specify whether bicycles can be taken on aerialway"

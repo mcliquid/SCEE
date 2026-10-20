@@ -45,9 +45,12 @@ reorderable = "3.1.0"
 qrose = "1.3.1"
 bignum = "0.3.10"
 filekit = "0.16.0"
-composeWebview = "2.0.3"
+composeWebview = "1.0.3"
 
 # Android
+# The Jetpack Compose version that the Compose Multiplatform version above depends on, which
+# may differ (e.g. for patch releases)
+androidxCompose = "1.12.1"
 activity = "1.13.0"
 material = "1.14.0"
 appcompat = "1.8.0"
@@ -166,7 +169,7 @@ compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
 compose-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose" }
 compose-uiToolingPreview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose" }
 compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
-androidx-compose-uiTooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose" }
+androidx-compose-uiTooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "androidxCompose" }
 composeUiTestJunit4 = { module = "org.jetbrains.compose.ui:ui-test-junit4", version.ref = "compose" }
 composeUiTestManifest = { module = "androidx.compose.ui:ui-test-manifest", version = "1.7.8" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
@@ -214,7 +217,7 @@ filekit-dialogsCompose = { module = "io.github.vinceglb:filekit-dialogs-compose"
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
 
 # Webview for OAuth login
-compose-webview = { module = "io.github.kevinnzou:compose-webview-multiplatform", version.ref = "composeWebview" }
+compose-webview = { module = "dev.nucleusframework:composewebview", version.ref = "composeWebview" }
 
 # Scheduling background jobs (Android)
 androidx-work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }

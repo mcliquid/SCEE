@@ -58,6 +58,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -143,6 +144,15 @@ import de.westnordost.streetcomplete.data.meta.CountryInfos
 import de.westnordost.streetcomplete.data.meta.get
 import de.westnordost.streetcomplete.osm.places.POPULAR_PLACE_FEATURE_IDS
 import de.westnordost.streetcomplete.util.countryboundaries.CountryBoundaries
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.foundation.focusable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.maplibre.compose.interaction.ClickEvent
@@ -178,6 +188,7 @@ fun MainScreen(
     onClickEnterTeamMode: () -> Unit,
     onShowOverlaysTutorial: () -> Unit,
     navViewModel: MainNavViewModel,
+    hardwareKeys: Flow<HardwareKey> = emptyFlow(),
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = koinViewModel(),
     editHistoryViewModel: EditHistoryViewModel = koinViewModel(),
@@ -618,6 +629,15 @@ fun MainScreen(
     // Clear nearby-quest highlight list when the bottom sheet closes (SCEE).
     LaunchedEffect(sheet.isFormOpen, nearby) {
         viewModel.nearbyQuests.value = if (sheet.isFormOpen) nearby.groups else emptyList()
+    }
+
+    // updated on every composition: the collector below lives longer than a single camera state
+    val onHardwareKeyAction = rememberUpdatedState<(HardwareKeyAction) -> Unit> { action ->
+        val zoom = action.zoomAmount()
+        if (zoom != null) zoomBy(zoom) else showMainMenuDialog = true
+    }
+    LaunchedEffect(hardwareKeys) {
+        hardwareKeys.collectHardwareKeyActions(onHardwareKeyAction)
     }
 
     LaunchedEffect(mainBottomSheetViewModel) {
@@ -1107,6 +1127,18 @@ fun MainScreen(
             indexInTeam = if (isTeamMode) indexInTeam else null,
             unsyncedEditsCount = if (!isAutoSync) unsyncedEditsCount else null,
             isUploading = isUploading,
+            modifier = if (hasHardwareKeyShortcuts) {
+                // SCEE: the hardware menu key opens the settings while the menu is open
+                val requester = remember { FocusRequester() }
+                LaunchedEffect(Unit) { requester.requestFocus() }
+                Modifier.focusRequester(requester).focusable().onKeyEvent {
+                    if (isMenuKeyReleased(it.key, it.type)) {
+                        showMainMenuDialog = false
+                        onClickSettings()
+                    }
+                    it.key == Key.Menu
+                }
+            } else Modifier,
         )
     }
 

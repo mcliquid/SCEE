@@ -39,12 +39,16 @@ import de.westnordost.streetcomplete.util.ktx.systemTimeNow
 import de.westnordost.streetcomplete.util.ktx.toLocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
+import de.westnordost.streetcomplete.screens.main.HardwareKey
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun MainNavHost(
     uri: String?,
     onConsumedUri: () -> Unit,
+    hardwareKeys: Flow<HardwareKey> = emptyFlow(),
 ) {
     // The main screen is always at the bottom of the back stack, so its view model lives as long
     // as the app and can receive requests while another destination is shown.
@@ -100,6 +104,7 @@ fun MainNavHost(
                     onClickEnterTeamMode = { backStack.add(Route.TeamModeWizard) },
                     onShowOverlaysTutorial = { backStack.add(Route.OverlaysTutorial) },
                     navViewModel = navViewModel,
+                    hardwareKeys = hardwareKeys,
                     viewModel = koinViewModel(),
                 )
             }

@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.screens.main.hasHardwareKeyShortcuts
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.*
@@ -133,12 +134,14 @@ fun UiSettingsScreen(
                 pref = Prefs.CAPS_WORD_NAME_INPUT,
                 default = false,
             )
-            SwitchPreference(
-                name = stringResource(Res.string.pref_volume_zoom_title),
-                description = stringResource(Res.string.pref_volume_zoom_summary),
-                pref = Prefs.VOLUME_ZOOM,
-                default = false,
-            )
+            if (hasHardwareKeyShortcuts) { // hardware volume buttons; a stored value is kept on other platforms
+                SwitchPreference(
+                    name = stringResource(Res.string.pref_volume_zoom_title),
+                    description = stringResource(Res.string.pref_volume_zoom_summary),
+                    pref = Prefs.VOLUME_ZOOM,
+                    default = false,
+                )
+            }
             SwitchPreference(
                 name = stringResource(Res.string.pref_rotate_while_zooming_title),
                 pref = Prefs.ROTATE_WHILE_ZOOMING,

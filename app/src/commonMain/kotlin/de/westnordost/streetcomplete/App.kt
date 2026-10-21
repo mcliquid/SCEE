@@ -24,7 +24,7 @@ fun App(
     AppEnvironment(locale, theme, keepScreenOn) {
         AppTheme(theme.isDark) {
             Surface {
-                MainNavHost(uri, onConsumedUri)
+                MainNavHost(uri, onConsumedUri, viewModel.hardwareKeys)
             }
         }
     }

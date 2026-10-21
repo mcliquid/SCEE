@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -15,6 +16,8 @@ import androidx.lifecycle.lifecycleScope
 import de.westnordost.streetcomplete.App
 import de.westnordost.streetcomplete.AppLocaleUpdater
 import de.westnordost.streetcomplete.AppViewModel
+import de.westnordost.streetcomplete.screens.main.HardwareKey
+import de.westnordost.streetcomplete.screens.main.handleHardwareKey
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.screens.settings.custom_geometry_changed
@@ -87,6 +90,25 @@ class MainActivity : ComponentActivity(), AndroidScopeComponent {
         super.onStop()
         // Start NearbyQuestMonitor when leaving the main screen (if enabled).
         startQuestMonitor()
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean =
+        handleHardwareKeyEvent(keyCode, isKeyUp = false) || super.onKeyDown(keyCode, event)
+
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean =
+        handleHardwareKeyEvent(keyCode, isKeyUp = true) || super.onKeyUp(keyCode, event)
+
+    private fun handleHardwareKeyEvent(keyCode: Int, isKeyUp: Boolean): Boolean {
+        val key = when (keyCode) {
+            KeyEvent.KEYCODE_MENU -> HardwareKey.Menu
+            KeyEvent.KEYCODE_VOLUME_UP -> HardwareKey.VolumeUp
+            KeyEvent.KEYCODE_VOLUME_DOWN -> HardwareKey.VolumeDown
+            else -> return false
+        }
+        val result = handleHardwareKey(key, isKeyUp, prefs)
+        // the activity's AppViewModel, not mainViewModel: the main screen has its own MainViewModel instance
+        result.forward?.let { viewModel.hardwareKeys.tryEmit(it) }
+        return result.consumed
     }
 
     override fun onNewIntent(intent: Intent) {

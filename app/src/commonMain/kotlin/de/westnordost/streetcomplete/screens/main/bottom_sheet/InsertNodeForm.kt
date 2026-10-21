@@ -38,6 +38,8 @@ import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.osmfeatures.GeometryType
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.meta.CountryInfos
+import de.westnordost.streetcomplete.screens.main.addRecentFeatureId
+import de.westnordost.streetcomplete.screens.main.recentFeatureIds
 import de.westnordost.streetcomplete.data.meta.get
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditAction
@@ -219,20 +221,13 @@ fun InsertNodeForm(
             val countryBoundaries: CountryBoundaries = koinInject()
             val countryInfos: CountryInfos = koinInject()
             val countryInfo = remember(position) { countryInfos.get(countryBoundaries, position) }
-            val defaultFeatureIds = prefs.getString(Prefs.INSERT_NODE_RECENT_FEATURE_IDS, "")
-                .split("§").filter { it.isNotBlank() }
-                .ifEmpty { listOf("amenity/post_box", "barrier/gate", "highway/crossing/unmarked", "highway/crossing/uncontrolled", "highway/traffic_signals", "barrier/bollard", "traffic_calming/table") }
+            val defaultFeatureIds = recentFeatureIds(prefs, Prefs.INSERT_NODE_RECENT_FEATURE_IDS, listOf("amenity/post_box", "barrier/gate", "highway/crossing/unmarked", "highway/crossing/uncontrolled", "highway/traffic_signals", "barrier/bollard", "traffic_calming/table"))
             FeatureSearchDialog(
                 onDismissRequest = { showFeatureSearch = false },
                 onSelectedFeature = {
                     if (prefs.getString(Prefs.THEME_BACKGROUND, "MAP") != initialBackground)
                         prefs.putString(Prefs.THEME_BACKGROUND, initialBackground)
-                    val recentFeatureIds = prefs.getString(Prefs.INSERT_NODE_RECENT_FEATURE_IDS, "").split("§").toMutableList()
-                    if (recentFeatureIds.lastOrNull() != it.id) {
-                        recentFeatureIds.remove(it.id)
-                        recentFeatureIds.add(it.id)
-                        prefs.putString(Prefs.INSERT_NODE_RECENT_FEATURE_IDS, recentFeatureIds.takeLast(35).joinToString("§"))
-                    }
+                    addRecentFeatureId(prefs, Prefs.INSERT_NODE_RECENT_FEATURE_IDS, it.id)
                     onSelectFeature(it, positionOnWay!!)
                 },
                 featureDictionary = featureDictionary,

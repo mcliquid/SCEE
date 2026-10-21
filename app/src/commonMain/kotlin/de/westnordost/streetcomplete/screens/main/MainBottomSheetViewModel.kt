@@ -183,21 +183,34 @@ class MainBottomSheetViewModelImpl(
     }
 
     override suspend fun getHighlightedMarkers(sheet: ShownBottomSheet): List<Marker> = withContext(Dispatchers.IO) {
-        if (sheet !is ShownBottomSheet.OsmQuest) return@withContext emptyList()
-        val quest = sheet.quest
-        val element = sheet.element
-        val bbox = quest.geometry.bounds.enlargedBy(quest.type.highlightedElementsRadius)
-        val mapData = LazyMapDataWithGeometry(bbox, mapDataSource)
-        val levels = parseLevelsOrNull(element.tags)
-        quest.type.getHighlightedElements(element, mapData).mapNotNull { other ->
-            if (element == other) return@mapNotNull null
-            if(quest.type.hideHighlightedElementsOnDifferentLevel) {
-                if (!levels.levelsIntersect(parseLevelsOrNull(other.tags))) return@mapNotNull null
-                if (element.tags["layer"] != other.tags["layer"]) return@mapNotNull null
-            }
-            val geometry = mapData.getGeometry(other.type, other.id) ?: return@mapNotNull null
-            Marker(geometry, getIcon(featureDictionary.value, other), getTitle(other.tags))
-        }.toList()
+        val (geometry, radius) = when (sheet) {
+            is ShownBottomSheet.OsmQuest -> sheet.quest.geometry to sheet.quest.type.highlightedElementsRadius
+            is ShownBottomSheet.ExternalSourceQuest -> sheet.quest.geometry to sheet.quest.type.highlightedElementsRadius
+            else -> return@withContext emptyList()
+        }
+        val mapData = LazyMapDataWithGeometry(geometry.bounds.enlargedBy(radius), mapDataSource)
+        // external source quests may be linked to an element, which is then the reference for level / layer
+        val (reference, highlighted, hideOnDifferentLevel) = when (sheet) {
+            is ShownBottomSheet.OsmQuest -> Triple(
+                sheet.element,
+                sheet.quest.type.getHighlightedElements(sheet.element, mapData),
+                sheet.quest.type.hideHighlightedElementsOnDifferentLevel,
+            )
+            is ShownBottomSheet.ExternalSourceQuest -> Triple(
+                sheet.quest.elementKey?.let { mapDataSource.get(it.type, it.id) },
+                sheet.quest.type.getHighlightedElements { mapData },
+                true,
+            )
+            else -> return@withContext emptyList()
+        }
+        highlightedMarkers(
+            highlighted = highlighted,
+            reference = reference,
+            hideOnDifferentLevel = hideOnDifferentLevel,
+            getGeometry = { mapData.getGeometry(it.type, it.id) },
+            getIcon = { getIcon(featureDictionary.value, it) },
+            getTitle = { getTitle(it.tags) },
+        )
     }
 
     override suspend fun getNearbyQuests(sheet: ShownBottomSheet): NearbyQuests {

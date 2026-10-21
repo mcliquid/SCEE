@@ -138,6 +138,11 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import de.westnordost.osmfeatures.GeometryType
+import de.westnordost.streetcomplete.data.meta.CountryInfos
+import de.westnordost.streetcomplete.data.meta.get
+import de.westnordost.streetcomplete.osm.places.POPULAR_PLACE_FEATURE_IDS
+import de.westnordost.streetcomplete.util.countryboundaries.CountryBoundaries
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.maplibre.compose.interaction.ClickEvent
@@ -977,14 +982,27 @@ fun MainScreen(
 
     if (showAddPoiDialog) {
         val featureDictionary: FeatureDictionary = koinInject()
+        val countryBoundaries: CountryBoundaries = koinInject()
+        val countryInfos: CountryInfos = koinInject()
+        val countryInfo = remember(lastMapLongClick) {
+            lastMapLongClick?.position?.let { countryInfos.get(countryBoundaries, it) }
+        }
+        val defaultFeatureIds = recentFeatureIds(
+            prefs, Prefs.CREATE_POI_RECENT_FEATURE_IDS, POPULAR_PLACE_FEATURE_IDS, exclude = setOf("shop")
+        )
         FeatureSearchDialog(
             onDismissRequest = { showAddPoiDialog = false },
             onSelectedFeature = { feature ->
                 showAddPoiDialog = false
                 val position = lastMapLongClick?.position ?: return@FeatureSearchDialog
+                addRecentFeatureId(prefs, Prefs.CREATE_POI_RECENT_FEATURE_IDS, feature.id)
                 addPoiSelection = feature to position
             },
             featureDictionary = featureDictionary,
+            geometryType = GeometryType.POINT,
+            countryCode = countryInfo?.countryOrSubdivisionCode,
+            officialLanguages = countryInfo?.officialLanguages.orEmpty(),
+            codesOfDefaultFeatures = defaultFeatureIds.reversed(),
             showKeyboardInitially = prefs.getBoolean(Prefs.CREATE_NODE_SHOW_KEYBOARD, true),
         )
     }

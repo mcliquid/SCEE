@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.screens.main.map
 
+import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
@@ -45,13 +46,16 @@ internal fun CameraInspectionEffect(
                 val shown = snapshotFlow { sheet.shownBottomSheet }.filterNotNull().first()
 
                 // only focus quest forms. Overlay forms leave the map in place
-                if (shown is ShownBottomSheet.OsmQuest) {
-                    cameraState.focus(shown.geometry, sheetPadding)
-                }
-                if (shown is ShownBottomSheet.OsmNoteQuest) {
-                    cameraState.focus(shown.geometry, sheetPadding)
-                }
+                questGeometryToFocus(shown)?.let { cameraState.focus(it, sheetPadding) }
             }
         }
     }
+}
+
+/** The geometry the camera zooms to when a bottom sheet is opened, null if the map should stay as it is */
+internal fun questGeometryToFocus(shown: ShownBottomSheet): ElementGeometry? = when (shown) {
+    is ShownBottomSheet.OsmQuest -> shown.geometry
+    is ShownBottomSheet.OsmNoteQuest -> shown.geometry
+    is ShownBottomSheet.ExternalSourceQuest -> shown.geometry // SCEE: Osmose, custom quests
+    else -> null
 }

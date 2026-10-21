@@ -1177,20 +1177,15 @@ fun MainScreen(
     //endregion
 }
 
-private suspend fun reloadMapExtras(
+/** Reads the user's GPX track and custom geometry, as far as the settings show them. The loaders are parameters for tests. */
+internal suspend fun reloadMapExtras(
     prefs: Preferences,
+    loadGpx: suspend () -> List<LatLon>? = { withContext(Dispatchers.IO) { loadGpxTrackPoints({}) } },
+    loadGeometry: suspend () -> String? = { runCatching { customGeometryFile.readString() }.getOrNull() },
     apply: (List<LatLon>, String?) -> Unit,
 ) {
-    val gpx = if (prefs.getBoolean(Prefs.SHOW_GPX_TRACK, false)) {
-        withContext(Dispatchers.IO) { loadGpxTrackPoints({}) ?: emptyList() }
-    } else {
-        emptyList()
-    }
-    val geoJson = if (prefs.getBoolean(Prefs.SHOW_CUSTOM_GEOMETRY, false)) {
-        runCatching { customGeometryFile.readString() }.getOrNull()
-    } else {
-        null
-    }
+    val gpx = if (prefs.getBoolean(Prefs.SHOW_GPX_TRACK, false)) loadGpx() ?: emptyList() else emptyList()
+    val geoJson = if (prefs.getBoolean(Prefs.SHOW_CUSTOM_GEOMETRY, false)) loadGeometry() else null
     apply(gpx, geoJson)
 }
 

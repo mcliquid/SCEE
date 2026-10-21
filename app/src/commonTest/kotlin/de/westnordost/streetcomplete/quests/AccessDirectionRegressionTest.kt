@@ -34,7 +34,7 @@ class AccessDirectionRegressionTest {
         val allowed = way(tags = mapOf("highway" to "cycleway", "access" to "no", "vehicle" to "yes"))
         assertNotEquals(false, quest.isApplicableTo(allowed))
         assertEquals(listOf(allowed), quest.getApplicableElements(TestMapDataWithGeometry(listOf(allowed))).toList())
-        assertFalse(quest.isApplicableTo(way(tags = allowed.tags + ("bicycle" to "no")))!!)
+        assertEquals(false, quest.isApplicableTo(way(tags = allowed.tags + ("bicycle" to "no"))))
     }
 
     @BeforeTest fun setUp() {

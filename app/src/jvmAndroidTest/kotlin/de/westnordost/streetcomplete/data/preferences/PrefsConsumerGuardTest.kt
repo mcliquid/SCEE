@@ -83,7 +83,8 @@ class PrefsConsumerGuardTest {
 
     private val appDir: File by lazy {
         // Gradle runs tests in the project directory of :app; also support the repository root
-        generateSequence(File(System.getProperty("user.dir")).absoluteFile) { it.parentFile }
+        val userDir = checkNotNull(System.getProperty("user.dir")) { "user.dir system property is not set" }
+        generateSequence(File(userDir).absoluteFile) { it.parentFile }
             .flatMap { sequenceOf(it, File(it, "app")) }
             .firstOrNull { File(it, "src/commonMain/kotlin/de/westnordost/streetcomplete/Prefs.kt").exists() }
             ?: error("Cannot find the app source directory from ${System.getProperty("user.dir")}")

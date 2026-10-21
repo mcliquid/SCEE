@@ -90,7 +90,7 @@ class SingleChoiceSelectionTest {
         assertEquals("broad group", confirmationRequestedFor)
         assertEquals(emptyList(), answers)
 
-        answers += confirmationRequestedFor!!
+        answers += requireNotNull(confirmationRequestedFor)
 
         assertEquals(listOf("broad group"), answers)
     }

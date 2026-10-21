@@ -34,6 +34,7 @@ import kotlin.test.assertTrue
 class TrafficSignConverterParityTest {
 
     private val catalogue = TrafficSignTestData.catalogueDE
+    private val prettyJson = Json { prettyPrint = true }
 
     /** the result of one side: unparseable values are given back unchanged by SCEE */
     private data class Result(val unparseable: Boolean, val parts: List<Part>, val value: String)
@@ -282,7 +283,9 @@ class TrafficSignConverterParityTest {
         }
         val dir = Path("build/traffic-sign-parity")
         SystemFileSystem.createDirectories(dir)
-        SystemFileSystem.sink(Path(dir, "parity-results.json")).buffered().use { it.writeString(Json { prettyPrint = true }.encodeToString(JsonObject.serializer(), json)) }
+        SystemFileSystem.sink(Path(dir, "parity-results.json")).buffered().use {
+            it.writeString(prettyJson.encodeToString(JsonObject.serializer(), json))
+        }
         println("PARITY: $total cases, ${identical.size} identical (A), ${deviating.size} deliberate differences (B), ${unexplained.size} unexplained (C)")
     }
 }

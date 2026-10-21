@@ -16,15 +16,17 @@ class JvmActualsTest {
             local.visibleQuestHolder = longArrayOf(7)
             var other: PerfThreadState? = null
             val thread = Thread {
-                other = currentPerfState()
-                assertSame(other, currentPerfState())
-                other!!.visibleQuestHolder = longArrayOf(9)
+                val state = currentPerfState()
+                other = state
+                assertSame(state, currentPerfState())
+                state.visibleQuestHolder = longArrayOf(9)
             }
             thread.start()
             thread.join()
-            assertNotSame(local, other)
+            val otherState = requireNotNull(other)
+            assertNotSame(local, otherState)
             assertContentEquals(longArrayOf(7), local.visibleQuestHolder)
-            assertContentEquals(longArrayOf(9), other!!.visibleQuestHolder)
+            assertContentEquals(longArrayOf(9), otherState.visibleQuestHolder)
         } finally { local.visibleQuestHolder = previous }
     }
 

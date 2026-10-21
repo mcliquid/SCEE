@@ -215,11 +215,12 @@ class TrafficSignCatalogueRobustnessTest {
         val broken = json.replaceFirst("\"kind\": \"exception_modifier\"", "\"kind\": \"unknown_kind\"")
         assertTrue(broken != json)
         val result = TrafficSignCatalogue.parseLenient(broken)
-        assertEquals(289, result.catalogue!!.signs.size)
+        val catalogue = requireNotNull(result.catalogue)
+        assertEquals(289, catalogue.signs.size)
         assertEquals(1, result.problems.size)
         assertTrue("unknown_kind" in result.problems.single().message)
         assertFailsWith<IllegalArgumentException> { TrafficSignCatalogue.parse(broken) }
         // values of the other signs are read as before
-        assertEquals("DE:250,1020-30", parseTrafficSignValue("DE:250,1020-30", result.catalogue!!).toOsmValue())
+        assertEquals("DE:250,1020-30", parseTrafficSignValue("DE:250,1020-30", catalogue).toOsmValue())
     }
 }

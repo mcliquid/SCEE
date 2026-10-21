@@ -40,7 +40,6 @@ import de.westnordost.streetcomplete.ui.common.settings.SwitchPreference
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.copyTo
-import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.filesDir
@@ -124,7 +123,7 @@ fun DisplaySettingsScreen(
             )
             if (showGpxDialog) {
                 suspend fun getFile() {
-                    val file = FileKit.openFilePicker(FileKitType.File(".gpx")) ?: return
+                    val file = FileKit.openFilePicker(GpxOpenFilePickerType) ?: return
                     file.copyTo(gpxFile)
                     gpx_track_changed = true
                     showGpxDialog = false
@@ -173,7 +172,7 @@ fun DisplaySettingsScreen(
             }
             if (showGeometryDialog) {
                 suspend fun getFile() {
-                    val file = FileKit.openFilePicker(FileKitType.File(".gpx")) ?: return
+                    val file = FileKit.openFilePicker(CustomGeometryOpenFilePickerType) ?: return
                     file.copyTo(customGeometryFile)
                     custom_geometry_changed = true
                     showGeometryDialog = false

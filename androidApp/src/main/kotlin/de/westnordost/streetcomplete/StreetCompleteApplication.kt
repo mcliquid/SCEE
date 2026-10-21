@@ -58,6 +58,8 @@ class StreetCompleteApplication : Application() {
             }
             ComponentCallbacks2.TRIM_MEMORY_BACKGROUND,
             ComponentCallbacks2.TRIM_MEMORY_MODERATE,
+            ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE,
+            ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN,
             ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW -> {
                 // memory needed, but not critical -> trim only
                 Log.i("StreetCompleteApplication", "onTrimMemory, level $level: ${getMemString()}")

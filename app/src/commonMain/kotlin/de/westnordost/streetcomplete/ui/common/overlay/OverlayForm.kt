@@ -152,6 +152,7 @@ fun OverlayForm(
 
         BottomSheetFormScaffold(
             onDismissRequest = ::dismiss,
+            keyboardDismissEnabled = !confirmDiscard,
             note = if (label != null) {
                 { CompositionLocalProvider(
                     LocalTextStyle provides MaterialTheme.typography.titleMedium,

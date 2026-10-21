@@ -2,6 +2,8 @@ package de.westnordost.streetcomplete.ui.common
 
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.cancel
 import de.westnordost.streetcomplete.resources.*
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -14,6 +16,12 @@ fun BackIcon() {
 @Composable
 fun ClearIcon() {
     Icon(painterResource(Res.drawable.ic_clear_24), stringResource(Res.string.action_clear))
+}
+
+/** Close quest form / tag editor (desktop header dismiss). */
+@Composable
+fun CloseFormIcon() {
+    Icon(painterResource(Res.drawable.ic_clear_24), stringResource(Res.string.cancel))
 }
 
 @Composable

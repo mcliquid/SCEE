@@ -204,6 +204,7 @@ fun SplitWayForm(
 
         BottomSheetFormScaffold(
             onDismissRequest = ::dismiss,
+            keyboardDismissEnabled = !confirmDiscard,
             content = {
                 if (instruction != null) Text(instruction, Modifier.padding(12.dp))
                 SplitWayFormContent(

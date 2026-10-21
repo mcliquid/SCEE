@@ -121,6 +121,7 @@ fun MoveNodeForm(
     Box(modifier = modifier.fillMaxSize()) {
         BottomSheetFormScaffold(
             onDismissRequest = ::dismiss,
+            keyboardDismissEnabled = !confirmDiscard,
             content = {
                 MoveNodeFormContent(
                     distance = distance,

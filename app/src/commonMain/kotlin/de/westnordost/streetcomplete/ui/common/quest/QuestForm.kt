@@ -255,6 +255,7 @@ private fun QuestForm(
 
     BottomSheetFormScaffold(
         onDismissRequest = ::dismiss,
+        keyboardDismissEnabled = !confirmDiscard,
         header = {
             if (isResurvey) {
                 CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.titleLarge) {

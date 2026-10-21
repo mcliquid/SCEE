@@ -21,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -29,18 +30,33 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.cancel
 import de.westnordost.streetcomplete.ui.common.BackIcon
+import de.westnordost.streetcomplete.ui.common.CloseFormIcon
 import de.westnordost.streetcomplete.ui.common.speech_bubble.SpeechBubble
+import de.westnordost.streetcomplete.ui.showsPersistentQuestFormCloseButton
+import de.westnordost.streetcomplete.ui.supportsQuestFormEscapeDismiss
+import org.jetbrains.compose.resources.stringResource
 import de.westnordost.streetcomplete.ui.common.speech_bubble.SpeechBubbleArrowDirection
 import de.westnordost.streetcomplete.ui.common.speech_bubble.SpeechBubbleNoArrow
 import de.westnordost.streetcomplete.ui.ktx.fadingVerticalScrollEdges
 import de.westnordost.streetcomplete.ui.ktx.isLandscape
 import de.westnordost.streetcomplete.ui.ktx.toPx
 import de.westnordost.streetcomplete.ui.theme.Dimensions
+
+/** Override in tests to simulate desktop form chrome without relying on [showsPersistentQuestFormCloseButton]. */
+internal val LocalPersistentQuestFormCloseButton = compositionLocalOf { showsPersistentQuestFormCloseButton() }
+
+/** Override in tests to simulate desktop Escape dismiss. */
+internal val LocalQuestFormEscapeDismiss = compositionLocalOf { supportsQuestFormEscapeDismiss() }
 
 /** A [BottomSheet] form that features a [header] at the top, below, a [note], then below, a
  * vertically nested scrollable [content]. Optionally, there can be a [fab] (floating action button)
@@ -50,6 +66,8 @@ fun BottomSheetFormScaffold(
     onDismissRequest: () -> Unit,
     content: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    /** When false, e.g. while a discard-confirmation dialog is open on top of the form. */
+    keyboardDismissEnabled: Boolean = true,
     header: @Composable (() -> Unit)? = null,
     fab: @Composable (() -> Unit)? = null,
     fab2: @Composable (() -> Unit)? = null,
@@ -70,11 +88,33 @@ fun BottomSheetFormScaffold(
     var bottomSheetTopPx by remember { mutableFloatStateOf(Float.NaN) }
     val showBackButtonEarlyPx = 56.dp.toPx()
     val showBackButton by remember { derivedStateOf { bottomSheetTopPx <= showBackButtonEarlyPx } }
+    val persistentCloseButton = LocalPersistentQuestFormCloseButton.current
+    val showCloseButton by remember {
+        derivedStateOf {
+            shouldShowBottomSheetCloseButton(showBackButton, persistentCloseButton)
+        }
+    }
+    val closeButtonLabel = stringResource(Res.string.cancel)
+    val escapeDismissEnabled = keyboardDismissEnabled && LocalQuestFormEscapeDismiss.current
 
     // Keep the sheet's drag bounds above the keyboard, including when collapsed.
     Box(modifier = modifier
         .imePadding()
         .sizeIn(maxWidth = Dimensions.getMaxQuestFormWidth(windowInfo))
+        .then(
+            if (escapeDismissEnabled) {
+                Modifier.onPreviewKeyEvent { event ->
+                    if (isQuestFormDismissEscapeKey(event)) {
+                        onDismissRequest()
+                        true
+                    } else {
+                        false
+                    }
+                }
+            } else {
+                Modifier
+            }
+        )
     ) {
         BottomSheet(
             initialState = initialState,
@@ -106,12 +146,16 @@ fun BottomSheetFormScaffold(
                                     Spacer(Modifier.size(4.dp))
                                 }
                                 Row {
-                                    AnimatedContent(showBackButton) { showBackButton ->
-                                        if (showBackButton) {
+                                    AnimatedContent(showCloseButton) { visible ->
+                                        if (visible) {
                                             IconButton(
                                                 onClick = onDismissRequest,
-                                                modifier = Modifier.padding(end = 12.dp)
-                                            ) { BackIcon() }
+                                                modifier = Modifier
+                                                    .padding(end = 12.dp)
+                                                    .semantics { contentDescription = closeButtonLabel },
+                                            ) {
+                                                if (persistentCloseButton) CloseFormIcon() else BackIcon()
+                                            }
                                         } else {
                                             Spacer(Modifier.size(12.dp))
                                         }

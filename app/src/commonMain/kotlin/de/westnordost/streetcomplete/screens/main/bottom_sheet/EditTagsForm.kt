@@ -120,6 +120,7 @@ fun EditTagsForm(
     if (shownQuest == null) // better don't show behind the quest form, can still interact with some parts!
     BottomSheetFormScaffold(
         onDismissRequest = ::dismiss,
+        keyboardDismissEnabled = !confirmDiscard,
         content = {
             ProvideTextStyle(MaterialTheme.typography.body1) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) { // lazy column has infinite height, so we need a normal column

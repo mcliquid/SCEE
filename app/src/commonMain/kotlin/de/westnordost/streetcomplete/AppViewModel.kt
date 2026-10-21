@@ -18,6 +18,10 @@ class AppViewModel(prefs: Preferences, private val savedState: SavedStateHandle)
      *  main screen's own `MainViewModel` is scoped to its navigation entry and is another instance. */
     val hardwareKeys = MutableSharedFlow<HardwareKey>(extraBufferCapacity = 1)
 
+    /** SCEE: shared text file (custom quests / tree names) awaiting the user's choice on the main
+     *  screen. Saved state, so a cold-start intent survives until the main screen shows it. */
+    val textIntentUri = savedState.getStateFlow<String?>("textUri", null)
+
     private val listeners = listOf(
         prefs.onLocaleChanged { locale.value = it },
         prefs.onKeepScreenOnChanged { keepScreenOn.value = it },
@@ -25,6 +29,8 @@ class AppViewModel(prefs: Preferences, private val savedState: SavedStateHandle)
 
     fun openUri(uri: String) { savedState["uri"] = uri }
     fun consumeUri() { savedState["uri"] = null }
+    fun openTextIntent(uri: String) { savedState["textUri"] = uri }
+    fun consumeTextIntent() { savedState["textUri"] = null }
 
     override fun onCleared() { listeners.forEach { it.deactivate() } }
 }

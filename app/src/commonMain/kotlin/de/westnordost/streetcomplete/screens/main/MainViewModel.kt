@@ -81,13 +81,4 @@ abstract class MainViewModel : ViewModel() {
     abstract val showOverlaySelector: StateFlow<Boolean>
     abstract val reverseQuestOrder: MutableStateFlow<Boolean>
     abstract val nearbyQuests: MutableStateFlow<Collection<Pair<Int, List<Quest>>>?>
-
-    /* SCEE: shared-text intent (custom quests / trees) */
-    abstract val textIntentUri: MutableStateFlow<String?>
-
-    /* SCEE: hooks for DisplaySettingsScreen flags consumed on resume */
-    abstract val reloadGpxTrack: MutableStateFlow<Boolean>
-    abstract val reloadCustomGeometry: MutableStateFlow<Boolean>
-    abstract fun consumeReloadGpxTrack()
-    abstract fun consumeReloadCustomGeometry()
 }

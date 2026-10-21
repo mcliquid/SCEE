@@ -49,6 +49,8 @@ fun MainNavHost(
     uri: String?,
     onConsumedUri: () -> Unit,
     hardwareKeys: Flow<HardwareKey> = emptyFlow(),
+    textIntentUri: String? = null,
+    onConsumedTextIntent: () -> Unit = {},
 ) {
     // The main screen is always at the bottom of the back stack, so its view model lives as long
     // as the app and can receive requests while another destination is shown.
@@ -105,6 +107,8 @@ fun MainNavHost(
                     onShowOverlaysTutorial = { backStack.add(Route.OverlaysTutorial) },
                     navViewModel = navViewModel,
                     hardwareKeys = hardwareKeys,
+                    textIntentUri = textIntentUri,
+                    onConsumedTextIntent = onConsumedTextIntent,
                     viewModel = koinViewModel(),
                 )
             }

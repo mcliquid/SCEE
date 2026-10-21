@@ -366,12 +366,6 @@ class MainViewModelImpl(
 
     override val reverseQuestOrder = MutableStateFlow(false)
     override val nearbyQuests = MutableStateFlow<Collection<Pair<Int, List<Quest>>>?>(null)
-    override val textIntentUri = MutableStateFlow<String?>(null)
-    override val reloadGpxTrack = MutableStateFlow(false)
-    override val reloadCustomGeometry = MutableStateFlow(false)
-
-    override fun consumeReloadGpxTrack() { reloadGpxTrack.value = false }
-    override fun consumeReloadCustomGeometry() { reloadCustomGeometry.value = false }
     /* stars */
 
     private val editCount: Flow<Int> = callbackFlow {

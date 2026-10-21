@@ -24,7 +24,11 @@ fun App(
     AppEnvironment(locale, theme, keepScreenOn) {
         AppTheme(theme.isDark) {
             Surface {
-                MainNavHost(uri, onConsumedUri, viewModel.hardwareKeys)
+                val textIntentUri by viewModel.textIntentUri.collectAsState()
+                MainNavHost(
+                    uri, onConsumedUri, viewModel.hardwareKeys,
+                    textIntentUri, viewModel::consumeTextIntent,
+                )
             }
         }
     }

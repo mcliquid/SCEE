@@ -189,6 +189,8 @@ fun MainScreen(
     onShowOverlaysTutorial: () -> Unit,
     navViewModel: MainNavViewModel,
     hardwareKeys: Flow<HardwareKey> = emptyFlow(),
+    textIntentUri: String? = null,
+    onConsumedTextIntent: () -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: MainViewModel = koinViewModel(),
     editHistoryViewModel: EditHistoryViewModel = koinViewModel(),
@@ -237,9 +239,6 @@ fun MainScreen(
     val nearbyQuests by viewModel.nearbyQuests.collectAsState()
     val showQuickSettings by viewModel.showQuickSettings.collectAsState()
     val showOverlaySelector by viewModel.showOverlaySelector.collectAsState()
-    val textIntentUri by viewModel.textIntentUri.collectAsState()
-    val reloadGpxTrack by viewModel.reloadGpxTrack.collectAsState()
-    val reloadCustomGeometry by viewModel.reloadCustomGeometry.collectAsState()
     val prefs: Preferences = koinInject()
     val continuousMapDownload: ContinuousMapDownloadController = koinInject()
     var gpxTrack by remember { mutableStateOf<List<LatLon>>(emptyList()) }
@@ -647,18 +646,6 @@ fun MainScreen(
     }
 
     LaunchedEffect(Unit) { reloadMapExtras(prefs) { gpx, geoJson -> gpxTrack = gpx; customGeoJson = geoJson } }
-    LaunchedEffect(reloadGpxTrack) {
-        if (reloadGpxTrack) {
-            reloadMapExtras(prefs) { gpx, geoJson -> gpxTrack = gpx; customGeoJson = geoJson }
-            viewModel.consumeReloadGpxTrack()
-        }
-    }
-    LaunchedEffect(reloadCustomGeometry) {
-        if (reloadCustomGeometry) {
-            reloadMapExtras(prefs) { gpx, geoJson -> gpxTrack = gpx; customGeoJson = geoJson }
-            viewModel.consumeReloadCustomGeometry()
-        }
-    }
     LaunchedEffect(reversedQuestOrder) {
         mapViewModel.setReversedQuestOrder(reversedQuestOrder)
     }
@@ -1046,19 +1033,19 @@ fun MainScreen(
 
     if (textIntentUri != null) {
         AlertDialog(
-            onDismissRequest = { viewModel.textIntentUri.value = null },
+            onDismissRequest = onConsumedTextIntent,
             buttonRow = {
-                TextButton({ viewModel.textIntentUri.value = null }) {
+                TextButton(onConsumedTextIntent) {
                     Text(stringResource(Res.string.cancel))
                 }
                 TextButton({
-                    customQuestList.readFromUri(textIntentUri!!)
+                    customQuestList.readFromUri(textIntentUri)
                     visibleQuestsSource.clearCache()
-                    viewModel.textIntentUri.value = null
+                    onConsumedTextIntent()
                 }) { Text(stringResource(Res.string.pref_custom_title)) }
                 TextButton({
-                    AddTreeGenus.readFromUri(textIntentUri!!)
-                    viewModel.textIntentUri.value = null
+                    AddTreeGenus.readFromUri(textIntentUri)
+                    onConsumedTextIntent()
                 }) { Text(stringResource(Res.string.pref_trees_title)) }
             }
         )

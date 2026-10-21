@@ -20,8 +20,6 @@ import de.westnordost.streetcomplete.screens.main.HardwareKey
 import de.westnordost.streetcomplete.screens.main.handleHardwareKey
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.preferences.Preferences
-import de.westnordost.streetcomplete.screens.settings.custom_geometry_changed
-import de.westnordost.streetcomplete.screens.settings.gpx_track_changed
 import de.westnordost.streetcomplete.util.ktx.loadFileKit
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -37,7 +35,6 @@ import org.koin.core.scope.Scope
 class MainActivity : ComponentActivity(), AndroidScopeComponent {
     override val scope: Scope by activityScope()
     private val viewModel: AppViewModel by viewModel()
-    private val mainViewModel: MainViewModel by viewModel()
     private val appLocaleUpdater: AppLocaleUpdater by inject()
     private val prefs: Preferences by inject()
 
@@ -76,14 +73,6 @@ class MainActivity : ComponentActivity(), AndroidScopeComponent {
         // Android can reset the default locales without another Application configuration callback.
         appLocaleUpdater.update()
         super.onResume()
-        if (gpx_track_changed) {
-            mainViewModel.reloadGpxTrack.value = true
-            gpx_track_changed = false
-        }
-        if (custom_geometry_changed) {
-            mainViewModel.reloadCustomGeometry.value = true
-            custom_geometry_changed = false
-        }
     }
 
     override fun onStop() {
@@ -106,7 +95,7 @@ class MainActivity : ComponentActivity(), AndroidScopeComponent {
             else -> return false
         }
         val result = handleHardwareKey(key, isKeyUp, prefs)
-        // the activity's AppViewModel, not mainViewModel: the main screen has its own MainViewModel instance
+        // AppViewModel is the only channel to the main screen; its MainViewModel is another instance
         result.forward?.let { viewModel.hardwareKeys.tryEmit(it) }
         return result.consumed
     }
@@ -121,7 +110,7 @@ class MainActivity : ComponentActivity(), AndroidScopeComponent {
         val uri = intent.data ?: return
         val uriString = uri.toString()
         if (intent.type?.startsWith("text/") == true) {
-            mainViewModel.textIntentUri.value = uriString
+            viewModel.openTextIntent(uriString)
         }
         viewModel.openUri(uriString)
     }

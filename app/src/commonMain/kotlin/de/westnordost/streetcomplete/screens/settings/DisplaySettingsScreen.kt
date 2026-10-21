@@ -125,7 +125,6 @@ fun DisplaySettingsScreen(
                 suspend fun getFile() {
                     val file = FileKit.openFilePicker(GpxOpenFilePickerType) ?: return
                     file.copyTo(gpxFile)
-                    gpx_track_changed = true
                     showGpxDialog = false
                     showGpxDialog = true
                 }
@@ -174,7 +173,6 @@ fun DisplaySettingsScreen(
                 suspend fun getFile() {
                     val file = FileKit.openFilePicker(CustomGeometryOpenFilePickerType) ?: return
                     file.copyTo(customGeometryFile)
-                    custom_geometry_changed = true
                     showGeometryDialog = false
                     showGeometryDialog = true
                 }
@@ -228,6 +226,3 @@ fun loadGpxTrackPoints(onError: () -> Unit, complain: Boolean = false): List<Lat
 
 private val gpxFile = PlatformFile(FileKit.filesDir, "display_track.gpx")
 val customGeometryFile = PlatformFile(FileKit.filesDir, "customGeometry.geojson")
-
-var gpx_track_changed = false
-var custom_geometry_changed = false

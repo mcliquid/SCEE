@@ -18,7 +18,6 @@ import de.westnordost.streetcomplete.quests.oneway.AddOnewayBicycle
 import de.westnordost.streetcomplete.quests.oneway.OnewayAnswer
 import de.westnordost.streetcomplete.quests.parking_access.AddBikeParkingAccess
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
-import de.westnordost.streetcomplete.testutils.mockPrefs
 import de.westnordost.streetcomplete.testutils.mockPrefs3
 import de.westnordost.streetcomplete.testutils.way
 import kotlin.test.BeforeTest
@@ -39,7 +38,6 @@ class AccessDirectionRegressionTest {
     }
 
     @BeforeTest fun setUp() {
-        Prefs.sharedPreferences = mockPrefs()
         Prefs.preferences = mockPrefs3()
     }
 

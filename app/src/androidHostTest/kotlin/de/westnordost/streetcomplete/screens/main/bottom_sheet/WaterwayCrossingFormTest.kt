@@ -24,7 +24,7 @@ import de.westnordost.streetcomplete.ui.common.quest.LocalMapMetersPerDp
 import de.westnordost.streetcomplete.util.sound.SoundEffectPlayer
 import de.westnordost.streetcomplete.util.ktx.equalsInOsm
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
-import com.russhwolf.settings.MapSettings
+import de.westnordost.streetcomplete.testutils.SnapshotMapSettings as MapSettings
 import de.westnordost.streetcomplete.data.ConflictException
 import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.data.osm.osmquests.Action

@@ -13,7 +13,6 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.quests.questTypeRegistry
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
 import de.westnordost.streetcomplete.testutils.inMemoryPrefs
-import de.westnordost.streetcomplete.testutils.mockPrefs
 import de.westnordost.streetcomplete.testutils.node
 import de.westnordost.streetcomplete.testutils.rel
 import de.westnordost.streetcomplete.testutils.way
@@ -24,7 +23,6 @@ import kotlin.test.assertTrue
 class TestQuestFilters {
 
     private fun createRegistry(connection: androidx.sqlite.SQLiteConnection): QuestTypeRegistry {
-        Prefs.sharedPreferences = mockPrefs()
         Prefs.preferences = inMemoryPrefs()
         val database = DatabaseImpl(connection).apply { initialize(StreetCompleteDatabaseConfigurator) }
         return questTypeRegistry(

@@ -11,7 +11,6 @@ import de.westnordost.streetcomplete.data.StreetCompleteDatabaseConfigurator
 import de.westnordost.streetcomplete.screens.settings.LAST_KNOWN_DB_VERSION
 import de.westnordost.streetcomplete.util.error_reporting.CrashReportsUncaughtExceptionHandler
 import de.westnordost.streetcomplete.util.logs.Log
-import de.westnordost.streetcomplete.data.preferences.Preferences
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.workmanager.koin.workManagerFactory
@@ -23,14 +22,10 @@ class StreetCompleteApplication : Application() {
     private val cacheTrimmer: CacheTrimmer by inject()
     private val applicationInitializer: ApplicationInitializer by inject()
     private val appLocaleUpdater: AppLocaleUpdater by inject()
-    private val preferences: Preferences by inject()
 
     override fun onCreate() {
         super.onCreate()
 
-        // got a crash report where prefs were not initialized, not sure how this can happen for a
-        // single person and not for everyone, but this should help (means that we keep using android-specific prefs interface)
-        Prefs.sharedPreferences = getSharedPreferences(packageName + "_preferences", MODE_PRIVATE)
         ApplicationConstants.DEBUG = de.westnordost.streetcomplete.app.BuildConfig.APPLICATION_DEBUG
 
         startKoin {
@@ -39,7 +34,6 @@ class StreetCompleteApplication : Application() {
             modules(androidModule, commonModule)
         }
 
-        Prefs.preferences = preferences
         require(StreetCompleteDatabaseConfigurator.version == LAST_KNOWN_DB_VERSION.toInt()) { "update database import/export" }
 
         crashReportsUncaughtExceptionHandler.install()

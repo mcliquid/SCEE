@@ -1,7 +1,6 @@
 package de.westnordost.streetcomplete.quests.valves
 
 import androidx.compose.runtime.Composable
-import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element

@@ -1,5 +1,7 @@
 package de.westnordost.streetcomplete.data.download
 
+import com.russhwolf.settings.ObservableSettings
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
@@ -8,29 +10,61 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlin.coroutines.CoroutineContext
 
 // TODO desktop: (On Linux) we might want to use the dedicated D-Bus API
 //  https://flatpak.github.io/xdg-desktop-portal/docs/doc-org.freedesktop.portal.Background.html
 //  to request continuing the download to run in the background
 
-class DesktopDownloadController(private val downloader: Downloader) : DownloadController {
+class DesktopDownloadController(
+    private val downloader: Downloader,
+    private val prefs: ObservableSettings,
+    coroutineContext: CoroutineContext = Dispatchers.Main,
+) : DownloadController {
     // Downloader already logs errors and notifies its listeners
     private val scope = CoroutineScope(
-        SupervisorJob() + Dispatchers.Main + CoroutineExceptionHandler { _, _ -> }
+        coroutineContext + SupervisorJob() + CoroutineExceptionHandler { _, _ -> }
     )
+    // A second replacement must also wait for the first download's cancellation cleanup.
+    private val requests = Mutex()
+    private val queue = ArrayDeque<BoundingBox>()
     private var job: Job? = null
 
-    override fun download(bbox: BoundingBox, isUserInitiated: Boolean) {
+    override fun download(bbox: BoundingBox, isUserInitiated: Boolean, enqueue: Boolean) {
         scope.launch {
-            // like on Android: a user-initiated download replaces the current one, others don't
-            val previous = job
-            if (!isUserInitiated && previous?.isActive == true) return@launch
-            job = currentCoroutineContext().job
-            previous?.cancelAndJoin()
-            downloader.download(bbox, isUserInitiated)
+            requests.withLock {
+                val previous = job
+                if (previous?.isActive == true) {
+                    if (enqueue) {
+                        queue.addLast(bbox)
+                        return@withLock
+                    }
+                    if (!isUserInitiated) return@withLock
+                }
+                previous?.cancelAndJoin()
+                job = scope.launch {
+                    var next = bbox
+                    var userInitiated = isUserInitiated
+                    while (true) {
+                        // Keep the queue alive after errors; Downloader logs and notifies listeners.
+                        supervisorScope {
+                            launch {
+                                downloader.download(next, userInitiated,
+                                    prefs.getBoolean(Prefs.MANUAL_DOWNLOAD_OVERRIDE_CACHE, true))
+                            }.join()
+                        }
+                        // Taking the next request and ending the job happen under the lock, so a request that is enqueued
+                        // meanwhile either is seen here or finds no running job and starts its own.
+                        next = requests.withLock { queue.removeFirstOrNull().also { if (it == null) job = null } } ?: break
+                        // Android also promotes queued follow-ups to user-initiated downloads.
+                        userInitiated = true
+                    }
+                }
+            }
         }
     }
 

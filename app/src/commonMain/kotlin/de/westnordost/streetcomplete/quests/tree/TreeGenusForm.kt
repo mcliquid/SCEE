@@ -1,6 +1,5 @@
 package de.westnordost.streetcomplete.quests.tree
 
-import android.content.Context
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -9,7 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
@@ -35,16 +33,15 @@ import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.filesDir
 import io.github.vinceglb.filekit.readString
 import kotlinx.coroutines.runBlocking
+import de.westnordost.streetcomplete.util.readBundledLines
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import java.io.IOException
 import java.text.Normalizer
 import java.util.Locale
 import java.util.regex.Pattern
 
 @Composable
 fun TreeGenusForm(on: (QuestAction<TreeAnswer>) -> Unit) {
-    if (treeSet.isEmpty()) loadTrees(LocalContext.current)
     var name by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue()) }
     var selectedTree by remember { mutableStateOf<Tree?>(null) }
     val prefs: Preferences = koinInject()
@@ -96,10 +93,10 @@ fun TreeGenusForm(on: (QuestAction<TreeAnswer>) -> Unit) {
     }
 }
 
-private val treeSet = mutableSetOf<Tree>()
+private val treeSet by lazy { loadTrees() }
 
-private fun loadTrees(context: Context) {
-    if (treeSet.isNotEmpty()) return
+private fun loadTrees(): Set<Tree> {
+    val treeSet = mutableSetOf<Tree>()
     // load from file, assuming format: <Genus/Species> (<localName>)
     //  assume species if it contains a space character
     try {
@@ -109,12 +106,12 @@ private fun loadTrees(context: Context) {
             }
     } catch (_: Exception) { } // file may not exist, so an exception is no surprise
 
-    try {
-        context.assets.open("tree/otherDataGenus.txt").bufferedReader().lineSequence().mapNotNullTo(treeSet) { it.toTree(false) }
-        context.assets.open("tree/otherDataSpecies.txt").bufferedReader().lineSequence().mapNotNullTo(treeSet) { it.toTree(true) }
-        context.assets.open("tree/osmGenus.txt").bufferedReader().lineSequence().mapNotNullTo(treeSet) { it.toTree(false) }
-        context.assets.open("tree/osmSpecies.txt").bufferedReader().lineSequence().mapNotNullTo(treeSet) { it.toTree(true) }
-    } catch (_: IOException) { }
+    runBlocking {
+        for ((path, species) in listOf("otherDataGenus.txt" to false, "otherDataSpecies.txt" to true, "osmGenus.txt" to false, "osmSpecies.txt" to true)) {
+            readBundledLines("tree/$path").mapNotNullTo(treeSet) { it.toTree(species) }
+        }
+    }
+    return treeSet
 }
 
 private fun String.toTree(isSpecies: Boolean): Tree? {

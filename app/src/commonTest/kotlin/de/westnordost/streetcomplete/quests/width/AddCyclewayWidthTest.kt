@@ -4,7 +4,6 @@ import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
 import de.westnordost.streetcomplete.osm.length.Length
 import de.westnordost.streetcomplete.quests.answerAppliedTo
-import de.westnordost.streetcomplete.testutils.mockPrefs
 import de.westnordost.streetcomplete.testutils.mockPrefs3
 import de.westnordost.streetcomplete.testutils.way
 import de.westnordost.streetcomplete.ui.util.measure.ArSupportChecker
@@ -21,7 +20,6 @@ class AddCyclewayWidthTest {
     private lateinit var quest: AddCyclewayWidth
 
     @BeforeTest fun setUp() {
-        Prefs.sharedPreferences = mockPrefs()
         Prefs.preferences = mockPrefs3()
         quest = AddCyclewayWidth(arSupportChecker)
     }

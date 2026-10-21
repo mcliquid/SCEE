@@ -1,7 +1,6 @@
 package de.westnordost.streetcomplete.quests.oneway
 
 import de.westnordost.streetcomplete.Prefs
-import de.westnordost.streetcomplete.testutils.mockPrefs
 import de.westnordost.streetcomplete.testutils.mockPrefs3
 import de.westnordost.streetcomplete.testutils.way
 import kotlin.test.BeforeTest
@@ -13,7 +12,6 @@ class AddOnewayBicycleTest {
     private lateinit var questType: AddOnewayBicycle
 
     @BeforeTest fun setUp() {
-        Prefs.sharedPreferences = mockPrefs()
         Prefs.preferences = mockPrefs3()
         questType = AddOnewayBicycle()
     }

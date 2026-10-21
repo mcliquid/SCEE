@@ -1,8 +1,5 @@
 package de.westnordost.streetcomplete.data.osm.mapdata
 
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
 import de.westnordost.streetcomplete.data.Database
 import de.westnordost.streetcomplete.data.osm.mapdata.RelationTables.Columns.ID
 import de.westnordost.streetcomplete.data.osm.mapdata.RelationTables.Columns.INDEX
@@ -61,7 +58,7 @@ class RelationDao(private val db: Database) {
                     arrayOf(
                         relation.id,
                         relation.version,
-                        if (relation.tags.isNotEmpty()) jsonAdapter.toJson(relation.tags) else null,
+                        if (relation.tags.isNotEmpty()) encodeTagsJson(relation.tags) else null,
                         relation.timestampEdited,
                         time
                     )
@@ -91,7 +88,7 @@ class RelationDao(private val db: Database) {
                 Relation(
                     cursor.getLong(ID),
                     membersByRelationId.getValue(cursor.getLong(ID)),
-                    cursor.getStringOrNull(TAGS)?.let { jsonAdapter.fromJson(it)?.toInternedMap() } ?: emptyMap(),
+                    cursor.getStringOrNull(TAGS)?.let { decodeTagsJson(it)?.toInternedMap() } ?: emptyMap(),
                     cursor.getInt(VERSION),
                     cursor.getLong(TIMESTAMP)
                 )
@@ -179,6 +176,3 @@ class RelationDao(private val db: Database) {
             getAll(ids)
         }
 }
-
-private val jsonAdapter: JsonAdapter<Map<String, String>> = Moshi.Builder().build()
-    .adapter(Types.newParameterizedType(Map::class.java, String::class.java, String::class.java))

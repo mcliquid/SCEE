@@ -8,7 +8,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.core.net.toUri
+import io.ktor.http.Url
+import io.ktor.http.decodeURLQueryComponent
 import de.westnordost.streetcomplete.data.ConnectionException
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.meta.CountryInfo
@@ -194,17 +195,21 @@ private suspend fun followRedirect(url: String): String? {
 }
 
 // Some of the QR codes contain a URL that is missing the protocol.
-private fun normalizeUrl(url: String): String = if (url.startsWith("http")) url else "https://$url"
+internal fun normalizeUrl(url: String): String = if (url.startsWith("http")) url else "https://$url"
 
-private fun getUrlQueryParameter(url: String, queryParameter: String): String? {
-    val uri = normalizeUrl(url).toUri()
-    return uri.getQueryParameter(queryParameter)
-}
+// like android.net.Uri, never throw for text that is not a URL
+private fun parseUrl(url: String): Url? = runCatching { Url(normalizeUrl(url)) }.getOrNull()
 
-private fun getUrlPath(url: String): String? {
-    val uri = normalizeUrl(url).toUri()
-    return uri.path?.replace("/", "")
-}
+internal fun getUrlQueryParameter(url: String, queryParameter: String): String? =
+    // The raw query is split by hand: Url.parameters merges names case insensitively, android.net.Uri does not.
+    normalizeUrl(url).substringBefore('#').takeIf { '?' in it }?.substringAfter('?')?.split('&')?.firstNotNullOfOrNull { pair ->
+        if (pair.substringBefore('=').decodeURLQueryComponent(plusIsSpace = true) == queryParameter)
+            pair.substringAfter('=', "").decodeURLQueryComponent(plusIsSpace = true)
+        else null
+    }
+
+internal fun getUrlPath(url: String): String? =
+    parseUrl(url)?.segments?.joinToString("")?.replace("/", "")
 
 private suspend fun parseQrCodeValue(value: String): String? {
     urlPrefixToQueryParameter.forEach { (urlPrefix, queryParameter) ->

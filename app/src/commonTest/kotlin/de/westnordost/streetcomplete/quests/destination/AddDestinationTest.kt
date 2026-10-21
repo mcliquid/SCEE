@@ -8,7 +8,6 @@ import de.westnordost.streetcomplete.quests.answerApplied
 import de.westnordost.streetcomplete.quests.answerAppliedTo
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
 import de.westnordost.streetcomplete.testutils.member
-import de.westnordost.streetcomplete.testutils.mockPrefs
 import de.westnordost.streetcomplete.testutils.mockPrefs3
 import de.westnordost.streetcomplete.testutils.node
 import de.westnordost.streetcomplete.testutils.p
@@ -26,7 +25,6 @@ class AddDestinationTest {
     private lateinit var questType: AddDestination
 
     @BeforeTest fun setUp() {
-        Prefs.sharedPreferences = mockPrefs()
         Prefs.preferences = mockPrefs3()
         questType = AddDestination()
     }

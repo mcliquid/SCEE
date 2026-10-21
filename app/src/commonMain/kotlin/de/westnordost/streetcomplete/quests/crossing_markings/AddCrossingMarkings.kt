@@ -1,8 +1,6 @@
 package de.westnordost.streetcomplete.quests.crossing_markings
 
-import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
@@ -21,8 +19,6 @@ import de.westnordost.streetcomplete.util.ktx.toYesNo
 import de.westnordost.streetcomplete.ui.common.item_select.ImageWithLabel
 import de.westnordost.streetcomplete.ui.common.quest.AnswerItem
 import de.westnordost.streetcomplete.ui.common.quest.QuestForm
-import de.westnordost.streetcomplete.R
-import de.westnordost.streetcomplete.util.image.toPainter
 import org.jetbrains.compose.resources.stringResource
 
 class AddCrossingMarkings : OsmElementQuestType<Set<CrossingMarkings>> {
@@ -87,12 +83,10 @@ class AddCrossingMarkings : OsmElementQuestType<Set<CrossingMarkings>> {
     @Composable
     override fun Form(on: (QuestAction<Set<CrossingMarkings>>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         if (prefs.getBoolean(PREF_CROSSING_MARKING_EXTENDED, false)) {
-            val ctx = LocalContext.current
-            val size = ctx.resources.displayMetrics.widthPixels / 4
             CrossingMarkingsForm(
                 on = on,
                 items = CrossingMarkings.entries.filter { it != CrossingMarkings.YES },
-                itemContent = { ImageWithLabel(ctx.getDrawable(it.toAndroidDrawableRes())!!.toPainter(size), stringResource(it.titleRes!!)) },
+                itemContent = { ImageWithLabel(crossingMarkingsPainter(it), stringResource(it.titleRes!!)) },
             )
         } else {
             QuestForm(
@@ -136,21 +130,3 @@ class AddCrossingMarkings : OsmElementQuestType<Set<CrossingMarkings>> {
 }
 
 private const val PREF_CROSSING_MARKING_EXTENDED = "qs_AddCrossingMarkings_extended"
-
-/** Layer-list drawables are not exposed via [org.jetbrains.compose.resources.painterResource]. */
-private fun CrossingMarkings.toAndroidDrawableRes(): Int = when (this) {
-    CrossingMarkings.NO -> R.drawable.crossing_markings_no
-    CrossingMarkings.ZEBRA -> R.drawable.crossing_markings_zebra
-    CrossingMarkings.LINES -> R.drawable.crossing_markings_lines
-    CrossingMarkings.LADDER -> R.drawable.crossing_markings_ladder
-    CrossingMarkings.DASHES -> R.drawable.crossing_markings_dashes
-    CrossingMarkings.DOTS -> R.drawable.crossing_markings_dots
-    CrossingMarkings.SURFACE -> R.drawable.crossing_markings_surface
-    CrossingMarkings.LADDER_SKEWED -> R.drawable.crossing_markings_ladder_skewed
-    CrossingMarkings.ZEBRA_PAIRED -> R.drawable.crossing_markings_zebra_paired
-    CrossingMarkings.ZEBRA_BICOLOUR -> R.drawable.crossing_markings_zebra_bicolour
-    CrossingMarkings.ZEBRA_DOUBLE -> R.drawable.crossing_markings_zebra_double
-    CrossingMarkings.LADDER_PAIRED -> R.drawable.crossing_markings_ladder_paired
-    CrossingMarkings.PICTOGRAMS -> R.drawable.crossing_markings_pictograms
-    CrossingMarkings.YES -> error("no drawable for $this")
-}

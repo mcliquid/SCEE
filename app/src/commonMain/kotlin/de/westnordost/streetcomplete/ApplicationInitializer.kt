@@ -7,8 +7,6 @@ import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesControll
 import de.westnordost.streetcomplete.data.edithistory.EditHistoryController
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.preferences.ResurveyIntervalsUpdater
-import de.westnordost.streetcomplete.screens.settings.renameUpdatedQuests
-import de.westnordost.streetcomplete.screens.settings.renamedQuests
 import de.westnordost.streetcomplete.util.TempLogger
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
 import de.westnordost.streetcomplete.util.logs.DatabaseLogger
@@ -32,6 +30,7 @@ class ApplicationInitializer(
     private val prefs: Preferences,
     private val resurveyIntervalsUpdater: ResurveyIntervalsUpdater,
     private val appLocaleUpdater: AppLocaleUpdater,
+    private val preferencesMigration: PreferencesMigration,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + CoroutineName("Application"))
 
@@ -53,28 +52,16 @@ class ApplicationInitializer(
             preloader.preload()
         }
 
-        val lastVersion = prefs.lastDataVersion
-        if (BuildConfig.VERSION_NAME != lastVersion) {
-            prefs.lastDataVersion = BuildConfig.VERSION_NAME
-            if (lastVersion != null) onNewVersion()
-            // update prefs referring to renamed quests
-            val prefsToRename = Prefs.sharedPreferences.all.filter { pref ->
-                val v = pref.value
-                renamedQuests.keys.any { pref.key.contains(it) || (v is String && v.contains(it)) }
-            }
-            val e = Prefs.sharedPreferences.edit()
-            prefsToRename.forEach {
-                e.remove(it.key)
-                when (it.value) {
-                    is String -> e.putString(it.key.renameUpdatedQuests(), (it.value as String).renameUpdatedQuests())
-                    is Boolean -> e.putBoolean(it.key.renameUpdatedQuests(), it.value as Boolean)
-                    is Int -> e.putInt(it.key.renameUpdatedQuests(), it.value as Int)
-                    is Long -> e.putLong(it.key.renameUpdatedQuests(), it.value as Long)
-                    is Float -> e.putFloat(it.key.renameUpdatedQuests(), it.value as Float)
-                    is Set<*> -> e.putStringSet(it.key.renameUpdatedQuests(), it.value as? Set<String>?)
-                }
-            }
-            e.apply()
+        val migrated = try {
+            val lastVersion = prefs.lastDataVersion
+            preferencesMigration.migrate(BuildConfig.VERSION_NAME)
+                && lastVersion != null && lastVersion != BuildConfig.VERSION_NAME
+        } catch (failure: Exception) {
+            Log.e("ApplicationInitializer", "Preferences migration failed; will retry on next start", failure)
+            false
+        }
+        if (migrated) {
+            onNewVersion()
         }
     }
 

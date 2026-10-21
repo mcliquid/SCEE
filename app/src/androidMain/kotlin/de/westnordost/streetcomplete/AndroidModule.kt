@@ -1,9 +1,13 @@
 package de.westnordost.streetcomplete
 
+import de.westnordost.streetcomplete.util.platform.AndroidToaster
+import de.westnordost.streetcomplete.util.platform.PlatformToaster
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.russhwolf.settings.ObservableSettings
-import com.russhwolf.settings.SharedPreferencesSettings
+import de.westnordost.streetcomplete.data.preferences.AndroidPreferenceStore
+import de.westnordost.streetcomplete.data.preferences.SettingsWithSnapshot
 import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.osmfeatures.create
 import de.westnordost.streetcomplete.data.AndroidPeriodicCleaner
@@ -102,7 +106,17 @@ val androidModule = module {
 
     // settings
 
-    single<ObservableSettings> { SharedPreferencesSettings.Factory(androidContext()).create() }
+    single<SharedPreferences> {
+        androidContext().getSharedPreferences(androidContext().packageName + "_preferences", Context.MODE_PRIVATE)
+    }
+    single<SettingsWithSnapshot> { AndroidPreferenceStore(get()) }
+    single<ObservableSettings> { get<SettingsWithSnapshot>() }
+    single<PreferencesMigration> {
+        val store = get<SharedPreferences>()
+        PreferencesMigration { migrateQuestPreferences(store, it) }
+    }
+
+    single<PlatformToaster> { AndroidToaster(androidContext()) }
 
     // sound
 

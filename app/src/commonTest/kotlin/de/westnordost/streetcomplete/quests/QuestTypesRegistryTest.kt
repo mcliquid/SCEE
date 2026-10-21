@@ -11,7 +11,6 @@ import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.quests.custom.CustomQuestList
 import de.westnordost.streetcomplete.quests.osmose.OsmoseDao
 import de.westnordost.streetcomplete.testutils.inMemoryPrefs
-import de.westnordost.streetcomplete.testutils.mockPrefs
 import de.westnordost.streetcomplete.ui.util.measure.ArSupportChecker
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,7 +28,6 @@ class QuestTypesRegistryTest {
 
     @Test
     fun `quest type ordinals are unique in QuestTypeRegistry`() {
-        Prefs.sharedPreferences = mockPrefs()
         Prefs.preferences = inMemoryPrefs()
 
         val connection = BundledSQLiteDriver().open(":memory:")
@@ -63,7 +61,6 @@ class QuestTypesRegistryTest {
 
     @Test
     fun `AddSidepathUsage directly follows AddCycleway in quest order`() {
-        Prefs.sharedPreferences = mockPrefs()
         Prefs.preferences = inMemoryPrefs()
 
         val connection = BundledSQLiteDriver().open(":memory:")

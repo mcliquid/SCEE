@@ -1,6 +1,6 @@
 package de.westnordost.streetcomplete.quests.custom
 
-import android.net.Uri
+import de.westnordost.streetcomplete.util.platform.platformFileFromUri
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
@@ -50,8 +50,8 @@ class CustomQuestList : KoinComponent {
 
     fun reload() = load(entriesById)
 
-    fun readFromUri(uri: Uri) {
-        runBlocking { PlatformFile(uri).copyTo(customQuestFile) }
+    fun readFromUri(uri: String) {
+        runBlocking { platformFileFromUri(uri).copyTo(customQuestFile) }
         reload()
     }
 

@@ -6,7 +6,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
 import androidx.compose.ui.graphics.ColorMatrixColorFilter
-import androidx.core.graphics.toColorInt
+import de.westnordost.streetcomplete.ui.util.parseHexColor
 
 enum class BuildingColour(override val osmValue: String, override val hexValue: String?) :
     OsmColour {
@@ -52,7 +52,7 @@ val OsmColour.title get() = this.osmValue
 
 @Composable
 fun OsmColour.colorFilter(): ColorFilter {
-    val color = Color((hexValue ?: osmValue).toColorInt())
+    val color = parseHexColor(hexValue ?: osmValue)
     val contrastColor = if (isSystemInDarkTheme()) Color.LightGray else Color.DarkGray
     val matrix = ColorMatrix(
         floatArrayOf(

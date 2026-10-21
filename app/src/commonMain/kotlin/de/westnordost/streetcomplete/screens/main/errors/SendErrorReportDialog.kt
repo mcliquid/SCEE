@@ -1,13 +1,11 @@
 package de.westnordost.streetcomplete.screens.main.errors
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.window.DialogProperties
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmationDialog
@@ -21,7 +19,7 @@ fun SendErrorReportDialog(
     title: String,
     reportText: String,
 ) {
-    val context = LocalContext.current
+    val clipboard = LocalClipboardManager.current
     ConfirmationDialog(
         onDismissRequest = onDismissRequest,
         onConfirmed = onConfirmed,
@@ -30,10 +28,9 @@ fun SendErrorReportDialog(
             Column {
                 Text(stringResource(Res.string.crash_message))
                 Button({
-                    val clip = ClipData.newPlainText("SCEE error message", reportText)
-                    (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(clip)
+                    clipboard.setText(AnnotatedString(reportText))
                 }) {
-                    Text(androidx.compose.ui.res.stringResource(android.R.string.copy)) }
+                    Text(stringResource(Res.string.action_copy)) }
             }
         },
         confirmButtonText = stringResource(Res.string.crash_compose_email),

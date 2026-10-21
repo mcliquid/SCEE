@@ -1,6 +1,6 @@
 package de.westnordost.streetcomplete.quests.crossing_markings
 
-import com.russhwolf.settings.ObservableSettings
+import de.westnordost.streetcomplete.data.preferences.SettingsWithSnapshot
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.allDrawableResources
@@ -10,7 +10,6 @@ import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.quests.answerApplied
 import de.westnordost.streetcomplete.quests.answerAppliedTo
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
-import de.westnordost.streetcomplete.testutils.mockPrefs
 import de.westnordost.streetcomplete.testutils.node
 import dev.mokkery.answering.calls
 import dev.mokkery.answering.returns
@@ -176,11 +175,10 @@ private fun questType(extended: Boolean = false): AddCrossingMarkings =
     questType { extended }
 
 private fun questType(extended: () -> Boolean): AddCrossingMarkings {
-    val settings: ObservableSettings = mock()
+    val settings: SettingsWithSnapshot = mock()
     every { settings.getBoolean(any(), true) } returns true
     every { settings.getBoolean(any(), false) } returns false
     every { settings.getBoolean("qs_AddCrossingMarkings_extended", false) } calls { extended() }
-    Prefs.sharedPreferences = mockPrefs()
     Prefs.preferences = Preferences(settings)
     return AddCrossingMarkings()
 }

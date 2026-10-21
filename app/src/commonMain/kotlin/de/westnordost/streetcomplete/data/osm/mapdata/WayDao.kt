@@ -1,8 +1,5 @@
 package de.westnordost.streetcomplete.data.osm.mapdata
 
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
 import de.westnordost.streetcomplete.data.Database
 import de.westnordost.streetcomplete.data.osm.mapdata.WayTables.Columns.ID
 import de.westnordost.streetcomplete.data.osm.mapdata.WayTables.Columns.INDEX
@@ -54,7 +51,7 @@ class WayDao(private val db: Database) {
                     arrayOf(
                         way.id,
                         way.version,
-                        if (way.tags.isNotEmpty()) jsonAdapter.toJson(way.tags) else null,
+                        if (way.tags.isNotEmpty()) encodeTagsJson(way.tags) else null,
                         way.timestampEdited,
                         time
                     )
@@ -78,7 +75,7 @@ class WayDao(private val db: Database) {
                 Way(
                     cursor.getLong(ID),
                     nodeIdsByWayId.getValue(cursor.getLong(ID)),
-                    cursor.getStringOrNull(TAGS)?.let { jsonAdapter.fromJson(it)?.toInternedMap() } ?: emptyMap(),
+                    cursor.getStringOrNull(TAGS)?.let { decodeTagsJson(it)?.toInternedMap() } ?: emptyMap(),
                     cursor.getInt(VERSION),
                     cursor.getLong(TIMESTAMP)
                 )
@@ -121,7 +118,7 @@ class WayDao(private val db: Database) {
                 Way(
                     cursor.getLong(ID),
                     nodeIdsByWayId.getValue(cursor.getLong(ID)),
-                    cursor.getStringOrNull(TAGS)?.let { jsonAdapter.fromJson(it)?.toInternedMap() } ?: emptyMap(),
+                    cursor.getStringOrNull(TAGS)?.let { decodeTagsJson(it)?.toInternedMap() } ?: emptyMap(),
                     cursor.getInt(VERSION),
                     cursor.getLong(TIMESTAMP)
                 )
@@ -148,6 +145,3 @@ class WayDao(private val db: Database) {
         ) { it.getLong(ID) }
     }
 }
-
-private val jsonAdapter: JsonAdapter<Map<String, String>> = Moshi.Builder().build()
-    .adapter(Types.newParameterizedType(Map::class.java, String::class.java, String::class.java))

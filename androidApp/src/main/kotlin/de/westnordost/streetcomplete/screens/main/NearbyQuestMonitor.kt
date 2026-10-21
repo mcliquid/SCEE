@@ -88,7 +88,6 @@ class NearbyQuestMonitor : Service(), LocationListener, KoinComponent {
     }
 
     override fun onBind(intent: Intent): IBinder {
-        running = true
         // create notification channels and service notification
         val manager = NotificationManagerCompat.from(this)
         if (manager.getNotificationChannelCompat(MONITOR_CHANNEL_ID) == null)
@@ -127,15 +126,31 @@ class NearbyQuestMonitor : Service(), LocationListener, KoinComponent {
             if (prefs.getBoolean(Prefs.QUEST_MONITOR_NET, false))
                 locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, prefs.getInt(Prefs.LOCATION_INTERVAL, 5) * 1000L, 0.0f, this)
             locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 0L, 0.0f, this)
+            running = true
         } catch (e: SecurityException) {
             // there is some foreground issue, and of course location permissions
             Toast.makeText(this, getRes(Res.string.quest_monitor_error), Toast.LENGTH_LONG).show()
+            onStartFailure(e)
         } catch (e: Exception) {
             // there is also ForegroundServiceNotAllowedException that can occur, didn't bother investigating details...
             // catch other exceptions because ForegroundServiceNotAllowedException is only available on API 31 and up
             Toast.makeText(this, getRes(Res.string.quest_monitor_error), Toast.LENGTH_LONG).show()
+            onStartFailure(e)
         }
         return Binder()
+    }
+
+    private fun onStartFailure(failure: Exception) {
+        running = false
+        Log.e("NearbyQuestMonitor", "Could not start quest monitor", failure)
+        try {
+            locationManager.removeUpdates(this)
+        } catch (cleanupFailure: Exception) {
+            Log.e("NearbyQuestMonitor", "Could not remove location updates", cleanupFailure)
+        } finally {
+            stopForeground(STOP_FOREGROUND_REMOVE)
+            stopSelf()
+        }
     }
 
     override fun onLocationChanged(location: Location) {

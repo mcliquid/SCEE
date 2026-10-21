@@ -45,7 +45,6 @@ import io.github.vinceglb.filekit.dialogs.openFilePicker
 import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.filesDir
 import io.github.vinceglb.filekit.readString
-import io.ticofab.androidgpxparser.parser.GPXParser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -218,17 +217,7 @@ fun loadGpxTrackPoints(onError: () -> Unit, complain: Boolean = false): List<Lat
     }
 
     val gpxPoints = runCatching { runBlocking {
-        GPXParser().parse(gpxFile.readString().byteInputStream()).tracks.map { track ->
-            track.trackSegments.map { segment ->
-                segment.trackPoints
-            }
-        }.flatten().flatten()
-            .map { trackPoint ->
-                LatLon(
-                    latitude = trackPoint.latitude,
-                    longitude = trackPoint.longitude
-                )
-            }
+        parseGpxTrackPoints(gpxFile.readString())
     } }.getOrNull()
 
     if ((gpxPoints?.size ?: 0) < 2) {

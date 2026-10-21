@@ -16,17 +16,18 @@ private fun localDateToCalendar(localDate: LocalDate): Calendar {
     return calendar
 }
 
-actual fun isDay(pos: LatLon): Boolean {
+actual fun isDay(pos: LatLon): Boolean = isDayAt(pos, ZonedDateTime.now(ZoneId.of(TimeZone.getDefault().id)))
+
+internal fun isDayAt(pos: LatLon, now: ZonedDateTime): Boolean {
     /* This functions job is to check if it's currently light out.
     It will use the location of the node and check the civil sunrise/sunset time.
 
     Sometimes sunset is after midnight. This would actually cause sunset to be before sunrise (as it's checking 00:00 to 23:59, it'll catch the day before!), so to gnt around this, we check the next day if that's the case.
      */
 
-    val timezone = TimeZone.getDefault().id
+    val timezone = now.zone.id
     val location = Location(pos.latitude, pos.longitude)
     val calculator = SolarEventCalculator(location, timezone)
-    val now = ZonedDateTime.now(ZoneId.of(timezone))
     val today = now.toLocalDate()
 
     val sunrise = ZonedDateTime.of(today, LocalTime.parse(calculator.computeSunriseTime(Zenith.CIVIL, localDateToCalendar(today))), ZoneId.of(timezone))

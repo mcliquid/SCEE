@@ -26,7 +26,6 @@ import de.westnordost.streetcomplete.overlays.traffic_sign.trafficSignWayStyle
 import de.westnordost.streetcomplete.overlays.traffic_sign.TrafficSignOverlay
 import de.westnordost.streetcomplete.quests.answerAppliedTo
 import de.westnordost.streetcomplete.testutils.createMapData
-import de.westnordost.streetcomplete.testutils.mockPrefs
 import de.westnordost.streetcomplete.testutils.mockPrefs3
 import de.westnordost.streetcomplete.testutils.node
 import de.westnordost.streetcomplete.testutils.way
@@ -53,7 +52,6 @@ class AddTrafficSignTypeTest {
         answerAppliedTo(TrafficSignAnswer(signs), tags)
 
     @BeforeTest fun setUp() {
-        Prefs.sharedPreferences = mockPrefs()
         Prefs.preferences = mockPrefs3()
         lookups = 0
         questType = AddTrafficSignType(country)

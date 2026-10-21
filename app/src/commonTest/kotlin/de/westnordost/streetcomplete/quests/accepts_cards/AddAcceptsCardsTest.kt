@@ -4,7 +4,6 @@ import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
 import de.westnordost.streetcomplete.quests.answerApplied
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
-import de.westnordost.streetcomplete.testutils.mockPrefs
 import de.westnordost.streetcomplete.testutils.mockPrefs3
 import de.westnordost.streetcomplete.testutils.node
 import kotlin.test.BeforeTest
@@ -16,7 +15,6 @@ class AddAcceptsCardsTest {
 
     @BeforeTest
     fun setUp() {
-        Prefs.sharedPreferences = mockPrefs()
         Prefs.preferences = mockPrefs3()
         questType = AddAcceptsCards()
     }

@@ -6,14 +6,15 @@ import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
+import kotlin.uuid.Uuid
 
 abstract class StreetCompleteDatabaseTestCase {
     private lateinit var database: Database
     private lateinit var connection: SQLiteConnection
+    private val databaseName = "streetcomplete_test_${Uuid.random()}.db"
 
     @BeforeTest fun setUp() {
-        SystemFileSystem.delete(Path(DATABASE_NAME), mustExist = false)
-        connection = BundledSQLiteDriver().open(DATABASE_NAME)
+        connection = BundledSQLiteDriver().open(databaseName)
         database = DatabaseImpl(connection)
         database.initialize(StreetCompleteDatabaseConfigurator)
         onDatabaseInitialized(database)
@@ -23,10 +24,6 @@ abstract class StreetCompleteDatabaseTestCase {
 
     @AfterTest fun tearDown() {
         connection.close()
-        SystemFileSystem.delete(Path(DATABASE_NAME), mustExist = false)
-    }
-
-    companion object {
-        private const val DATABASE_NAME = "streetcomplete_test.db"
+        SystemFileSystem.delete(Path(databaseName), mustExist = false)
     }
 }

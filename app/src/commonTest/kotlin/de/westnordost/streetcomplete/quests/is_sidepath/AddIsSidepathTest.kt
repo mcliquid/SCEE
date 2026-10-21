@@ -6,7 +6,6 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.quests.answerApplied
 import de.westnordost.streetcomplete.quests.answerAppliedTo
 import de.westnordost.streetcomplete.testutils.createMapData
-import de.westnordost.streetcomplete.testutils.mockPrefs
 import de.westnordost.streetcomplete.testutils.mockPrefs3
 import de.westnordost.streetcomplete.testutils.p
 import de.westnordost.streetcomplete.testutils.way
@@ -42,7 +41,6 @@ class AddIsSidepathTest {
 
     @BeforeTest
     fun setUp() {
-        Prefs.sharedPreferences = mockPrefs()
         Prefs.preferences = mockPrefs3()
         questType = AddIsSidepath()
     }

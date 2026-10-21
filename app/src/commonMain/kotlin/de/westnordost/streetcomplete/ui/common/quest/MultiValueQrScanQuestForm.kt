@@ -1,10 +1,5 @@
 package de.westnordost.streetcomplete.ui.common.quest
 
-import android.app.Activity.RESULT_OK
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -42,21 +37,18 @@ fun MultiValueQuestQrScanForm(
     var values by rememberSaveable { mutableStateOf(setOf<String>()) }
     var showNoQrCodeHandlerToast by remember { mutableStateOf(false) }
 
-    val qrLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        result ->
-            if (result.resultCode == RESULT_OK) {
-                val content = result.data?.getStringExtra("SCAN_RESULT")
-                if (!content.isNullOrBlank()) {
-                    if (onQrCodeParsed != null) {
-                        onQrCodeParsed(content) {
-                            if (it != null) values = values + it
-                        }
-                    } else {
-                         values = values + content
-                    }
+    val scanQrCode = rememberQrScanner(
+        onScanned = { content ->
+            if (onQrCodeParsed != null) {
+                onQrCodeParsed(content) {
+                    if (it != null) values = values + it
                 }
+            } else {
+                values = values + content
             }
-    }
+        },
+        onNoHandler = { showNoQrCodeHandlerToast = true }
+    )
 
     MultiValueQuestForm(
         on = on,
@@ -72,16 +64,11 @@ fun MultiValueQuestQrScanForm(
         keyboardOptions = keyboardOptions,
         hint = hint
     ) {
-        TextButton(
-            onClick = {
-                try {
-                    qrLauncher.launch(Intent("com.google.zxing.client.android.SCAN"))
-                } catch (_: ActivityNotFoundException) {
-                    showNoQrCodeHandlerToast = true
-                }
+        // without a scanner (desktop) the values can only be typed in
+        if (scanQrCode != null) {
+            TextButton(onClick = scanQrCode) {
+                Text(stringResource(scanAnotherValueText))
             }
-        ) {
-            Text(stringResource(scanAnotherValueText))
         }
 
         if (showNoQrCodeHandlerToast) {

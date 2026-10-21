@@ -2,7 +2,6 @@ package de.westnordost.streetcomplete.data.preferences
 
 import androidx.compose.ui.text.intl.Locale
 import kotlin.reflect.KClass
-import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.SettingsListener
 import com.russhwolf.settings.boolean
 import com.russhwolf.settings.contains
@@ -21,7 +20,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 
 @Mockable
-class Preferences(val prefs: ObservableSettings) {
+class Preferences(val prefs: SettingsWithSnapshot) {
     // application settings
     var locale: Locale?
         set(value) { prefs.putStringOrNull(LANGUAGE_SELECT, value?.toLanguageTag()) }
@@ -67,7 +66,7 @@ class Preferences(val prefs: ObservableSettings) {
     fun putFloat(key: String, value: Float) = prefs.putFloat(key, value)
     fun remove(key: String) = prefs.remove(key)
     fun contains(key: String) = prefs.contains(key)
-    val all: Map<String, *> get() = Prefs.sharedPreferences.all
+    val all: Map<String, *> get() = prefs.all
 
     var expertMode: Boolean by prefs.boolean(Prefs.EXPERT_MODE, false)
     var overrideCountryRestrictions: Boolean by prefs.boolean(Prefs.OVERRIDE_COUNTRY_RESTRICTIONS, false)
@@ -294,7 +293,7 @@ class Preferences(val prefs: ObservableSettings) {
 
         // application version
         private const val LAST_VERSION = "lastVersion"
-        private const val LAST_VERSION_DATA = "lastVersion_data"
+        internal const val LAST_VERSION_DATA = "lastVersion_data"
 
         // main screen UI
         private const val HAS_SHOWN_TUTORIAL = "hasShownTutorial"

@@ -54,8 +54,6 @@ nucleus.application {
     mainClass = "de.westnordost.streetcomplete.MainKt"
     // Nucleus already enables native access, which MapLibre needs, see
     // https://maplibre-compose.pages.dev/maplibre-compose/platform-setup/#java-and-native-access
-    val resourcesDir = rootProject.file("app/src/commonMain/composeResources/files")
-    jvmArgs += "-Dstreetcomplete.resources=$resourcesDir"
     if (hostOs == "macos") {
         // Tao records the wrong UI thread without this flag, see
         // https://github.com/NucleusFramework/Nucleus/issues/829

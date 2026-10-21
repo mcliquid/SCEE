@@ -1,8 +1,5 @@
 package de.westnordost.streetcomplete.data.upload
 
-import android.content.Context
-import android.widget.Toast
-import androidx.core.content.ContextCompat
 import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.data.AuthorizationException
@@ -22,6 +19,7 @@ import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.util.logs.Perf
 import de.westnordost.streetcomplete.util.logs.PerfTrace
 import de.westnordost.streetcomplete.util.logs.withPerfTrace
+import de.westnordost.streetcomplete.util.platform.PlatformToaster
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -42,7 +40,7 @@ class Uploader(
     private val externalSourceQuestController: ExternalSourceQuestController,
     private val prefs: ObservableSettings,
 ) : UploadProgressSource, KoinComponent {
-    private val context: Context by inject()
+    private val toaster: PlatformToaster by inject()
 
     private val listeners = Listeners<UploadProgressSource.Listener>()
 
@@ -86,9 +84,7 @@ class Uploader(
             if (prefs.getInt(Prefs.BAN_CHECK_ERROR_COUNT, 0) > 10) {
                 try {
                     val message = getString(Res.string.ban_check_fails)
-                    ContextCompat.getMainExecutor(context).execute {
-                        context.toast(message, Toast.LENGTH_LONG)
-                    }
+                    toaster.show(message)
                 } catch (_: Exception) { }
             }
 
@@ -151,7 +147,4 @@ class Uploader(
     companion object {
         const val TAG = "Upload"
     }
-}
-private fun Context.toast(text: CharSequence, duration: Int = Toast.LENGTH_SHORT) {
-    Toast.makeText(this, text, duration).show()
 }

@@ -19,7 +19,8 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.BlendModeColorFilter
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.ColorUtils
+import de.westnordost.streetcomplete.ui.util.nearbyQuestTint
+import androidx.compose.ui.graphics.toArgb
 import de.westnordost.streetcomplete.data.quest.Quest
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -38,8 +39,8 @@ fun NearbyQuestsView(
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         nearbyQuests.forEach { (color, quests) ->
-            val imageFilter = BlendModeColorFilter(Color(ColorUtils.blendARGB(color, android.graphics.Color.WHITE, 0.8f)), BlendMode.Modulate)
-            val circleColor = if (color == android.graphics.Color.WHITE) Color(0xBBFF5722) else Color(color)
+            val imageFilter = BlendModeColorFilter(nearbyQuestTint(color), BlendMode.Modulate)
+            val circleColor = if (color == Color.White.toArgb()) Color(0xBBFF5722) else Color(color)
             val boxModifier = Modifier.border(3.dp, circleColor, CircleShape)
             quests.forEach { quest ->
                 Box(boxModifier) {

@@ -1,7 +1,8 @@
 package de.westnordost.streetcomplete.quests.cuisine
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import de.westnordost.streetcomplete.util.readBundledLines
+import kotlinx.coroutines.runBlocking
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -35,8 +36,6 @@ class AddCuisine : OsmFilterQuestType<String>() {
 
     @Composable
     override fun Form(on: (QuestAction<String>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
-        if (suggestions.isEmpty())
-            suggestions.addAll(LocalContext.current.assets.open("cuisine/cuisineSuggestions.txt").bufferedReader().readLines())
         MultiValueQuestForm(
             on,
             Res.string.quest_cuisine_add_more,
@@ -49,4 +48,4 @@ class AddCuisine : OsmFilterQuestType<String>() {
     }
 }
 
-private val suggestions = mutableListOf<String>()
+private val suggestions by lazy { runBlocking { readBundledLines("cuisine/cuisineSuggestions.txt") } }

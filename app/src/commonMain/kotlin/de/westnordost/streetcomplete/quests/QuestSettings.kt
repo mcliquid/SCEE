@@ -17,13 +17,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.fromHtml
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.github.difflib.text.DiffRow.Tag
-import com.github.difflib.text.DiffRowGenerator
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.Prefs
@@ -72,10 +68,7 @@ fun getPrefixedLabelSourcePref(questType: OsmElementQuestType<*>, prefs: Prefere
         onDismissRequest = onDismissRequest,
         content = {
             Column(modifier = Modifier.padding(horizontal = 12.dp)) {
-                Text(
-                    text = AnnotatedString.fromHtml(stringResource(Res.string.quest_settings_dot_labels_message)),
-                    style = MaterialTheme.typography.body1
-                )
+                QuestSettingsHtml(stringResource(Res.string.quest_settings_dot_labels_message))
                 TextField(
                     value = text,
                     onValueChange = { text = it },
@@ -121,10 +114,7 @@ fun getPrefixedLabelSourcePref(questType: OsmElementQuestType<*>, prefs: Prefere
         onDismissRequest = onDismissRequest,
         content = {
             Column(modifier = Modifier.padding(horizontal = 12.dp)) {
-                Text(
-                    text = AnnotatedString.fromHtml(stringResource(messageId)),
-                    style = MaterialTheme.typography.body1
-                )
+                QuestSettingsHtml(stringResource(messageId))
                 TextField(
                     value = text,
                     onValueChange = {
@@ -171,10 +161,7 @@ fun getPrefixedLabelSourcePref(questType: OsmElementQuestType<*>, prefs: Prefere
         onDismissRequest = onDismissRequest,
         content = {
             Column(modifier = Modifier.padding(horizontal = 12.dp)) {
-                Text(
-                    text = AnnotatedString.fromHtml(stringResource(messageId)),
-                    style = MaterialTheme.typography.body1
-                )
+                QuestSettingsHtml(stringResource(messageId))
                 TextField(
                     value = text,
                     onValueChange = {
@@ -221,10 +208,7 @@ fun FullElementSelectionDialog(prefs: Preferences, pref: String, messageId: Stri
         onDismissRequest = onDismissRequest,
         content = {
             Column(modifier = Modifier.padding(horizontal = 12.dp)) {
-                Text(
-                    text = AnnotatedString.fromHtml(org.jetbrains.compose.resources.stringResource(messageId)),
-                    style = MaterialTheme.typography.body1
-                )
+                QuestSettingsHtml(org.jetbrains.compose.resources.stringResource(messageId))
                 TextField(
                     value = text,
                     onValueChange = {
@@ -296,25 +280,10 @@ private fun DiffButton(defaultText: String, getCurrentText: () -> String) {
         Text(stringResource(Res.string.quest_settings_highlight_changes_button))
     }
     if (showDialog) {
-        val drg = DiffRowGenerator.create()
-            .showInlineDiffs(true)
-            .mergeOriginalRevised(true)
-            .inlineDiffByWord(true)
-            .ignoreWhiteSpaces(true)
-            .oldTag { f -> if (f) "<b><i><del>" else "</del></i></b>" }
-            .newTag { f -> if (f) "<b><u><ins>" else "</ins></u></b>" }
-            .build()
-        val thatSpace = " "
-        val newDefault = defaultText.replace("|", "$thatSpace|$thatSpace") // replace with (nearly) invisible space, so word differences are used
-        val newCurrent = getCurrentText().replace("|", "$thatSpace|$thatSpace")
-        val diffRows = drg.generateDiffRows(newDefault.split("\n"), newCurrent.split("\n"))
-        val diffText = diffRows.mapNotNull {
-            if (it.tag == Tag.EQUAL) return@mapNotNull null
-            it.oldLine
-        }.joinToString("<br>")
+        val diffText = questSettingsDiffHtml(defaultText, getCurrentText())
         InfoDialog(
             onDismissRequest = { showDialog = false },
-            text = { Text(AnnotatedString.fromHtml(diffText), style = MaterialTheme.typography.body1) }
+            text = { QuestSettingsHtml(diffText) }
         )
     }
 }

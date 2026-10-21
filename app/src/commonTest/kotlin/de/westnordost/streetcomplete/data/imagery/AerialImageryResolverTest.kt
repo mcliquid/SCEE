@@ -1,6 +1,6 @@
 package de.westnordost.streetcomplete.data.imagery
 
-import com.russhwolf.settings.MapSettings
+import de.westnordost.streetcomplete.testutils.SnapshotMapSettings as MapSettings
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.imagery.eli.EliIndex
 import de.westnordost.streetcomplete.data.imagery.eli.EliIndexClient

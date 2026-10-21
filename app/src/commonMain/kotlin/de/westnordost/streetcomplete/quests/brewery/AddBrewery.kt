@@ -2,7 +2,8 @@ package de.westnordost.streetcomplete.quests.brewery
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
+import de.westnordost.streetcomplete.util.readBundledLines
+import kotlinx.coroutines.runBlocking
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
@@ -47,8 +48,6 @@ class AddBrewery : OsmFilterQuestType<BreweryAnswer>() {
 
     @Composable
     override fun Form(on: (QuestAction<BreweryAnswer>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
-        if (suggestions.isEmpty())
-            suggestions.addAll(LocalContext.current.assets.open("brewery/brewerySuggestions.txt").bufferedReader().readLines())
         val mapDataSource: MapDataWithEditsSource = koinInject()
         fun getNearbySuggestions(): Collection<String> {
             val data = mapDataSource.getMapDataWithGeometry(geometry.bounds.enlargedBy(100.0))
@@ -90,4 +89,4 @@ class AddBrewery : OsmFilterQuestType<BreweryAnswer>() {
     }
 }
 
-private val suggestions = mutableListOf<String>()
+private val suggestions by lazy { runBlocking { readBundledLines("brewery/brewerySuggestions.txt") } }

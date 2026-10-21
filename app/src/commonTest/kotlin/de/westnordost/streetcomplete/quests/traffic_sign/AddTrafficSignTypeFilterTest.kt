@@ -16,7 +16,6 @@ import de.westnordost.streetcomplete.overlays.traffic_sign.TrafficSignWayEditorS
 import de.westnordost.streetcomplete.quests.getPrefixedFullElementSelectionPref
 import de.westnordost.streetcomplete.testutils.createMapData
 import de.westnordost.streetcomplete.testutils.inMemoryPrefs
-import de.westnordost.streetcomplete.testutils.mockPrefs
 import de.westnordost.streetcomplete.testutils.mockPrefs3
 import de.westnordost.streetcomplete.testutils.node
 import de.westnordost.streetcomplete.testutils.way
@@ -39,7 +38,6 @@ class AddTrafficSignTypeFilterTest {
     private lateinit var questType: AddTrafficSignType
 
     @BeforeTest fun setUp() {
-        Prefs.sharedPreferences = mockPrefs()
         Prefs.preferences = mockPrefs3()
         questType = AddTrafficSignType(country)
     }

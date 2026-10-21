@@ -1,13 +1,5 @@
 package de.westnordost.streetcomplete.screens.settings
 
-import android.Manifest.permission.ACCESS_BACKGROUND_LOCATION
-import android.Manifest.permission.ACCESS_FINE_LOCATION
-import android.Manifest.permission.POST_NOTIFICATIONS
-import android.content.Context
-import android.content.ContextWrapper
-import android.content.pm.PackageManager
-import android.os.Build
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,11 +28,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import de.westnordost.streetcomplete.DayNightBehavior
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestController
@@ -66,7 +55,7 @@ import org.koin.compose.koinInject
 fun QuestSettingsScreen(
     onClickBack: () -> Unit,
 ) {
-    val ctx = LocalContext.current
+    val questMonitorPermissions = rememberQuestMonitorPermissions()
     val prefs: Preferences = koinInject()
     val scope = rememberCoroutineScope()
     val visibleEditTypeController: VisibleEditTypeController = koinInject()
@@ -128,7 +117,8 @@ fun QuestSettingsScreen(
                     default = false,
                     onCheckedChange = { scope.launch(Dispatchers.IO) { visibleEditTypeController.onVisibilitiesChanged() } }
                 )
-            Preference(
+            // the monitor is only available where the platform can ask for what it needs
+            if (questMonitorPermissions != null) Preference(
                 name = stringResource(Res.string.pref_quest_monitor_title),
                 onClick = { questMonitorDialog = true },
                 description = stringResource(Res.string.pref_quest_monitor_summary)
@@ -206,28 +196,15 @@ fun QuestSettingsScreen(
                 Column {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth().clickable { enable = !enable },
+                        modifier = Modifier.fillMaxWidth().clickable {
+                            enable = questMonitorPermissions.enableIfGranted(!enable)
+                        },
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(stringResource(Res.string.pref_quest_monitor_title))
                         Switch(enable, {
-                            val activity = ctx.getActivity()!!
-                            if (!activity.hasPermission(ACCESS_FINE_LOCATION)) {
-                                enable = false
-                                ActivityCompat.requestPermissions(activity, arrayOf(ACCESS_FINE_LOCATION), 0)
-                                return@Switch
-                            }
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !activity.hasPermission(ACCESS_BACKGROUND_LOCATION))  {
-                                enable = false
-                                ActivityCompat.requestPermissions(activity, arrayOf(ACCESS_BACKGROUND_LOCATION), 0)
-                                return@Switch
-                            }
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && !activity.hasPermission(POST_NOTIFICATIONS)) {
-                                enable = false
-                                ActivityCompat.requestPermissions(activity, arrayOf(POST_NOTIFICATIONS), 0)
-                                return@Switch
-                            }
-                            enable = it
+                            // each missing permission is requested one after the other, switching on is only possible when all are granted
+                            enable = questMonitorPermissions.enableIfGranted(it)
                         })
                     }
                     Row(
@@ -260,16 +237,4 @@ fun QuestSettingsScreen(
             }
         )
     }
-}
-
-private fun Context.hasPermission(permission: String): Boolean =
-    ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
-
-private fun Context.getActivity(): ComponentActivity? {
-    val componentActivity = when (this) {
-        is ComponentActivity -> this
-        is ContextWrapper -> baseContext.getActivity()
-        else -> null
-    }
-    return componentActivity
 }

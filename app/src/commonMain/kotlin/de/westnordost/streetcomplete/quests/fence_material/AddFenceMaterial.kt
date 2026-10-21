@@ -2,7 +2,6 @@ package de.westnordost.streetcomplete.quests.fence_material
 
 import androidx.compose.foundation.Image
 import androidx.compose.runtime.Composable
-import de.westnordost.streetcomplete.R
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element

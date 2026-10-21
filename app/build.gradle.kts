@@ -130,9 +130,22 @@ kotlin {
     applyDefaultHierarchyTemplate()
 
     sourceSets {
-        val jvmAndroidMain = create("jvmAndroidMain") { dependsOn(commonMain.get()) }
+        val jvmAndroidMain = create("jvmAndroidMain") {
+            dependsOn(commonMain.get())
+            dependencies {
+                implementation(libs.moshi)
+                implementation(libs.sunriseSunsetCalculator)
+                implementation(libs.javaDiffUtils)
+            }
+        }
         val nonAndroidMain = create("nonAndroidMain") { dependsOn(commonMain.get()) }
         val mobileMain = create("mobileMain") { dependsOn(commonMain.get()) }
+        val jvmAndroidTest = create("jvmAndroidTest") { dependsOn(commonTest.get()) }
+        getByName("desktopTest") {
+            dependsOn(jvmAndroidTest)
+            // Skiko's native library for the graphics tests; the desktop launcher brings it in the same way
+            dependencies { implementation(compose.desktop.currentOs) }
+        }
 
         commonMain {
             dependencies {
@@ -264,15 +277,6 @@ kotlin {
                 // required to @Preview composables in Android Studio
                 runtimeOnly(libs.androidx.compose.uiTooling)
 
-                // fast json (de)serialization used for database read and write
-                implementation(libs.moshi)
-
-                // sunset-sunrise parser for lit quests
-                implementation(libs.sunriseSunsetCalculator)
-
-                // diff utils for comparing filters modified by quest settings with original
-                implementation(libs.javaDiffUtils)
-
                 // parser for user-supplied GPX tracks
                 implementation(libs.gpxParser)
             }
@@ -304,6 +308,7 @@ kotlin {
             }
         }
         getByName("androidHostTest") {
+            dependsOn(jvmAndroidTest)
             dependencies {
                 // without it, :app:testAndroidHostTest throws java.lang.UnsatisfiedLinkError for sqliteJni
                 implementation(libs.androidx.sqliteBundledJvm)
@@ -518,5 +523,27 @@ tasks.register<JavaExec>("openingHoursParsingStatistics") {
 tasks.register<GenerateTagSuggestions>("generateTagSuggestions") {
     group = "streetcomplete"
     version = presetsVersion
-    targetDir = "$projectDir/src/androidMain/assets/tag_editor"
+    targetDir = "$projectDir/src/commonMain/composeResources/files/tag_editor"
+}
+
+val crossingVectors = tasks.register<GenerateCrossingVectors>("generateCrossingVectors") {
+    sourceFiles.from(fileTree("src/commonMain/composeResources/drawable") { include("crossing_markings*.xml") })
+    outputDirectory.set(layout.buildDirectory.dir("generated/crossingResources"))
+}
+compose.resources {
+    // asset fixtures of the Android host tests (non-ASCII names) are used by the desktop tests, too
+    customDirectory(
+        sourceSetName = "desktopTest",
+        directoryProvider = provider { layout.projectDirectory.dir("src/androidHostTest/assets/composeResources/de.westnordost.streetcomplete.resources") }
+    )
+    customDirectory(
+        sourceSetName = "desktopMain",
+        directoryProvider = crossingVectors.flatMap { it.outputDirectory }
+    )
+}
+tasks.withType<Test>().configureEach {
+    if (name == "testAndroidHostTest") {
+        dependsOn(crossingVectors)
+        systemProperty("crossing.vector.fixtures", crossingVectors.get().outputDirectory.dir("files/crossing").get().asFile.absolutePath)
+    }
 }

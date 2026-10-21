@@ -1,11 +1,10 @@
 package de.westnordost.streetcomplete
 
-import android.content.SharedPreferences
 import de.westnordost.streetcomplete.data.preferences.Preferences
 
 /** Constant class to have all the identifiers for SCEE shared preferences in one place  */
 object Prefs {
-    lateinit var sharedPreferences: SharedPreferences // todo: use the other one
+    // Compatibility access for quest types; assigned from the common Koin singleton on both platforms.
     lateinit var preferences: Preferences
 
     const val VOLUME_ZOOM = "volume_button_zoom"

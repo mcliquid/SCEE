@@ -17,7 +17,6 @@ import de.westnordost.streetcomplete.quests.answerAppliedTo
 import de.westnordost.streetcomplete.quests.traffic_sign.AddTrafficSignType
 import de.westnordost.streetcomplete.quests.traffic_sign.TrafficSignAnswer
 import de.westnordost.streetcomplete.Prefs
-import de.westnordost.streetcomplete.testutils.mockPrefs
 import de.westnordost.streetcomplete.testutils.mockPrefs3
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -82,7 +81,6 @@ class TrafficSignProposalStateTest {
     private fun editor(vararg tags: Pair<String, String>) = Editor(mapOf(*tags), catalogue)
 
     @BeforeTest fun setUp() {
-        Prefs.sharedPreferences = mockPrefs()
         Prefs.preferences = mockPrefs3()
     }
 

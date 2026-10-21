@@ -1,6 +1,6 @@
 package de.westnordost.streetcomplete.quests.tree
 
-import android.net.Uri
+import de.westnordost.streetcomplete.util.platform.platformFileFromUri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -111,6 +111,6 @@ class AddTreeGenus : OsmFilterQuestType<TreeAnswer>() {
     }
 
     companion object {
-        fun readFromUri(uri: Uri) = runBlocking { PlatformFile(uri).copyTo(treeFile) }
+        fun readFromUri(uri: String) = runBlocking { platformFileFromUri(uri).copyTo(treeFile) }
     }
 }

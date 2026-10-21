@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <boolean name="expert_mode" value="true" />
+    <int name="gps_interval" value="15" />
+    <long name="osm.userid" value="1234567890123" />
+    <float name="quest_monitor_radius" value="75.5" />
+    <string name="osm.username">Fixture user ä &amp; &lt;test&gt;</string>
+    <string name="lastVersion_data">62.0</string>
+    <string name="theme.select">AUTO</string>
+    <string name="language.select">de-DE</string>
+    <string name="autosync">ON</string>
+    <string name="quests.resurveyIntervals">MORE_OFTEN</string>
+    <long name="selectedQuestsPreset" value="7" />
+    <string name="selectedOverlay">CustomOverlay</string>
+    <string name="7_qs_AddPlaygroundAccess_full_element_selection">ways with access != private</string>
+    <string name="imageListLastPicked.AddPicnicTableCover">[&quot;yes&quot;,&quot;no&quot;]</string>
+    <!-- Legacy opaque sets are supported by the migrator, but have no current application writer. -->
+    <set name="legacy_set_AddPlaygroundAccess">
+        <string>AddPlaygroundAccess</string>
+        <string>ä; &lt;unchanged&gt;</string>
+    </set>
+</map>

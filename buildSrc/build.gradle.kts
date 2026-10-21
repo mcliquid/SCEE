@@ -26,3 +26,7 @@ plugins {
     `kotlin-dsl`
     alias(libs.plugins.kotlin.serialization)
 }
+
+tasks.withType<Test>().configureEach {
+    systemProperty("scee.project.root", rootDir.parentFile.absolutePath)
+}

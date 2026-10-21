@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import android.net.Uri
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.SizeTransform
@@ -997,12 +996,12 @@ fun MainScreen(
                     Text(stringResource(Res.string.cancel))
                 }
                 TextButton({
-                    customQuestList.readFromUri(Uri.parse(textIntentUri))
+                    customQuestList.readFromUri(textIntentUri!!)
                     visibleQuestsSource.clearCache()
                     viewModel.textIntentUri.value = null
                 }) { Text(stringResource(Res.string.pref_custom_title)) }
                 TextButton({
-                    AddTreeGenus.readFromUri(Uri.parse(textIntentUri))
+                    AddTreeGenus.readFromUri(textIntentUri!!)
                     viewModel.textIntentUri.value = null
                 }) { Text(stringResource(Res.string.pref_trees_title)) }
             }

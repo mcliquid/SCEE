@@ -55,7 +55,7 @@ fun main(args: Array<String>) {
             ) {
                 WindowAppearance(when (theme) {
                     Theme.LIGHT -> WindowAppearanceMode.Light
-                    Theme.DARK -> WindowAppearanceMode.Dark
+                    Theme.DARK, Theme.DARK_CONTRAST -> WindowAppearanceMode.Dark
                     Theme.SYSTEM -> WindowAppearanceMode.System
                 })
                 WindowScaffold(titleBar = {

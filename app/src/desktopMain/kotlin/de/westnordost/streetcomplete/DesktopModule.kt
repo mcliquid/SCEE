@@ -1,8 +1,12 @@
 package de.westnordost.streetcomplete
 
+import de.westnordost.streetcomplete.util.platform.DesktopToaster
+import de.westnordost.streetcomplete.util.platform.PlatformToaster
+import de.westnordost.streetcomplete.util.readBundledAsset
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.russhwolf.settings.ObservableSettings
-import com.russhwolf.settings.PreferencesSettings
+import de.westnordost.streetcomplete.data.preferences.DesktopPreferenceStore
+import de.westnordost.streetcomplete.data.preferences.SettingsWithSnapshot
 import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.data.Cleaner
 import de.westnordost.streetcomplete.data.Database
@@ -31,7 +35,8 @@ import io.github.vinceglb.filekit.cacheDir
 import io.github.vinceglb.filekit.filesDir
 import io.github.vinceglb.filekit.path
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.io.buffered
+import kotlinx.coroutines.runBlocking
+import kotlinx.io.Buffer
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import org.koin.core.qualifier.named
@@ -44,33 +49,30 @@ import org.maplibre.compose.map.createMapRuntime
 import org.maplibre.compose.offline.offlineStorage
 import org.maplibre.compose.util.ExperimentalMaplibreComposeApi
 import java.awt.GraphicsEnvironment
+import java.io.File
 import java.util.prefs.Preferences
 
 /** Identifies the desktop app to the system, e.g. for the app's data directories and settings.
  *  Keep in sync with bundleID in desktopApp/build.gradle.kts */
 const val DESKTOP_APP_ID = "de.westnordost.streetcomplete.desktop"
 
-/** Services for the local development launcher; metadata is read directly from the checkout. */
+/** Services shared by the development launcher and packaged desktop application. */
 val desktopModule = module {
-    // TODO desktop: compose resources are packaged in the jar, but osmfeatures can only read presets
-    //      from the file system (or Android assets), so they are read directly from the checkout
-    //      for now. Read them via Res once osmfeatures accepts a ResourceAccessAdapter, see
-    //      https://github.com/westnordost/osmfeatures/pull/34
-    val resourcesDir = Path(requireNotNull(System.getProperty("streetcomplete.resources")))
 
     // metadata
 
     single<de.westnordost.countryboundaries.CountryBoundaries> {
-        SystemFileSystem.source(Path(resourcesDir, "boundaries.ser")).buffered().use {
+        Buffer().apply { write(runBlocking { readBundledAsset("boundaries.ser") }) }.use {
             de.westnordost.countryboundaries.CountryBoundaries.deserializeFrom(it)
         }
     }
 
     single<FeatureDictionary> {
+        val metadataDirectory = desktopMetadataDirectory(File(FileKit.cacheDir.path, "osmfeatures"))
         FeatureDictionary.create(
             fileSystem = SystemFileSystem,
-            presetsBasePath = Path(resourcesDir, "osmfeatures/default").toString(),
-            brandPresetsBasePath = Path(resourcesDir, "osmfeatures/brands").toString(),
+            presetsBasePath = File(metadataDirectory, "default").path,
+            brandPresetsBasePath = File(metadataDirectory, "brands").path,
         )
     }
 
@@ -115,9 +117,13 @@ val desktopModule = module {
 
     // settings
 
-    single<ObservableSettings> {
-        PreferencesSettings(Preferences.userRoot().node(DESKTOP_APP_ID.replace('.', '/')))
+    single<SettingsWithSnapshot> {
+        DesktopPreferenceStore(Preferences.userRoot().node(DESKTOP_APP_ID.replace('.', '/')))
     }
+    single<ObservableSettings> { get<SettingsWithSnapshot>() }
+    single<PreferencesMigration> { DesktopPreferencesMigration(get()) }
+
+    single<PlatformToaster> { DesktopToaster() }
 
     // sound
 
@@ -148,7 +154,7 @@ val desktopModule = module {
 
     single<UploadController> { DesktopUploadController(get()) } onClose { (it as? DesktopUploadController)?.close() }
 
-    single<DownloadController> { DesktopDownloadController(get()) } onClose { (it as? DesktopDownloadController)?.close() }
+    single<DownloadController> { DesktopDownloadController(get(), get()) } onClose { (it as? DesktopDownloadController)?.close() }
 
     single { DesktopPeriodicCleaner { get<Cleaner>().cleanOld() } } onClose { it?.close() }
 

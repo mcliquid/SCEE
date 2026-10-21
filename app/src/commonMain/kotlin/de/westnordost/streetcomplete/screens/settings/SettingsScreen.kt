@@ -24,7 +24,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.ApplicationConstants
@@ -92,7 +91,6 @@ fun SettingsScreen(
     var showResurveyIntervalsSelect by remember { mutableStateOf(false) }
     var showExpertModeConfirmation by remember { mutableStateOf(false) }
 
-    val c = LocalContext.current
     val databaseLogger: DatabaseLogger = koinInject()
     val prefs: Preferences = koinInject()
     var useDebugLogger by remember { mutableStateOf(prefs.getBoolean(Prefs.TEMP_LOGGER, false)) }

@@ -54,7 +54,7 @@ buildkonfig {
 
     defaultConfigs {
         buildConfigField(STRING, "VERSION_NAME", appVersionName)
-        buildConfigField(BOOLEAN, "DEBUG", properties["app.streetcomplete.debug"]!!.toString())
+        buildConfigField(BOOLEAN, "DEBUG", providers.gradleProperty("app.streetcomplete.debug").get())
     }
 
     targetConfigs {
@@ -328,7 +328,7 @@ compose {
 }
 
 // only used by the updateTrafficSigns task, not part of the app
-val svgToVectorConverter by configurations.creating
+val svgToVectorConverter = configurations.create("svgToVectorConverter")
 
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
@@ -372,7 +372,7 @@ tasks.register<UpdateContributorStatisticsTask>("updateContributorStatistics") {
     /* drawable XMLs, layout XMLs, animation XMLs ... but not strings because they are updated
        via gradle tasks */
     interfaceMarkupRegex = Regex(".*(anim|color|drawable|layout|menu|mipmap).*\\.xml$")
-    githubApiToken = properties["app.streetcomplete.GithubApiToken"] as String
+    githubApiToken = providers.gradleProperty("app.streetcomplete.GithubApiToken").get()
 }
 
 tasks.register("updateAvailableLanguages") {
@@ -390,8 +390,8 @@ tasks.register<GetTranslatorCreditsTask>("updateTranslatorCredits") {
     group = "streetcomplete"
     targetFile = projectDir.resolve("src/commonMain/composeResources/files/credits_translators.yml")
     languageCodes = bcp47ExportLanguages
-    cookie = properties["app.streetcomplete.POEditorCookie"] as String
-    phpsessid = properties["app.streetcomplete.POEditorPHPSESSID"] as String
+    cookie = providers.gradleProperty("app.streetcomplete.POEditorCookie").get()
+    phpsessid = providers.gradleProperty("app.streetcomplete.POEditorPHPSESSID").get()
 }
 
 tasks.register<UpdatePresetsTask>("updatePresets") {
@@ -424,7 +424,7 @@ tasks.register<DownloadAndConvertPresetIconsTask>("downloadAndConvertPresetIcons
 tasks.register<UpdateAppTranslationsTask>("updateTranslations") {
     group = "streetcomplete"
     languageCodes = bcp47ExportLanguages
-    apiToken = properties["app.streetcomplete.POEditorAPIToken"] as String
+    apiToken = providers.gradleProperty("app.streetcomplete.POEditorAPIToken").get()
     projectId = poEditorProjectId
     targetFiles = { projectDir.resolve("src/commonMain/composeResources/values-$it/strings.xml") }
 }
@@ -433,7 +433,7 @@ tasks.register<UpdateAppTranslationCompletenessTask>("updateTranslationCompleten
     group = "streetcomplete"
     languageCodes = bcp47ExportLanguages
     mustIncludeLanguagePercentage = 90
-    apiToken = properties["app.streetcomplete.POEditorAPIToken"] as String
+    apiToken = providers.gradleProperty("app.streetcomplete.POEditorAPIToken").get()
     projectId = poEditorProjectId
     targetFiles = { projectDir.resolve("src/commonMain/composeResources/values-$it/translation_info.xml") }
 }
@@ -441,7 +441,7 @@ tasks.register<UpdateAppTranslationCompletenessTask>("updateTranslationCompleten
 tasks.register<UpdateIosAppTranslationsTask>("updateIosTranslations") {
     group = "streetcomplete"
     projectId = poEditorProjectId
-    apiToken = properties["app.streetcomplete.POEditorAPIToken"] as String
+    apiToken = providers.gradleProperty("app.streetcomplete.POEditorAPIToken").get()
     targetFile = projectDir.resolve("../iosApp/iosApp/InfoPlist.xcstrings")
     languageCodes = bcp47ExportLanguages
     strings = mapOf(

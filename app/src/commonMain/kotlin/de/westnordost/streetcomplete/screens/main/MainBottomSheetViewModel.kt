@@ -62,6 +62,7 @@ import org.jetbrains.compose.resources.DrawableResource
 abstract class MainBottomSheetViewModel : ViewModel() {
     abstract suspend fun getBottomSheet(selection: MainSheetSelection): ShownBottomSheet?
     abstract suspend fun getHighlightedMarkers(sheet: ShownBottomSheet): List<Marker>
+    abstract suspend fun getNearbyQuests(sheet: ShownBottomSheet): NearbyQuests
 
     abstract fun hideQuest(questKey: QuestKey, tempHide: Boolean = false)
 
@@ -197,6 +198,16 @@ class MainBottomSheetViewModelImpl(
             val geometry = mapData.getGeometry(other.type, other.id) ?: return@mapNotNull null
             Marker(geometry, getIcon(featureDictionary.value, other), getTitle(other.tags))
         }.toList()
+    }
+
+    override suspend fun getNearbyQuests(sheet: ShownBottomSheet): NearbyQuests {
+        val quest = when (sheet) {
+            is ShownBottomSheet.OsmQuest -> sheet.quest
+            is ShownBottomSheet.ExternalSourceQuest -> sheet.quest
+            is ShownBottomSheet.OsmNoteQuest -> sheet.quest
+            else -> return NearbyQuests.EMPTY
+        }
+        return withContext(Dispatchers.IO) { findNearbyQuests(quest, prefs, visibleQuestsSource::getNearbyQuests) }
     }
 
     override fun hideQuest(questKey: QuestKey, tempHide: Boolean) {

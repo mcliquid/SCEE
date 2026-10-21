@@ -298,7 +298,17 @@ fun MainScreen(
         value = shownBottomSheet?.let { mainBottomSheetViewModel.getHighlightedMarkers(it) }.orEmpty()
     }
 
-    val markers = sheet.formMarkers ?: highlightedMarkers
+    // SCEE: other quests near the opened quest. Reset first, so markers of a previous quest never linger
+    val nearby by produceState(NearbyQuests.EMPTY, shownBottomSheet) {
+        value = NearbyQuests.EMPTY
+        value = shownBottomSheet?.let { mainBottomSheetViewModel.getNearbyQuests(it) } ?: NearbyQuests.EMPTY
+    }
+
+    // form markers take precedence over highlighted and nearby quest markers
+    val markers = sheet.formMarkers ?: remember(highlightedMarkers, nearby) {
+        mergeMarkersAtSamePosition(highlightedMarkers, nearby.markers)
+    }
+
 
     val pinsMode = when (sheetSelection) {
         is MainSheetSelection.EditHistory -> PinsMode.EditHistory
@@ -595,8 +605,8 @@ fun MainScreen(
     }
 
     // Clear nearby-quest highlight list when the bottom sheet closes (SCEE).
-    LaunchedEffect(sheet.isFormOpen) {
-        if (!sheet.isFormOpen) viewModel.nearbyQuests.value = emptyList()
+    LaunchedEffect(sheet.isFormOpen, nearby) {
+        viewModel.nearbyQuests.value = if (sheet.isFormOpen) nearby.groups else emptyList()
     }
 
     LaunchedEffect(mainBottomSheetViewModel) {

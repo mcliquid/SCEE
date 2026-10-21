@@ -645,7 +645,13 @@ fun MainScreen(
         }
     }
 
-    LaunchedEffect(Unit) { reloadMapExtras(prefs) { gpx, geoJson -> gpxTrack = gpx; customGeoJson = geoJson } }
+    LaunchedEffect(Unit) {
+        // once per composition of the main screen, so an unusable track is reported once per visit
+        reloadMapExtras(
+            prefs,
+            loadGpx = { withContext(Dispatchers.IO) { loadGpxTrackPoints({ showToast = Toast.GpxLoadingError }) } },
+        ) { gpx, geoJson -> gpxTrack = gpx; customGeoJson = geoJson }
+    }
     LaunchedEffect(reversedQuestOrder) {
         mapViewModel.setReversedQuestOrder(reversedQuestOrder)
     }
@@ -1199,7 +1205,8 @@ private enum class Toast {
     NoLocation,
     RouteNoLocation,
     RouteStaleLocation,
-    ImpreciseNote
+    ImpreciseNote,
+    GpxLoadingError
 }
 
 private val Toast.messageResource: StringResource get() =  when (this) {
@@ -1213,4 +1220,5 @@ private val Toast.messageResource: StringResource get() =  when (this) {
     Toast.TeamModeDeactivated -> Res.string.team_mode_deactivated
     Toast.DownloadAreaTooBig -> Res.string.download_area_too_big
     Toast.NoEmailClient -> Res.string.no_email_client
+    Toast.GpxLoadingError -> Res.string.pref_gpx_track_loading_error
 }

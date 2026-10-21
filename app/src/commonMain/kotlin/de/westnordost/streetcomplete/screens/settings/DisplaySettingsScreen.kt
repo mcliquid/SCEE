@@ -204,25 +204,8 @@ fun DisplaySettingsScreen(
     }
 }
 
-fun loadGpxTrackPoints(onError: () -> Unit, complain: Boolean = false): List<LatLon>? {
-    // load gpx file as one long track, no matter how it's stored internally (for now)
-    // <trkpt lat="..." lon="..."><ele>...</ele></trkpt>
-    // <wpt lon="..." lat="...">
-    if (!gpxFile.exists()) {
-        if (complain) onError()
-        return null
-    }
-
-    val gpxPoints = runCatching { runBlocking {
-        parseGpxTrackPoints(gpxFile.readString())
-    } }.getOrNull()
-
-    if ((gpxPoints?.size ?: 0) < 2) {
-        onError()
-        return null
-    }
-    return gpxPoints
-}
+fun loadGpxTrackPoints(onError: () -> Unit, complain: Boolean = false): List<LatLon>? =
+    loadGpxTrackPoints(onError, complain) { if (gpxFile.exists()) gpxFile.readString() else null }
 
 private val gpxFile = PlatformFile(FileKit.filesDir, "display_track.gpx")
 val customGeometryFile = PlatformFile(FileKit.filesDir, "customGeometry.geojson")

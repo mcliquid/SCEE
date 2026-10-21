@@ -4,6 +4,7 @@ import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.edithistory.EditKey
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import org.maplibre.compose.location.LocationRequest
+import org.maplibre.compose.map.MapUiOptions
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TimeMark
@@ -54,3 +55,31 @@ fun mainLocationUpdateThrottle(prefs: Preferences): LocationUpdateThrottle =
 /** SCEE: the edit history opens with the newest edit selected, or without selection if "select first edit" is off */
 fun editHistorySelection(newest: EditKey?, selectNewest: Boolean): MainSheetSelection.EditHistory? =
     if (newest == null) null else MainSheetSelection.EditHistory(if (selectNewest) newest else null)
+
+/** SCEE: rotate gesture settings. Defaults are those of SCEE before the Compose map: no rotating while zooming, 1.5 degrees. */
+data class RotateGestureSettings(val allowDuringZoom: Boolean, val startAngle: Double)
+
+private const val DEFAULT_ROTATE_ANGLE_THRESHOLD = 1.5f
+
+fun rotateGestureSettings(prefs: Preferences): RotateGestureSettings {
+    val threshold = prefs.getFloat(Prefs.ROTATE_ANGLE_THRESHOLD, DEFAULT_ROTATE_ANGLE_THRESHOLD)
+    return RotateGestureSettings(
+        allowDuringZoom = prefs.getBoolean(Prefs.ROTATE_WHILE_ZOOMING, false),
+        // the map throws for a negative or non-finite angle
+        startAngle = (if (threshold.isFinite() && threshold >= 0f) threshold else DEFAULT_ROTATE_ANGLE_THRESHOLD).toDouble(),
+    )
+}
+
+fun mainMapUiOptions(prefs: Preferences): MapUiOptions {
+    val rotate = rotateGestureSettings(prefs)
+    return MapUiOptions {
+        bindings {
+            transform {
+                rotate {
+                    allowDuringZoom = rotate.allowDuringZoom
+                    startAngle = rotate.startAngle
+                }
+            }
+        }
+    }
+}

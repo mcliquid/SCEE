@@ -7,6 +7,7 @@ import org.maplibre.compose.interaction.ClickResult
 import org.maplibre.compose.interaction.MapInteractions
 import org.maplibre.compose.map.CameraConstraints
 import org.maplibre.compose.map.MapState
+import org.maplibre.compose.map.MapUiOptions
 import org.maplibre.compose.map.MaplibreMap
 import org.maplibre.compose.overlay.MapOverlayScope
 
@@ -19,11 +20,13 @@ fun MainMap(
     onRotate: () -> Unit = {},
     onMapClick: (ClickEvent) -> ClickResult = { ClickResult.Pass },
     onMapLongClick: (ClickEvent) -> ClickResult = { ClickResult.Pass },
+    uiOptions: MapUiOptions = MapUiOptions.Standard,
     overlay: @Composable MapOverlayScope.() -> Unit = {},
 ) {
     MaplibreMap(
         modifier = modifier,
         state = state,
+        uiOptions = uiOptions,
         cameraConstraints = CameraConstraints {
             minZoom = 0.0
             maxZoom = 22.0

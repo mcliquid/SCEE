@@ -682,6 +682,7 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .onGloballyPositioned { mapPositionInWindow = it.positionInWindow() },
+            uiOptions = remember(prefs) { mainMapUiOptions(prefs) },
             onPan = { cameraState.onPan(location != null) },
             onRotate = { cameraState.onRotate(location != null) },
             onMapClick = { event ->

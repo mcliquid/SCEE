@@ -6,7 +6,9 @@ import de.westnordost.streetcomplete.testutils.inMemoryPrefs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
+import org.maplibre.compose.map.MapUiOptions
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
@@ -124,5 +126,38 @@ class EditHistorySelectionTest {
     @Test fun `the setting is on by default`() {
         val prefs = inMemoryPrefs()
         assertTrue(prefs.getBoolean(Prefs.SELECT_FIRST_EDIT, true))
+    }
+}
+
+class RotateGestureSettingsTest {
+    @Test fun `defaults are those of SCEE before the compose map`() {
+        assertEquals(RotateGestureSettings(allowDuringZoom = false, startAngle = 1.5), rotateGestureSettings(inMemoryPrefs()))
+    }
+
+    @Test fun `settings are used`() {
+        val prefs = inMemoryPrefs().also {
+            it.putBoolean(Prefs.ROTATE_WHILE_ZOOMING, true)
+            it.putFloat(Prefs.ROTATE_ANGLE_THRESHOLD, 7f)
+        }
+        assertEquals(RotateGestureSettings(allowDuringZoom = true, startAngle = 7.0), rotateGestureSettings(prefs))
+    }
+
+    @Test fun `invalid thresholds fall back to the default instead of crashing the map`() {
+        for (bad in listOf(-1f, Float.NaN, Float.POSITIVE_INFINITY)) {
+            val prefs = inMemoryPrefs().also { it.putFloat(Prefs.ROTATE_ANGLE_THRESHOLD, bad) }
+            assertEquals(1.5, rotateGestureSettings(prefs).startAngle)
+            mainMapUiOptions(prefs) // does not throw
+        }
+        mainMapUiOptions(inMemoryPrefs().also { it.putFloat(Prefs.ROTATE_ANGLE_THRESHOLD, 0f) })
+    }
+
+    @Test fun `the map options carry the settings`() {
+        val prefs = inMemoryPrefs().also {
+            it.putBoolean(Prefs.ROTATE_WHILE_ZOOMING, true)
+            it.putFloat(Prefs.ROTATE_ANGLE_THRESHOLD, 5f)
+        }
+        val expected = MapUiOptions { bindings { transform { rotate { allowDuringZoom = true; startAngle = 5.0 } } } }
+        assertEquals(expected, mainMapUiOptions(prefs))
+        assertNotEquals(expected, mainMapUiOptions(inMemoryPrefs()))
     }
 }

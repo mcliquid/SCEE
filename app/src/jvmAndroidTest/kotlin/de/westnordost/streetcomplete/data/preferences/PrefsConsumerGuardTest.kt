@@ -23,10 +23,8 @@ import kotlin.test.fail
  */
 class PrefsConsumerGuardTest {
 
-    private val KNOWN_UNCONSUMED = mapOf(
-        "ROTATE_WHILE_ZOOMING" to "F-06: maplibre-compose gesture options not investigated",
-        "ROTATE_ANGLE_THRESHOLD" to "F-06: maplibre-compose gesture options not investigated",
-    )
+    /** Constant name to reason. Empty: every setting has a consumer. */
+    private val KNOWN_UNCONSUMED = emptyMap<String, String>()
 
     @Test fun `every Prefs constant has a functional consumer or a documented exception`() {
         val consumed = consumedConstants()

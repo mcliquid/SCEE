@@ -423,6 +423,7 @@ fun MainScreen(
     }
 
     fun toggleNavigationMode() {
+        if (!canToggleNavigationMode(prefs, cameraState.isNavigationMode)) return
         scope.launch {
             cameraState.setNavigationMode(
                 value = !cameraState.isNavigationMode,
@@ -562,11 +563,15 @@ fun MainScreen(
     }
 
     LaunchedEffect(locationProvider) {
-        locationProvider.updates().collect { event ->
+        val request = mainLocationRequest(prefs)
+        val updates = if (request != null) locationProvider.updates(request) else locationProvider.updates()
+        val throttle = mainLocationUpdateThrottle(prefs)
+        updates.collect { event ->
             when (event) {
                 is LocationEvent.Update -> {
                     // Ignore stale last-known positions that would jump the camera on startup.
                     if (event.measurementMark.elapsedNow() > 10.minutes) return@collect
+                    if (!throttle.accept(event.measurementMark)) return@collect
                     val measurement = event.measurement
                     location = measurement
                     routingLocationMark = event.measurementMark
@@ -580,6 +585,7 @@ fun MainScreen(
                     }
                 }
                 is LocationEvent.Unavailable -> {
+                    throttle.reset()
                     location = null
                     routingLocationMark = null
                     locationState = when (event.reason) {
@@ -919,7 +925,9 @@ fun MainScreen(
                     MainBottomSheet(
                         onDismiss = sheet::close,
                         onSolved = { icon, position ->
-                            getOffset(position)?.let { lastQuestSolved = QuestSolvedEvent(icon, it) }
+                            if (shouldShowSolvedAnimation(prefs)) {
+                                getOffset(position)?.let { lastQuestSolved = QuestSolvedEvent(icon, it) }
+                            }
                         },
                         onHideQuest = { key, tempHide -> mainBottomSheetViewModel.hideQuest(key, tempHide) },
                         isSurvey = mainBottomSheetViewModel::isSurvey,

@@ -70,9 +70,9 @@ class ElementEditsControllerImpl(
         add(ElementEdit(0, type, geometry, source, nowAsEpochMilliseconds(), false, newAction, isNearUserLocation), key)
     }
 
-    override fun get(id: Long): ElementEdit? = synchronized(this) { editCache[id] }
+    override fun get(id: Long): ElementEdit? = lock.withLock { editCache[id] }
 
-    override fun getAll(): List<ElementEdit> = synchronized(this) { editCache.values.toList() }
+    override fun getAll(): List<ElementEdit> = lock.withLock { editCache.values.toList() }
 
     override fun getAllUnsynced(): List<ElementEdit> =
         getAll().filterNot { it.isSynced }

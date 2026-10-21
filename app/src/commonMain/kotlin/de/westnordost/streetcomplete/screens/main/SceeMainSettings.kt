@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.screens.main
 
 import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.data.edithistory.EditKey
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import org.maplibre.compose.location.LocationRequest
 import kotlin.time.Duration
@@ -49,3 +50,7 @@ fun mainLocationUpdateThrottle(prefs: Preferences): LocationUpdateThrottle =
         if (prefs.contains(Prefs.LOCATION_INTERVAL)) prefs.getInt(Prefs.LOCATION_INTERVAL, 0).seconds
         else Duration.ZERO
     )
+
+/** SCEE: the edit history opens with the newest edit selected, or without selection if "select first edit" is off */
+fun editHistorySelection(newest: EditKey?, selectNewest: Boolean): MainSheetSelection.EditHistory? =
+    if (newest == null) null else MainSheetSelection.EditHistory(if (selectNewest) newest else null)

@@ -33,9 +33,11 @@ internal fun CameraInspectionEffect(
             }
             is MainSheetSelection.EditHistory -> {
                 cameraState.openSheet()
-                val shown = snapshotFlow { sheet.shownEdit }
-                    .filterNotNull().first { it.edit.key == selection.editKey }
-                cameraState.focus(shown.geometry, DpPadding.Zero)
+                if (selection.editKey != null) {
+                    val shown = snapshotFlow { sheet.shownEdit }
+                        .filterNotNull().first { it.edit.key == selection.editKey }
+                    cameraState.focus(shown.geometry, DpPadding.Zero)
+                }
             }
             is MainSheetSelection.CreateNote -> {
                 cameraState.openSheet()

@@ -24,7 +24,6 @@ import kotlin.test.fail
 class PrefsConsumerGuardTest {
 
     private val KNOWN_UNCONSUMED = mapOf(
-        "SELECT_FIRST_EDIT" to "F-03: edit history always selects the newest edit",
         "ROTATE_WHILE_ZOOMING" to "F-06: maplibre-compose gesture options not investigated",
         "ROTATE_ANGLE_THRESHOLD" to "F-06: maplibre-compose gesture options not investigated",
     )

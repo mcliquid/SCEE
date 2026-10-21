@@ -102,10 +102,9 @@ class MainSheetState internal constructor(
         lastMapClick = null
     }
 
-    /** Shows the edit history sidebar with the most recent edit selected */
-    fun showEditHistory() {
-        val newest = editItems?.lastOrNull() ?: return
-        show(MainSheetSelection.EditHistory(newest.edit.key))
+    /** Shows the edit history sidebar, with the most recent edit selected if [selectNewest] (SCEE setting) */
+    fun showEditHistory(selectNewest: Boolean = true) {
+        show(editHistorySelection(editItems?.lastOrNull()?.edit?.key, selectNewest) ?: return)
     }
 
     fun close() {
@@ -156,9 +155,13 @@ class MainSheetState internal constructor(
         }
     }
 
-    private suspend fun observeEdit(key: EditKey) {
+    private suspend fun observeEdit(key: EditKey?) {
         editHistoryViewModel.editItems.collect { items ->
             if (items == null) return@collect
+            if (key == null) { // nothing preselected
+                if (items.isEmpty()) close()
+                return@collect
+            }
             val edit = items.find { it.edit.key == key }?.edit
             if (edit != null) {
                 shownEdit = ShownEdit(edit, editHistoryViewModel.getEditGeometry(edit))

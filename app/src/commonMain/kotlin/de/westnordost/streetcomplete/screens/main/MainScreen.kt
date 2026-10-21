@@ -788,7 +788,7 @@ fun MainScreen(
 
                     hasEdits = sheet.hasEdits,
                     isUndoEnabled = isMainUndoEnabled(isUploading),
-                    onClickUndo = sheet::showEditHistory,
+                    onClickUndo = { sheet.showEditHistory(prefs.getBoolean(Prefs.SELECT_FIRST_EDIT, true)) },
 
                     metersPerDp = { getMetersPerDp() },
 

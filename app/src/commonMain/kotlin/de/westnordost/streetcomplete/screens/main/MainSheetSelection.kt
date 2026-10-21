@@ -24,7 +24,8 @@ sealed interface MainSheetSelection {
     data class CreateNote(val position: LatLon, val trackpoints: List<Trackpoint>? = null) : MainSheetSelection
 
     @Serializable
-    data class EditHistory(val editKey: EditKey) : MainSheetSelection
+    /** [editKey] is null if no edit is preselected (SCEE: select_first_edit setting is off) */
+    data class EditHistory(val editKey: EditKey?) : MainSheetSelection
 
     /** Insert a node into an existing way (SCEE expert-mode map context action). */
     @Serializable

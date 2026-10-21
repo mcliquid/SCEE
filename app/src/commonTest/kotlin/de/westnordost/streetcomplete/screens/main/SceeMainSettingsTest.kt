@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.screens.main
 
 import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.data.edithistory.ElementEditKey
 import de.westnordost.streetcomplete.testutils.inMemoryPrefs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -101,5 +102,27 @@ class LocationUpdateThrottleTest {
         assertTrue(t.accept(mark(0)))
         assertFalse(t.accept(mark(4)))
         assertTrue(t.accept(mark(10)))
+    }
+}
+
+class EditHistorySelectionTest {
+    private val newest = ElementEditKey(5)
+
+    @Test fun `newest edit is preselected if the setting is on`() {
+        assertEquals(MainSheetSelection.EditHistory(newest), editHistorySelection(newest, selectNewest = true))
+    }
+
+    @Test fun `nothing is preselected if the setting is off, but the sidebar still opens`() {
+        assertEquals(MainSheetSelection.EditHistory(null), editHistorySelection(newest, selectNewest = false))
+    }
+
+    @Test fun `without edits there is no sidebar`() {
+        assertNull(editHistorySelection(null, selectNewest = true))
+        assertNull(editHistorySelection(null, selectNewest = false))
+    }
+
+    @Test fun `the setting is on by default`() {
+        val prefs = inMemoryPrefs()
+        assertTrue(prefs.getBoolean(Prefs.SELECT_FIRST_EDIT, true))
     }
 }

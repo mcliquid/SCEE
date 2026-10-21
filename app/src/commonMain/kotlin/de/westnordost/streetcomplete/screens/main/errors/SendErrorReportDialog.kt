@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.window.DialogProperties
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmationDialog
+import de.westnordost.streetcomplete.util.plainTextClipEntry
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 /** Dialog that asks user to send a crash report to the developer */
@@ -19,7 +21,8 @@ fun SendErrorReportDialog(
     title: String,
     reportText: String,
 ) {
-    val clipboard = LocalClipboardManager.current
+    val clipboard = LocalClipboard.current
+    val scope = rememberCoroutineScope()
     ConfirmationDialog(
         onDismissRequest = onDismissRequest,
         onConfirmed = onConfirmed,
@@ -28,7 +31,7 @@ fun SendErrorReportDialog(
             Column {
                 Text(stringResource(Res.string.crash_message))
                 Button({
-                    clipboard.setText(AnnotatedString(reportText))
+                    scope.launch { clipboard.setClipEntry(plainTextClipEntry(reportText)) }
                 }) {
                     Text(stringResource(Res.string.action_copy)) }
             }

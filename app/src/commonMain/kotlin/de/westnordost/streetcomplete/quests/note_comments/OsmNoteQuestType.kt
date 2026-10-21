@@ -9,5 +9,6 @@ object OsmNoteQuestType : QuestType {
     override val title = Res.string.quest_noteDiscussion_title
     override val wikiLink = "Notes"
     override val achievements = emptyList<EditTypeAchievement>()
-    override val visibilityEditable = false
+    // SCEE: the note quest can be switched off in expert mode (upstream never allows it)
+    override val visibilityEditable get() = prefs.expertMode
 }

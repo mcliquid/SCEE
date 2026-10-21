@@ -4,6 +4,7 @@ import de.westnordost.streetcomplete.data.AllEditTypes
 import de.westnordost.streetcomplete.data.osm.edits.EditType
 import de.westnordost.streetcomplete.data.presets.EditTypePreset
 import de.westnordost.streetcomplete.data.presets.EditTypePresetsSource
+import de.westnordost.streetcomplete.quests.note_comments.OsmNoteQuestType
 import de.westnordost.streetcomplete.util.Listeners
 import kotlinx.atomicfu.locks.ReentrantLock
 import kotlinx.atomicfu.locks.withLock
@@ -64,7 +65,7 @@ class VisibleEditTypeController(
 
     fun setVisibilities(editTypeVisibilities: Map<EditType, Boolean>, presetId: Long? = null) {
         val editTypeNameVisibilities = editTypeVisibilities
-            .filter { it.key.visibilityEditable }
+            .filter { it.key.visibilityEditable && it.key !is OsmNoteQuestType } // SCEE: not by bulk changes
             .mapKeys { it.key.name }
         val id = presetId ?: selectedPresetId
         visibleEditsTypesLock.withLock {

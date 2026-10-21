@@ -156,7 +156,7 @@ internal class FakeExternalSourceQuestType : ExternalSourceQuestType {
     override fun get(id: String): ExternalSourceQuest? = null
     override fun onAddedEdit(edit: ElementEdit, id: String) {}
     override fun onDeletedEdit(edit: ElementEdit, id: String?) {}
-    override fun onSyncedEdit(edit: ElementEdit, id: String?) {}
+    override suspend fun onSyncedEdit(edit: ElementEdit, id: String?) {}
     override fun onSyncEditFailed(edit: ElementEdit, id: String?) {}
     override suspend fun onUpload(edit: ElementEdit, id: String?) = true
     override fun deleteQuest(id: String) = false

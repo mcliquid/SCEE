@@ -85,7 +85,7 @@ interface ExternalSourceQuestType : QuestType, ElementEditType {
      *  [id] can be null in case edit was not properly associated with id.
      *  Note that [upload] will also be called (before the first edit upload).
      */
-    fun onSyncedEdit(edit: ElementEdit, id: String?)
+    suspend fun onSyncedEdit(edit: ElementEdit, id: String?)
 
     /** Uploading the [edit] has failed due to a conflict exception */
     fun onSyncEditFailed(edit: ElementEdit, id: String?)

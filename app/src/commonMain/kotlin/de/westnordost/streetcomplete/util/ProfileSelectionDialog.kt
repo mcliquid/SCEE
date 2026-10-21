@@ -15,9 +15,6 @@ import de.westnordost.streetcomplete.resources.quest_presets_default_name
 import de.westnordost.streetcomplete.resources.quest_settings_per_preset_rescan
 import de.westnordost.streetcomplete.ui.common.ToastPopup
 import de.westnordost.streetcomplete.ui.common.dialogs.SimpleListPickerDialog
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -44,8 +41,7 @@ import org.koin.compose.koinInject
                 if (!prefs.getBoolean(Prefs.DYNAMIC_QUEST_CREATION, false))
                     showRescanMessage = true
             }
-            // launch in background, because this can block for quite a while if database is occupied
-            GlobalScope.launch(Dispatchers.IO) { editTypePresetsController.selectedId = it.id }
+            editTypePresetsController.selectPresetAsync(it.id)
         },
         selectedItem = presets.getOrNull(selected),
         getItemName = { it.name }

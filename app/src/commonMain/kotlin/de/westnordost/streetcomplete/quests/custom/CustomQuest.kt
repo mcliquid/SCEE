@@ -73,7 +73,7 @@ class CustomQuest(private val customQuestList: CustomQuestList) : ExternalSource
         id?.let { customQuestList.markSolved(it, false) }
     }
 
-    override fun onSyncedEdit(edit: ElementEdit, id: String?) {
+    override suspend fun onSyncedEdit(edit: ElementEdit, id: String?) {
         id?.let { customQuestList.markSolved(it) } // just mark as solved, and bunch-delete in the end
     }
 

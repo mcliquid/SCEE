@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -105,7 +106,7 @@ class ExternalSourceQuestController(
         val type = edit.type as? ExternalSourceQuestType ?: return
         val key = externalSourceDao.getKeyForElementEdit(edit.id)
         // don't delete synced edits, this will be done by ElementEditsController (using onDeletedEdits)
-        type.onSyncedEdit(edit, key?.id)
+        scope.launch { type.onSyncedEdit(edit, key?.id) }
     }
 
     fun onSyncEditFailed(edit: ElementEdit) {

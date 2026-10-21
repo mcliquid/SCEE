@@ -45,7 +45,6 @@ import io.github.vinceglb.filekit.exists
 import io.github.vinceglb.filekit.filesDir
 import io.github.vinceglb.filekit.readString
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -141,7 +140,7 @@ fun DisplaySettingsScreen(
                             Button(
                                 onClick = {
                                     val points = loadGpxTrackPoints({ error = true }, true) ?: return@Button
-                                    GlobalScope.launch {
+                                    scope.launch {
                                         val import = importGpx(points, true, 10.0).getOrNull()
                                         import?.downloadBBoxes?.let {
                                             if (it.isEmpty()) return@launch

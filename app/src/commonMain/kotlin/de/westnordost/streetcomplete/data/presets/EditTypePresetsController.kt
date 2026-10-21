@@ -3,6 +3,11 @@ package de.westnordost.streetcomplete.data.presets
 import com.russhwolf.settings.SettingsListener
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.util.Listeners
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 /** Controls the ids and names of quest & overlay presets */
 class EditTypePresetsController(
@@ -11,6 +16,7 @@ class EditTypePresetsController(
 ) : EditTypePresetsSource {
 
     private val listeners = Listeners<EditTypePresetsSource.Listener>()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("EditTypePresetsController"))
 
     // must have local reference because the listeners are only a weak reference
     @Suppress("unused")
@@ -21,6 +27,11 @@ class EditTypePresetsController(
     override var selectedId: Long
         get() = prefs.selectedEditTypePreset
         set(value) { prefs.selectedEditTypePreset = value }
+
+    /** Persists preset selection without blocking the UI thread (prefs/DB may be slow). */
+    fun selectPresetAsync(id: Long) {
+        scope.launch { selectedId = id }
+    }
 
     override val selectedEditTypePresetName: String? get() =
         editTypePresetsDao.getName(selectedId)

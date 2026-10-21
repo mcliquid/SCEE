@@ -25,8 +25,6 @@ import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.osmquests.ExternalAction
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestController
 import de.westnordost.streetcomplete.quests.questPrefix
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import de.westnordost.streetcomplete.quests.ResetCancelOk
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmationDialog
@@ -68,9 +66,8 @@ class OsmoseQuest(private val osmoseDao: OsmoseDao) : ExternalSourceQuestType {
         return osmoseDao.doesIssueStillExist(id)
     }
 
-    override fun onSyncedEdit(edit: ElementEdit, id: String?) {
-        if (id != null)
-            GlobalScope.launch { osmoseDao.reportChange(id, false) } // edits are never false positive
+    override suspend fun onSyncedEdit(edit: ElementEdit, id: String?) {
+        if (id != null) osmoseDao.reportChange(id, false) // edits are never false positive
     }
 
     override val enabledInCountries get() = super.enabledInCountries

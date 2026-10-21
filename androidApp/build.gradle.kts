@@ -37,7 +37,6 @@ android {
     buildTypes {
         all {
             isMinifyEnabled = true
-            isShrinkResources = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             testProguardFile("test-proguard-rules.pro")
             // Explicit switch for ApplicationConstants.DEBUG. Not derived from the package name.
@@ -50,11 +49,11 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             isDebuggable = false
             isMinifyEnabled = true
-            isShrinkResources = false
             matchingFallbacks += listOf("release")
         }
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
+            isShrinkResources = true
         }
         // Previous debuggable debug variant, with its own data directory.
         create("legacyDebug") {
@@ -62,7 +61,6 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             isDebuggable = true
             isMinifyEnabled = false
-            isShrinkResources = false
             buildConfigField("boolean", "APPLICATION_DEBUG", "true")
             matchingFallbacks += listOf("debug", "release")
         }
@@ -73,7 +71,7 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             isDebuggable = false
             isMinifyEnabled = true
-            isShrinkResources = false
+            isShrinkResources = true
             matchingFallbacks += listOf("release")
         }
     }

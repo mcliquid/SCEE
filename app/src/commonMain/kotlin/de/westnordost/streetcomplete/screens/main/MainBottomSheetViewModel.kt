@@ -201,7 +201,6 @@ class MainBottomSheetViewModelImpl(
                 sheet.quest.type.getHighlightedElements { mapData },
                 true,
             )
-            else -> return@withContext emptyList()
         }
         highlightedMarkers(
             highlighted = highlighted,

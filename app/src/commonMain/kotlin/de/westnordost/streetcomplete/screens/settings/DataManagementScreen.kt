@@ -488,9 +488,9 @@ private fun importCustomOverlays(file: PlatformFile, replaceExisting: Boolean, p
             val indices = if (prefs.contains(Prefs.CUSTOM_OVERLAY_INDICES)) getCustomOverlayIndices(prefs) else emptyList()
             val newIndex = indices.maxOrNull() ?: 0
             if (prefs.contains("custom_overlay_filter"))
-                prefs.putString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_FILTER, newIndex), prefs.getString("custom_overlay_filter", "")!!)
+                prefs.putString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_FILTER, newIndex), prefs.getString("custom_overlay_filter", ""))
             if (prefs.contains("custom_overlay_color_key"))
-                prefs.putString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_COLOR_KEY, newIndex), prefs.getString("custom_overlay_color_key", "")!!)
+                prefs.putString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_COLOR_KEY, newIndex), prefs.getString("custom_overlay_color_key", ""))
             prefs.remove("custom_overlay_filter")
             prefs.remove("custom_overlay_color_key")
             prefs.putString(Prefs.CUSTOM_OVERLAY_INDICES, (indices + newIndex).sorted().joinToString(","))
@@ -517,9 +517,9 @@ private fun importCustomOverlays(file: PlatformFile, replaceExisting: Boolean, p
             val oldOverlayIndex = if (indices.contains(offset)) indices.max() + 1 else offset
             indices.add(oldOverlayIndex)
             if (prefs.contains("custom_overlay_filter"))
-                prefs.putString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_FILTER, oldOverlayIndex), prefs.getString("custom_overlay_filter", "")!!)
+                prefs.putString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_FILTER, oldOverlayIndex), prefs.getString("custom_overlay_filter", ""))
             if (prefs.contains("custom_overlay_color_key"))
-                prefs.putString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_COLOR_KEY, oldOverlayIndex), prefs.getString("custom_overlay_color_key", "")!!)
+                prefs.putString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_COLOR_KEY, oldOverlayIndex), prefs.getString("custom_overlay_color_key", ""))
             prefs.remove("custom_overlay_filter")
             prefs.remove("custom_overlay_color_key")
         }

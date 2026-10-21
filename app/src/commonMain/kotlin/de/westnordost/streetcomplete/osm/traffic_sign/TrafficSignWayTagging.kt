@@ -286,7 +286,7 @@ fun TrafficSignWaySigns.deriveWayTags(tags: Map<String, String>): TrafficSignWay
     val isSame = forwardValue != null && forwardValue == backwardValue
     val newTrafficSignTags = when {
         forward == null && backward == null -> original.filterKeys { it in TRAFFIC_SIGN_KEYS }
-        isSame -> mapOf("traffic_sign" to forwardValue!!)
+        isSame -> mapOf("traffic_sign" to forwardValue)
         else -> listOfNotNull(
             forwardValue?.let { "traffic_sign:forward" to it },
             backwardValue?.let { "traffic_sign:backward" to it },

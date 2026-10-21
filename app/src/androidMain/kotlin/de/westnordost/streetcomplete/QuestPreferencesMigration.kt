@@ -45,7 +45,7 @@ internal fun migrateQuestPreferences(prefs: SharedPreferences, version: String):
         try {
             val restore = prefs.edit()
             if (oldVersion == null) restore.remove(LAST_VERSION_DATA)
-            else restore.putString(LAST_VERSION_DATA, oldVersion as String)
+            else restore.putString(LAST_VERSION_DATA, oldVersion)
             check(restore.commit()) { "Could not restore preferences migration marker" }
         } catch (restoreFailure: Exception) {
             failure.addSuppressed(restoreFailure)

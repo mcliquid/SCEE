@@ -1,6 +1,8 @@
 package de.westnordost.streetcomplete.data
 
 import de.westnordost.streetcomplete.ApplicationConstants
+import de.westnordost.streetcomplete.data.download.DownloadController
+import de.westnordost.streetcomplete.data.download.Downloader
 import de.westnordost.streetcomplete.data.download.tiles.TilePos
 import de.westnordost.streetcomplete.data.download.tiles.enclosingTilesRect
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
@@ -106,6 +108,18 @@ suspend fun importGpx(
                 / 1000000
         )
     )
+}
+
+/** Bboxes to download along [trackPoints]; empty if import fails. */
+suspend fun gpxTrackDownloadBBoxes(trackPoints: List<LatLon>, minDownloadDistance: Double): List<BoundingBox> =
+    importGpx(trackPoints, displayTrack = true, minDownloadDistance = minDownloadDistance)
+        .getOrNull()?.downloadBBoxes.orEmpty()
+
+/** Enqueue follow-up corridor downloads the same way as the display-settings GPX action. */
+fun enqueueGpxTrackDownloads(downloadController: DownloadController, bboxes: List<BoundingBox>) {
+    if (bboxes.isEmpty()) return
+    Downloader.enqueuedDownloads.addAll(bboxes.drop(1))
+    downloadController.download(bboxes.first(), isUserInitiated = false, enqueue = true)
 }
 
 /**

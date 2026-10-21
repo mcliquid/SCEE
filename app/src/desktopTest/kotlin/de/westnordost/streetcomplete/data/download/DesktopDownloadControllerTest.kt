@@ -3,11 +3,14 @@ package de.westnordost.streetcomplete.data.download
 import com.russhwolf.settings.MapSettings
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
+import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
+import de.westnordost.streetcomplete.util.math.translate
 import dev.mokkery.answering.calls
 import dev.mokkery.everySuspend
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.runBlocking
@@ -138,6 +141,23 @@ class DesktopDownloadControllerTest {
         val later = next()
         assertEquals(bbox(3), later.bbox)
         later.release.complete(Unit)
+    }
+
+    @Test fun `downloadAlongGpxTrack schedules corridor download on controller scope`() = runBlocking {
+        val prefs = MapSettings()
+        val downloaded = Channel<BoundingBox>(1)
+        val downloader = mock<Downloader>()
+        everySuspend { downloader.download(any(), any(), any()) } calls { (bbox, _, _) ->
+            downloaded.send(bbox)
+        }
+        val controller = DesktopDownloadController(downloader, prefs, Dispatchers.Default)
+        try {
+            val start = LatLon(52.5, 13.3)
+            controller.downloadAlongGpxTrack(listOf(start, start.translate(800.0, 90.0)), 100.0)
+            withTimeout(5_000) { downloaded.receive() }
+        } finally {
+            controller.close()
+        }
     }
 
     @Test fun `close cancels active download and never starts queued or later requests`() = test {

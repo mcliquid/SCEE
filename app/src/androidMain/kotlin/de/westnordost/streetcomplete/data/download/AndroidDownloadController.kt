@@ -15,11 +15,23 @@ import androidx.work.workDataOf
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.download.Downloader.Companion.enqueuedDownloads
+import de.westnordost.streetcomplete.data.enqueueGpxTrackDownloads
+import de.westnordost.streetcomplete.data.gpxTrackDownloadBBoxes
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
+import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.sync.createSyncNotification
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 class AndroidDownloadController(private val context: Context) : DownloadController {
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.Default + CoroutineExceptionHandler { _, _ -> },
+    )
+
     override fun download(bbox: BoundingBox, isUserInitiated: Boolean, enqueue: Boolean) {
         if (enqueue && DownloadWorker.downloading) {
             enqueuedDownloads.add(bbox)
@@ -30,6 +42,13 @@ class AndroidDownloadController(private val context: Context) : DownloadControll
             if (isUserInitiated) ExistingWorkPolicy.REPLACE else ExistingWorkPolicy.KEEP,
             DownloadWorker.createWorkRequest(bbox, isUserInitiated)
         )
+    }
+
+    override fun downloadAlongGpxTrack(trackPoints: List<LatLon>, minDownloadDistance: Double) {
+        scope.launch {
+            val bboxes = gpxTrackDownloadBBoxes(trackPoints, minDownloadDistance)
+            enqueueGpxTrackDownloads(this@AndroidDownloadController, bboxes)
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.data.download
 
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
+import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 
 /** Controls downloading */
 interface DownloadController {
@@ -12,4 +13,7 @@ interface DownloadController {
      *        and puts itself in the front)
      */
     fun download(bbox: BoundingBox, isUserInitiated: Boolean = false, enqueue: Boolean = false)
+
+    /** Import a GPX track and enqueue corridor downloads; not tied to UI composition scope. */
+    fun downloadAlongGpxTrack(trackPoints: List<LatLon>, minDownloadDistance: Double = 10.0)
 }

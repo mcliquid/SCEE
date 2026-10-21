@@ -2,7 +2,10 @@ package de.westnordost.streetcomplete.data.download
 
 import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.data.enqueueGpxTrackDownloads
+import de.westnordost.streetcomplete.data.gpxTrackDownloadBBoxes
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
+import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,6 +68,13 @@ class DesktopDownloadController(
                     }
                 }
             }
+        }
+    }
+
+    override fun downloadAlongGpxTrack(trackPoints: List<LatLon>, minDownloadDistance: Double) {
+        scope.launch {
+            val bboxes = gpxTrackDownloadBBoxes(trackPoints, minDownloadDistance)
+            enqueueGpxTrackDownloads(this@DesktopDownloadController, bboxes)
         }
     }
 

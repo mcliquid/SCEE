@@ -27,8 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.download.DownloadController
-import de.westnordost.streetcomplete.data.download.Downloader
-import de.westnordost.streetcomplete.data.importGpx
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeController
@@ -140,14 +138,7 @@ fun DisplaySettingsScreen(
                             Button(
                                 onClick = {
                                     val points = loadGpxTrackPoints({ error = true }, true) ?: return@Button
-                                    scope.launch {
-                                        val import = importGpx(points, true, 10.0).getOrNull()
-                                        import?.downloadBBoxes?.let {
-                                            if (it.isEmpty()) return@launch
-                                            Downloader.enqueuedDownloads.addAll(it.drop(1))
-                                            downloadController.download(it.first(), false, true)
-                                        }
-                                    }
+                                    downloadController.downloadAlongGpxTrack(points, 10.0)
                                 },
                                 enabled = gpxFile.exists()
                             ) { Text(stringResource(Res.string.pref_gpx_track_download), Modifier.fillMaxWidth(), textAlign = TextAlign.Center) }

@@ -53,6 +53,9 @@ import org.koin.compose.koinInject
 @Composable
 fun MainBottomSheet(
     onDismiss: () -> Unit,
+    /** Closes the sheet and suppresses a pending same-element auto-open from an in-flight save. */
+    onDismissByUser: () -> Unit,
+    onCancelPendingChainedQuestOpen: () -> Unit,
     onSolved: (icon: DrawableResource, position: LatLon) -> Unit,
     onHideQuest: (QuestKey, tempHide: Boolean) -> Unit,
     isSurvey: (ElementGeometry) -> Boolean,
@@ -94,7 +97,7 @@ fun MainBottomSheet(
                     onSolved(Res.drawable.quest_create_note, mapPosition)
                     onDismiss()
                 },
-                onDismiss = onDismiss,
+                onDismiss = onDismissByUser,
                 trackpoints = shownBottomSheet.trackpoints,
                 position = mapPosition,
                 lastMapClick = lastMapClick,
@@ -103,7 +106,7 @@ fun MainBottomSheet(
         }
         is ShownBottomSheet.OsmNoteQuest -> {
             AddNoteCommentForm(
-                onDismiss = onDismiss,
+                onDismiss = onDismissByUser,
                 onCommentNote = { noteText, noteImagePaths, close ->
                     onCommentNote(
                         shownBottomSheet.note,
@@ -127,7 +130,7 @@ fun MainBottomSheet(
         }
         is ShownBottomSheet.OsmQuest -> {
             OsmQuestFormContainer(
-                onDismiss = onDismiss,
+                onDismiss = onDismissByUser,
                 onEdit = { action, isTagEdit, isEditInContextOf ->
                     val hasExtra = isEditInContextOf && !isTagEdit
                     if (SuppressSurveyConfirmation || isSurvey(shownBottomSheet.quest.geometry)) {
@@ -180,7 +183,7 @@ fun MainBottomSheet(
         }
         is ShownBottomSheet.ExternalSourceQuest -> {
             ExternalSourceQuestFormContainer(
-                onDismiss = onDismiss,
+                onDismiss = onDismissByUser,
                 onEdit = { action ->
                     if (SuppressSurveyConfirmation || isSurvey(shownBottomSheet.quest.geometry)) {
                         onSubmitEdit(
@@ -229,7 +232,7 @@ fun MainBottomSheet(
         }
         is ShownBottomSheet.Overlay -> {
             OverlayFormContainer(
-                onDismiss = onDismiss,
+                onDismiss = onDismissByUser,
                 onEdit = { action, isTagEdit, isEditInContextOf ->
                     val geometry = shownBottomSheet.geometry ?: ElementPointGeometry(mapPosition)
                     val hasExtra = isEditInContextOf && !isTagEdit
@@ -295,7 +298,7 @@ fun MainBottomSheet(
                     onSolved(addNodeEdit.icon, it.position)
                     onDismiss()
                 },
-                onDismiss = onDismiss,
+                onDismiss = onDismissByUser,
                 onSetMapMarkers = { onSetMapMarkers(it) },
             )
         }
@@ -308,7 +311,7 @@ fun MainBottomSheet(
                 ) {
                     InsertNodeForm(
                         shownBottomSheet.position,
-                        onDismiss,
+                        onDismissByUser,
                         highlightGeometries = { geometries ->
                             onSetMapMarkers(geometries.map { Marker(it) })
                         },
@@ -344,7 +347,7 @@ fun MainBottomSheet(
                         }
                         onDismiss()
                     },
-                    onDismiss = onDismiss,
+                    onDismiss = onDismissByUser,
                     onSetMapMarkers = { onSetMapMarkers(it) },
                     showPin = false
                 )
@@ -354,7 +357,10 @@ fun MainBottomSheet(
 
     confirmEdit?.let { pendingEdit ->
         SurveyConfirmationDialog(
-            onDismissRequest = { confirmEdit = null },
+            onDismissRequest = {
+                onCancelPendingChainedQuestOpen()
+                confirmEdit = null
+            },
             onConfirmed = {
                 onSubmitEdit(
                     pendingEdit.elementEditType,

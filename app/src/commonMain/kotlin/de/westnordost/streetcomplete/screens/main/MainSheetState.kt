@@ -92,7 +92,8 @@ class MainSheetState internal constructor(
 
     val hasEdits: Boolean get() = !editItems.isNullOrEmpty()
 
-    fun show(selection: MainSheetSelection) {
+    fun show(selection: MainSheetSelection, fromAutoChain: Boolean = false) {
+        if (!fromAutoChain) viewModel.cancelPendingChainedQuestOpen()
         if (selection is MainSheetSelection.Quest) Perf.armOpen() else Perf.cancelOpen()
         formStateHolder.removeState(id)
         id = Uuid.random().toString()
@@ -142,6 +143,7 @@ class MainSheetState internal constructor(
             } else {
                 viewModel.getBottomSheet(selection)
             }
+            if (selection != this.selection) return
             if (sheet != null) shownBottomSheet = sheet else close()
             if (trace != null) {
                 val questName = (sheet as? ShownBottomSheet.OsmQuest)?.quest?.type?.name

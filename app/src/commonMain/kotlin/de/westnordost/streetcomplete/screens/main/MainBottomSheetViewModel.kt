@@ -79,6 +79,9 @@ abstract class MainBottomSheetViewModel : ViewModel() {
     /** When same-element chaining finds a successor after a successful answer, emits its selection. */
     abstract val chainedQuestSelection: SharedFlow<MainSheetSelection.Quest>
 
+    /** User dismissed a quest or opened another sheet; drop any in-flight auto-open from [submitEdit]. */
+    abstract fun cancelPendingChainedQuestOpen()
+
     abstract fun commentNote(
         note: Note,
         text: String?,
@@ -129,6 +132,12 @@ class MainBottomSheetViewModelImpl(
     )
     override val chainedQuestSelection: SharedFlow<MainSheetSelection.Quest> =
         _chainedQuestSelection.asSharedFlow()
+
+    private val pendingChainedQuestOpen = PendingChainedQuestOpen()
+
+    override fun cancelPendingChainedQuestOpen() {
+        pendingChainedQuestOpen.cancel()
+    }
 
     private fun getQuestBottomSheet(selection: MainSheetSelection.Quest): ShownBottomSheet? {
         val key = selection.key
@@ -247,6 +256,7 @@ class MainBottomSheetViewModelImpl(
         hasExtra: Boolean,
         key: QuestKey?,
     ) {
+        val saveId = pendingChainedQuestOpen.beginSave()
         launch(Dispatchers.IO) {
             val trace = PerfTrace("answer", Perf.nextId(), Perf.mark())
             val saved = try {
@@ -280,15 +290,20 @@ class MainBottomSheetViewModelImpl(
                 null
             }
 
-            if (
-                shouldAutoOpenSameElementQuestSuccessor(
-                    elementKey,
-                    hasSuccessor = successor != null,
-                    showNextImmediately = showNextImmediately,
-                    savedSuccessfully = saved,
-                )
-            ) {
-                _chainedQuestSelection.tryEmit(MainSheetSelection.Quest(successor!!.quest.key))
+            try {
+                if (
+                    pendingChainedQuestOpen.shouldOpenSuccessor(saveId) &&
+                    shouldAutoOpenSameElementQuestSuccessor(
+                        elementKey,
+                        hasSuccessor = successor != null,
+                        showNextImmediately = showNextImmediately,
+                        savedSuccessfully = saved,
+                    )
+                ) {
+                    _chainedQuestSelection.tryEmit(MainSheetSelection.Quest(successor!!.quest.key))
+                }
+            } finally {
+                pendingChainedQuestOpen.complete(saveId)
             }
         }
     }

@@ -641,7 +641,7 @@ fun MainScreen(
 
     LaunchedEffect(mainBottomSheetViewModel) {
         mainBottomSheetViewModel.chainedQuestSelection.collect { next ->
-            sheet.show(next)
+            sheet.show(next, fromAutoChain = true)
         }
     }
 
@@ -943,6 +943,11 @@ fun MainScreen(
                     ) {
                     MainBottomSheet(
                         onDismiss = sheet::close,
+                        onDismissByUser = {
+                            mainBottomSheetViewModel.cancelPendingChainedQuestOpen()
+                            sheet.close()
+                        },
+                        onCancelPendingChainedQuestOpen = mainBottomSheetViewModel::cancelPendingChainedQuestOpen,
                         onSolved = { icon, position ->
                             if (shouldShowSolvedAnimation(prefs)) {
                                 getOffset(position)?.let { lastQuestSolved = QuestSolvedEvent(icon, it) }

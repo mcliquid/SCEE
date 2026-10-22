@@ -81,6 +81,29 @@ class SameElementQuestChainingTest {
         )
     }
 
+    @Test fun `pending chained open is cancelled on user dismiss`() {
+        val pending = PendingChainedQuestOpen()
+        val saveId = pending.beginSave()
+        assertTrue(pending.shouldOpenSuccessor(saveId))
+        pending.cancel()
+        assertFalse(pending.shouldOpenSuccessor(saveId))
+    }
+
+    @Test fun `manual sheet open cancels pending chained open`() {
+        val pending = PendingChainedQuestOpen()
+        val saveId = pending.beginSave()
+        pending.cancel()
+        assertFalse(pending.shouldOpenSuccessor(saveId))
+    }
+
+    @Test fun `successful save keeps pending open until complete`() {
+        val pending = PendingChainedQuestOpen()
+        val saveId = pending.beginSave()
+        assertTrue(pending.shouldOpenSuccessor(saveId))
+        pending.complete(saveId)
+        assertFalse(pending.shouldOpenSuccessor(saveId))
+    }
+
     @Test fun `closing a quest without successful save does not chain`() {
         // Dismiss/close never calls submitEdit; even if callers evaluated the gate, no open.
         assertFalse(

@@ -53,6 +53,31 @@ internal fun shouldAutoOpenSameElementQuestSuccessor(
     savedSuccessfully && showNextImmediately && elementKey != null && hasSuccessor
 
 /**
+ * Guards same-element auto-open against user cancellation or another sheet opening while [submitEdit]
+ * is still running. Only the active save id may open a successor; [cancel] invalidates it.
+ */
+internal class PendingChainedQuestOpen {
+    private var activeSaveId = 0L
+    private var counter = 0L
+
+    fun beginSave(): Long {
+        val id = ++counter
+        activeSaveId = id
+        return id
+    }
+
+    fun cancel() {
+        activeSaveId = 0L
+    }
+
+    fun shouldOpenSuccessor(saveId: Long): Boolean = saveId != 0L && activeSaveId == saveId
+
+    fun complete(saveId: Long) {
+        if (activeSaveId == saveId) activeSaveId = 0L
+    }
+}
+
+/**
  * Configured quest-type order for choosing the next quest on the same element.
  *
  * This is the registry order after [QuestTypeOrderSource.sort]: the same base order

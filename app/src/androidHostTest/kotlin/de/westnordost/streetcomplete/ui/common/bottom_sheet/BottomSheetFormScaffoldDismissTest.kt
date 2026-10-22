@@ -10,9 +10,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.performKeyInput
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -23,6 +27,7 @@ import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35], application = Application::class, qualifiers = "en-rUS")
+@OptIn(ExperimentalTestApi::class)
 class BottomSheetFormScaffoldDismissTest {
     @get:Rule val compose = createComposeRule()
 
@@ -67,6 +72,30 @@ class BottomSheetFormScaffoldDismissTest {
                 }
             }
         }
+        compose.onRoot().performKeyInput { keyDown(Key.Escape) }
         assertFalse(dismissed)
+    }
+
+    @Test fun `escape key calls dismiss when enabled`() {
+        var dismissed = false
+        compose.setContent {
+            MaterialTheme {
+                Box(Modifier.fillMaxSize()) {
+                    CompositionLocalProvider(
+                        LocalPersistentQuestFormCloseButton provides true,
+                        LocalQuestFormEscapeDismiss provides true,
+                    ) {
+                        BottomSheetFormScaffold(
+                            onDismissRequest = { dismissed = true },
+                            header = { Text("Quest title") },
+                            content = { Text("Answers") },
+                        )
+                    }
+                }
+            }
+        }
+        compose.waitForIdle()
+        compose.onRoot().performKeyInput { keyDown(Key.Escape) }
+        assertTrue(dismissed)
     }
 }

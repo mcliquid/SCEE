@@ -21,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -30,7 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -96,25 +97,16 @@ fun BottomSheetFormScaffold(
     }
     val closeButtonLabel = stringResource(Res.string.cancel)
     val escapeDismissEnabled = keyboardDismissEnabled && LocalQuestFormEscapeDismiss.current
+    val escapeFocusRequester = remember { FocusRequester() }
+    LaunchedEffect(escapeDismissEnabled) {
+        if (escapeDismissEnabled) escapeFocusRequester.requestFocus()
+    }
 
     // Keep the sheet's drag bounds above the keyboard, including when collapsed.
     Box(modifier = modifier
         .imePadding()
         .sizeIn(maxWidth = Dimensions.getMaxQuestFormWidth(windowInfo))
-        .then(
-            if (escapeDismissEnabled) {
-                Modifier.onPreviewKeyEvent { event ->
-                    if (isQuestFormDismissEscapeKey(event)) {
-                        onDismissRequest()
-                        true
-                    } else {
-                        false
-                    }
-                }
-            } else {
-                Modifier
-            }
-        )
+        .questFormEscapeDismiss(escapeDismissEnabled, escapeFocusRequester, onDismissRequest)
     ) {
         BottomSheet(
             initialState = initialState,

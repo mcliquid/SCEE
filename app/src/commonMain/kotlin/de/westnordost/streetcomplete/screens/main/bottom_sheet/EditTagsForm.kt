@@ -62,6 +62,7 @@ import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.FloatingOkButton
 import de.westnordost.streetcomplete.ui.common.auto_complete_text.AutoCompleteTextField
 import de.westnordost.streetcomplete.ui.common.bottom_sheet.BottomSheetFormScaffold
+import de.westnordost.streetcomplete.ui.common.bottom_sheet.BottomSheetMapClickDismissEffect
 import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmDiscardDialog
 import de.westnordost.streetcomplete.ui.common.quest.LocalElement
 import de.westnordost.streetcomplete.ui.common.quest.LocalIsTagEditor
@@ -114,6 +115,7 @@ fun EditTagsForm(
     }
 
     NonPredictiveBackHandler { dismiss() }
+    BottomSheetMapClickDismissEffect(enabled = !confirmDiscard, onDismiss = ::dismiss)
     val lastFeature = remember { featureDictionary.byTags(updatedTags).isSuggestion(false).find().firstOrNull() }
     val keySuggestions = remember { getKeySuggestions(lastFeature?.id, updatedTags, prefs).toList() }
 

@@ -167,7 +167,7 @@ fun OverlayFormContainer(
                 OverlayFormState.EditTags -> {
                     EditTagsForm(
                         onConfirmed = { onEdit(UpdateElementTagsAction(relatedElement ?: element!!, it), true, false) },
-                        onDismiss = onDismiss,
+                        onDismiss = { showForm(OverlayFormState.Overlay) },
                     )
                 }
             }

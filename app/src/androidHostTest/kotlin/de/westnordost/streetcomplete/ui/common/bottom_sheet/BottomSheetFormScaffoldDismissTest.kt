@@ -31,6 +31,25 @@ import kotlin.test.assertTrue
 class BottomSheetFormScaffoldDismissTest {
     @get:Rule val compose = createComposeRule()
 
+    @Test fun `desktop close button without header dismisses`() {
+        var dismissed = false
+        compose.setContent {
+            MaterialTheme {
+                CompositionLocalProvider(
+                    LocalPersistentQuestFormCloseButton provides true,
+                    LocalQuestFormEscapeDismiss provides false,
+                ) {
+                    BottomSheetFormScaffold(
+                        onDismissRequest = { dismissed = true },
+                        content = { Text("Tag editor") },
+                    )
+                }
+            }
+        }
+        compose.onNodeWithContentDescription("Cancel").performClick()
+        assertTrue(dismissed)
+    }
+
     @Test fun `close button calls dismiss without saving`() {
         var dismissed = false
         compose.setContent {

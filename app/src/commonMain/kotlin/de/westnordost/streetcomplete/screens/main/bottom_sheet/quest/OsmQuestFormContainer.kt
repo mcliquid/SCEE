@@ -213,7 +213,7 @@ fun <T> OsmQuestFormContainer(
                 QuestFormState.EditTags -> {
                     EditTagsForm(
                         onConfirmed = { onEdit(UpdateElementTagsAction(element, it), true, false) },
-                        onDismiss = onDismiss,
+                        onDismiss = { showForm(QuestFormState.Quest) },
                     )
                 }
             }

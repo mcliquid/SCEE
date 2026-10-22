@@ -120,7 +120,7 @@ fun BottomSheetFormScaffold(
                     .onSizeChanged { bottomSheetHeightPx = it.height },
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (header != null) {
+                if (header != null || showCloseButton) {
                     SpeechBubble(
                         elevation = elevation,
                         arrowDirection = SpeechBubbleArrowDirection.Top,
@@ -153,7 +153,9 @@ fun BottomSheetFormScaffold(
                                         }
                                     }
 
-                                    Box(Modifier.weight(1f)) { header() }
+                                    if (header != null) {
+                                        Box(Modifier.weight(1f)) { header() }
+                                    }
                                 }
                             }
                         }

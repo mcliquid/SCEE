@@ -14,7 +14,6 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +39,7 @@ import de.westnordost.streetcomplete.ui.common.FloatingOkButton
 import de.westnordost.streetcomplete.ui.common.FloatingSmallerButton
 import de.westnordost.streetcomplete.ui.common.NonPredictiveBackHandler
 import de.westnordost.streetcomplete.ui.common.bottom_sheet.BottomSheetFormScaffold
+import de.westnordost.streetcomplete.ui.common.bottom_sheet.BottomSheetMapClickDismissEffect
 import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmDiscardDialog
 import de.westnordost.streetcomplete.ui.theme.defaultTextLinkStyles
 import de.westnordost.streetcomplete.ui.theme.titleLarge
@@ -200,13 +200,7 @@ private fun QuestForm(
     }
 
     NonPredictiveBackHandler { dismiss() }
-
-    val lastMapClick = LocalLastMapClick.current
-    LaunchedEffect(lastMapClick) {
-        if (lastMapClick != null) {
-            if (!onClickMap(lastMapClick)) dismiss()
-        }
-    }
+    BottomSheetMapClickDismissEffect(enabled = !confirmDiscard, onDismiss = ::dismiss, onClickMap = onClickMap)
 
     @Composable
     fun createDefaultOtherAnswers(): List<AnswerItem> {

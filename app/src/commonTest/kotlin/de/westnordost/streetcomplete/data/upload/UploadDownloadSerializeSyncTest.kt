@@ -142,8 +142,9 @@ class UploadDownloadSerializeSyncTest {
         verifySuspend { env.mapDataApi.getMap(any(), any()) }
     }
 
-    @Test fun `download that owns SerializeSync blocks upload until download releases it`() = runBlocking {
+    @Test fun `download that owns SerializeSync blocks upload until OSM download releases it`() = runBlocking {
         val env = SerializeSyncHarness()
+        env.holdExternalDownload()
         val edit1 = edit(id = 1L)
         val edit2 = edit(id = 2L)
         env.queueElementEdits(edit1, edit2)
@@ -166,7 +167,7 @@ class UploadDownloadSerializeSyncTest {
         assertFalse(env.externalUploadEntered.isCompleted)
 
         env.releaseDownload.complete(Unit)
-        download.awaitSoon()
+        env.externalDownloadEntered.awaitSoon()
 
         env.firstElementEntered.awaitSoon()
         env.secondElementEntered.awaitSoon()
@@ -174,11 +175,38 @@ class UploadDownloadSerializeSyncTest {
         env.externalUploadEntered.awaitSoon()
         upload.awaitSoon()
 
+        assertFalse(env.releaseExternal.isCompleted)
+        env.releaseExternal.complete(Unit)
+        download.awaitSoon()
+
         env.assertNoOverlap()
         verifySuspend(exactly(1)) { env.singleUploader.upload(edit1, any()) }
         verifySuspend(exactly(1)) { env.singleUploader.upload(edit2, any()) }
         verify { env.noteEditsController.getOldestUnsynced() }
         verifySuspend { env.externalSourceQuestController.upload() }
+    }
+
+    @Test fun `upload does not wait for external source download outside SerializeSync`() = runBlocking {
+        val env = SerializeSyncHarness()
+        env.holdExternalDownload()
+        env.queueElementEdits(edit(id = 1L))
+        env.recordElementUploads()
+
+        val download = async(Dispatchers.IO) {
+            env.downloader.download(bbox(), isUserInitiated = true, ignoreCache = true)
+        }
+        env.downloadMutationEntered.awaitSoon()
+        env.releaseDownload.complete(Unit)
+        env.externalDownloadEntered.awaitSoon()
+        assertFalse(env.serializeSync.isLocked)
+
+        val upload = async(Dispatchers.IO) { env.uploader.upload() }
+        env.firstElementEntered.awaitSoon()
+        upload.awaitSoon()
+        assertFalse(env.releaseExternal.isCompleted)
+
+        env.releaseExternal.complete(Unit)
+        download.awaitSoon()
     }
 }
 
@@ -221,13 +249,15 @@ private class UploadDownloadOverlapGuard {
 
     fun enterDownload(label: String) = synchronized(lock) {
         events += "enter-download:$label"
-        check(uploadActive == 0) { "download '$label' overlapped upload; events=$events" }
-        downloadActive++
+        if (label != "external") {
+            check(uploadActive == 0) { "download '$label' overlapped upload; events=$events" }
+            downloadActive++
+        }
     }
 
     fun exitDownload(label: String) = synchronized(lock) {
         events += "exit-download:$label"
-        downloadActive--
+        if (label != "external") downloadActive--
     }
 }
 
@@ -244,6 +274,8 @@ private class SerializeSyncHarness {
     val secondElementEntered = CompletableDeferred<Unit>()
     val noteUploadEntered = CompletableDeferred<Unit>()
     val externalUploadEntered = CompletableDeferred<Unit>()
+    lateinit var releaseExternal: CompletableDeferred<Unit>
+    lateinit var externalDownloadEntered: CompletableDeferred<Unit>
 
     val elementEditsController: ElementEditsController = mock()
     val mapDataController: MapDataController = mock()
@@ -346,10 +378,7 @@ private class SerializeSyncHarness {
                 overlap.exitDownload("mapData")
             }
         }
-        everySuspend { externalSourceQuestController.download(any()) } calls {
-            overlap.enterDownload("external")
-            overlap.exitDownload("external")
-        }
+        wireExternalDownload(instant = true)
 
         uploader.addListener(object : UploadProgressSource.Listener {
             override fun onStarted() {
@@ -396,6 +425,23 @@ private class SerializeSyncHarness {
                 MapDataUpdates()
             } finally {
                 overlap.exitUpload("element-${edit.id}")
+            }
+        }
+    }
+
+    fun holdExternalDownload() = wireExternalDownload(instant = false)
+
+    private fun wireExternalDownload(instant: Boolean) {
+        releaseExternal = if (instant) CompletableDeferred<Unit>().also { it.complete(Unit) }
+        else CompletableDeferred()
+        externalDownloadEntered = CompletableDeferred()
+        everySuspend { externalSourceQuestController.download(any()) } calls {
+            overlap.enterDownload("external")
+            try {
+                externalDownloadEntered.complete(Unit)
+                runBlocking { releaseExternal.await() }
+            } finally {
+                overlap.exitDownload("external")
             }
         }
     }

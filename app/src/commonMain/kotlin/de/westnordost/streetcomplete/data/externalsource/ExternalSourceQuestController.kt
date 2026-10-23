@@ -9,6 +9,7 @@ import de.westnordost.streetcomplete.data.quest.ExternalSourceQuestKey
 import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.data.quest.QuestType
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
+import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeSource
 import de.westnordost.streetcomplete.util.Mockable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +26,7 @@ class ExternalSourceQuestController(
     private val questTypeRegistry: QuestTypeRegistry,
     private val externalSourceDao: ExternalSourceDao,
     elementEditsController: ElementEditsController,
+    private val visibleEditTypeSource: VisibleEditTypeSource,
 ) : ElementEditsSource.Listener {
 
     interface QuestListener {
@@ -60,11 +62,12 @@ class ExternalSourceQuestController(
 
     fun get(key: ExternalSourceQuestKey): ExternalSourceQuest? = getQuestType(key)?.get(key.id)
 
-    /** calls [download] for each [ExternalSourceQuestType] enabled in this country, thus may take long */
+    /** calls [download] for each visible [ExternalSourceQuestType] with download enabled in this country */
     suspend fun download(bbox: BoundingBox) {
         withContext(Dispatchers.IO) {
             val countryBoundaries = countryBoundaries.value
             val updates = questTypes.mapNotNull { type ->
+                if (!visibleEditTypeSource.isVisible(type)) return@mapNotNull null
                 if (!type.downloadEnabled) return@mapNotNull null
                 if (!countryBoundaries.intersects(bbox, type.enabledInCountries)) return@mapNotNull null
                 scope.async {

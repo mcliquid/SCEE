@@ -483,7 +483,7 @@ val commonModule = module {
     single { LevelFilter(get()) }
     single { DayNightQuestFilter(get()) }
 
-    single { ExternalSourceQuestController(get(named("CountryBoundariesLazy")), get(), get(), get()) }
+    single { ExternalSourceQuestController(get(named("CountryBoundariesLazy")), get(), get(), get(), get()) }
     single { ExternalSourceDao(get()) }
     single { ExternalSourceHiddenDao(get()) }
     single { CustomQuestList() }

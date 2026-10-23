@@ -24,7 +24,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.yield
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.max
 
@@ -80,19 +79,15 @@ class Downloader(
 
             mutex.withLock {
                 coroutineScope {
-                    // all downloaders run concurrently
                     launch { notesDownloader.download(tilesBbox) }
-                    launch {
-                        mapDataDownloader.download(tilesBbox)
-                        yield()
-                        // download externalSource stuff after map data, because quest creation may depend on map data
-                        externalSourceQuestController.download(bbox)
-                    }
+                    launch { mapDataDownloader.download(tilesBbox) }
                     launch { mapTilesDownloader.download(tilesBbox) }
                 }
                 // Keep the coverage commit serialized with uploads that invalidate these tiles.
                 putDownloadedAlready(tiles)
             }
+            // After OSM data is persisted; may overlap uploads (not SerializeSync-critical).
+            externalSourceQuestController.download(bbox)
 
             val seconds = (nowAsEpochMilliseconds() - time) / 1000.0
             Log.i(TAG, "Finished download ($sqkm km², bbox: $bboxString) in ${seconds.format(1)}s")

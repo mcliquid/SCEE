@@ -57,6 +57,7 @@ import org.jetbrains.compose.resources.stringResource
                         items = selectableValues,
                         modifier = Modifier.fillMaxWidth(),
                         state = wheelPickerState,
+                        requestFocus = true,
                         content = itemContent
                     )
                 }

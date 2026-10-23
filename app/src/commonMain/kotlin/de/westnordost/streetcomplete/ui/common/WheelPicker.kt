@@ -1,11 +1,11 @@
 package de.westnordost.streetcomplete.ui.common
 
 import androidx.compose.foundation.MutatePriority
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.ScrollableState
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,12 +18,21 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -95,9 +104,14 @@ fun <T> WheelPicker(
     key: ((T) -> Any)? = null,
     visibleAdjacentItems: Int = 1,
     horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
+    requestFocus: Boolean = false,
     content: @Composable (item: T) -> Unit
 ) {
     val scope = rememberCoroutineScope()
+    val focusRequester = remember { FocusRequester() }
+    if (requestFocus) {
+        LaunchedEffect(Unit) { focusRequester.requestFocus() }
+    }
 
     val measuredItemHeight = (state.selectedItemInfo?.size ?: 0).pxToDp()
     val selectedItemHeight = if (measuredItemHeight > 0.dp) measuredItemHeight else DefaultItemHeight
@@ -121,7 +135,20 @@ fun <T> WheelPicker(
             .pickerIndicator(selectedItemHeight, color = MaterialTheme.colors.onSurface),
     ) {
         LazyColumn(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester)
+                .focusable()
+                .onPreviewKeyEvent { event ->
+                    if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                    val nextIndex = wheelPickerIndexAfterKey(
+                        currentIndex = state.selectedItemIndex,
+                        key = event.key,
+                        itemCount = items.size,
+                    ) ?: return@onPreviewKeyEvent false
+                    scope.launch { state.animateScrollToItem(nextIndex) }
+                    true
+                },
             state = state.lazyListState,
             contentPadding = paddingValues,
             horizontalAlignment = horizontalAlignment,
@@ -135,11 +162,12 @@ fun <T> WheelPicker(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .scale(if (index == state.selectedItemIndex) 1f else 0.8f)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            onClick = { scope.launch { state.animateScrollToItem(index) } },
-                        )
+                        // clickable() captures mouse press on desktop and blocks LazyColumn drag scrolling
+                        .pointerInput(index) {
+                            detectTapGestures {
+                                scope.launch { state.animateScrollToItem(index) }
+                            }
+                        }
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
                     content(items[index])
@@ -194,6 +222,19 @@ internal fun findWheelPickerCenterItemIndex(
 ): Int? = visibleItems.firstOrNull {
     it.offset + it.size - viewportStartOffset > viewportHeight / 2
 }?.index
+
+internal fun wheelPickerIndexAfterStep(currentIndex: Int, delta: Int, itemCount: Int): Int? {
+    if (itemCount <= 0) return null
+    val next = currentIndex + delta
+    return next.takeIf { it in 0 until itemCount }
+}
+
+internal fun wheelPickerIndexAfterKey(currentIndex: Int, key: Key, itemCount: Int): Int? =
+    when (key) {
+        Key.DirectionDown, Key.PageDown -> wheelPickerIndexAfterStep(currentIndex, 1, itemCount)
+        Key.DirectionUp, Key.PageUp -> wheelPickerIndexAfterStep(currentIndex, -1, itemCount)
+        else -> null
+    }
 
 @Preview
 @Composable

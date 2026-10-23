@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.ui.common
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class WheelPickerTest {
     @Test fun `center item is first visible item past viewport center`() {
@@ -19,5 +20,15 @@ class WheelPickerTest {
             WheelPickerVisibleItem(index = 3, offset = 90, size = 40),
         )
         assertEquals(2, findWheelPickerCenterItemIndex(items, viewportStartOffset = 40, viewportHeight = 80))
+    }
+
+    @Test fun `step down moves within range`() {
+        assertEquals(1, wheelPickerIndexAfterStep(0, delta = 1, itemCount = 3))
+        assertNull(wheelPickerIndexAfterStep(2, delta = 1, itemCount = 3))
+    }
+
+    @Test fun `step up moves within range`() {
+        assertEquals(1, wheelPickerIndexAfterStep(2, delta = -1, itemCount = 3))
+        assertNull(wheelPickerIndexAfterStep(0, delta = -1, itemCount = 3))
     }
 }

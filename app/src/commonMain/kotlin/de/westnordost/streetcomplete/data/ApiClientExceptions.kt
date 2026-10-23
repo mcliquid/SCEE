@@ -22,6 +22,10 @@ inline fun <T> wrapApiClientExceptions(block: () -> T): T =
     catch (e: IOException) {
         throw ConnectionException(e.message, e)
     }
+    // Ktor CIO leaks java.nio's UnresolvedAddressException (not an IOException) on DNS failure, see #7324
+    catch (e: IllegalArgumentException) {
+        if (e.isUnresolvedAddressException()) throw ConnectionException(e.message, e) else throw e
+    }
     // server replied with (client) error 4xx
     catch (e: ClientRequestException) {
         when (e.response.status) {
@@ -43,6 +47,9 @@ inline fun <T> wrapApiClientExceptions(block: () -> T): T =
             }
         }
     }
+
+/** Whether this is the platform's exception for a host name that could not be resolved */
+expect fun Throwable.isUnresolvedAddressException(): Boolean
 
 /** The server responded with an unhandled error code */
 class ApiClientException(message: String? = null, cause: Throwable? = null) :

@@ -39,17 +39,20 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.url
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.isSuccess
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.io.IOException
 import java.util.Locale
+import kotlin.coroutines.cancellation.CancellationException
 
 @Mockable
 class OsmoseDao(
     private val db: Database,
     private val prefs: Preferences,
+    createClient: () -> HttpClient = { HttpClient() },
 ) : KoinComponent {
-    private val client by lazy { HttpClient() }
+    private val client by lazy(createClient)
 
     private val mapDataWithEditsSource: MapDataWithEditsSource by inject()
     private val questTypeRegistry: QuestTypeRegistry by inject()
@@ -170,10 +173,15 @@ class OsmoseDao(
         requestBuilder.header("User-Agent", USER_AGENT)
         requestBuilder.url(url)
         try {
-            client.get(requestBuilder)
-            db.delete(NAME, where = "$UUID = '$uuid'")
-        } catch (e: IOException) {
+            val r = client.get(requestBuilder)
+            // 410: Osmose doesn't know this issue (anymore), so there is nothing left to report
+            if (r.status.isSuccess() || r.status == HttpStatusCode.Gone) db.delete(NAME, where = "$UUID = '$uuid'")
+            else Log.i(TAG, "error while uploading: ${r.status} to $url")
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
             // just do nothing, so it's later tried again (hopefully...)
+            // not only IOException: Ktor CIO throws e.g. UnresolvedAddressException on DNS failure
             Log.i(TAG, "error while uploading: ${e.message} to $url")
         }
     }
@@ -205,7 +213,9 @@ class OsmoseDao(
                 db.delete(NAME, where = "$UUID = '$uuid'")
                 false
             } else true
-        } catch (e: IOException) {
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
             // just do nothing, so it's later tried again (hopefully...)
             Log.i(TAG, "error checking existence of $uuid: ${e.message}")
             true

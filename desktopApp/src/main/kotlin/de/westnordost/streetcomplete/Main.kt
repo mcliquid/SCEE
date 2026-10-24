@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete
 
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.unit.DpSize
@@ -36,10 +37,15 @@ fun main(args: Array<String>) {
     // Nucleus exits the process when the app is closed, so this can't be done after it returns
     Runtime.getRuntime().addShutdownHook(Thread { stopKoin() })
     koin.get<CrashReportsUncaughtExceptionHandler>().install()
-    koin.get<ApplicationInitializer>().initialize()
     // Keep the URI even if it arrives before the window and map are ready.
     val pendingUri = MutableStateFlow<String?>(null)
     nucleusApplication(args, enableSingleInstance = true) {
+        // After Tao owns Dispatchers.Main — AutoSyncer in ApplicationInitializer must not start
+        // before that or MapRuntime can pin the pre-loop fallback thread (#7312).
+        DisposableEffect(Unit) {
+            koin.get<ApplicationInitializer>().initialize()
+            onDispose { }
+        }
         onDeepLink { pendingUri.value = it.toString() }
         val uri by pendingUri.collectAsState()
         val theme = rememberAppTheme()

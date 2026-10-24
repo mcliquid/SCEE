@@ -34,6 +34,7 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.cacheDir
 import io.github.vinceglb.filekit.filesDir
 import io.github.vinceglb.filekit.path
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.Buffer
 import kotlinx.io.files.Path
@@ -136,7 +137,9 @@ val desktopModule = module {
 
     single<MapRuntime> {
         @OptIn(ExperimentalMaplibreComposeApi::class)
-        createMapRuntime { cacheFile = Path(FileKit.filesDir.path, "maplibre-cache.db") }
+        runBlocking(Dispatchers.Main) {
+            createMapRuntime { cacheFile = Path(FileKit.filesDir.path, "maplibre-cache.db") }
+        }
     } onClose { it?.close() }
 
     factory<MapTilesDownloader> {

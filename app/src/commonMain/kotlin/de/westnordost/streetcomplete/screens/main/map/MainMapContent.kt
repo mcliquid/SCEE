@@ -104,8 +104,8 @@ internal fun MainMapContent(
     onClickElement: (ElementKey) -> Unit,
 ) {
     val mapState = checkNotNull(LocalMapState.current)
-    val showPinsAtZoom by remember(mapState) { derivedStateOf { mapState.cameraPosition.zoom >= 13 } }
-    val showOverlayAtZoom by remember(mapState) { derivedStateOf { mapState.cameraPosition.zoom >= 14 } }
+    val showPinsAtZoom by remember { derivedStateOf { mapState.cameraPosition.zoom >= 13 } }
+    val showOverlayAtZoom by remember { derivedStateOf { mapState.cameraPosition.zoom >= 14 } }
 
     // Runs before quest-pin collection so a form-close reload can see the reason.
     var lastPinsMode by remember { mutableStateOf<PinsMode?>(null) }

@@ -173,6 +173,9 @@ mapOf(
             or aeroway = terminal
             or man_made = observatory
             or club
+            or healthcare
+            or craft
+            or office
             or building ~ civic|college|government|train_station|transportation|university
         )
     )

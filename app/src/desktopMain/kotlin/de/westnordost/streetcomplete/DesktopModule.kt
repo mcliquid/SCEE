@@ -15,7 +15,7 @@ import de.westnordost.streetcomplete.data.DesktopPeriodicCleaner
 import de.westnordost.streetcomplete.data.PeriodicCleaner
 import de.westnordost.streetcomplete.data.StreetCompleteDatabaseConfigurator
 import de.westnordost.streetcomplete.data.connection.ActiveNetworkConnection
-import de.westnordost.streetcomplete.data.connection.NetworkCapabilities
+import de.westnordost.streetcomplete.data.connection.DesktopActiveNetworkConnection
 import de.westnordost.streetcomplete.data.download.DesktopDownloadController
 import de.westnordost.streetcomplete.data.download.DownloadController
 import de.westnordost.streetcomplete.data.initialize
@@ -34,7 +34,6 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.cacheDir
 import io.github.vinceglb.filekit.filesDir
 import io.github.vinceglb.filekit.path
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlinx.io.Buffer
 import kotlinx.io.files.Path
@@ -131,11 +130,7 @@ val desktopModule = module {
 
     // connection
 
-    // TODO desktop: always reports an unmetered internet connection, could use
-    //      https://nucleusframework.dev/en/docs/os/system-info/ for that later.
-    single<ActiveNetworkConnection> { object : ActiveNetworkConnection {
-        override val capabilities = flowOf(NetworkCapabilities(hasInternet = true, isMetered = false))
-    } }
+    factory<ActiveNetworkConnection> { DesktopActiveNetworkConnection() }
 
     // map
 

@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 import android.os.LocaleList
 import de.westnordost.streetcomplete.data.preferences.AndroidPreferenceStore
 import de.westnordost.streetcomplete.data.FeedsUpdater
+import de.westnordost.streetcomplete.data.UnsyncedChangesCountSource
 import de.westnordost.streetcomplete.data.Preloader
 import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesController
 import de.westnordost.streetcomplete.data.edithistory.EditHistoryController
@@ -23,6 +24,9 @@ import de.westnordost.streetcomplete.data.preferences.Autosync
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.preferences.ResurveyIntervalsUpdater
 import de.westnordost.streetcomplete.data.preferences.Theme
+import de.westnordost.streetcomplete.data.download.strategy.MobileDataAutoDownloadStrategy
+import de.westnordost.streetcomplete.data.download.strategy.WifiAutoDownloadStrategy
+import de.westnordost.streetcomplete.data.quest.AutoSyncer
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.data.user.UserApiClient
 import de.westnordost.streetcomplete.data.user.UserDataController
@@ -495,11 +499,21 @@ class PreferencesCompatibilityTest {
         val feeds = FeedsUpdater(user, WeeklyOsmUpdater(mock(), prefs),
             OsmCalUpdater(mock(), CalendarEventsController(CalendarEventsDao(mock())), prefs), prefs, mock())
         val history = EditHistoryController(mock(), mock(), mock(), mock(), mock(), QuestTypeRegistry({ emptyList() }), mock())
+        val downloadedTiles = DownloadedTilesController(mock())
+        val unsyncedChanges = UnsyncedChangesCountSource(mock(), mock())
+        val autoSyncer = AutoSyncer(
+            mock(), mock(),
+            MobileDataAutoDownloadStrategy(mock(), downloadedTiles),
+            WifiAutoDownloadStrategy(mock(), downloadedTiles),
+            mock(), mock(), unsyncedChanges, mock(), mock(), prefs, mock(), downloadedTiles,
+        )
+        cancelScope(autoSyncer, "coroutineScope")
         val initializer = ApplicationInitializer(
             Preloader(lazy { error("Preloading forbidden") }, lazy { error("Preloading forbidden") }, CountryInfos { null }, prefs),
             feeds, history, DatabaseLogger(LogsController(LogsDao(mock()))), DownloadedTilesController(mock()),
             prefs, ResurveyIntervalsUpdater(prefs), AppLocaleUpdater(prefs),
             PreferencesMigration { migrateQuestPreferences(migrationStore, it) },
+            autoSyncer,
         )
         // Suppress unrelated asynchronous preload/cleanup/invalidation; execute the real synchronous migration.
         cancelScope(initializer, "scope")

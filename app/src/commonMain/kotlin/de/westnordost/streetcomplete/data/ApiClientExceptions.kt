@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.data
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.http.HttpStatusCode
+import io.ktor.util.network.UnresolvedAddressException
 import kotlinx.io.IOException
 import kotlinx.serialization.SerializationException
 
@@ -22,9 +23,11 @@ inline fun <T> wrapApiClientExceptions(block: () -> T): T =
     catch (e: IOException) {
         throw ConnectionException(e.message, e)
     }
-    // Ktor CIO leaks java.nio's UnresolvedAddressException (not an IOException) on DNS failure, see #7324
-    catch (e: IllegalArgumentException) {
-        if (e.isUnresolvedAddressException()) throw ConnectionException(e.message, e) else throw e
+    // thrown (only?) by the CIO Ktor client engine on JVM, as far as we know (not documented).
+    // It is weird that this is not a subclass of IOException.
+    // see also https://youtrack.jetbrains.com/issue/KTOR-10027/
+    catch (e: UnresolvedAddressException) {
+        throw ConnectionException(e.message, e)
     }
     // server replied with (client) error 4xx
     catch (e: ClientRequestException) {
@@ -46,6 +49,13 @@ inline fun <T> wrapApiClientExceptions(block: () -> T): T =
                 throw ApiClientException(e.message, e)
             }
         }
+    }
+    // Ktor CIO may wrap java.nio's UnresolvedAddressException (not kotlinx.io.IOException), see #7324
+    catch (e: IllegalArgumentException) {
+        if (e.isUnresolvedAddressException()) throw ConnectionException(e.message, e) else throw e
+    }
+    catch (e: Exception) {
+        if (e.isUnresolvedAddressException()) throw ConnectionException(e.message, e) else throw e
     }
 
 /** Whether this is the platform's exception for a host name that could not be resolved */

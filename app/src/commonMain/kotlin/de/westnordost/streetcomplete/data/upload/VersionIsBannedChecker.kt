@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.data.upload
 
+import de.westnordost.streetcomplete.util.logs.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.expectSuccess
@@ -25,9 +26,14 @@ class VersionIsBannedChecker(
         } catch (e: Exception) {
             // if there is an io exception, never mind then...! (The unreachability of the above
             // internet address should not lead to this app being unusable!)
+            Log.w(TAG, "Unable to check banned versions", e)
             return BannedInfo.UnknownIfBanned
         }
         return BannedInfo.IsNotBanned
+    }
+
+    companion object {
+        private const val TAG = "VersionIsBannedChecker"
     }
 }
 

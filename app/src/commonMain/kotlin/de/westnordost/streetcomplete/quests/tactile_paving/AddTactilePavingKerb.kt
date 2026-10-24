@@ -42,11 +42,6 @@ class AddTactilePavingKerb : OsmElementQuestType<Boolean> {
         Res.drawable.tactile_paving3
     )
 
-    @Composable
-    override fun Form(on: (QuestAction<Boolean>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
-        YesNoQuestForm(on)
-    }
-
     override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> =
         mapData.findAllKerbNodes().filter { eligibleKerbsFilter.matches(it) }
 
@@ -56,6 +51,14 @@ class AddTactilePavingKerb : OsmElementQuestType<Boolean> {
         } else {
             null
         }
+
+    @Composable
+    override fun Form(on: (QuestAction<Boolean>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
+        YesNoQuestForm(on)
+    }
+
+    override fun getHighlightedElements(element: Element, mapData: MapDataWithGeometry) =
+        mapData.findAllKerbNodes().filter { it.tags["kerb"] != "no" }.asSequence()
 
     override fun applyAnswerTo(answer: Boolean, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         tags.updateWithCheckDate("tactile_paving", answer.toYesNo())

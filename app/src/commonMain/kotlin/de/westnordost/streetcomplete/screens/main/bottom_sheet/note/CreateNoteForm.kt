@@ -46,7 +46,6 @@ import org.koin.compose.koinInject
 import kotlin.time.Duration.Companion.milliseconds
 
 /** Bottom sheet form with which the user can create a new note, including moving the note */
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun CreateNoteForm(
     onLeaveNote: (noteText: String, noteImagePaths: List<String>, trackpoints: List<Trackpoint>?, isGpx: Boolean) -> Unit,

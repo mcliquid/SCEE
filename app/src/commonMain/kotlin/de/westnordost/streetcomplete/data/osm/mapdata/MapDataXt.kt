@@ -1,6 +1,9 @@
 package de.westnordost.streetcomplete.data.osm.mapdata
 
 import de.westnordost.streetcomplete.data.elementfilter.ElementFilterExpression
+import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
+import kotlinx.atomicfu.locks.ReentrantLock
+import kotlinx.atomicfu.locks.withLock
 import de.westnordost.streetcomplete.data.elementfilter.cachedElementFilterExpression
 
 fun MapData.filter(expr: String): Sequence<Element> =
@@ -15,4 +18,14 @@ fun MapData.filter(expr: ElementFilterExpression): Sequence<Element> {
         if (expr.includesElementType(ElementType.WAY)) yieldAll(ways)
         if (expr.includesElementType(ElementType.RELATION)) yieldAll(relations)
     }.filter(expr::matches)
+}
+
+private object FilterExpressionCache {
+    private val cache = mutableMapOf<String, Lazy<ElementFilterExpression>>()
+    private val lock = ReentrantLock()
+
+    fun get(expr: String): ElementFilterExpression =
+        lock.withLock {
+            cache.getOrPut(expr) { lazy { expr.toElementFilterExpression() } }
+        }.value
 }

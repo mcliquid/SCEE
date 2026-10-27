@@ -1,1 +1,5 @@
 * text=auto
+
+# Keep CI helper scripts and osmfeatures patches with LF on all platforms.
+third_party/osmfeatures/**/*.sh text eol=lf
+third_party/osmfeatures/**/*.patch text eol=lf

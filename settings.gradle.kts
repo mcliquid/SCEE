@@ -17,7 +17,9 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        // SCEE: locally published osmfeatures that reads the NSI format
+        // SCEE-mc: osmfeatures 8.1.0-nsi.1 is published to mavenLocal from
+        // third_party/osmfeatures (pinned upstream commit + NSI v8 patches). See
+        // third_party/osmfeatures/README.md and publish-to-maven-local.sh.
         mavenLocal {
             content { includeGroup("de.westnordost") }
         }

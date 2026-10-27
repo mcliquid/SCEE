@@ -20,6 +20,12 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Publish pinned osmfeatures to mavenLocal
+        run: |
+          set -euo pipefail
+          chmod +x third_party/osmfeatures/publish-to-maven-local.sh
+          ./third_party/osmfeatures/publish-to-maven-local.sh
+
       - name: Set env
         run: echo "COMMIT_SHA=$(git log -n 1 --format='%h')" >> $GITHUB_ENV
 

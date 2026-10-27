@@ -1,0 +1,267 @@
+From f24b494d8cc9770bf8e0ae7a0fdadbd5ddf85e4e Mon Sep 17 00:00:00 2001
+From: mcliquid <info@mcliquid.de>
+Date: Sun, 11 Oct 2026 19:16:01 +0200
+Subject: [PATCH 2/2] Interpret original NSI data: location sets, M49,
+ dissolved
+
+Parse the unmodified nsi.json (location sets incl. M49 regions and
+ISO 3166-2 subdivisions) and optionally dissolved.json, so that the
+app does not need to convert the name suggestion index data.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ .../IDBrandPresetsFeatureCollection.kt        | 18 ++++-
+ .../osmfeatures/IDPresetsJsonParser.kt        |  2 +-
+ .../de/westnordost/osmfeatures/M49Codes.kt    | 73 +++++++++++++++++++
+ .../westnordost/osmfeatures/NsiJsonParser.kt  | 70 ++++++++++++++----
+ 4 files changed, 147 insertions(+), 16 deletions(-)
+ create mode 100644 src/commonMain/kotlin/de/westnordost/osmfeatures/M49Codes.kt
+
+diff --git a/src/commonMain/kotlin/de/westnordost/osmfeatures/IDBrandPresetsFeatureCollection.kt b/src/commonMain/kotlin/de/westnordost/osmfeatures/IDBrandPresetsFeatureCollection.kt
+index e67b44d..8178047 100644
+--- a/src/commonMain/kotlin/de/westnordost/osmfeatures/IDBrandPresetsFeatureCollection.kt
++++ b/src/commonMain/kotlin/de/westnordost/osmfeatures/IDBrandPresetsFeatureCollection.kt
+@@ -1,5 +1,9 @@
+ package de.westnordost.osmfeatures
+ 
++import kotlinx.serialization.ExperimentalSerializationApi
++import kotlinx.serialization.json.*
++import kotlinx.serialization.json.io.decodeFromSource
++
+ /** Non-localized feature collection sourcing from the NSI data (in NSI format) defined in JSON.
+  *  The brand features are derived from the given (non-brand) [presets].
+  *
+@@ -11,7 +15,7 @@ internal class IDBrandPresetsFeatureCollection(
+     private val fileAccess: ResourceAccessAdapter,
+     presets: LocalizedFeatureCollection
+ ) : PerCountryFeatureCollection {
+-    private val parser = NsiJsonParser(presets.getAll(listOf(null)).associateBy { it.id })
++    private val parser = NsiJsonParser(presets.getAll(listOf(null)).associateBy { it.id }, loadDissolved())
+ 
+     // countryCode -> lazy { featureId -> Feature }
+     private val featuresByIdByCountryCode = LinkedHashMap<String?, Lazy<LinkedHashMap<String, Feature>>>(320)
+@@ -49,6 +53,16 @@ internal class IDBrandPresetsFeatureCollection(
+         }
+     }
+ 
++    @OptIn(ExperimentalSerializationApi::class)
++    private fun loadDissolved(): Set<String> {
++        if (!fileAccess.exists(DISSOLVED_FILE)) return emptySet()
++        return fileAccess.open(DISSOLVED_FILE).use { source ->
++            Json.decodeFromSource<JsonObject>(source)["dissolved"]?.jsonObject?.keys.orEmpty()
++        }
++    }
++
+     private fun getPresetsFileName(countryCode: String?): String =
+         if (countryCode == null) "presets.json" else "presets-$countryCode.json"
+-}
+\ No newline at end of file
++}
++
++private const val DISSOLVED_FILE = "dissolved.json"
+diff --git a/src/commonMain/kotlin/de/westnordost/osmfeatures/IDPresetsJsonParser.kt b/src/commonMain/kotlin/de/westnordost/osmfeatures/IDPresetsJsonParser.kt
+index 425342d..0c9008b 100644
+--- a/src/commonMain/kotlin/de/westnordost/osmfeatures/IDPresetsJsonParser.kt
++++ b/src/commonMain/kotlin/de/westnordost/osmfeatures/IDPresetsJsonParser.kt
+@@ -95,7 +95,7 @@ internal class IDPresetsJsonParser {
+ 
+ private val ISO3166_2 = Regex("[A-Z]{2}(-[A-Z0-9]{1,3})?")
+ 
+-internal fun JsonArray.parseCountryCodes(): List<String>? {
++private fun JsonArray.parseCountryCodes(): List<String>? {
+     // for example a lat,lon pair to denote a location with radius. Not supported.
+     if (any { it is JsonArray }) return null
+ 
+diff --git a/src/commonMain/kotlin/de/westnordost/osmfeatures/M49Codes.kt b/src/commonMain/kotlin/de/westnordost/osmfeatures/M49Codes.kt
+new file mode 100644
+index 0000000..9bbe348
+--- /dev/null
++++ b/src/commonMain/kotlin/de/westnordost/osmfeatures/M49Codes.kt
+@@ -0,0 +1,73 @@
++package de.westnordost.osmfeatures
++
++// source: https://unstats.un.org/unsd/methodology/m49/
++internal val M49Codes = mapOf(
++    // africa
++    "002" to listOf("015", "202"),
++    // northern africa
++    "015" to listOf("DZ", "EG", "LY", "MA", "SD", "TN", "EH"),
++    // sub-saharan africa
++    "202" to listOf("014", "017", "018", "011"),
++    // eastern africa
++    "014" to listOf("IO", "BI", "KM", "DJ", "ER", "ET", "TF", "KE", "MG", "MW", "MU", "YT", "MZ", "RE", "RW", "SC", "SO", "SS", "UG", "TZ", "ZM", "ZW"),
++    // middle africa
++    "017" to listOf("AO", "CM", "CF", "TD", "CG", "CD", "GQ", "GA", "ST"),
++    // southern africa
++    "018" to listOf("BW", "SZ", "LS", "NA", "ZA"),
++    // western africa
++    "011" to listOf("BJ", "BF", "CV", "CI", "GM", "GH", "GN", "GW", "LR", "ML", "MR", "NE", "NG", "SN", "SL", "TG", "SH"),
++
++    // americas
++    "019" to listOf("419", "021"),
++    // north america
++    "003" to listOf("021", "029", "013"),
++    // northern america
++    "021" to listOf("BM", "CA", "GL", "PM", "US"),
++    // latin america and the caribbean
++    "419" to listOf("029", "013", "005"),
++    // caribbean
++    "029" to listOf("AI", "AG", "AW", "BS", "BB", "BQ", "VG", "KY", "CU", "CW", "DM", "DO", "GD", "GP", "HT", "JM", "MQ", "MS", "PR", "BL", "KN", "LC", "MF", "VC", "SX", "TT", "TC", "VI"),
++    // central america
++    "013" to listOf("BZ", "CR", "SV", "GT", "HN", "MX", "NI", "PA"),
++    // south america
++    "005" to listOf("AR", "BO", "BV", "BR", "CL", "CO", "EC", "FK", "GF", "GY", "PY", "PE", "GS", "SR", "UY", "VE"),
++
++    // antarctica
++    "010" to listOf("AQ"),
++
++    // asia
++    "142" to listOf("143", "030", "035", "035", "034", "145"),
++    // central asia
++    "143" to listOf("KZ", "KG", "TJ", "TM", "UZ"),
++    // eastern asia
++    "030" to listOf("CN", "HK", "MO", "KP", "JP", "MN", "KR"),
++    // south-eastern asia
++    "035" to listOf("BN", "KH", "ID", "LA", "MY", "MM", "PH", "SG", "TH", "TL", "VN"),
++    // south asia
++    "034" to listOf("AF", "BD", "BT", "IN", "IR", "MV", "NP", "PK", "LK"),
++    // western asia
++    "145" to listOf("AM", "AZ", "BH", "CY", "GE", "IQ", "IL", "JO", "KW", "LB", "OM", "QA", "SA", "PS", "SY", "TR", "AE", "YE"),
++
++    // europe
++    "150" to listOf("151", "154", "039", "155"),
++    // eastern europe
++    "151" to listOf("BY", "BG", "CZ", "HU", "PL", "MD", "RO", "RU", "SK", "UA"),
++    // northern europe
++    "154" to listOf("AX", "830", "DK", "EE", "FO", "FI", "IS", "IE", "IM", "LV", "LT", "NO", "SJ", "SE", "GB"),
++    "830" to listOf("GG", "JE", "CQ"),
++    // southern europe
++    "039" to listOf("AL", "AD", "BA", "HR", "GI", "GR", "VA", "IT", "MT", "ME", "MK", "PT", "SM", "RS", "SI", "ES", "XK"),
++    // western europe
++    "155" to listOf("AT", "BE", "FR", "DE", "LI", "LU", "MC", "NL", "CH"),
++
++    // oceania
++    "009" to listOf("053", "054", "057", "061"),
++    // australia and new zealand
++    "053" to listOf("AU", "CX", "CC", "HM", "NZ", "NF"),
++    // Melanesia
++    "054" to listOf("FJ", "NC", "PG", "SB", "VU"),
++    // Micronesia
++    "057" to listOf("GU", "KI", "MH", "FM", "NR", "MP", "PW", "UM"),
++    // Polynesia
++    "061" to listOf("AS", "CK", "PF", "NU", "PN", "WS", "TK", "TV", "WF")
++)
+diff --git a/src/commonMain/kotlin/de/westnordost/osmfeatures/NsiJsonParser.kt b/src/commonMain/kotlin/de/westnordost/osmfeatures/NsiJsonParser.kt
+index 6b55854..5504f39 100644
+--- a/src/commonMain/kotlin/de/westnordost/osmfeatures/NsiJsonParser.kt
++++ b/src/commonMain/kotlin/de/westnordost/osmfeatures/NsiJsonParser.kt
+@@ -12,9 +12,17 @@ import kotlinx.serialization.json.io.decodeFromSource
+  *  Each NSI item is turned into a feature based on the iD preset it belongs to, in the same way as
+  *  `buildIDPresets()` in name-suggestion-index/lib/presets_id.ts does it.
+  *
+- *  Additionally to the NSI format, items may have `"searchable": false`, e.g. to mark brands that
+- *  are dissolved (see name-suggestion-index/dist/wikidata/dissolved.json). */
+-internal class NsiJsonParser(private val presets: Map<String, Feature>) {
++ *  Items whose id is in [dissolved] (the keys of name-suggestion-index/dist/wikidata/dissolved.json)
++ *  are not searchable.
++ *
++ *  Location sets are reduced to country codes (ISO 3166-1 alpha-2, plus ISO 3166-2 subdivisions of
++ *  [SUPPORTED_SUBDIVISIONS]; M49 regions are expanded). Items with location sets that cannot be
++ *  represented that way (circles, GeoJSON files other than ISO 3166-2 regions) are dropped, except
++ *  that unsupported `include`s are ignored if there is at least one supported one left. */
++internal class NsiJsonParser(
++    private val presets: Map<String, Feature>,
++    private val dissolved: Set<String> = emptySet()
++) {
+ 
+     @OptIn(ExperimentalSerializationApi::class)
+     fun parse(source: Source): List<BaseFeature> =
+@@ -68,20 +76,24 @@ internal class NsiJsonParser(private val presets: Map<String, Feature>) {
+         }
+         val tagKeys = preset.tagKeys - itemTags.keys
+ 
+-        val include = item["locationSet"]?.jsonObject?.get("include")?.jsonArray
+-        val exclude = item["locationSet"]?.jsonObject?.get("exclude")?.jsonArray
+-        val includeCountryCodes =
+-            if (include != null) include.parseCountryCodes() ?: return null
+-            else emptyList()
+-        val excludeCountryCodes =
+-            if (exclude != null) exclude.parseCountryCodes() ?: return null
+-            else emptyList()
++        val locationSet = item["locationSet"]?.jsonObject
++        val include = locationSet?.get("include")?.jsonArray.orEmpty()
++        val exclude = locationSet?.get("exclude")?.jsonArray.orEmpty()
++        // some includes can be unsupported if at least one is supported (the item is then not
++        // available in the unsupported regions, but at least in the supported ones)
++        val supportedInclude = include.filter { it.toCountryCodes() != null }
++        if (supportedInclude.isEmpty() && include.isNotEmpty()) return null
++        val includeCountryCodes = supportedInclude.toCountryCodes()
++        // but unsupported excludes would make the item available where it shouldn't be
++        val excludeCountryCodes = exclude.toCountryCodes()
++        if (includeCountryCodes == null || excludeCountryCodes == null) return null
+ 
+         val preserveTags = (item["preserveTags"] ?: properties?.get("preserveTags"))
+             ?.jsonArray?.map { Regex(it.jsonPrimitive.content) }.orEmpty()
+ 
++        val id = item["id"]!!.jsonPrimitive.content
+         return BaseFeature(
+-            id = "${preset.id}/${item["id"]!!.jsonPrimitive.content}",
++            id = "${preset.id}/$id",
+             tags = tags,
+             geometry = preset.geometry,
+             icon = preset.icon,
+@@ -89,7 +101,7 @@ internal class NsiJsonParser(private val presets: Map<String, Feature>) {
+             terms = collectTerms(item, itemTags, tree),
+             includeCountryCodes = includeCountryCodes,
+             excludeCountryCodes = excludeCountryCodes,
+-            isSearchable = item["searchable"]?.jsonPrimitive?.booleanOrNull ?: true,
++            isSearchable = id !in dissolved,
+             matchScore = 2.0f,
+             isSuggestion = true,
+             addTags = itemTags + tags,
+@@ -152,6 +164,30 @@ internal class NsiJsonParser(private val presets: Map<String, Feature>) {
+     }
+ }
+ 
++private fun List<JsonElement>.toCountryCodes(): List<String>? {
++    val result = LinkedHashSet<String>()
++    for (element in this) result.addAll(element.toCountryCodes() ?: return null)
++    return result.toList()
++}
++
++/** null if not supported, empty if worldwide. Circles are arrays, GeoJSON files are not ISO 3166 codes */
++private fun JsonElement.toCountryCodes(): List<String>? {
++    val code = (this as? JsonPrimitive)?.takeIf { it.isString }?.content ?: return null
++    if (code == "001" || code == "Planet") return emptyList()
++    if (COUNTRY.matches(code)) return listOf(code.uppercase())
++    SUBDIVISION.matchEntire(code)?.let { match ->
++        val country = match.groupValues[1]
++        return listOf(
++            if (country in SUPPORTED_SUBDIVISIONS) "${country.uppercase()}-${match.groupValues[2].uppercase()}"
++            else country.uppercase()
++        )
++    }
++    return expandM49(code)
++}
++
++private fun expandM49(code: String): List<String>? =
++    M49Codes[code]?.flatMap { if (it.all(Char::isDigit)) expandM49(it).orEmpty() else listOf(it) }
++
+ private class NsiTree(val mainTag: String, primaryName: String, alternateName: String) {
+     val primaryName = Regex(primaryName, RegexOption.IGNORE_CASE)
+     val alternateName = Regex(alternateName, RegexOption.IGNORE_CASE)
+@@ -204,3 +240,11 @@ private val SEMICOLON_SPLIT_KEYS = setOf(
+ private val NOT_NAME = Regex(":(colour|type|left|right|etymology|pronunciation|wikipedia|wikidata)$", RegexOption.IGNORE_CASE)
+ 
+ private val QID = Regex("Q\\d+")
++
++private val COUNTRY = Regex("[a-z]{2}")
++private val SUBDIVISION = Regex("([a-z]{2})-([a-z0-9]{1,3})(\\.geojson)?")
++
++/** Countries for which the app distinguishes subdivisions when looking for features (e.g. "US-NY").
++ *  For all other countries, features that are restricted to subdivisions are treated as available
++ *  in the whole country. */
++private val SUPPORTED_SUBDIVISIONS = setOf("us", "ca", "in", "au", "cn")
+-- 
+2.56.0.windows.2
+

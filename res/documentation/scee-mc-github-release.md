@@ -26,6 +26,15 @@ Build-Types (wie vor der Flavor-Umstellung): `debug`, `release`, `legacyDebug`, 
 
 ## Gradle-Tasks
 
+`de.westnordost:osmfeatures:8.1.0-nsi.1` comes from `mavenLocal` (NSI v8 patches;
+not on Maven Central). CI publishes it automatically; locally once:
+
+```bash
+./third_party/osmfeatures/publish-to-maven-local.sh
+```
+
+See [`third_party/osmfeatures/README.md`](../../third_party/osmfeatures/README.md).
+
 ```bash
 ./gradlew :androidApp:assembleRelease   # Distribution / GitHub Release
 ./gradlew :androidApp:assembleDebug

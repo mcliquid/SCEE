@@ -18,6 +18,12 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v3
 
+      - name: Publish pinned osmfeatures to mavenLocal
+        run: |
+          set -euo pipefail
+          chmod +x third_party/osmfeatures/publish-to-maven-local.sh
+          ./third_party/osmfeatures/publish-to-maven-local.sh
+
       - name: Generate quest list
         run: ./gradlew generateQuestList
 

@@ -1,0 +1,465 @@
+From bd63f24fb3fcf07d52ae5f317bc68b04e5ba9bc6 Mon Sep 17 00:00:00 2001
+From: mcliquid <info@mcliquid.de>
+Date: Mon, 5 Oct 2026 22:58:13 +0200
+Subject: [PATCH 1/2] Support native NSI v8 format
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
+---
+ .../osmfeatures/FeatureDictionary.android.kt  |  18 +-
+ .../osmfeatures/FeatureDictionary.kt          |  18 +-
+ .../IDBrandPresetsFeatureCollection.kt        |  10 +-
+ .../osmfeatures/IDPresetsJsonParser.kt        |   5 +-
+ .../westnordost/osmfeatures/NsiJsonParser.kt  | 206 ++++++++++++++++++
+ .../IDBrandPresetsFeatureCollectionTest.kt    |  20 +-
+ .../osmfeatures/IDPresetsJsonParserTest.kt    |   7 +-
+ .../resources/brand_presets_min.json          |  16 +-
+ .../resources/brand_presets_min2.json         |  10 +-
+ 9 files changed, 263 insertions(+), 47 deletions(-)
+ create mode 100644 src/commonMain/kotlin/de/westnordost/osmfeatures/NsiJsonParser.kt
+
+diff --git a/src/androidMain/kotlin/de/westnordost/osmfeatures/FeatureDictionary.android.kt b/src/androidMain/kotlin/de/westnordost/osmfeatures/FeatureDictionary.android.kt
+index 7b90e27..57669eb 100644
+--- a/src/androidMain/kotlin/de/westnordost/osmfeatures/FeatureDictionary.android.kt
++++ b/src/androidMain/kotlin/de/westnordost/osmfeatures/FeatureDictionary.android.kt
+@@ -9,11 +9,13 @@ fun FeatureDictionary.Companion.create(
+     assetManager: AssetManager,
+     presetsBasePath: String,
+     brandPresetsBasePath: String? = null
+-) = FeatureDictionary(
+-    featureCollection =
+-        IDLocalizedFeatureCollection(AssetManagerAccess(assetManager, presetsBasePath)),
+-    brandFeatureCollection =
+-        brandPresetsBasePath?.let {
+-            IDBrandPresetsFeatureCollection(AssetManagerAccess(assetManager, brandPresetsBasePath))
+-        }
+-)
++): FeatureDictionary {
++    val featureCollection = IDLocalizedFeatureCollection(AssetManagerAccess(assetManager, presetsBasePath))
++    return FeatureDictionary(
++        featureCollection = featureCollection,
++        brandFeatureCollection =
++            brandPresetsBasePath?.let {
++                IDBrandPresetsFeatureCollection(AssetManagerAccess(assetManager, brandPresetsBasePath), featureCollection)
++            }
++    )
++}
+diff --git a/src/commonMain/kotlin/de/westnordost/osmfeatures/FeatureDictionary.kt b/src/commonMain/kotlin/de/westnordost/osmfeatures/FeatureDictionary.kt
+index 7bf060c..a0740d7 100644
+--- a/src/commonMain/kotlin/de/westnordost/osmfeatures/FeatureDictionary.kt
++++ b/src/commonMain/kotlin/de/westnordost/osmfeatures/FeatureDictionary.kt
+@@ -448,14 +448,16 @@ class FeatureDictionary internal constructor(
+             fileSystem: FileSystem,
+             presetsBasePath: String,
+             brandPresetsBasePath: String? = null
+-        ) = FeatureDictionary(
+-            featureCollection =
+-                IDLocalizedFeatureCollection(FileSystemAccess(fileSystem, presetsBasePath)),
+-            brandFeatureCollection =
+-                brandPresetsBasePath?.let {
+-                    IDBrandPresetsFeatureCollection(FileSystemAccess(fileSystem, brandPresetsBasePath))
+-                }
+-        )
++        ): FeatureDictionary {
++            val featureCollection = IDLocalizedFeatureCollection(FileSystemAccess(fileSystem, presetsBasePath))
++            return FeatureDictionary(
++                featureCollection = featureCollection,
++                brandFeatureCollection =
++                    brandPresetsBasePath?.let {
++                        IDBrandPresetsFeatureCollection(FileSystemAccess(fileSystem, brandPresetsBasePath), featureCollection)
++                    }
++            )
++        }
+     }
+ }
+ 
+diff --git a/src/commonMain/kotlin/de/westnordost/osmfeatures/IDBrandPresetsFeatureCollection.kt b/src/commonMain/kotlin/de/westnordost/osmfeatures/IDBrandPresetsFeatureCollection.kt
+index 717b73f..e67b44d 100644
+--- a/src/commonMain/kotlin/de/westnordost/osmfeatures/IDBrandPresetsFeatureCollection.kt
++++ b/src/commonMain/kotlin/de/westnordost/osmfeatures/IDBrandPresetsFeatureCollection.kt
+@@ -1,14 +1,18 @@
+ package de.westnordost.osmfeatures
+ 
+-/** Non-localized feature collection sourcing from (NSI) iD presets defined in JSON.
++/** Non-localized feature collection sourcing from the NSI data (in NSI format) defined in JSON.
++ *  The brand features are derived from the given (non-brand) [presets].
+  *
+  * The base path is defined via the given FileAccessAdapter. In the base path, it is expected that
+  * there is a presets.json which includes all the features. Additionally, it is possible to place
+  * more files like e.g. presets-DE.json, presets-US-NY.json into the directory which will be loaded
+  * lazily on demand  */
+ internal class IDBrandPresetsFeatureCollection(
+-    private val fileAccess: ResourceAccessAdapter
++    private val fileAccess: ResourceAccessAdapter,
++    presets: LocalizedFeatureCollection
+ ) : PerCountryFeatureCollection {
++    private val parser = NsiJsonParser(presets.getAll(listOf(null)).associateBy { it.id })
++
+     // countryCode -> lazy { featureId -> Feature }
+     private val featuresByIdByCountryCode = LinkedHashMap<String?, Lazy<LinkedHashMap<String, Feature>>>(320)
+ 
+@@ -41,7 +45,7 @@ internal class IDBrandPresetsFeatureCollection(
+         val filename = getPresetsFileName(countryCode)
+         if (!fileAccess.exists(filename)) return emptyList()
+         return fileAccess.open(filename).use { source ->
+-            IDPresetsJsonParser(true).parse(source)
++            parser.parse(source)
+         }
+     }
+ 
+diff --git a/src/commonMain/kotlin/de/westnordost/osmfeatures/IDPresetsJsonParser.kt b/src/commonMain/kotlin/de/westnordost/osmfeatures/IDPresetsJsonParser.kt
+index 2a44aac..425342d 100644
+--- a/src/commonMain/kotlin/de/westnordost/osmfeatures/IDPresetsJsonParser.kt
++++ b/src/commonMain/kotlin/de/westnordost/osmfeatures/IDPresetsJsonParser.kt
+@@ -8,7 +8,7 @@ import kotlinx.serialization.json.io.decodeFromSource
+ /** Parses this file
+  * [...](https://raw.githubusercontent.com/openstreetmap/id-tagging-schema/main/dist/presets.json)
+  * into list of Features.  */
+-internal class IDPresetsJsonParser(private val isSuggestion: Boolean = false) {
++internal class IDPresetsJsonParser {
+ 
+     @OptIn(ExperimentalSerializationApi::class)
+     fun parse(source: Source): List<BaseFeature> =
+@@ -83,7 +83,6 @@ internal class IDPresetsJsonParser(private val isSuggestion: Boolean = false) {
+             excludeCountryCodes = excludeCountryCodes,
+             isSearchable = searchable,
+             matchScore = matchScore,
+-            isSuggestion = isSuggestion,
+             addTags = addTagsNoWildcards,
+             removeTags = removeTagsNoWildcards,
+             preserveTags = preserveTags,
+@@ -96,7 +95,7 @@ internal class IDPresetsJsonParser(private val isSuggestion: Boolean = false) {
+ 
+ private val ISO3166_2 = Regex("[A-Z]{2}(-[A-Z0-9]{1,3})?")
+ 
+-private fun JsonArray.parseCountryCodes(): List<String>? {
++internal fun JsonArray.parseCountryCodes(): List<String>? {
+     // for example a lat,lon pair to denote a location with radius. Not supported.
+     if (any { it is JsonArray }) return null
+ 
+diff --git a/src/commonMain/kotlin/de/westnordost/osmfeatures/NsiJsonParser.kt b/src/commonMain/kotlin/de/westnordost/osmfeatures/NsiJsonParser.kt
+new file mode 100644
+index 0000000..6b55854
+--- /dev/null
++++ b/src/commonMain/kotlin/de/westnordost/osmfeatures/NsiJsonParser.kt
+@@ -0,0 +1,206 @@
++package de.westnordost.osmfeatures
++
++import kotlinx.io.Source
++import kotlinx.serialization.ExperimentalSerializationApi
++import kotlinx.serialization.json.*
++import kotlinx.serialization.json.io.decodeFromSource
++
++/** Parses the name suggestion index in its own format
++ *  [...](https://cdn.jsdelivr.net/npm/name-suggestion-index/dist/json/nsi.json)
++ *  into list of (brand) Features.
++ *
++ *  Each NSI item is turned into a feature based on the iD preset it belongs to, in the same way as
++ *  `buildIDPresets()` in name-suggestion-index/lib/presets_id.ts does it.
++ *
++ *  Additionally to the NSI format, items may have `"searchable": false`, e.g. to mark brands that
++ *  are dissolved (see name-suggestion-index/dist/wikidata/dissolved.json). */
++internal class NsiJsonParser(private val presets: Map<String, Feature>) {
++
++    @OptIn(ExperimentalSerializationApi::class)
++    fun parse(source: Source): List<BaseFeature> =
++        parse(Json.decodeFromSource<JsonObject>(source))
++
++    fun parse(content: String): List<BaseFeature> =
++        parse(Json.decodeFromString<JsonObject>(content))
++
++    private fun parse(json: JsonObject): List<BaseFeature> {
++        // the categories in the nsi.json are one level down (in nsi object)
++        val root = json["nsi"]?.jsonObject ?: json
++        val result = ArrayList<BaseFeature>()
++        for ((tkv, category) in root) {
++            val (t, k, v) = tkv.split('/', limit = 3)
++            val tree = TREES[t] ?: continue
++            val items = category.jsonObject.getValue("items").jsonArray
++            val properties = category.jsonObject["properties"]?.jsonObject
++            // ferries are both a route relation and a ferry route way
++            val presetPaths =
++                if (tkv == "transit/route/ferry") listOf("type/route/ferry", "route/ferry")
++                else listOf(getPresetPath(k, v))
++            for (presetPath in presetPaths) {
++                val childPresets = presets.values.filter { it.id.startsWith(presetPath) }
++                for (item in items) {
++                    parseFeature(item.jsonObject, tree, k, childPresets, properties)?.let { result.add(it) }
++                }
++            }
++        }
++        return result
++    }
++
++    private fun parseFeature(
++        item: JsonObject,
++        tree: NsiTree,
++        k: String,
++        childPresets: List<Feature>,
++        properties: JsonObject?
++    ): BaseFeature? {
++        val itemTags = item["tags"]!!.jsonObject.mapValues { it.value.jsonPrimitive.content }
++        val qid = itemTags[tree.mainTag]
++        if (qid == null || !QID.matches(qid)) return null
++
++        val preset = pickBestChildPreset(childPresets, itemTags) ?: presets[k] ?: return null
++
++        // all tags of the preset (with values of the item, if set) plus the main tag. Wildcard tags
++        // of the preset for which the item has no value remain wildcards
++        val tags = buildMap {
++            put(tree.mainTag, qid)
++            for ((key, value) in preset.tags) put(key, itemTags[key] ?: value)
++            for (key in preset.tagKeys) itemTags[key]?.let { put(key, it) }
++        }
++        val tagKeys = preset.tagKeys - itemTags.keys
++
++        val include = item["locationSet"]?.jsonObject?.get("include")?.jsonArray
++        val exclude = item["locationSet"]?.jsonObject?.get("exclude")?.jsonArray
++        val includeCountryCodes =
++            if (include != null) include.parseCountryCodes() ?: return null
++            else emptyList()
++        val excludeCountryCodes =
++            if (exclude != null) exclude.parseCountryCodes() ?: return null
++            else emptyList()
++
++        val preserveTags = (item["preserveTags"] ?: properties?.get("preserveTags"))
++            ?.jsonArray?.map { Regex(it.jsonPrimitive.content) }.orEmpty()
++
++        return BaseFeature(
++            id = "${preset.id}/${item["id"]!!.jsonPrimitive.content}",
++            tags = tags,
++            geometry = preset.geometry,
++            icon = preset.icon,
++            names = listOf(item["displayName"]!!.jsonPrimitive.content),
++            terms = collectTerms(item, itemTags, tree),
++            includeCountryCodes = includeCountryCodes,
++            excludeCountryCodes = excludeCountryCodes,
++            isSearchable = item["searchable"]?.jsonPrimitive?.booleanOrNull ?: true,
++            matchScore = 2.0f,
++            isSuggestion = true,
++            addTags = itemTags + tags,
++            preserveTags = preserveTags,
++            tagKeys = tagKeys,
++        )
++    }
++
++    private fun pickBestChildPreset(childPresets: List<Feature>, tags: Map<String, String>): Feature? {
++        if (childPresets.size == 1) return childPresets[0]
++
++        var matchTagsCount = 0
++        var matchSemicolonRating = 0
++        var match: Feature? = null
++        for (preset in childPresets) {
++            // presets with wildcard tags can't match, as NSI items don't have tags with "*" values
++            if (preset.tagKeys.isNotEmpty()) continue
++            var semicolonRating = 0
++            val isMatch = preset.tags.all { (osmKey, osmValue) ->
++                val nsiValue = tags[osmKey] ?: return@all false
++                if (osmKey in SEMICOLON_SPLIT_KEYS) {
++                    val index = nsiValue.split(';').indexOf(osmValue)
++                    if (index == -1) return@all false
++                    semicolonRating -= index
++                    true
++                } else {
++                    osmValue == nsiValue
++                }
++            }
++            val tagsCount = preset.tags.size
++            if (isMatch && (
++                tagsCount > matchTagsCount ||
++                tagsCount == matchTagsCount && semicolonRating > matchSemicolonRating
++            )) {
++                matchTagsCount = tagsCount
++                matchSemicolonRating = semicolonRating
++                match = preset
++            }
++        }
++        return match
++    }
++
++    private fun collectTerms(item: JsonObject, tags: Map<String, String>, tree: NsiTree): List<String> {
++        val terms = LinkedHashSet<String>()
++        item["matchNames"]?.jsonArray?.mapTo(terms) { it.jsonPrimitive.content }
++        for ((key, value) in tags) {
++            if (key == "name") continue
++            if (NOT_NAME.containsMatchIn(key)) continue
++            if (tree.primaryName.containsMatchIn(key) || tree.alternateName.containsMatchIn(key)) {
++                terms.add(value.lowercase())
++            }
++        }
++        return terms.toList()
++    }
++
++    private fun getPresetPath(k: String, v: String): String {
++        if (k == "route") return "type/route/$v"
++        val kv = "$k/$v"
++        return PRESET_PATH_OVERRIDES[kv] ?: kv
++    }
++}
++
++private class NsiTree(val mainTag: String, primaryName: String, alternateName: String) {
++    val primaryName = Regex(primaryName, RegexOption.IGNORE_CASE)
++    val alternateName = Regex(alternateName, RegexOption.IGNORE_CASE)
++}
++
++// from name-suggestion-index/config/trees.json
++private val TREES = mapOf(
++    "brands" to NsiTree(
++        mainTag = "brand:wikidata",
++        primaryName = "^(name|name:[\\w-]+)$",
++        alternateName = "^(brand|brand:[\\w-]+|brand:short:[\\w-]+|operator|operator:[\\w-]+|operator:short:[\\w-]+|\\w+_name|\\w+_name:[\\w-]+)$"
++    ),
++    "flags" to NsiTree(
++        mainTag = "flag:wikidata",
++        primaryName = "^(flag:name|flag:name:[\\w-]+)$",
++        alternateName = "^(country|country:[\\w-]+|flag|flag:[\\w-]+|subject|subject:[\\w-]+)$"
++    ),
++    "operators" to NsiTree(
++        mainTag = "operator:wikidata",
++        primaryName = "^(name|name:[\\w-]+|operator|operator:[\\w-]+)$",
++        alternateName = "^(brand|brand:[\\w-]+|brand:short:[\\w-]+|operator:short:[\\w-]+|\\w+_name|\\w+_name:[\\w-]+)$"
++    ),
++    "transit" to NsiTree(
++        mainTag = "network:wikidata",
++        primaryName = "^network$",
++        alternateName = "^(operator|operator:[\\w-]+|operator:short:[\\w-]+|network:[\\w-]+|network:short:[\\w-]+|\\w+_name|\\w+_name:[\\w-]+)$"
++    ),
++)
++
++// from name-suggestion-index/lib/presets_id.ts
++private val PRESET_PATH_OVERRIDES = mapOf(
++    "highway/bus_stop" to "public_transport/platform/bus_point",
++    "amenity/ferry_terminal" to "public_transport/station_ferry",
++    "amenity/college" to "education/college",
++    "amenity/driving_school" to "education/driving_school",
++    "amenity/dancing_school" to "education/dancing_school",
++    "amenity/kindergarten" to "education/kindergarten",
++    "amenity/language_school" to "education/language_school",
++    "amenity/music_school" to "education/music_school",
++    "amenity/prep_school" to "education/prep_school",
++    "amenity/school" to "education/school",
++    "amenity/university" to "education/university",
++    "emergency/water_rescue" to "emergency/lifeboat_station",
++)
++
++private val SEMICOLON_SPLIT_KEYS = setOf(
++    "beauty", "clothes", "cuisine", "healthcare:speciality", "social_facility", "sport", "vending", "waste"
++)
++
++private val NOT_NAME = Regex(":(colour|type|left|right|etymology|pronunciation|wikipedia|wikidata)$", RegexOption.IGNORE_CASE)
++
++private val QID = Regex("Q\\d+")
+diff --git a/src/commonTest/kotlin/de/westnordost/osmfeatures/IDBrandPresetsFeatureCollectionTest.kt b/src/commonTest/kotlin/de/westnordost/osmfeatures/IDBrandPresetsFeatureCollectionTest.kt
+index 7f9a359..826f8a8 100644
+--- a/src/commonTest/kotlin/de/westnordost/osmfeatures/IDBrandPresetsFeatureCollectionTest.kt
++++ b/src/commonTest/kotlin/de/westnordost/osmfeatures/IDBrandPresetsFeatureCollectionTest.kt
+@@ -4,20 +4,24 @@ import kotlin.test.assertEquals
+ import kotlin.test.Test
+ 
+ class IDBrandPresetsFeatureCollectionTest {
++    private val presets = TestLocalizedFeatureCollection(listOf(
++        BaseFeature(id = "amenity/bank", tags = mapOf("amenity" to "bank"), geometry = listOf(GeometryType.POINT), names = listOf("Bank"))
++    ))
++
+     @Test
+     fun load_brands() {
+         val c = IDBrandPresetsFeatureCollection(object : ResourceAccessAdapter {
+             override fun exists(name: String) = name == "presets.json"
+             override fun open(name: String) = resource("brand_presets_min.json")
+-        })
++        }, presets)
+         assertEquals(
+             setOf("Duckworths", "Megamall"),
+             c.getAll(listOf(null)).map { it.name }.toSet()
+         )
+-        assertEquals("Duckworths", c.get("a/brand", listOf(null))?.name)
+-        assertEquals("Megamall", c.get("another/brand", listOf(null))?.name)
+-        assertEquals(true, c.get("a/brand", listOf(null))?.isSuggestion)
+-        assertEquals(true, c.get("another/brand", listOf(null))?.isSuggestion)
++        assertEquals("Duckworths", c.get("amenity/bank/duckworths-1", listOf(null))?.name)
++        assertEquals("Megamall", c.get("amenity/bank/megamall-2", listOf(null))?.name)
++        assertEquals(true, c.get("amenity/bank/duckworths-1", listOf(null))?.isSuggestion)
++        assertEquals(true, c.get("amenity/bank/megamall-2", listOf(null))?.isSuggestion)
+     }
+ 
+     @Test
+@@ -25,12 +29,12 @@ class IDBrandPresetsFeatureCollectionTest {
+         val c = IDBrandPresetsFeatureCollection(object : ResourceAccessAdapter {
+             override fun exists(name: String) = name == "presets-DE.json"
+             override fun open(name: String) = resource("brand_presets_min2.json")
+-        })
++        }, presets)
+         assertEquals(
+             setOf("Talespin"),
+             c.getAll(listOf("DE")).map { it.name }.toSet()
+         )
+-        assertEquals("Talespin", c.get("yet_another/brand", listOf("DE"))?.name)
+-        assertEquals(true, c.get("yet_another/brand", listOf("DE"))?.isSuggestion)
++        assertEquals("Talespin", c.get("amenity/bank/talespin-3", listOf("DE"))?.name)
++        assertEquals(true, c.get("amenity/bank/talespin-3", listOf("DE"))?.isSuggestion)
+     }
+ }
+diff --git a/src/commonTest/kotlin/de/westnordost/osmfeatures/IDPresetsJsonParserTest.kt b/src/commonTest/kotlin/de/westnordost/osmfeatures/IDPresetsJsonParserTest.kt
+index 68c1a54..6748d3a 100644
+--- a/src/commonTest/kotlin/de/westnordost/osmfeatures/IDPresetsJsonParserTest.kt
++++ b/src/commonTest/kotlin/de/westnordost/osmfeatures/IDPresetsJsonParserTest.kt
+@@ -113,10 +113,13 @@ class IDPresetsJsonParserTest {
+         val client = HttpClient(CIO) { expectSuccess = true }
+ 
+         val presets = client
+-            .get("https://cdn.jsdelivr.net/npm/name-suggestion-index@latest/dist/presets/nsi-id-presets.min.json")
++            .get("https://raw.githubusercontent.com/openstreetmap/id-tagging-schema/main/dist/presets.json")
++            .bodyAsText()
++        val nsi = client
++            .get("https://cdn.jsdelivr.net/npm/name-suggestion-index@latest/dist/json/nsi.min.json")
+             .bodyAsText()
+ 
+-        val features = IDPresetsJsonParser().parse(presets)
++        val features = NsiJsonParser(IDPresetsJsonParser().parse(presets).associateBy { it.id }).parse(nsi)
+         // should not crash etc
+         assertTrue(features.size > 20000)
+     }
+diff --git a/src/commonTest/resources/brand_presets_min.json b/src/commonTest/resources/brand_presets_min.json
+index df77d44..927709d 100644
+--- a/src/commonTest/resources/brand_presets_min.json
++++ b/src/commonTest/resources/brand_presets_min.json
+@@ -1,12 +1,8 @@
+ {
+-  "a/brand": {
+-    "name": "Duckworths",
+-    "tags": { "a": "b", "c": "d" },
+-    "geometry": ["point"]
+-  },
+-  "another/brand": {
+-    "name": "Megamall",
+-    "tags": { "a": "b", "c": "d" },
+-    "geometry": ["point"]
++  "brands/amenity/bank": {
++    "items": [
++      { "displayName": "Duckworths", "id": "duckworths-1", "locationSet": { "include": ["001"] }, "tags": { "amenity": "bank", "brand:wikidata": "Q1" } },
++      { "displayName": "Megamall", "id": "megamall-2", "locationSet": { "include": ["001"] }, "tags": { "amenity": "bank", "brand:wikidata": "Q2" } }
++    ]
+   }
+-}
+\ No newline at end of file
++}
+diff --git a/src/commonTest/resources/brand_presets_min2.json b/src/commonTest/resources/brand_presets_min2.json
+index f0c49b0..26a9d8d 100644
+--- a/src/commonTest/resources/brand_presets_min2.json
++++ b/src/commonTest/resources/brand_presets_min2.json
+@@ -1,7 +1,7 @@
+ {
+-  "yet_another/brand": {
+-    "name": "Talespin",
+-    "tags": { "a": "b", "c": "d" },
+-    "geometry": ["point"]
++  "brands/amenity/bank": {
++    "items": [
++      { "displayName": "Talespin", "id": "talespin-3", "locationSet": { "include": ["de"] }, "tags": { "amenity": "bank", "brand:wikidata": "Q3" } }
++    ]
+   }
+-}
+\ No newline at end of file
++}
+-- 
+2.56.0.windows.2
+

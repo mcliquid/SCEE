@@ -7,8 +7,12 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.minutes
 
 object ApplicationConstants {
-    const val NAME = "StreetComplete_ee"
-    val USER_AGENT = NAME + " " + BuildConfig.VERSION_NAME
+    /**
+     * Changeset `created_by` / HTTP User-Agent product name.
+     * Android overrides this at startup from BuildConfig (`SCEE-mc`); Desktop/iOS keep the default.
+     */
+    var NAME = "StreetComplete_ee"
+    val USER_AGENT: String get() = NAME + " " + BuildConfig.VERSION_NAME
     const val QUESTTYPE_TAG_KEY = "StreetComplete:quest_type" // use original SC here, so statistics are counted
 
     const val DATABASE_NAME = "streetcomplete_v2.db"

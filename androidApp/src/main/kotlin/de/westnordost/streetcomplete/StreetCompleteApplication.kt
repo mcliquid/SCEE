@@ -8,6 +8,7 @@ import android.content.res.Configuration
 import androidx.core.content.getSystemService
 import de.westnordost.streetcomplete.data.CacheTrimmer
 import de.westnordost.streetcomplete.data.StreetCompleteDatabaseConfigurator
+import de.westnordost.streetcomplete.data.user.OsmAuthConfig
 import de.westnordost.streetcomplete.screens.settings.LAST_KNOWN_DB_VERSION
 import de.westnordost.streetcomplete.util.error_reporting.CrashReportsUncaughtExceptionHandler
 import de.westnordost.streetcomplete.util.logs.Log
@@ -27,6 +28,13 @@ class StreetCompleteApplication : Application() {
         super.onCreate()
 
         ApplicationConstants.DEBUG = de.westnordost.streetcomplete.app.BuildConfig.APPLICATION_DEBUG
+        ApplicationConstants.NAME = de.westnordost.streetcomplete.app.BuildConfig.APPLICATION_USER_AGENT_NAME
+        OsmAuthConfig.clientIdLive = de.westnordost.streetcomplete.app.BuildConfig.OAUTH2_CLIENT_ID_LIVE
+        OsmAuthConfig.clientIdTest = de.westnordost.streetcomplete.app.BuildConfig.OAUTH2_CLIENT_ID_TEST
+        OsmAuthConfig.callbackScheme = de.westnordost.streetcomplete.app.BuildConfig.OAUTH2_CALLBACK_SCHEME
+        OsmAuthConfig.requestedScopes = de.westnordost.streetcomplete.app.BuildConfig.OAUTH2_REQUESTED_SCOPES
+            .split(' ')
+            .filter { it.isNotEmpty() }
 
         startKoin {
             androidContext(this@StreetCompleteApplication)

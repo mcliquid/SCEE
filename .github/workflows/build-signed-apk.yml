@@ -3,7 +3,9 @@ name: Build signed release APK
 # Builds a signed Android release APK for SCEE-mc.
 # - workflow_dispatch: uploads APK + SHA-256 as workflow artifacts only
 # - push of tags matching v*: publishes a GitHub prerelease with the same assets
-# Requires repository secrets: keystore, keystore_password, key_alias, key_password
+# Requires repository secrets: keystore, keystore_password, key_alias, key_password,
+# sceemc_oauth2_client_id (optional sceemc_oauth2_client_id_test).
+# Publishes de.westnordost.streetcomplete.expert.mc only.
 # See res/documentation/scee-mc-github-release.md
 
 on:
@@ -103,13 +105,22 @@ jobs:
           STORE_PASSWORD: ${{ secrets.keystore_password }}
           KEY_ALIAS: ${{ secrets.key_alias }}
           KEY_PASSWORD: ${{ secrets.key_password }}
+          # Public OAuth client IDs for the SCEE-mc OSM application (sceemc://oauth).
+          SCEEMC_OAUTH2_CLIENT_ID: ${{ secrets.sceemc_oauth2_client_id }}
+          SCEEMC_OAUTH2_CLIENT_ID_TEST: ${{ secrets.sceemc_oauth2_client_id_test }}
         run: |
           set -euo pipefail
+          if [[ -z "${SCEEMC_OAUTH2_CLIENT_ID}" ]]; then
+            echo "Missing secret 'sceemc_oauth2_client_id' (OSM OAuth 2 client id for sceemc://oauth)." >&2
+            exit 1
+          fi
           ./gradlew :androidApp:assembleRelease \
             -Pandroid.injected.signing.store.file="${GITHUB_WORKSPACE}/signing-key.jks" \
             -Pandroid.injected.signing.store.password="${STORE_PASSWORD}" \
             -Pandroid.injected.signing.key.alias="${KEY_ALIAS}" \
-            -Pandroid.injected.signing.key.password="${KEY_PASSWORD}"
+            -Pandroid.injected.signing.key.password="${KEY_PASSWORD}" \
+            -Papp.sceemc.oauth2ClientId="${SCEEMC_OAUTH2_CLIENT_ID}" \
+            -Papp.sceemc.oauth2ClientIdTest="${SCEEMC_OAUTH2_CLIENT_ID_TEST}"
 
       - name: Package APK and SHA-256
         id: package
@@ -154,16 +165,16 @@ jobs:
           echo "Using apksigner: ${APKSIGNER}"
           "${APKSIGNER}" verify --verbose "${APK_PATH}"
           "${APKSIGNER}" verify --print-certs "${APK_PATH}" | tee "${RUNNER_TEMP}/apksigner-certs.txt"
-          if [[ -n "${AAPT}" ]]; then
-            echo "Using aapt: ${AAPT}"
-            BADGING="$("${AAPT}" dump badging "${APK_PATH}")"
-            echo "${BADGING}" | grep -F "package: name='de.westnordost.streetcomplete.expert'"
-            if echo "${BADGING}" | grep -Eq "application-debuggable"; then
-              echo "APK is debuggable; refusing to publish." >&2
-              exit 1
-            fi
-          else
-            echo "aapt/aapt2 not found; package-id check skipped (signature still verified)." >&2
+          if [[ -z "${AAPT}" ]]; then
+            echo "aapt/aapt2 not found under ${SDK_ROOT}; refusing to publish without package-id verification." >&2
+            exit 1
+          fi
+          echo "Using aapt: ${AAPT}"
+          BADGING="$("${AAPT}" dump badging "${APK_PATH}")"
+          echo "${BADGING}" | grep -F "package: name='de.westnordost.streetcomplete.expert.mc'"
+          if echo "${BADGING}" | grep -Eq "application-debuggable"; then
+            echo "APK is debuggable; refusing to publish." >&2
+            exit 1
           fi
 
       - name: Upload APK artifacts
@@ -196,12 +207,14 @@ jobs:
             echo "**Not** an official StreetComplete or SCEE release. Licensed under GPL-3.0; source for this build: this tag/commit."
             echo
             echo "- App versionName: \`${VERSION_NAME}\`"
-            echo "- Application id: \`de.westnordost.streetcomplete.expert\`"
+            echo "- Application id: \`de.westnordost.streetcomplete.expert.mc\`"
             echo "- Commit: \`${SHORT_SHA}\`"
             echo "- Artifact: \`${APK_NAME}\`"
             echo "- SHA-256: \`${CHECKSUM}\`"
             echo
-            echo "Install only if you trust this fork's signing key. The application id matches upstream SCEE and will conflict with F-Droid/GitHub SCEE installs when the signing keys differ."
+            echo "Install only if you trust this fork's signing key. This package id is independent of StreetComplete and SCEE, so SCEE-mc can be installed in parallel."
+            echo
+            echo "Note: Builds signed as \`de.westnordost.streetcomplete.expert\` (for example \`v64.0-mc.3\`) cannot be updated in place to this package id — install SCEE-mc alongside or uninstall the older package first (app data is not migrated)."
           } > "${NOTES_FILE}"
           if gh release view "${TAG}" >/dev/null 2>&1; then
             gh release upload "${TAG}" \

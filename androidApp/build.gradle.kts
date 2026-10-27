@@ -6,6 +6,13 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val sceemcOAuthClientId = providers.gradleProperty("app.sceemc.oauth2ClientId")
+    .orElse("")
+    .get()
+val sceemcOAuthClientIdTest = providers.gradleProperty("app.sceemc.oauth2ClientIdTest")
+    .orElse("")
+    .get()
+
 android {
     namespace = "de.westnordost.streetcomplete.app"
     compileSdk = 37
@@ -18,7 +25,8 @@ android {
     }
 
     defaultConfig {
-        applicationId = "de.westnordost.streetcomplete.expert"
+        // Independent package so SCEE-mc installs alongside StreetComplete and SCEE.
+        applicationId = "de.westnordost.streetcomplete.expert.mc"
         minSdk = 25
         targetSdk = 37
         versionCode = 6405
@@ -27,6 +35,17 @@ android {
         // no x86: the MapLibre Compose runtime has no x86 build, and other native libraries must
         // not make the app installable where the map cannot run
         ndk { abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64") }
+
+        buildConfigField("String", "APPLICATION_USER_AGENT_NAME", "\"SCEE-mc\"")
+        // Client IDs from ~/.gradle/gradle.properties or CI (-P / ORG_GRADLE_PROJECT_*). Never invent IDs.
+        buildConfigField("String", "OAUTH2_CLIENT_ID_LIVE", "\"$sceemcOAuthClientId\"")
+        buildConfigField("String", "OAUTH2_CLIENT_ID_TEST", "\"$sceemcOAuthClientIdTest\"")
+        buildConfigField("String", "OAUTH2_CALLBACK_SCHEME", "\"sceemc\"")
+        buildConfigField(
+            "String",
+            "OAUTH2_REQUESTED_SCOPES",
+            "\"read_prefs write_api write_notes write_gpx\""
+        )
     }
 
     signingConfigs {
@@ -53,6 +72,7 @@ android {
         }
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
+            isDebuggable = false
             isShrinkResources = true
         }
         // Previous debuggable debug variant, with its own data directory.

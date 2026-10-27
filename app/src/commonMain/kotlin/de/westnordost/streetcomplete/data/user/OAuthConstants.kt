@@ -5,27 +5,25 @@ import de.westnordost.streetcomplete.ApplicationConstants.USE_TEST_API
 private const val OAUTH2_HOST_LIVE = "https://www.openstreetmap.org/"
 private const val OAUTH2_HOST_TEST = "https://master.apis.dev.openstreetmap.org/"
 
-private const val OAUTH2_CLIENT_ID_LIVE = "Yyk4PmTopczrr3BWZYvLK_M-KBloCQwXgPGEzqUYTc8"
-private const val OAUTH2_CLIENT_ID_TEST = "ObZ7yPf4lfs4XJ3NWysI3ukJMN0SHey1oPnNQnLmvw8"
-
 val OAUTH2_TOKEN_URL =
     (if (USE_TEST_API) OAUTH2_HOST_TEST else OAUTH2_HOST_LIVE) + "oauth2/token"
 val OAUTH2_AUTHORIZATION_URL =
     (if (USE_TEST_API) OAUTH2_HOST_TEST else OAUTH2_HOST_LIVE) + "oauth2/authorize"
-val OAUTH2_CLIENT_ID =
-    if (USE_TEST_API) OAUTH2_CLIENT_ID_TEST else OAUTH2_CLIENT_ID_LIVE
 
-const val OAUTH2_CALLBACK_SCHEME = "streetcomplete"
-const val OAUTH2_CALLBACK_HOST = "oauth"
+val OAUTH2_CLIENT_ID: String
+    get() = if (USE_TEST_API) OsmAuthConfig.clientIdTest else OsmAuthConfig.clientIdLive
 
-val OAUTH2_REDIRECT_URI = "$OAUTH2_CALLBACK_SCHEME://$OAUTH2_CALLBACK_HOST"
+val OAUTH2_CALLBACK_SCHEME: String
+    get() = OsmAuthConfig.callbackScheme
 
-val OAUTH2_REQUESTED_SCOPES = listOf(
-    "read_prefs",
-    "write_api",
-    "write_notes",
-    "write_gpx",
-)
+val OAUTH2_CALLBACK_HOST: String
+    get() = OsmAuthConfig.CALLBACK_HOST
+
+val OAUTH2_REDIRECT_URI: String
+    get() = "$OAUTH2_CALLBACK_SCHEME://$OAUTH2_CALLBACK_HOST"
+
+val OAUTH2_REQUESTED_SCOPES: List<String>
+    get() = OsmAuthConfig.requestedScopes
 
 val OAUTH2_REQUIRED_SCOPES = listOf(
     "read_prefs",

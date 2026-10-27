@@ -11,21 +11,18 @@ you are new to OSM.
 
 ## Downloads
 
-Signed Android builds are intended for GitHub **prereleases** (same package id as
-upstream SCEE for now):
+Signed Android builds are published as GitHub **prereleases**:
 
-- Application id: `de.westnordost.streetcomplete.expert`
+- Application id: `de.westnordost.streetcomplete.expert.mc` (installs **alongside** StreetComplete and SCEE)
+- Launcher name: **SCEE-mc**
 - **GitHub Releases (prereleases):** once tags are published,
   [mcliquid/SCEE releases](https://github.com/mcliquid/SCEE/releases)
 - Build and signing notes: [res/documentation/scee-mc-github-release.md](res/documentation/scee-mc-github-release.md)
 
 ```bash
-./gradlew :androidApp:assembleRelease   # signed distribution APK (needs keystore)
-./gradlew :androidApp:assembleDebug     # existing debug variant
+./gradlew :androidApp:assembleRelease   # signed distribution APK (needs keystore + OAuth client id)
+./gradlew :androidApp:assembleDebug     # …expert.mc.debug
 ```
-
-A separate Android application id / branding for SCEE-mc is planned later and is
-not part of the current release path.
 
 ## Features
 
@@ -54,12 +51,12 @@ elsewhere in the repo.
 
 ## Android and Desktop
 
-Android currently uses the existing SCEE package identity and OAuth configuration
-(`streetcomplete://oauth`, upstream SCEE client). Build types include `debug`,
-`release`, `legacyDebug` and `perf` as before the deferred identity split.
+Android ships as an independent app (`de.westnordost.streetcomplete.expert.mc`) with
+OAuth redirect `sceemc://oauth` and its own OSM application client id. Build types
+include `debug`, `release`, `legacyDebug` and `perf`.
 
-Desktop builds share the multiplatform core; they are not the primary distribution
-channel.
+Desktop builds share the multiplatform core and keep the upstream SCEE OAuth defaults;
+they are not the primary distribution channel.
 
 ## Origins, credits and license
 

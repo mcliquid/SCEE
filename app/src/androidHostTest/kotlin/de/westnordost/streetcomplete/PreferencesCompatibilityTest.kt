@@ -26,6 +26,7 @@ import de.westnordost.streetcomplete.data.preferences.ResurveyIntervalsUpdater
 import de.westnordost.streetcomplete.data.preferences.Theme
 import de.westnordost.streetcomplete.data.download.strategy.MobileDataAutoDownloadStrategy
 import de.westnordost.streetcomplete.data.download.strategy.WifiAutoDownloadStrategy
+import de.westnordost.streetcomplete.data.connection.ActiveNetworkConnection
 import de.westnordost.streetcomplete.data.quest.AutoSyncer
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.data.user.UserApiClient
@@ -41,11 +42,14 @@ import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.util.logs.Logger
 import dev.mokkery.answering.returns
 import dev.mokkery.every
+import dev.mokkery.matcher.any
 import dev.mokkery.mock
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.emptyFlow
+import org.maplibre.compose.location.LocationProvider
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.serialization.builtins.ListSerializer
@@ -501,11 +505,13 @@ class PreferencesCompatibilityTest {
         val history = EditHistoryController(mock(), mock(), mock(), mock(), mock(), QuestTypeRegistry({ emptyList() }), mock())
         val downloadedTiles = DownloadedTilesController(mock())
         val unsyncedChanges = UnsyncedChangesCountSource(mock(), mock())
+        val locationProvider = mock<LocationProvider> { every { updates(any()) } returns emptyFlow() }
+        val activeNetworkConnection = mock<ActiveNetworkConnection> { every { capabilities } returns emptyFlow() }
         val autoSyncer = AutoSyncer(
             mock(), mock(),
             MobileDataAutoDownloadStrategy(mock(), downloadedTiles),
             WifiAutoDownloadStrategy(mock(), downloadedTiles),
-            mock(), mock(), unsyncedChanges, mock(), mock(), prefs, mock(), downloadedTiles,
+            locationProvider, activeNetworkConnection, unsyncedChanges, mock(), mock(), prefs, mock(), downloadedTiles,
         )
         cancelScope(autoSyncer, "coroutineScope")
         val initializer = ApplicationInitializer(

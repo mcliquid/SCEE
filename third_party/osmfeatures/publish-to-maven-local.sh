@@ -19,6 +19,11 @@ mkdir -p "${WORKDIR}"
 git clone --quiet "${REPO_URL}" "${WORKDIR}"
 git -C "${WORKDIR}" checkout --quiet "${BASE_SHA}"
 
+# git am creates commits and requires a committer identity. Set it only in this
+# temporary clone — never touch the caller's global/system Git config.
+git -C "${WORKDIR}" config --local user.name "SCEE-mc CI"
+git -C "${WORKDIR}" config --local user.email "scee-mc-ci@users.noreply.github.com"
+
 shopt -s nullglob
 patches=("${PATCH_DIR}"/*.patch)
 if [[ "${#patches[@]}" -eq 0 ]]; then

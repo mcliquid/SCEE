@@ -1,6 +1,9 @@
 *.ignore
 quest-list.csv
 /keystore.properties
+*.jks
+*.keystore
+/signing-key.jks
 /projectFilesBackup*/
 app/release
 *.iml

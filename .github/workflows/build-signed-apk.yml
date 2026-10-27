@@ -1,36 +1,174 @@
-name: Build signed apk
+name: Build signed release APK
+
+# Builds a signed Android release APK for SCEE-mc.
+# - workflow_dispatch: uploads APK + SHA-256 as workflow artifacts only
+# - push of tags matching v*: publishes a GitHub prerelease with the same assets
+# Requires repository secrets: keystore, keystore_password, key_alias, key_password
+# See res/documentation/scee-mc-github-release.md
 
 on:
-  [workflow_dispatch]
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: signed-release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
-    - name: set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
+      - uses: actions/checkout@v4
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Create keystore file
-      run: echo "${{ secrets.keystore }}" | base64 -d > $GITHUB_WORKSPACE/signing-key.jks
-    - name: Build with Gradle
-      run: ./gradlew assembleRelease
-        -Pandroid.injected.signing.store.file=$GITHUB_WORKSPACE/signing-key.jks
-        -Pandroid.injected.signing.store.password=${{ secrets.keystore_password }}
-        -Pandroid.injected.signing.key.alias=${{ secrets.key_alias }}
-        -Pandroid.injected.signing.key.password=${{ secrets.key_password }}
-    - name: Rename APK
-      run: mv androidApp/build/outputs/apk/release/androidApp-release.apk androidApp/build/outputs/apk/release/SCEE-release-$(git log -n 1 --format='%h').apk
-    - name: Archive APK
-      uses: actions/upload-artifact@v4
-      with:
-        name: release-apk
-        path: androidApp/build/outputs/apk/release/*.apk
-        retention-days: 14
+      - name: set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: "25"
+          distribution: "temurin"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Resolve release names
+        id: meta
+        run: |
+          set -euo pipefail
+          VERSION_NAME=$(grep -E '^app\.streetcomplete\.versionName=' gradle.properties | cut -d= -f2- | tr -d '\r')
+          SHORT_SHA=$(git log -n 1 --format='%h')
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            TAG_NAME="${GITHUB_REF_NAME}"
+            ASSET_STEM="SCEE-mc-${TAG_NAME}"
+          else
+            TAG_NAME=""
+            ASSET_STEM="SCEE-mc-${VERSION_NAME}-${SHORT_SHA}"
+          fi
+          {
+            echo "version_name=${VERSION_NAME}"
+            echo "short_sha=${SHORT_SHA}"
+            echo "tag_name=${TAG_NAME}"
+            echo "apk_name=${ASSET_STEM}.apk"
+            echo "sum_name=${ASSET_STEM}.apk.sha256"
+            echo "asset_stem=${ASSET_STEM}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create keystore file
+        env:
+          KEYSTORE_BASE64: ${{ secrets.keystore }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${KEYSTORE_BASE64}" ]]; then
+            echo "Missing secret 'keystore' (base64-encoded .jks/.keystore)." >&2
+            exit 1
+          fi
+          echo "${KEYSTORE_BASE64}" | base64 -d > "${GITHUB_WORKSPACE}/signing-key.jks"
+          test -s "${GITHUB_WORKSPACE}/signing-key.jks"
+
+      - name: Build release APK with Gradle
+        env:
+          STORE_PASSWORD: ${{ secrets.keystore_password }}
+          KEY_ALIAS: ${{ secrets.key_alias }}
+          KEY_PASSWORD: ${{ secrets.key_password }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${STORE_PASSWORD}" || -z "${KEY_ALIAS}" || -z "${KEY_PASSWORD}" ]]; then
+            echo "Missing one of secrets: keystore_password, key_alias, key_password" >&2
+            exit 1
+          fi
+          ./gradlew :androidApp:assembleRelease \
+            -Pandroid.injected.signing.store.file="${GITHUB_WORKSPACE}/signing-key.jks" \
+            -Pandroid.injected.signing.store.password="${STORE_PASSWORD}" \
+            -Pandroid.injected.signing.key.alias="${KEY_ALIAS}" \
+            -Pandroid.injected.signing.key.password="${KEY_PASSWORD}"
+
+      - name: Package APK and SHA-256
+        id: package
+        run: |
+          set -euo pipefail
+          OUT_DIR="${GITHUB_WORKSPACE}/release-assets"
+          mkdir -p "${OUT_DIR}"
+          SRC="androidApp/build/outputs/apk/release/androidApp-release.apk"
+          test -f "${SRC}"
+          APK_PATH="${OUT_DIR}/${{ steps.meta.outputs.apk_name }}"
+          SUM_PATH="${OUT_DIR}/${{ steps.meta.outputs.sum_name }}"
+          cp "${SRC}" "${APK_PATH}"
+          (
+            cd "${OUT_DIR}"
+            sha256sum "${{ steps.meta.outputs.apk_name }}" | tee "${{ steps.meta.outputs.sum_name }}"
+          )
+          unzip -l "${APK_PATH}" | grep -Eq 'META-INF/.*\.(RSA|DSA|EC)|META-INF/MANIFEST\.MF'
+          echo "apk_path=${APK_PATH}" >> "$GITHUB_OUTPUT"
+          echo "sum_path=${SUM_PATH}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify APK signature
+        run: |
+          set -euo pipefail
+          APKSIGNER="$(find "${ANDROID_HOME:-${HOME}/Android/Sdk}" -type f -name apksigner 2>/dev/null | sort -V | tail -n 1 || true)"
+          if [[ -z "${APKSIGNER}" ]]; then
+            echo "apksigner not found; falling back to jarsigner -verify"
+            jarsigner -verify -verbose -certs "${{ steps.package.outputs.apk_path }}" | tee /tmp/jarsigner-verify.txt
+            grep -q 'jar verified' /tmp/jarsigner-verify.txt
+          else
+            "${APKSIGNER}" verify --verbose "${{ steps.package.outputs.apk_path }}"
+          fi
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.meta.outputs.asset_stem }}
+          path: |
+            release-assets/${{ steps.meta.outputs.apk_name }}
+            release-assets/${{ steps.meta.outputs.sum_name }}
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Publish GitHub prerelease
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.meta.outputs.tag_name }}
+          VERSION_NAME: ${{ steps.meta.outputs.version_name }}
+          SHORT_SHA: ${{ steps.meta.outputs.short_sha }}
+          APK_NAME: ${{ steps.meta.outputs.apk_name }}
+          SUM_NAME: ${{ steps.meta.outputs.sum_name }}
+        run: |
+          set -euo pipefail
+          CHECKSUM=$(cut -d' ' -f1 "release-assets/${SUM_NAME}")
+          NOTES_FILE="${RUNNER_TEMP}/release-notes.md"
+          {
+            echo "## SCEE-mc ${TAG}"
+            echo
+            echo "Independent private fork of [Helium314/SCEE](https://github.com/Helium314/SCEE) (itself a fork of StreetComplete)."
+            echo "**Not** an official StreetComplete or SCEE release. Licensed under GPL-3.0; source for this build: this tag/commit."
+            echo
+            echo "- App versionName: \`${VERSION_NAME}\`"
+            echo "- Commit: \`${SHORT_SHA}\`"
+            echo "- Artifact: \`${APK_NAME}\`"
+            echo "- SHA-256: \`${CHECKSUM}\`"
+            echo
+            echo "Install only if you trust this fork's signing key. The current application id matches upstream SCEE and will conflict with F-Droid/GitHub SCEE installs when the signing keys differ."
+          } > "${NOTES_FILE}"
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" \
+              "release-assets/${APK_NAME}" \
+              "release-assets/${SUM_NAME}" \
+              --clobber
+            gh release edit "${TAG}" --prerelease --notes-file "${NOTES_FILE}"
+          else
+            gh release create "${TAG}" \
+              "release-assets/${APK_NAME}" \
+              "release-assets/${SUM_NAME}" \
+              --prerelease \
+              --title "SCEE-mc ${TAG}" \
+              --notes-file "${NOTES_FILE}"
+          fi
+
+      - name: Remove keystore from runner
+        if: always()
+        run: rm -f "${GITHUB_WORKSPACE}/signing-key.jks"

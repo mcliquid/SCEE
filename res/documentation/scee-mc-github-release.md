@@ -90,11 +90,12 @@ git push origin v64.0-mc.1
 
 Tags `v*` starten [`.github/workflows/build-signed-apk.yml`](../../.github/workflows/build-signed-apk.yml):
 
-1. `:androidApp:assembleRelease` (signiert)
-2. SHA-256-Datei
-3. Signaturprüfung
-4. Workflow-Artifacts
-5. GitHub **Prerelease** mit APK + `.sha256` (kein Debug-APK)
+1. Prüfung, dass alle Signing-Secrets gesetzt sind (sonst Abbruch, keine unsignierte APK)
+2. `:androidApp:assembleRelease` (signiert via injected AGP-Signing)
+3. Umbenennung zu `SCEE-mc-<tag>.apk` + SHA-256-Datei
+4. `apksigner verify` (Pflicht) und Paket-ID-Check `de.westnordost.streetcomplete.expert`
+5. Workflow-Artifacts
+6. GitHub **Prerelease** mit APK + `.sha256` (kein Debug-APK; erneute Läufe aktualisieren Assets mit `--clobber`)
 
 ### B) Manuell ohne Tag
 

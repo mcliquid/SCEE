@@ -22,6 +22,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
 
@@ -30,6 +31,11 @@ jobs:
         with:
           java-version: "25"
           distribution: "temurin"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: "platform-tools build-tools;36.0.0"
 
       - uses: gradle/actions/setup-gradle@v4
 
@@ -58,15 +64,31 @@ jobs:
             echo "asset_stem=${ASSET_STEM}"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Require signing secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.keystore }}
+          STORE_PASSWORD: ${{ secrets.keystore_password }}
+          KEY_ALIAS: ${{ secrets.key_alias }}
+          KEY_PASSWORD: ${{ secrets.key_password }}
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in KEYSTORE_BASE64 STORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            if [[ -z "${!name}" ]]; then
+              echo "Missing required signing secret mapped to ${name}." >&2
+              missing=1
+            fi
+          done
+          if [[ "${missing}" -ne 0 ]]; then
+            echo "Refusing to build or publish an unsigned APK." >&2
+            exit 1
+          fi
+
       - name: Create keystore file
         env:
           KEYSTORE_BASE64: ${{ secrets.keystore }}
         run: |
           set -euo pipefail
-          if [[ -z "${KEYSTORE_BASE64}" ]]; then
-            echo "Missing secret 'keystore' (base64-encoded .jks/.keystore)." >&2
-            exit 1
-          fi
           echo "${KEYSTORE_BASE64}" | base64 -d > "${GITHUB_WORKSPACE}/signing-key.jks"
           test -s "${GITHUB_WORKSPACE}/signing-key.jks"
 
@@ -77,10 +99,6 @@ jobs:
           KEY_PASSWORD: ${{ secrets.key_password }}
         run: |
           set -euo pipefail
-          if [[ -z "${STORE_PASSWORD}" || -z "${KEY_ALIAS}" || -z "${KEY_PASSWORD}" ]]; then
-            echo "Missing one of secrets: keystore_password, key_alias, key_password" >&2
-            exit 1
-          fi
           ./gradlew :androidApp:assembleRelease \
             -Pandroid.injected.signing.store.file="${GITHUB_WORKSPACE}/signing-key.jks" \
             -Pandroid.injected.signing.store.password="${STORE_PASSWORD}" \
@@ -94,7 +112,18 @@ jobs:
           OUT_DIR="${GITHUB_WORKSPACE}/release-assets"
           mkdir -p "${OUT_DIR}"
           SRC="androidApp/build/outputs/apk/release/androidApp-release.apk"
+          UNSIGNED="androidApp/build/outputs/apk/release/androidApp-release-unsigned.apk"
+          if [[ -f "${UNSIGNED}" && ! -f "${SRC}" ]]; then
+            echo "Gradle produced an unsigned APK; refusing to publish." >&2
+            exit 1
+          fi
           test -f "${SRC}"
+          case "${SRC}" in
+            *-unsigned.apk)
+              echo "Refusing unsigned APK path: ${SRC}" >&2
+              exit 1
+              ;;
+          esac
           APK_PATH="${OUT_DIR}/${{ steps.meta.outputs.apk_name }}"
           SUM_PATH="${OUT_DIR}/${{ steps.meta.outputs.sum_name }}"
           cp "${SRC}" "${APK_PATH}"
@@ -102,20 +131,33 @@ jobs:
             cd "${OUT_DIR}"
             sha256sum "${{ steps.meta.outputs.apk_name }}" | tee "${{ steps.meta.outputs.sum_name }}"
           )
-          unzip -l "${APK_PATH}" | grep -Eq 'META-INF/.*\.(RSA|DSA|EC)|META-INF/MANIFEST\.MF'
           echo "apk_path=${APK_PATH}" >> "$GITHUB_OUTPUT"
           echo "sum_path=${SUM_PATH}" >> "$GITHUB_OUTPUT"
 
-      - name: Verify APK signature
+      - name: Verify APK signature and package id
         run: |
           set -euo pipefail
-          APKSIGNER="$(find "${ANDROID_HOME:-${HOME}/Android/Sdk}" -type f -name apksigner 2>/dev/null | sort -V | tail -n 1 || true)"
+          APK_PATH="${{ steps.package.outputs.apk_path }}"
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-${HOME}/Android/Sdk}}"
+          APKSIGNER="$(find "${SDK_ROOT}" -type f -name apksigner 2>/dev/null | sort -V | tail -n 1 || true)"
+          AAPT="$(find "${SDK_ROOT}" -type f \( -name aapt2 -o -name aapt \) 2>/dev/null | sort -V | tail -n 1 || true)"
           if [[ -z "${APKSIGNER}" ]]; then
-            echo "apksigner not found; falling back to jarsigner -verify"
-            jarsigner -verify -verbose -certs "${{ steps.package.outputs.apk_path }}" | tee /tmp/jarsigner-verify.txt
-            grep -q 'jar verified' /tmp/jarsigner-verify.txt
+            echo "apksigner not found under ${SDK_ROOT}; refusing to publish without APK Signature Scheme verification." >&2
+            exit 1
+          fi
+          echo "Using apksigner: ${APKSIGNER}"
+          "${APKSIGNER}" verify --verbose "${APK_PATH}"
+          "${APKSIGNER}" verify --print-certs "${APK_PATH}" | tee "${RUNNER_TEMP}/apksigner-certs.txt"
+          if [[ -n "${AAPT}" ]]; then
+            echo "Using aapt: ${AAPT}"
+            BADGING="$("${AAPT}" dump badging "${APK_PATH}")"
+            echo "${BADGING}" | grep -F "package: name='de.westnordost.streetcomplete.expert'"
+            if echo "${BADGING}" | grep -Eq "application-debuggable"; then
+              echo "APK is debuggable; refusing to publish." >&2
+              exit 1
+            fi
           else
-            "${APKSIGNER}" verify --verbose "${{ steps.package.outputs.apk_path }}"
+            echo "aapt/aapt2 not found; package-id check skipped (signature still verified)." >&2
           fi
 
       - name: Upload APK artifacts
@@ -144,15 +186,16 @@ jobs:
           {
             echo "## SCEE-mc ${TAG}"
             echo
-            echo "Independent private fork of [Helium314/SCEE](https://github.com/Helium314/SCEE) (itself a fork of StreetComplete)."
+            echo "Private SCEE-mc build from the \`SCEE-mc\` fork of [Helium314/SCEE](https://github.com/Helium314/SCEE) (itself a fork of StreetComplete)."
             echo "**Not** an official StreetComplete or SCEE release. Licensed under GPL-3.0; source for this build: this tag/commit."
             echo
             echo "- App versionName: \`${VERSION_NAME}\`"
+            echo "- Application id: \`de.westnordost.streetcomplete.expert\`"
             echo "- Commit: \`${SHORT_SHA}\`"
             echo "- Artifact: \`${APK_NAME}\`"
             echo "- SHA-256: \`${CHECKSUM}\`"
             echo
-            echo "Install only if you trust this fork's signing key. The current application id matches upstream SCEE and will conflict with F-Droid/GitHub SCEE installs when the signing keys differ."
+            echo "Install only if you trust this fork's signing key. The application id matches upstream SCEE and will conflict with F-Droid/GitHub SCEE installs when the signing keys differ."
           } > "${NOTES_FILE}"
           if gh release view "${TAG}" >/dev/null 2>&1; then
             gh release upload "${TAG}" \

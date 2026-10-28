@@ -8,6 +8,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
+import de.westnordost.streetcomplete.data.osm.osmquests.Action
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.resources.*
 
@@ -44,6 +45,7 @@ class AddIsSidepathRoadMetadata : OsmElementQuestType<SidepathRoadMetadataAnswer
             mapAnswer = { ofName, ofHighway ->
                 SidepathRoadMetadataAnswer(ofName, ofHighway)
             },
+            onCantSay = { on(Action.CantSay) },
         )
     }
 

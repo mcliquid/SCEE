@@ -44,7 +44,7 @@ internal fun isSidepathRoadMetadataCompletionEligible(
     if (!missingOf && !missingName) return false
     if (!hasNearbyAlignedRoad(geometry, mapData)) return false
     if (missingOf) return true
-    return findCandidateRoads(geometry, mapData).any { !it.name.isNullOrEmpty() }
+    return findCandidateRoads(geometry, mapData).any { it.name != null }
 }
 
 /** Fill only missing association tags; never overwrite existing values or touch unrelated keys. */

@@ -26,6 +26,10 @@ const val MAX_SIDEPATH_ALIGNMENT_DEGREES = 30.0
 /** Extra padding for map-data queries so long roads with sparse nodes are still returned (#3797). */
 const val SIDEPATH_MAP_DATA_QUERY_PADDING_METERS = 100.0
 
+/** OSM `name` of a road for `is_sidepath:of:name`; never synthesized from ref or other keys. */
+internal fun sidepathAssociatedRoadName(tags: Map<String, String>): String? =
+    tags["name"]?.takeIf { it.isNotEmpty() }
+
 @Serializable
 data class CandidateRoad(
     val element: Element,
@@ -33,7 +37,7 @@ data class CandidateRoad(
     val distance: Double,
     val alignmentDiff: Double,
 ) {
-    val name: String? get() = element.tags["name"]
+    val name: String? get() = sidepathAssociatedRoadName(element.tags)
     val ref: String? get() = element.tags["ref"]
     val highway: String? get() = element.tags["highway"]
 }
@@ -44,8 +48,11 @@ fun alignmentDiffDegrees(bearingA: Double, bearingB: Double): Double {
     return if (bearingDiff > 90.0) 180.0 - bearingDiff else bearingDiff
 }
 
+fun ElementGeometry.eligiblePolylines(): List<List<LatLon>> =
+    (this as? ElementPolylinesGeometry)?.polylines?.filter { it.size >= 2 } ?: emptyList()
+
 fun ElementGeometry.asOpenPolylineOrNull(): List<LatLon>? =
-    (this as? ElementPolylinesGeometry)?.polylines?.singleOrNull()?.takeIf { it.size >= 2 }
+    eligiblePolylines().singleOrNull()
 
 /**
  * Returns eligible nearby roads sorted by distance, then alignment, then element id.
@@ -57,17 +64,19 @@ fun findCandidateRoads(
     maxDistance: Double = MAX_SIDEPATH_DISTANCE_METERS,
     maxAlignment: Double = MAX_SIDEPATH_ALIGNMENT_DEGREES,
 ): List<CandidateRoad> {
-    val pathPolyline = pathGeometry.asOpenPolylineOrNull() ?: return emptyList()
+    val pathPolylines = pathGeometry.eligiblePolylines()
+    if (pathPolylines.isEmpty()) return emptyList()
     val pathBounds = pathGeometry.bounds.enlargedBy(maxDistance)
 
     return mapData.ways.mapNotNull { road ->
         val highway = road.tags["highway"] ?: return@mapNotNull null
         if (highway !in SIDEPATH_ROADS) return@mapNotNull null
         val roadGeometry = mapData.getWayGeometry(road.id) ?: return@mapNotNull null
-        val roadPolyline = roadGeometry.asOpenPolylineOrNull() ?: return@mapNotNull null
+        val roadPolylines = roadGeometry.eligiblePolylines()
+        if (roadPolylines.isEmpty()) return@mapNotNull null
         if (!pathBounds.intersect(roadGeometry.bounds)) return@mapNotNull null
 
-        val match = bestNearAndAlignedPair(pathPolyline, roadPolyline, maxDistance, maxAlignment)
+        val match = bestNearAndAlignedPairAcross(pathPolylines, roadPolylines, maxDistance, maxAlignment)
             ?: return@mapNotNull null
         CandidateRoad(
             element = road,
@@ -77,6 +86,7 @@ fun findCandidateRoads(
         )
     }.sortedWith(
         compareBy<CandidateRoad> { it.distance }
+            .thenBy { it.name == null }
             .thenBy { it.alignmentDiff }
             .thenBy { it.element.id }
     )
@@ -88,20 +98,47 @@ fun hasNearbyAlignedRoad(
     maxDistance: Double = MAX_SIDEPATH_DISTANCE_METERS,
     maxAlignment: Double = MAX_SIDEPATH_ALIGNMENT_DEGREES,
 ): Boolean {
-    val pathPolyline = pathGeometry.asOpenPolylineOrNull() ?: return false
+    val pathPolylines = pathGeometry.eligiblePolylines()
+    if (pathPolylines.isEmpty()) return false
     val pathBounds = pathGeometry.bounds.enlargedBy(maxDistance)
 
     for (road in mapData.ways) {
         val highway = road.tags["highway"] ?: continue
         if (highway !in SIDEPATH_ROADS) continue
         val roadGeometry = mapData.getWayGeometry(road.id) ?: continue
-        val roadPolyline = roadGeometry.asOpenPolylineOrNull() ?: continue
+        val roadPolylines = roadGeometry.eligiblePolylines()
+        if (roadPolylines.isEmpty()) continue
         if (!pathBounds.intersect(roadGeometry.bounds)) continue
-        if (bestNearAndAlignedPair(pathPolyline, roadPolyline, maxDistance, maxAlignment) != null) {
+        if (bestNearAndAlignedPairAcross(pathPolylines, roadPolylines, maxDistance, maxAlignment) != null) {
             return true
         }
     }
     return false
+}
+
+internal fun bestNearAndAlignedPairAcross(
+    paths: List<List<LatLon>>,
+    roads: List<List<LatLon>>,
+    maxDistance: Double,
+    maxAlignment: Double,
+): Pair<Double, Double>? {
+    var bestDistance = Double.POSITIVE_INFINITY
+    var bestAlignment = Double.POSITIVE_INFINITY
+
+    for (path in paths) {
+        for (road in roads) {
+            val match = bestNearAndAlignedPair(path, road, maxDistance, maxAlignment) ?: continue
+            if (
+                match.first < bestDistance ||
+                (match.first == bestDistance && match.second < bestAlignment)
+            ) {
+                bestDistance = match.first
+                bestAlignment = match.second
+            }
+        }
+    }
+
+    return if (bestDistance.isFinite()) bestDistance to bestAlignment else null
 }
 
 /** Best matching segment pair as (distance, alignmentDiff), or null if none within thresholds. */

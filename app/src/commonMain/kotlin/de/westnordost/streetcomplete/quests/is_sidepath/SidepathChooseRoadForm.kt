@@ -43,6 +43,8 @@ fun <T> SidepathChooseRoadForm(
     pathGeometry: ElementGeometry,
     mapAnswer: (ofName: String?, ofHighway: String?) -> T,
     onBack: (() -> Unit)? = null,
+    /** When set, “Can’t say” invokes this instead of [mapAnswer] with nulls (avoids empty tag edits). */
+    onCantSay: (() -> Unit)? = null,
     mapDataSource: MapDataWithEditsSource = koinInject(),
     featureDictionary: FeatureDictionary = koinInject(),
 ) {
@@ -65,7 +67,8 @@ fun <T> SidepathChooseRoadForm(
         val found = findCandidateRoads(pathGeometry, mapData)
         candidates = found
         if (selection == null && found.isNotEmpty()) {
-            selection = SidepathRoadSelection.Road(found.first().element.id)
+            val defaultRoad = found.firstOrNull { it.name != null } ?: found.first()
+            selection = SidepathRoadSelection.Road(defaultRoad.element.id)
         }
         loaded = true
     }
@@ -111,8 +114,14 @@ fun <T> SidepathChooseRoadForm(
                         )
                     )
                 }
-                SidepathRoadSelection.CantSay, null ->
-                    on(Answer(mapAnswer(null, null)))
+                SidepathRoadSelection.CantSay -> {
+                    if (onCantSay != null) {
+                        onCantSay()
+                    } else {
+                        on(Answer(mapAnswer(null, null)))
+                    }
+                }
+                null -> { /* incomplete */ }
             }
         },
     ) {

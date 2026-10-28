@@ -105,6 +105,61 @@ class SidepathGeometryTest {
         assertEquals(setOf("Hauptstraße", "Bahnhofstraße"), candidates.mapNotNull { it.name }.toSet())
     }
 
+    @Test fun `road with multiple geometry polylines is still a candidate`() {
+        val pathStart = p(0.0, 0.0)
+        val pathEnd = pathStart.translate(40.0, 0.0)
+        val path = way(1, listOf(1, 2), mapOf("highway" to "footway"))
+
+        val roadStart = pathStart.translate(5.0, 90.0)
+        val roadEnd = roadStart.translate(40.0, 0.0)
+        val road = way(
+            2,
+            listOf(3, 4, 5),
+            mapOf("highway" to "residential", "name" to "Hauptstraße"),
+        )
+        val mapData = createMapData(
+            mapOf(
+                path to ElementPolylinesGeometry(listOf(listOf(pathStart, pathEnd)), pathStart),
+                road to ElementPolylinesGeometry(
+                    listOf(
+                        listOf(roadStart, roadStart.translate(20.0, 0.0)),
+                        listOf(roadStart.translate(20.0, 0.0), roadEnd),
+                    ),
+                    roadStart,
+                ),
+            ),
+        )
+
+        val candidates = findCandidateRoads(mapData.getWayGeometry(path.id)!!, mapData)
+        assertEquals(1, candidates.size)
+        assertEquals("Hauptstraße", candidates.single().name)
+    }
+
+    @Test fun `named road sorts before unnamed at equal distance`() {
+        val pathStart = p(0.0, 0.0)
+        val pathEnd = pathStart.translate(40.0, 0.0)
+        val path = way(1, listOf(1, 2), mapOf("highway" to "footway"))
+
+        val namedStart = pathStart.translate(5.0, 90.0)
+        val namedEnd = namedStart.translate(40.0, 0.0)
+        val named = way(2, listOf(3, 4), mapOf("highway" to "residential", "name" to "Hauptstraße"))
+
+        val unnamedStart = pathStart.translate(5.0, 270.0)
+        val unnamedEnd = unnamedStart.translate(40.0, 0.0)
+        val unnamed = way(3, listOf(5, 6), mapOf("highway" to "residential"))
+
+        val mapData = createMapData(
+            mapOf(
+                path to ElementPolylinesGeometry(listOf(listOf(pathStart, pathEnd)), pathStart),
+                named to ElementPolylinesGeometry(listOf(listOf(namedStart, namedEnd)), namedStart),
+                unnamed to ElementPolylinesGeometry(listOf(listOf(unnamedStart, unnamedEnd)), unnamedStart),
+            ),
+        )
+
+        val candidates = findCandidateRoads(mapData.getWayGeometry(path.id)!!, mapData)
+        assertEquals(listOf(2L, 3L), candidates.map { it.element.id })
+    }
+
     @Test fun `dual carriageway same name keeps both ways as candidates`() {
         val pathStart = p(0.0, 0.0)
         val pathEnd = pathStart.translate(50.0, 45.0)

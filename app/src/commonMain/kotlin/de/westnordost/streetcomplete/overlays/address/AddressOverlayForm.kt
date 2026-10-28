@@ -168,8 +168,6 @@ fun AddressOverlayForm(
 
     fun applyChanges(tagChanges: StringMapChangesBuilder) {
         address.applyTo(tagChanges, countryInfo.countryCode)
-        tagChanges.remove("noaddress")
-        tagChanges.remove("nohousenumber")
     }
 
     fun onClickOk() {

@@ -31,6 +31,7 @@ import org.jetbrains.compose.resources.painterResource
     isLeftHandTraffic: Boolean,
     modifier: Modifier = Modifier,
     getFloatingPainter: @Composable (T?, Side) -> Painter? = { _, _ -> null },
+    getCenterOverlay: @Composable (T?, Side) -> Unit = { _, _ -> },
     lastPicked: List<Sides<T>> = emptyList(),
     enabled: Boolean = true,
     isLeftSideVisible: Boolean = true,
@@ -58,6 +59,7 @@ import org.jetbrains.compose.resources.painterResource
             rotation = rotation,
             modifier = Modifier.align(Alignment.Center),
             getFloatingPainter = getFloatingPainter,
+            getCenterOverlay = getCenterOverlay,
             isLeftSideEnabled = isLeftSideEnabled && enabled,
             isRightSideEnabled = isRightSideEnabled && enabled,
             isLeftSideVisible = isLeftSideVisible,
@@ -88,6 +90,7 @@ import org.jetbrains.compose.resources.painterResource
                     rotation = rotation,
                     modifier = Modifier.size(56.dp, 40.dp),
                     getFloatingPainter = getFloatingPainter,
+                    getCenterOverlay = getCenterOverlay,
                     isLeftSideVisible = isLeftSideVisible,
                     isRightSideVisible = isRightSideVisible,
                 )

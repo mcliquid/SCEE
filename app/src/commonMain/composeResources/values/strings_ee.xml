@@ -717,6 +717,26 @@
     <string name="quest_is_sidepath_road_metadata_title">Which road is this sidepath associated with?</string>
     <string name="quest_is_sidepath_road_metadata_hint">For sidepaths already tagged as such, select the road they run along. Road class goes in is_sidepath:of, the road name in is_sidepath:of:name.</string>
 
+    <!-- cycleway separation (R14) -->
+    <string name="quest_cycleway_separation_title">What physically separates this cycleway from adjacent areas?</string>
+    <string name="quest_cycleway_separation_hint">Select the physical separation on each side of the cycleway as shown on the map. The app assigns the correct OSM left/right tags automatically. Only physical features such as kerbs, bollards or vegetation — not road markings alone.</string>
+    <string name="quest_cycleway_separation_already_mapped">Already mapped: %1$s</string>
+    <string name="quest_cycleway_separation_no">No physical separation</string>
+    <string name="quest_cycleway_separation_kerb">Kerb / raised edge</string>
+    <string name="quest_cycleway_separation_bollard">Fixed bollard</string>
+    <string name="quest_cycleway_separation_flex_post">Flexible post</string>
+    <string name="quest_cycleway_separation_vertical_panel">Traffic delineator panel</string>
+    <string name="quest_cycleway_separation_bump">Raised separator blocks</string>
+    <string name="quest_cycleway_separation_studs">Raised pavement studs</string>
+    <string name="quest_cycleway_separation_planter">Planter</string>
+    <string name="quest_cycleway_separation_greenery">Greenery / grass verge</string>
+    <string name="quest_cycleway_separation_hedge">Hedge</string>
+    <string name="quest_cycleway_separation_tree_row">Row of trees</string>
+    <string name="quest_cycleway_separation_fence">Fence</string>
+    <string name="quest_cycleway_separation_guard_rail">Guard rail</string>
+    <string name="quest_cycleway_separation_jersey_barrier">Jersey barrier</string>
+    <string name="quest_cycleway_separation_ditch">Ditch</string>
+
     <!-- toilets disposal quest -->
     <string name="quest_toilets_disposal_title">What kind of toilet disposal is used here?</string>
     <string name="quest_toilets_disposal_flush">The waste is flushed with water</string>

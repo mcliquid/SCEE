@@ -796,4 +796,24 @@
     <string name="traffic_sign_confirm_proposals">Diese Tags werden zusammen mit den Schildern gespeichert:</string>
     <string name="quest_is_sidepath_road_metadata_title">Welcher Straße ist dieser Begleitweg zugeordnet?</string>
     <string name="quest_is_sidepath_road_metadata_hint">Für Wege, die bereits als Begleitweg (is_sidepath=yes) erfasst sind: Straße auswählen, entlang derer der Weg verläuft. Straßenklasse → is_sidepath:of, Straßenname → is_sidepath:of:name.</string>
+
+    <!-- cycleway separation (R14) -->
+    <string name="quest_cycleway_separation_title">Wie ist dieser Radweg baulich abgegrenzt?</string>
+    <string name="quest_cycleway_separation_hint">Wähle für jede Seite des Radwegs die bauliche Trennung aus, wie sie auf der Karte dargestellt ist. Die App schreibt die passenden OSM-Tags links/rechts automatisch. Nur physische Merkmale wie Bordsteine, Pfosten oder Bepflanzung — nicht allein Markierungen.</string>
+    <string name="quest_cycleway_separation_already_mapped">Bereits erfasst: %1$s</string>
+    <string name="quest_cycleway_separation_no">Keine physische Trennung</string>
+    <string name="quest_cycleway_separation_kerb">Bordstein / erhöhte Kante</string>
+    <string name="quest_cycleway_separation_bollard">Fester Pfosten</string>
+    <string name="quest_cycleway_separation_flex_post">Flexibler Pfosten</string>
+    <string name="quest_cycleway_separation_vertical_panel">Verkehrsleitbake</string>
+    <string name="quest_cycleway_separation_bump">Niedrige Trennblöcke</string>
+    <string name="quest_cycleway_separation_studs">Erhabene Markierungsknöpfe</string>
+    <string name="quest_cycleway_separation_planter">Pflanzkübel</string>
+    <string name="quest_cycleway_separation_greenery">Begrünung / Grasstreifen</string>
+    <string name="quest_cycleway_separation_hedge">Hecke</string>
+    <string name="quest_cycleway_separation_tree_row">Baumreihe</string>
+    <string name="quest_cycleway_separation_fence">Zaun</string>
+    <string name="quest_cycleway_separation_guard_rail">Leitplanke</string>
+    <string name="quest_cycleway_separation_jersey_barrier">Jersey-Barriere</string>
+    <string name="quest_cycleway_separation_ditch">Graben</string>
 </resources>

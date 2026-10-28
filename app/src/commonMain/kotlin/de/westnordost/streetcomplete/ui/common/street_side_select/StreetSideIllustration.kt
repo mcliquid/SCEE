@@ -57,6 +57,7 @@ import kotlin.math.cos
     rotation: Float,
     modifier: Modifier = Modifier,
     getFloatingPainter: @Composable (T?, Side) -> Painter? = { _, _ -> null },
+    getCenterOverlay: @Composable (T?, Side) -> Unit = { _, _ -> },
     onClickSide: ((Side) -> Unit)? = null,
     isLeftSideEnabled: Boolean = true,
     isRightSideEnabled: Boolean = true,
@@ -80,6 +81,7 @@ import kotlin.math.cos
                     side = Side.LEFT,
                     getIllustrationPainter = getIllustrationPainter,
                     getFloatingPainter = getFloatingPainter,
+                    getCenterOverlay = getCenterOverlay,
                     rotation = rotation,
                     onClickSide = onClickSide,
                     enabled = isLeftSideEnabled,
@@ -92,6 +94,7 @@ import kotlin.math.cos
                     side = Side.RIGHT,
                     getIllustrationPainter = getIllustrationPainter,
                     getFloatingPainter = getFloatingPainter,
+                    getCenterOverlay = getCenterOverlay,
                     rotation = rotation,
                     onClickSide = onClickSide,
                     enabled = isRightSideEnabled,
@@ -108,6 +111,7 @@ private fun <T> StreetSideIllustrationSide(
     side: Side,
     getIllustrationPainter: (@Composable (T?, Side) -> Painter?),
     getFloatingPainter: @Composable (T?, Side) -> Painter?,
+    getCenterOverlay: @Composable (T?, Side) -> Unit,
     rotation: Float,
     onClickSide: ((Side) -> Unit)?,
     enabled: Boolean,
@@ -168,6 +172,9 @@ private fun <T> StreetSideIllustrationSide(
                 Box(Modifier.rotate(-rotation).scale(1f / scale)) {
                     Image(floatingPainter, null)
                 }
+            }
+            Box(Modifier.rotate(-rotation).scale(1f / scale)) {
+                getCenterOverlay(value, side)
             }
         }
     }

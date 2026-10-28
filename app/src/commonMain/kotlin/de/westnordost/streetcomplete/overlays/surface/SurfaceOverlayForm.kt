@@ -146,7 +146,7 @@ import org.koin.compose.koinInject
     }
 }
 
-private val isBothFootAndBicycleTrafficFilter by lazy { """
+internal val isBothFootAndBicycleTrafficFilter by lazy { """
     ways, relations with
       highway = footway and bicycle ~ yes|designated
       or highway = cycleway and foot ~ yes|designated

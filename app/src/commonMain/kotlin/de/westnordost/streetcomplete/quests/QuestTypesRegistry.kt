@@ -138,6 +138,7 @@ import de.westnordost.streetcomplete.quests.incline_direction.AddBicycleIncline
 import de.westnordost.streetcomplete.quests.incline_direction.AddStepsIncline
 import de.westnordost.streetcomplete.quests.internet_access.AddInternetAccess
 import de.westnordost.streetcomplete.quests.is_sidepath.AddIsSidepath
+import de.westnordost.streetcomplete.quests.is_sidepath.AddIsSidepathRoadMetadata
 import de.westnordost.streetcomplete.quests.kerb_height.AddKerbHeight
 import de.westnordost.streetcomplete.quests.kerb_type.AddKerbType
 import de.westnordost.streetcomplete.quests.lamp_type.AddLampType
@@ -725,6 +726,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 58 to AddOnewayBicycle(),
     EE_QUEST_OFFSET + 69 to AddCyclewayPartSmoothness(),
     EE_QUEST_OFFSET + 201 to AddIsSidepath(),
+    EE_QUEST_OFFSET + 209 to AddIsSidepathRoadMetadata(),
     EE_QUEST_OFFSET + 202 to AddWaterwayCrossing(),
     EE_QUEST_OFFSET + 203 to AddBicycleInPedestrianStreet(),
     EE_QUEST_OFFSET + 204 to AddWaterBottleFill(), // #510 bottle refill survey at water sources

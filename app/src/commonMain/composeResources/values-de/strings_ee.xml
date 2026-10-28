@@ -794,4 +794,6 @@
     <string name="traffic_sign_proposal_removed">%1$s=%2$s wird entfernt</string>
     <string name="traffic_sign_proposal_remaining">Diese vorhandenen Tags bleiben und erlauben weiterhin, was das Schild verbietet:</string>
     <string name="traffic_sign_confirm_proposals">Diese Tags werden zusammen mit den Schildern gespeichert:</string>
+    <string name="quest_is_sidepath_road_metadata_title">Welcher Straße ist dieser Begleitweg zugeordnet?</string>
+    <string name="quest_is_sidepath_road_metadata_hint">Für Wege, die bereits als Begleitweg (is_sidepath=yes) erfasst sind: Straße auswählen, entlang derer der Weg verläuft. Straßenklasse → is_sidepath:of, Straßenname → is_sidepath:of:name.</string>
 </resources>

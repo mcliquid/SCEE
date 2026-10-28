@@ -714,6 +714,8 @@
     <string name="quest_is_sidepath_road_cant_say">Can’t say</string>
     <string name="quest_is_sidepath_road_loading">Looking for nearby roads…</string>
     <string name="quest_is_sidepath_unnamed_road">Unnamed %1$s</string>
+    <string name="quest_is_sidepath_road_metadata_title">Which road is this sidepath associated with?</string>
+    <string name="quest_is_sidepath_road_metadata_hint">For sidepaths already tagged as such, select the road they run along. Road class goes in is_sidepath:of, the road name in is_sidepath:of:name.</string>
 
     <!-- toilets disposal quest -->
     <string name="quest_toilets_disposal_title">What kind of toilet disposal is used here?</string>

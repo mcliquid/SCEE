@@ -143,20 +143,22 @@ class DesktopDownloadControllerTest {
         later.release.complete(Unit)
     }
 
-    @Test fun `downloadAlongGpxTrack schedules corridor download on controller scope`() = runBlocking {
-        val prefs = MapSettings()
-        val downloaded = Channel<BoundingBox>(1)
-        val downloader = mock<Downloader>()
-        everySuspend { downloader.download(any(), any(), any()) } calls { (bbox, _, _) ->
-            downloaded.send(bbox)
-        }
-        val controller = DesktopDownloadController(downloader, prefs, Dispatchers.Default)
-        try {
-            val start = LatLon(52.5, 13.3)
-            controller.downloadAlongGpxTrack(listOf(start, start.translate(800.0, 90.0)), 100.0)
-            withTimeout(5_000) { downloaded.receive() }
-        } finally {
-            controller.close()
+    @Test fun `downloadAlongGpxTrack schedules corridor download on controller scope`() {
+        runBlocking {
+            val prefs = MapSettings()
+            val downloaded = Channel<BoundingBox>(1)
+            val downloader = mock<Downloader>()
+            everySuspend { downloader.download(any(), any(), any()) } calls { (bbox: BoundingBox, _: Boolean, _: Boolean) ->
+                downloaded.send(bbox)
+            }
+            val controller = DesktopDownloadController(downloader, prefs, Dispatchers.Default)
+            try {
+                val start = LatLon(52.5, 13.3)
+                controller.downloadAlongGpxTrack(listOf(start, start.translate(800.0, 90.0)), 100.0)
+                withTimeout(5_000) { downloaded.receive() }
+            } finally {
+                controller.close()
+            }
         }
     }
 

@@ -827,6 +827,8 @@
 
     <string name="quest_bikeParkingCapacity_title">How many bicycles can be parked here?</string>
     <string name="quest_bikeParkingCapacity_hint">Note that you can usually park one bicycle on each side of a stand, and for wheelbenders you might have to estimate how many would fit.</string>
+    <string name="quest_bikeParkingCargoCapacity_title">How many cargo bikes can park here?</string>
+    <string name="quest_bikeParkingCargoCapacity_hint">Count spaces actually intended or suitable for cargo bikes, not every ordinary bicycle space. Enter 0 if none. Leave unanswered if you cannot tell.</string>
 
     <string name="quest_air_pump_bicycle_shop_title">Is there a public bicycle pump here (at least when it’s open)?</string>
     <string name="quest_air_pump_compressor_title">Is there an air compressor available here?</string>

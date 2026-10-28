@@ -130,6 +130,8 @@ Die von dir eingegebenen Informationen werden dann direkt in deinem Namen zu Ope
     <string name="quest_generic_hasFeature_yes">Ja</string>
     <string name="quest_generic_hasFeature_no">Nein</string>
     <string name="quest_bikeParkingCapacity_title">Wie viele Räder können hier abgestellt werden?</string>
+    <string name="quest_bikeParkingCargoCapacity_title">Wie viele Lastenräder können hier abgestellt werden?</string>
+    <string name="quest_bikeParkingCargoCapacity_hint">Zähle Plätze, die für Lastenräder vorgesehen oder geeignet sind – nicht jeden normalen Fahrradplatz. Gib 0 ein, wenn es keine gibt. Lasse die Frage offen, wenn du es nicht feststellen kannst.</string>
     <string name="quest_address_unusualHousenumber_confirmation_description">Das sieht für eine Hausnummer sehr ungewöhnlich aus.</string>
     <string name="quest_sport_title">Für welchen Sport ist dieses Spielfeld vorgesehen?</string>
     <string name="quest_sport_answer_multi">Für keinen bestimmten</string>

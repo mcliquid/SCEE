@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg version="1.1" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+ <path d="m33.87,16.93c0,9.35 -7.58,16.93 -16.93,16.93 -9.35,0 -16.93,-7.58 -16.93,-16.93 0,-9.35 7.58,-16.93 16.93,-16.93 9.35,0 16.93,7.58 16.93,16.93" transform="scale(3.764705882352941)" fill="#ca72e2"/>
+ <g transform="scale(3.764705882352941)">
+ <g transform="translate(0 1.05)">
+  <path d="M8,22m-5,0a5,5 0,1 1,10 0a5,5 0,1 1,-10 0" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.2"/>
+  <path d="M26.5,22.8m-4.4,0a4.4,4.4 0,1 1,8.8 0a4.4,4.4 0,1 1,-8.8 0" fill="none" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.2"/>
+  <path d="M8,22H14L26.5,22.8" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.2"/>
+  <path d="M14,22L12.2,11.5h-3" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.2"/>
+  <path d="M26.5,22.8L19,9.5L17.5,7.5h-3.2" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.2"/>
+  <path d="M21,9h9.6a1.2,1.2 0 0 1 1.2,1.2v6.1a1.2,1.2 0 0 1 -1.2,1.2h-9.6a1.2,1.2 0 0 1 -1.2,-1.2v-6.1a1.2,1.2 0 0 1 1.2,-1.2z" fill="#000" fill-opacity="0.2"/>
+ </g>
+  <path d="M8,22m-5,0a5,5 0,1 1,10 0a5,5 0,1 1,-10 0" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M26.5,22.8m-4.4,0a4.4,4.4 0,1 1,8.8 0a4.4,4.4 0,1 1,-8.8 0" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M8,22H14L26.5,22.8" fill="none" stroke="#ffe420" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M14,22L12.2,11.5" fill="none" stroke="#ffe420" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M12.2,11.5h-3" fill="none" stroke="#555" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M26.5,22.8L19,9.5" fill="none" stroke="#ffe420" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M19,9.5L17.8,7h-3.2" fill="none" stroke="#555" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M21,9h9.6a1.2,1.2 0 0 1 1.2,1.2v6.1a1.2,1.2 0 0 1 -1.2,1.2h-9.6a1.2,1.2 0 0 1 -1.2,-1.2v-6.1a1.2,1.2 0 0 1 1.2,-1.2z" fill="#fff"/>
+ </g>
+</svg>

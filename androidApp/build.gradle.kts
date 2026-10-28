@@ -6,12 +6,12 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-val sceemcOAuthClientId = providers.gradleProperty("app.sceemc.oauth2ClientId")
-    .orElse("")
-    .get()
-val sceemcOAuthClientIdTest = providers.gradleProperty("app.sceemc.oauth2ClientIdTest")
-    .orElse("")
-    .get()
+// Prefer gradle.properties / -P / ORG_GRADLE_PROJECT_*; never invent client IDs.
+fun oauthClientIdProperty(name: String): String =
+    providers.gradleProperty(name).orElse("").get().trim()
+
+val sceemcOAuthClientId = oauthClientIdProperty("app.sceemc.oauth2ClientId")
+val sceemcOAuthClientIdTest = oauthClientIdProperty("app.sceemc.oauth2ClientIdTest")
 
 android {
     namespace = "de.westnordost.streetcomplete.app"
@@ -37,7 +37,7 @@ android {
         ndk { abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86_64") }
 
         buildConfigField("String", "APPLICATION_USER_AGENT_NAME", "\"SCEE-mc\"")
-        // Client IDs from ~/.gradle/gradle.properties or CI (-P / ORG_GRADLE_PROJECT_*). Never invent IDs.
+        // Client IDs from ~/.gradle/gradle.properties or CI. Never invent IDs; never log values.
         buildConfigField("String", "OAUTH2_CLIENT_ID_LIVE", "\"$sceemcOAuthClientId\"")
         buildConfigField("String", "OAUTH2_CLIENT_ID_TEST", "\"$sceemcOAuthClientIdTest\"")
         buildConfigField("String", "OAUTH2_CALLBACK_SCHEME", "\"sceemc\"")
@@ -166,4 +166,39 @@ if (keystorePropertiesFile.exists()) {
     releaseSigningConfig.storePassword = props.getProperty("storePassword")
     releaseSigningConfig.keyAlias = props.getProperty("keyAlias")
     releaseSigningConfig.keyPassword = props.getProperty("keyPassword")
+}
+
+// Fail release packaging when BuildConfig would embed a blank OSM client id.
+val verifyReleaseOAuthClientId = tasks.register("verifyReleaseOAuthClientId") {
+    group = "verification"
+    description = "Ensures release BuildConfig embeds a non-blank SCEE-mc OAuth client id"
+    dependsOn("generateReleaseBuildConfig")
+    doLast {
+        val buildConfigFile = layout.buildDirectory
+            .file("generated/source/buildConfig/release/de/westnordost/streetcomplete/app/BuildConfig.java")
+            .get()
+            .asFile
+        require(buildConfigFile.isFile) {
+            "Missing generated release BuildConfig at ${buildConfigFile.path}"
+        }
+        val text = buildConfigFile.readText()
+        val match = Regex("""OAUTH2_CLIENT_ID_LIVE\s*=\s*"([^"]*)"""").find(text)
+            ?: error("OAUTH2_CLIENT_ID_LIVE not found in release BuildConfig")
+        val embeddedId = match.groupValues[1].trim()
+        require(embeddedId.isNotEmpty()) {
+            "Release BuildConfig.OAUTH2_CLIENT_ID_LIVE is blank. " +
+                "Set app.sceemc.oauth2ClientId (gradle.properties / -P / CI secret) before assembleRelease."
+        }
+        // Length-only check — do not print the client id.
+        require(embeddedId.length >= 8) {
+            "Release OAuth client id is too short to be a valid OSM client id"
+        }
+        logger.lifecycle(
+            "Verified release BuildConfig OAuth client id (length=${embeddedId.length}, value not logged)"
+        )
+    }
+}
+
+tasks.matching { it.name == "assembleRelease" || it.name == "packageRelease" }.configureEach {
+    dependsOn(verifyReleaseOAuthClientId)
 }

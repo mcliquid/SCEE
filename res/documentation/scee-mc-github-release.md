@@ -59,8 +59,13 @@ Siehe [`third_party/osmfeatures/README.md`](../../third_party/osmfeatures/README
 
    | Secret | Inhalt |
    |---|---|
-   | `sceemc_oauth2_client_id` | Live-Client-ID |
+   | `sceemc_oauth2_client_id` | Live-Client-ID (**Pflicht**, nicht leer) |
    | `sceemc_oauth2_client_id_test` | optional, Test-API-Client-ID |
+
+Der Release-Workflow schreibt die Live-Client-ID vor dem Build in `gradle.properties`
+(ohne sie zu loggen). `assembleRelease` bricht ab, wenn
+`BuildConfig.OAUTH2_CLIENT_ID_LIVE` leer wäre — damit entsteht keine APK mit fehlendem
+`client_id` in der OSM-Autorisierungs-URL.
 
 Desktop behält die Upstream-SCEE-OAuth-Defaults (`streetcomplete://oauth`).
 

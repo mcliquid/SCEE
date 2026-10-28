@@ -10,6 +10,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class OsmAuthConfigTest {
@@ -79,5 +80,49 @@ class OsmAuthConfigTest {
 
         assertEquals("streetcomplete://oauth", url.parameters["redirect_uri"])
         assertEquals("read_prefs write_api write_notes write_gpx", url.parameters["scope"])
+        assertTrue(url.parameters["client_id"].orEmpty().isNotBlank())
+    }
+
+    @Test fun `blank OsmAuthConfig client id is visible through OAUTH2_CLIENT_ID`() {
+        OsmAuthConfig.clientIdLive = ""
+        assertEquals("", OAUTH2_CLIENT_ID)
+    }
+
+    @Test fun `authorization URL generation rejects blank client id`() {
+        val client = OAuthApiClientImpl(HttpClient(MockEngine { respondOk() }))
+        assertFailsWith<IllegalArgumentException> {
+            client.getAuthorizationRequestUrl(
+                OAuthAuthorizationParams(
+                    OAUTH2_AUTHORIZATION_URL,
+                    OAUTH2_TOKEN_URL,
+                    clientId = "",
+                    OAUTH2_REQUESTED_SCOPES,
+                    OAUTH2_REDIRECT_URI
+                )
+            )
+        }
+    }
+
+    @Test fun `client id is read lazily after OsmAuthConfig is updated`() {
+        // Simulates Application.onCreate applying BuildConfig after process start / ViewModel wiring.
+        OsmAuthConfig.clientIdLive = ""
+        OsmAuthConfig.callbackScheme = "sceemc"
+        assertEquals("", OAUTH2_CLIENT_ID)
+
+        OsmAuthConfig.clientIdLive = "sceemc-late-bound-client-id"
+        val client = OAuthApiClientImpl(HttpClient(MockEngine { respondOk() }))
+        val url = Url(
+            client.getAuthorizationRequestUrl(
+                OAuthAuthorizationParams(
+                    OAUTH2_AUTHORIZATION_URL,
+                    OAUTH2_TOKEN_URL,
+                    OAUTH2_CLIENT_ID,
+                    OAUTH2_REQUESTED_SCOPES,
+                    OAUTH2_REDIRECT_URI
+                )
+            )
+        )
+        assertEquals("sceemc-late-bound-client-id", url.parameters["client_id"])
+        assertEquals("sceemc://oauth", url.parameters["redirect_uri"])
     }
 }

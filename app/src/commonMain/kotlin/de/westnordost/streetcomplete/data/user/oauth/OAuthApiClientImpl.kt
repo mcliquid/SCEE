@@ -24,8 +24,11 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 class OAuthApiClientImpl(private val httpClient: HttpClient) : OAuthApiClient {
     private val json = Json { ignoreUnknownKeys = true }
 
-    override fun getAuthorizationRequestUrl(request: OAuthAuthorizationParams): String =
-        URLBuilder().takeFrom(request.authorizationUrl).apply {
+    override fun getAuthorizationRequestUrl(request: OAuthAuthorizationParams): String {
+        require(request.clientId.isNotBlank()) {
+            "OAuth client_id must not be blank (OSM rejects the authorization request)"
+        }
+        return URLBuilder().takeFrom(request.authorizationUrl).apply {
             parameters.append("response_type", "code")
             parameters.append("client_id", request.clientId)
             parameters.append("scope", request.scopes.joinToString(" "))
@@ -34,6 +37,7 @@ class OAuthApiClientImpl(private val httpClient: HttpClient) : OAuthApiClient {
             parameters.append("code_challenge", createPKCE_S256CodeChallenge(request.codeVerifier))
             request.state?.let { parameters.append("state", it) }
         }.build().toString()
+    }
 
     override suspend fun getAccessToken(
         request: OAuthAuthorizationParams,

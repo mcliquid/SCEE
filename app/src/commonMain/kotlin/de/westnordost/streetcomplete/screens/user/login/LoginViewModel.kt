@@ -68,15 +68,30 @@ class LoginViewModelImpl(
     override val unsyncedChangesCount = MutableStateFlow(0)
 
     override val authorizationRequestUrl: String get() =
-        oAuthApiClient.getAuthorizationRequestUrl(oAuth)
+        oAuthApiClient.getAuthorizationRequestUrl(oauthSession())
 
-    private val oAuth = OAuthAuthorizationParams(
-        OAUTH2_AUTHORIZATION_URL,
-        OAUTH2_TOKEN_URL,
-        OAUTH2_CLIENT_ID,
-        OAUTH2_REQUESTED_SCOPES,
-        OAUTH2_REDIRECT_URI
-    )
+    /**
+     * One OAuth/PKCE session per login attempt. Created lazily when the authorization URL is first
+     * needed so [OAUTH2_CLIENT_ID] is read from [de.westnordost.streetcomplete.data.user.OsmAuthConfig]
+     * after Android Application startup has applied BuildConfig — not captured as an empty string
+     * at ViewModel construction time.
+     */
+    private var oAuthSession: OAuthAuthorizationParams? = null
+
+    private fun oauthSession(): OAuthAuthorizationParams {
+        oAuthSession?.let { return it }
+        val clientId = OAUTH2_CLIENT_ID
+        require(clientId.isNotBlank()) {
+            "OAuth client_id is blank; SCEE-mc release builds require app.sceemc.oauth2ClientId"
+        }
+        return OAuthAuthorizationParams(
+            OAUTH2_AUTHORIZATION_URL,
+            OAUTH2_TOKEN_URL,
+            clientId,
+            OAUTH2_REQUESTED_SCOPES,
+            OAUTH2_REDIRECT_URI
+        ).also { oAuthSession = it }
+    }
 
     private val loginStatusListener = object : UserLoginSource.Listener {
         override fun onLoggedIn() { loginState.value = LoggedIn }
@@ -95,6 +110,7 @@ class LoginViewModelImpl(
     }
 
     override fun startLogin() {
+        oAuthSession = null
         loginState.compareAndSet(LoggedOut, RequestingAuthorization)
     }
 
@@ -104,7 +120,7 @@ class LoginViewModelImpl(
     }
 
     override fun isAuthorizationResponseUrl(url: String): Boolean =
-        oAuth.itsForMe(url)
+        oauthSession().itsForMe(url)
 
     override fun finishAuthorization(authorizationResponseUrl: String) {
         launch {
@@ -118,7 +134,7 @@ class LoginViewModelImpl(
     private suspend fun retrieveAccessToken(authorizationResponseUrl: String): String? {
         try {
             loginState.value = RetrievingAccessToken
-            val accessTokenResponse = oAuthApiClient.getAccessToken(oAuth, authorizationResponseUrl)
+            val accessTokenResponse = oAuthApiClient.getAccessToken(oauthSession(), authorizationResponseUrl)
             if (accessTokenResponse.grantedScopes?.containsAll(OAUTH2_REQUIRED_SCOPES) == false) {
                 loginState.value = LoginError.RequiredPermissionsNotGranted
                 return null
@@ -140,7 +156,10 @@ class LoginViewModelImpl(
     }
 
     override fun resetLogin() {
-        if (loginState.value is LoginError) loginState.value = LoggedOut
+        if (loginState.value is LoginError) {
+            oAuthSession = null
+            loginState.value = LoggedOut
+        }
     }
 
     companion object {

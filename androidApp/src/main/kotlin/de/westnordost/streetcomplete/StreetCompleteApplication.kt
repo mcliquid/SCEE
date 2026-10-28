@@ -29,8 +29,18 @@ class StreetCompleteApplication : Application() {
 
         ApplicationConstants.DEBUG = de.westnordost.streetcomplete.app.BuildConfig.APPLICATION_DEBUG
         ApplicationConstants.NAME = de.westnordost.streetcomplete.app.BuildConfig.APPLICATION_USER_AGENT_NAME
-        OsmAuthConfig.clientIdLive = de.westnordost.streetcomplete.app.BuildConfig.OAUTH2_CLIENT_ID_LIVE
-        OsmAuthConfig.clientIdTest = de.westnordost.streetcomplete.app.BuildConfig.OAUTH2_CLIENT_ID_TEST
+        val liveClientId = de.westnordost.streetcomplete.app.BuildConfig.OAUTH2_CLIENT_ID_LIVE
+        val testClientId = de.westnordost.streetcomplete.app.BuildConfig.OAUTH2_CLIENT_ID_TEST
+        // Release APKs must embed a real OSM client id; an empty BuildConfig value would produce
+        // authorization URLs without client_id ("Fehlender erforderlicher Parameter: client_id").
+        check(
+            de.westnordost.streetcomplete.app.BuildConfig.BUILD_TYPE != "release" ||
+                liveClientId.isNotBlank()
+        ) {
+            "SCEE-mc release build is missing OAuth client id (app.sceemc.oauth2ClientId)"
+        }
+        OsmAuthConfig.clientIdLive = liveClientId
+        OsmAuthConfig.clientIdTest = testClientId
         OsmAuthConfig.callbackScheme = de.westnordost.streetcomplete.app.BuildConfig.OAUTH2_CALLBACK_SCHEME
         OsmAuthConfig.requestedScopes = de.westnordost.streetcomplete.app.BuildConfig.OAUTH2_REQUESTED_SCOPES
             .split(' ')

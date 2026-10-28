@@ -100,27 +100,48 @@ jobs:
           echo "${KEYSTORE_BASE64}" | base64 -d > "${GITHUB_WORKSPACE}/signing-key.jks"
           test -s "${GITHUB_WORKSPACE}/signing-key.jks"
 
-      - name: Build release APK with Gradle
+      - name: Inject SCEE-mc OAuth client id into Gradle properties
         env:
-          STORE_PASSWORD: ${{ secrets.keystore_password }}
-          KEY_ALIAS: ${{ secrets.key_alias }}
-          KEY_PASSWORD: ${{ secrets.key_password }}
           # Public OAuth client IDs for the SCEE-mc OSM application (sceemc://oauth).
           SCEEMC_OAUTH2_CLIENT_ID: ${{ secrets.sceemc_oauth2_client_id }}
           SCEEMC_OAUTH2_CLIENT_ID_TEST: ${{ secrets.sceemc_oauth2_client_id_test }}
         run: |
           set -euo pipefail
-          if [[ -z "${SCEEMC_OAUTH2_CLIENT_ID}" ]]; then
-            echo "Missing secret 'sceemc_oauth2_client_id' (OSM OAuth 2 client id for sceemc://oauth)." >&2
+          if [[ -z "${SCEEMC_OAUTH2_CLIENT_ID//[[:space:]]/}" ]]; then
+            echo "Missing or blank secret 'sceemc_oauth2_client_id' (OSM OAuth 2 client id for sceemc://oauth)." >&2
             exit 1
           fi
-          ./gradlew :androidApp:assembleRelease \
+          # Write into gradle.properties so BuildConfig generation cannot miss -P / config-cache edge cases.
+          # Do not echo the client id.
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          cid = os.environ["SCEEMC_OAUTH2_CLIENT_ID"].strip()
+          assert cid, "blank OAuth client id"
+          path = Path("gradle.properties")
+          text = path.read_text(encoding="utf-8") if path.exists() else ""
+          lines = [line for line in text.splitlines() if not line.startswith("app.sceemc.oauth2ClientId")]
+          lines.append(f"app.sceemc.oauth2ClientId={cid}")
+          test_cid = os.environ.get("SCEEMC_OAUTH2_CLIENT_ID_TEST", "").strip()
+          if test_cid:
+              lines.append(f"app.sceemc.oauth2ClientIdTest={test_cid}")
+          path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+          print(f"Injected app.sceemc.oauth2ClientId into gradle.properties (length={len(cid)}, value not logged)")
+          PY
+
+      - name: Build release APK with Gradle
+        env:
+          STORE_PASSWORD: ${{ secrets.keystore_password }}
+          KEY_ALIAS: ${{ secrets.key_alias }}
+          KEY_PASSWORD: ${{ secrets.key_password }}
+        run: |
+          set -euo pipefail
+          # --no-configuration-cache: ensure OAuth BuildConfig fields are recomputed from gradle.properties
+          ./gradlew :androidApp:assembleRelease --no-configuration-cache \
             -Pandroid.injected.signing.store.file="${GITHUB_WORKSPACE}/signing-key.jks" \
             -Pandroid.injected.signing.store.password="${STORE_PASSWORD}" \
             -Pandroid.injected.signing.key.alias="${KEY_ALIAS}" \
-            -Pandroid.injected.signing.key.password="${KEY_PASSWORD}" \
-            -Papp.sceemc.oauth2ClientId="${SCEEMC_OAUTH2_CLIENT_ID}" \
-            -Papp.sceemc.oauth2ClientIdTest="${SCEEMC_OAUTH2_CLIENT_ID_TEST}"
+            -Pandroid.injected.signing.key.password="${KEY_PASSWORD}"
 
       - name: Package APK and SHA-256
         id: package

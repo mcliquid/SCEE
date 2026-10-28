@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- SCEE-mc: surface-specific smoothness descriptions shared by smoothness quests and overlay -->
+    <string name="smoothness_description_good_unhewn_cobblestone">Unusually even, closely laid stones, gaps filled</string>
+    <string name="smoothness_description_intermediate_unhewn_cobblestone">Fairly even rounded stones, narrow or filled gaps</string>
+    <string name="smoothness_description_bad_unhewn_cobblestone">Rounded or irregular stones with wide gaps, constantly bumpy</string>
+    <string name="smoothness_description_very_bad_unhewn_cobblestone">Protruding, loose or missing stones, deep gaps</string>
+    <string name="smoothness_description_excellent_grass_paver">Blocks flush and seamless, gaps completely filled</string>
+    <string name="smoothness_description_good_grass_paver">Blocks even, gaps filled up to the top</string>
+    <string name="smoothness_description_intermediate_grass_paver">Blocks flush with the grass, small dips in the gaps</string>
+    <string name="smoothness_description_bad_grass_paver">Open gaps between the blocks or grass tufts sticking out</string>
+    <string name="smoothness_description_very_bad_grass_paver">Broken, tilted or missing blocks, deep holes</string>
+    <string name="smoothness_description_good_wood">Even boards with narrow gaps</string>
+    <string name="smoothness_description_intermediate_wood">Wider gaps or slightly uneven boards</string>
+    <string name="smoothness_description_bad_wood">Warped, uneven or damaged boards, big gaps</string>
+    <string name="smoothness_description_very_bad_wood">Missing or broken boards, dangerous damage</string>
+    <string name="smoothness_description_good_metal">Even plates or grating, narrow openings</string>
+    <string name="smoothness_description_intermediate_metal">Ridged or uneven plates, wider openings</string>
+    <string name="smoothness_description_bad_metal">Bent, raised or damaged plates</string>
+    <string name="smoothness_description_intermediate_natural">Firm and fairly even, only small bumps</string>
+    <string name="smoothness_description_bad_natural">Bumps, small potholes, roots or shallow ruts</string>
+    <string name="smoothness_description_very_bad_natural">Deep potholes, ruts, rocks or roots; higher clearance needed</string>
+
+    <string name="smoothness_no_photo">No example photo for this surface yet</string>
+    <string name="smoothness_similar_surface">Example on a similar surface: %s</string>
+
+    <!-- SCEE-mc: smoothness overlay -->
+    <string name="overlay_smoothness">Smoothness</string>
+    <string name="overlay_smoothness_surface">Surface: %s</string>
+    <string name="overlay_smoothness_surface_whole_way">Surface of the whole way: %s</string>
+    <string name="overlay_smoothness_surface_new">New surface: %s</string>
+    <string name="overlay_smoothness_surface_unknown">Surface not mapped. The examples depend on the surface.</string>
+    <string name="overlay_smoothness_surface_generic">No examples for this surface. Generic selection.</string>
+    <string name="overlay_smoothness_set_surface">Set surface first</string>
+    <string name="overlay_smoothness_select">Select smoothness</string>
+    <string name="overlay_smoothness_confirm">Still the same</string>
+    <string name="overlay_smoothness_confirmed">Confirmed as unchanged</string>
+    <string name="overlay_smoothness_invalid">Unrecognized value: %s</string>
+    <string name="overlay_smoothness_use_common">Whole way: %s</string>
+    <string name="overlay_smoothness_sidewalk_hint">Sidewalk tags are not edited here.</string>
+    <string name="overlay_smoothness_edit_whole">Edit the way as a whole</string>
+</resources>

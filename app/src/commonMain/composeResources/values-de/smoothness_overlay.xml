@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="smoothness_description_good_unhewn_cobblestone">Ungewöhnlich ebene, eng verlegte Steine, Fugen verfüllt</string>
+    <string name="smoothness_description_intermediate_unhewn_cobblestone">Recht ebene runde Steine, schmale oder verfüllte Fugen</string>
+    <string name="smoothness_description_bad_unhewn_cobblestone">Runde oder unregelmäßige Steine mit breiten Fugen, durchgehend holprig</string>
+    <string name="smoothness_description_very_bad_unhewn_cobblestone">Herausstehende, lose oder fehlende Steine, tiefe Fugen</string>
+    <string name="smoothness_description_excellent_grass_paver">Steine bündig und nahtlos, Zwischenräume vollständig verfüllt</string>
+    <string name="smoothness_description_good_grass_paver">Steine eben, Zwischenräume bis oben verfüllt</string>
+    <string name="smoothness_description_intermediate_grass_paver">Steine bündig mit dem Gras, kleine Mulden in den Zwischenräumen</string>
+    <string name="smoothness_description_bad_grass_paver">Offene Zwischenräume oder herausstehende Grasbüschel</string>
+    <string name="smoothness_description_very_bad_grass_paver">Gebrochene, gekippte oder fehlende Steine, tiefe Löcher</string>
+    <string name="smoothness_description_good_wood">Ebene Bretter mit schmalen Fugen</string>
+    <string name="smoothness_description_intermediate_wood">Breitere Fugen oder leicht unebene Bretter</string>
+    <string name="smoothness_description_bad_wood">Verzogene, unebene oder beschädigte Bretter, große Fugen</string>
+    <string name="smoothness_description_very_bad_wood">Fehlende oder gebrochene Bretter, gefährliche Schäden</string>
+    <string name="smoothness_description_good_metal">Ebene Platten oder Gitter, schmale Öffnungen</string>
+    <string name="smoothness_description_intermediate_metal">Geriffelte oder unebene Platten, breitere Öffnungen</string>
+    <string name="smoothness_description_bad_metal">Verbogene, hochstehende oder beschädigte Platten</string>
+    <string name="smoothness_description_intermediate_natural">Fest und recht eben, nur kleine Unebenheiten</string>
+    <string name="smoothness_description_bad_natural">Unebenheiten, kleine Schlaglöcher, Wurzeln oder flache Spurrillen</string>
+    <string name="smoothness_description_very_bad_natural">Tiefe Schlaglöcher, Spurrillen, Steine oder Wurzeln; mehr Bodenfreiheit nötig</string>
+
+    <string name="smoothness_no_photo">Noch kein Beispielfoto für diese Oberfläche</string>
+    <string name="smoothness_similar_surface">Beispiel auf ähnlicher Oberfläche: %s</string>
+
+    <string name="overlay_smoothness">Ebenheit</string>
+    <string name="overlay_smoothness_surface">Oberfläche: %s</string>
+    <string name="overlay_smoothness_surface_whole_way">Oberfläche des ganzen Wegs: %s</string>
+    <string name="overlay_smoothness_surface_new">Neue Oberfläche: %s</string>
+    <string name="overlay_smoothness_surface_unknown">Oberfläche nicht erfasst. Die Beispiele hängen von der Oberfläche ab.</string>
+    <string name="overlay_smoothness_surface_generic">Keine Beispiele für diese Oberfläche. Allgemeine Auswahl.</string>
+    <string name="overlay_smoothness_set_surface">Zuerst Oberfläche angeben</string>
+    <string name="overlay_smoothness_select">Ebenheit auswählen</string>
+    <string name="overlay_smoothness_confirm">Unverändert</string>
+    <string name="overlay_smoothness_confirmed">Als unverändert bestätigt</string>
+    <string name="overlay_smoothness_invalid">Unbekannter Wert: %s</string>
+    <string name="overlay_smoothness_use_common">Ganzer Weg: %s</string>
+    <string name="overlay_smoothness_sidewalk_hint">Gehweg-Tags werden hier nicht bearbeitet.</string>
+    <string name="overlay_smoothness_edit_whole">Weg als Ganzes bearbeiten</string>
+</resources>

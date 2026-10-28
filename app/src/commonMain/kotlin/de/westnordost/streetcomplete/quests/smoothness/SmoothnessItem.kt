@@ -39,48 +39,160 @@ val Smoothness.title: StringResource get() = when (this) {
     IMPASSABLE ->    Res.string.quest_smoothness_title_impassable
 }
 
-/** Surfaces with dedicated smoothness photos in [getImage]. */
-private val SURFACES_WITH_SMOOTHNESS_ILLUSTRATIONS = setOf(
-    "asphalt", "concrete", "concrete:plates", "sett", "paving_stones", "compacted", "gravel", "fine_gravel",
+fun parseSmoothness(value: String?): Smoothness? = Smoothness.entries.find { it.osmValue == value }
+
+/* ------------------------------------------------------------------------------------------- *
+ * Shared surface × smoothness catalogue, used by all smoothness quests and the smoothness
+ * overlay. Photos are only shown for the surface they depict; a photo of another surface is
+ * explicitly marked via [SmoothnessPhoto.similarSurface]. Without a photo, a neutral placeholder
+ * is shown.
+ * ------------------------------------------------------------------------------------------- */
+
+/** Example photo for a smoothness value. [similarSurface] is set when the photo shows another
+ *  (similar) surface than the one asked for, so the UI can say so. */
+data class SmoothnessPhoto(val image: DrawableResource, val similarSurface: String? = null)
+
+data class SmoothnessChoice(
+    val value: Smoothness,
+    /** null: no suitable photo available, a neutral placeholder is shown */
+    val photo: SmoothnessPhoto?,
+    val description: StringResource?,
 )
 
-/** Map surveyed surface tags to the photo set used in the smoothness form. */
-private val SMOOTHNESS_ILLUSTRATION_SURFACE_ALIASES = mapOf(
-    "chipseal" to "asphalt",
-    "concrete:lanes" to "concrete",
-    "unhewn_cobblestone" to "sett",
-    "grass_paver" to "paving_stones",
-    "pebblestone" to "gravel",
+private class SmoothnessProfile(
+    val values: List<Smoothness>,
+    val photos: Map<Smoothness, SmoothnessPhoto> = emptyMap(),
+    val descriptions: Map<Smoothness, StringResource> = emptyMap(),
 )
 
-/**
- * Surface tag used to pick smoothness photos and descriptions.
- *
- * SCEE asks smoothness for more surfaces than StreetComplete. Surfaces without dedicated photos
- * reuse a similar surface’s illustrations or generic asphalt (excellent/good) and gravel (worse).
- */
-fun Smoothness.getIllustrationSurface(surface: String?): String =
-    SMOOTHNESS_ILLUSTRATION_SURFACE_ALIASES[surface]
-        ?: if (surface in SURFACES_WITH_SMOOTHNESS_ILLUSTRATIONS) surface!!
-        else when (this) {
-            EXCELLENT, GOOD -> "asphalt"
-            else -> "gravel"
-        }
+private fun range(from: Smoothness, to: Smoothness) = Smoothness.entries.filter { it in from..to }
 
-fun smoothnessAnswersForSurface(surface: String?): List<Smoothness> =
-    Smoothness.entries.filter { it.getImage(it.getIllustrationSurface(surface)) != null }
+private fun Map<Smoothness, DrawableResource>.photos(similarSurface: String? = null) =
+    mapValues { SmoothnessPhoto(it.value, similarSurface) }
 
-/** Smoothness choices governed by the surface stored under [surfaceKey], e.g. `cycleway:surface`. */
-fun smoothnessAnswersForSurfaceKey(tags: Map<String, String>, surfaceKey: String = "surface"): List<Smoothness> =
-    smoothnessAnswersForSurface(tags[surfaceKey])
+private val asphaltPhotos = mapOf(
+    EXCELLENT to Res.drawable.surface_asphalt_excellent,
+    GOOD to Res.drawable.surface_asphalt_good,
+    INTERMEDIATE to Res.drawable.surface_asphalt_intermediate,
+    BAD to Res.drawable.surface_asphalt_bad,
+    VERY_BAD to Res.drawable.surface_asphalt_very_bad,
+)
 
-fun Smoothness.getDescription(surface: String?): StringResource? = when (surface) {
-    "asphalt", "concrete", "concrete:plates" -> pavedDescription
-    "sett" -> settDescription
-    "paving_stones" -> pavingStonesDescription
-    "compacted", "gravel", "fine_gravel" -> compactedOrGravelDescription
-    else -> null
-} ?: descriptionFallback
+private val concretePhotos = mapOf(
+    EXCELLENT to Res.drawable.surface_concrete_excellent,
+    GOOD to Res.drawable.surface_concrete_good,
+    INTERMEDIATE to Res.drawable.surface_concrete_intermediate,
+    BAD to Res.drawable.surface_concrete_bad,
+    VERY_BAD to Res.drawable.surface_concrete_very_bad,
+)
+
+private val settPhotos = mapOf(
+    GOOD to Res.drawable.surface_sett_good,
+    INTERMEDIATE to Res.drawable.surface_sett_intermediate,
+    BAD to Res.drawable.surface_sett_bad,
+    VERY_BAD to Res.drawable.surface_sett_very_bad,
+)
+
+private val pavingStonesPhotos = mapOf(
+    EXCELLENT to Res.drawable.surface_paving_stones_excellent,
+    GOOD to Res.drawable.surface_paving_stones_good,
+    INTERMEDIATE to Res.drawable.surface_paving_stones_intermediate,
+    BAD to Res.drawable.surface_paving_stones_bad,
+    VERY_BAD to Res.drawable.surface_paving_stones_very_bad,
+)
+
+private val compactedPhotos = mapOf(
+    GOOD to Res.drawable.surface_compacted_good,
+    INTERMEDIATE to Res.drawable.surface_compacted_intermediate,
+    BAD to Res.drawable.surface_compacted_bad,
+    VERY_BAD to Res.drawable.surface_compacted_very_bad,
+)
+
+private val gravelPhotos = mapOf(
+    INTERMEDIATE to Res.drawable.surface_gravel_intermediate,
+    BAD to Res.drawable.surface_gravel_bad,
+    VERY_BAD to Res.drawable.surface_gravel_very_bad,
+)
+
+/* The shared photos for the worst unpaved values show ground (horrible), dirt (very horrible)
+   and an unspecified unpaved track (impassable) */
+private val unpavedHorrible = SmoothnessPhoto(Res.drawable.surface_unpaved_horrible, "ground")
+private val unpavedVeryHorrible = SmoothnessPhoto(Res.drawable.surface_unpaved_very_horrible, "dirt")
+private val unpavedImpassable = SmoothnessPhoto(Res.drawable.surface_unpaved_impassable, "unpaved")
+
+private val worstUnpavedPhotos = mapOf(
+    HORRIBLE to unpavedHorrible,
+    VERY_HORRIBLE to unpavedVeryHorrible,
+    IMPASSABLE to unpavedImpassable,
+)
+
+/** Drop the similar-surface marker for photos that do show [surface] */
+private fun Map<Smoothness, SmoothnessPhoto>.ownedBy(surface: String) =
+    mapValues { (_, p) -> if (p.similarSurface == surface) p.copy(similarSurface = null) else p }
+
+private val pavedDescriptions = mapOf(
+    EXCELLENT to Res.string.quest_smoothness_description_excellent_paved,
+    GOOD to Res.string.quest_smoothness_description_good_paved,
+    INTERMEDIATE to Res.string.quest_smoothness_description_intermediate_paved,
+    BAD to Res.string.quest_smoothness_description_bad_paved,
+    VERY_BAD to Res.string.quest_smoothness_description_very_bad_paved,
+)
+
+private val settDescriptions = mapOf(
+    GOOD to Res.string.quest_smoothness_description_good_sett,
+    INTERMEDIATE to Res.string.quest_smoothness_description_intermediate_sett,
+    BAD to Res.string.quest_smoothness_description_bad_sett,
+    VERY_BAD to Res.string.quest_smoothness_description_very_bad_sett,
+)
+
+private val pavingStonesDescriptions = mapOf(
+    EXCELLENT to Res.string.quest_smoothness_description_excellent_paving_stones,
+    GOOD to Res.string.quest_smoothness_description_good_paving_stones,
+    INTERMEDIATE to Res.string.quest_smoothness_description_intermediate_paving_stones,
+    BAD to Res.string.quest_smoothness_description_bad_paving_stones,
+    VERY_BAD to Res.string.quest_smoothness_description_very_bad_paving_stones,
+)
+
+private val compactedOrGravelDescriptions = mapOf(
+    GOOD to Res.string.quest_smoothness_description_good_compacted_gravel,
+    INTERMEDIATE to Res.string.quest_smoothness_description_intermediate_compacted_gravel,
+    BAD to Res.string.quest_smoothness_description_bad_compacted_gravel,
+    VERY_BAD to Res.string.quest_smoothness_description_very_bad_compacted_gravel,
+)
+
+private val unhewnCobblestoneDescriptions = mapOf(
+    GOOD to Res.string.smoothness_description_good_unhewn_cobblestone,
+    INTERMEDIATE to Res.string.smoothness_description_intermediate_unhewn_cobblestone,
+    BAD to Res.string.smoothness_description_bad_unhewn_cobblestone,
+    VERY_BAD to Res.string.smoothness_description_very_bad_unhewn_cobblestone,
+)
+
+private val grassPaverDescriptions = mapOf(
+    EXCELLENT to Res.string.smoothness_description_excellent_grass_paver,
+    GOOD to Res.string.smoothness_description_good_grass_paver,
+    INTERMEDIATE to Res.string.smoothness_description_intermediate_grass_paver,
+    BAD to Res.string.smoothness_description_bad_grass_paver,
+    VERY_BAD to Res.string.smoothness_description_very_bad_grass_paver,
+)
+
+private val woodDescriptions = mapOf(
+    GOOD to Res.string.smoothness_description_good_wood,
+    INTERMEDIATE to Res.string.smoothness_description_intermediate_wood,
+    BAD to Res.string.smoothness_description_bad_wood,
+    VERY_BAD to Res.string.smoothness_description_very_bad_wood,
+)
+
+private val metalDescriptions = mapOf(
+    GOOD to Res.string.smoothness_description_good_metal,
+    INTERMEDIATE to Res.string.smoothness_description_intermediate_metal,
+    BAD to Res.string.smoothness_description_bad_metal,
+)
+
+private val naturalDescriptions = mapOf(
+    INTERMEDIATE to Res.string.smoothness_description_intermediate_natural,
+    BAD to Res.string.smoothness_description_bad_natural,
+    VERY_BAD to Res.string.smoothness_description_very_bad_natural,
+)
 
 private val Smoothness.descriptionFallback: StringResource? get() = when (this) {
     HORRIBLE -> Res.string.quest_smoothness_description_horrible
@@ -89,102 +201,127 @@ private val Smoothness.descriptionFallback: StringResource? get() = when (this) 
     else -> null
 }
 
-fun Smoothness.getImage(surface: String?): DrawableResource? = when (surface) {
-    "asphalt" -> asphaltImage
-    "concrete", "concrete:plates" -> concreteImage
-    "sett" -> settImage
-    "paving_stones" -> pavingStonesImage
-    "compacted" -> compactedImage
-    "gravel", "fine_gravel" -> gravelImage
-    else -> null
+private fun natural(surface: String, from: Smoothness, photos: Map<Smoothness, SmoothnessPhoto> = emptyMap()) =
+    SmoothnessProfile(range(from, IMPASSABLE), photos.ownedBy(surface), naturalDescriptions)
+
+private val PROFILES: Map<String, SmoothnessProfile> = mapOf(
+    // paved
+    "asphalt" to SmoothnessProfile(range(EXCELLENT, VERY_BAD), asphaltPhotos.photos(), pavedDescriptions),
+    "chipseal" to SmoothnessProfile(range(EXCELLENT, VERY_BAD), asphaltPhotos.photos("asphalt"), pavedDescriptions),
+    "concrete" to SmoothnessProfile(range(EXCELLENT, VERY_BAD), concretePhotos.photos(), pavedDescriptions),
+    // two strips of concrete look nothing like full-width concrete
+    "concrete:lanes" to SmoothnessProfile(range(EXCELLENT, VERY_BAD), emptyMap(), pavedDescriptions),
+    "paving_stones" to SmoothnessProfile(range(EXCELLENT, VERY_BAD), pavingStonesPhotos.photos(), pavingStonesDescriptions),
+    "sett" to SmoothnessProfile(range(GOOD, VERY_BAD), settPhotos.photos(), settDescriptions),
+    "unhewn_cobblestone" to SmoothnessProfile(range(GOOD, VERY_BAD), mapOf(
+        BAD to Res.drawable.surface_unhewn_cobblestone_bad,
+        VERY_BAD to Res.drawable.surface_unhewn_cobblestone_very_bad,
+    ).photos(), unhewnCobblestoneDescriptions),
+    "grass_paver" to SmoothnessProfile(range(EXCELLENT, VERY_BAD), mapOf(
+        INTERMEDIATE to Res.drawable.surface_grass_paver_intermediate,
+        BAD to Res.drawable.surface_grass_paver_bad,
+        VERY_BAD to Res.drawable.surface_grass_paver_very_bad,
+    ).photos(), grassPaverDescriptions),
+    "wood" to SmoothnessProfile(range(GOOD, VERY_BAD), mapOf(
+        GOOD to Res.drawable.surface_wood_good,
+        INTERMEDIATE to Res.drawable.surface_wood_intermediate,
+        BAD to Res.drawable.surface_wood_bad,
+        VERY_BAD to Res.drawable.surface_wood_very_bad,
+    ).photos(), woodDescriptions),
+    "metal" to SmoothnessProfile(range(GOOD, BAD), mapOf(
+        GOOD to Res.drawable.surface_metal_good,
+        INTERMEDIATE to Res.drawable.surface_metal_intermediate,
+    ).photos(), metalDescriptions),
+    "metal_grid" to SmoothnessProfile(range(GOOD, BAD), emptyMap(), metalDescriptions),
+    "paved" to SmoothnessProfile(range(EXCELLENT, VERY_BAD), emptyMap(), pavedDescriptions),
+    // unpaved
+    "compacted" to SmoothnessProfile(range(GOOD, IMPASSABLE), compactedPhotos.photos() + worstUnpavedPhotos, compactedOrGravelDescriptions),
+    "gravel" to SmoothnessProfile(range(INTERMEDIATE, IMPASSABLE), gravelPhotos.photos() + worstUnpavedPhotos, compactedOrGravelDescriptions),
+    "fine_gravel" to SmoothnessProfile(
+        range(INTERMEDIATE, IMPASSABLE),
+        gravelPhotos.photos("gravel") + worstUnpavedPhotos +
+            (INTERMEDIATE to SmoothnessPhoto(Res.drawable.surface_fine_gravel_intermediate)),
+        compactedOrGravelDescriptions
+    ),
+    "pebblestone" to SmoothnessProfile(range(INTERMEDIATE, IMPASSABLE), gravelPhotos.photos("gravel") + worstUnpavedPhotos, compactedOrGravelDescriptions),
+    "woodchips" to SmoothnessProfile(range(INTERMEDIATE, VERY_BAD), mapOf(
+        INTERMEDIATE to Res.drawable.surface_woodchips_intermediate,
+    ).photos(), naturalDescriptions),
+    "unpaved" to SmoothnessProfile(range(INTERMEDIATE, IMPASSABLE)),
+    // natural
+    "ground" to natural("ground", INTERMEDIATE, mapOf(
+        INTERMEDIATE to SmoothnessPhoto(Res.drawable.surface_ground_intermediate),
+        BAD to SmoothnessPhoto(Res.drawable.surface_ground_bad),
+        VERY_BAD to SmoothnessPhoto(Res.drawable.surface_compacted_very_bad), // shows a ground track
+        HORRIBLE to unpavedHorrible,
+        VERY_HORRIBLE to unpavedVeryHorrible,
+        IMPASSABLE to unpavedImpassable,
+    )),
+    "dirt" to natural("dirt", INTERMEDIATE, mapOf(
+        INTERMEDIATE to SmoothnessPhoto(Res.drawable.surface_dirt_intermediate),
+        BAD to SmoothnessPhoto(Res.drawable.surface_dirt_bad),
+        VERY_BAD to SmoothnessPhoto(Res.drawable.surface_dirt_very_bad),
+        HORRIBLE to SmoothnessPhoto(Res.drawable.surface_dirt_horrible),
+        VERY_HORRIBLE to unpavedVeryHorrible,
+        IMPASSABLE to unpavedImpassable,
+    )),
+    "laterite" to natural("laterite", INTERMEDIATE),
+    "grass" to natural("grass", INTERMEDIATE, mapOf(
+        INTERMEDIATE to SmoothnessPhoto(Res.drawable.surface_grass_intermediate),
+        HORRIBLE to SmoothnessPhoto(Res.drawable.surface_grass_horrible),
+    )),
+    "mud" to natural("mud", VERY_BAD, mapOf(
+        VERY_BAD to SmoothnessPhoto(Res.drawable.surface_mud_very_bad),
+        VERY_HORRIBLE to unpavedVeryHorrible,
+    )),
+    "sand" to natural("sand", BAD, mapOf(
+        BAD to SmoothnessPhoto(Res.drawable.surface_sand_bad),
+        VERY_BAD to SmoothnessPhoto(Res.drawable.surface_sand_very_bad),
+    )),
+    "rock" to natural("rock", BAD),
+)
+
+/** Tag values that are displayed with the profile of another value. */
+private val SMOOTHNESS_SURFACE_ALIASES = mapOf(
+    "concrete:plates" to "concrete",
+    "bricks" to "paving_stones",
+    "brick" to "paving_stones",
+    "earth" to "dirt",
+    "soil" to "dirt",
+)
+
+/** Used for unknown, missing and special-purpose surfaces (stepping stones, sport surfaces, …):
+ *  all values, no photos, no surface-specific descriptions. */
+private val GENERIC_PROFILE = SmoothnessProfile(Smoothness.entries)
+
+private fun profileOf(surface: String?): SmoothnessProfile =
+    PROFILES[SMOOTHNESS_SURFACE_ALIASES[surface] ?: surface] ?: GENERIC_PROFILE
+
+/** Whether [surface] has its own smoothness profile. If not, a generic selection is used. */
+fun hasSmoothnessProfile(surface: String?): Boolean =
+    PROFILES.containsKey(SMOOTHNESS_SURFACE_ALIASES[surface] ?: surface)
+
+/** Example and description for [value] on [surface], also if [value] is not usually offered. */
+fun smoothnessChoice(value: Smoothness, surface: String?): SmoothnessChoice {
+    val profile = profileOf(surface)
+    return SmoothnessChoice(value, profile.photos[value], profile.descriptions[value] ?: value.descriptionFallback)
 }
 
-private val Smoothness.asphaltImage: DrawableResource? get() = when (this) {
-    EXCELLENT -> Res.drawable.surface_asphalt_excellent
-    GOOD -> Res.drawable.surface_asphalt_good
-    INTERMEDIATE -> Res.drawable.surface_asphalt_intermediate
-    BAD -> Res.drawable.surface_asphalt_bad
-    VERY_BAD -> Res.drawable.surface_asphalt_very_bad
-    else -> null
+/** The smoothness values usually offered for [surface] */
+fun smoothnessChoices(surface: String?): List<SmoothnessChoice> =
+    profileOf(surface).values.map { smoothnessChoice(it, surface) }
+
+/** Like [smoothnessChoices], but always includes the [existing] value so that it stays
+ *  selectable even if it is not usually offered for the surface. */
+fun selectableSmoothnessChoices(surface: String?, existing: Smoothness?): List<SmoothnessChoice> {
+    val choices = smoothnessChoices(surface)
+    if (existing == null || choices.any { it.value == existing }) return choices
+    return (choices + smoothnessChoice(existing, surface)).sortedBy { it.value.ordinal }
 }
 
-private val Smoothness.concreteImage: DrawableResource? get() = when (this) {
-    EXCELLENT -> Res.drawable.surface_concrete_excellent
-    GOOD -> Res.drawable.surface_concrete_good
-    INTERMEDIATE -> Res.drawable.surface_concrete_intermediate
-    BAD -> Res.drawable.surface_concrete_bad
-    VERY_BAD -> Res.drawable.surface_concrete_very_bad
-    else -> null
-}
+fun smoothnessAnswersForSurface(surface: String?): List<Smoothness> =
+    profileOf(surface).values
 
-private val Smoothness.settImage: DrawableResource? get() = when (this) {
-    GOOD -> Res.drawable.surface_sett_good
-    INTERMEDIATE -> Res.drawable.surface_sett_intermediate
-    BAD -> Res.drawable.surface_sett_bad
-    VERY_BAD -> Res.drawable.surface_sett_very_bad
-    else -> null
-}
-
-private val Smoothness.pavingStonesImage get() = when (this) {
-    EXCELLENT -> Res.drawable.surface_paving_stones_excellent
-    GOOD -> Res.drawable.surface_paving_stones_good
-    INTERMEDIATE -> Res.drawable.surface_paving_stones_intermediate
-    BAD -> Res.drawable.surface_paving_stones_bad
-    VERY_BAD -> Res.drawable.surface_paving_stones_very_bad
-    else -> null
-}
-
-private val Smoothness.compactedImage get() = when (this) {
-    GOOD -> Res.drawable.surface_compacted_good
-    INTERMEDIATE -> Res.drawable.surface_compacted_intermediate
-    BAD -> Res.drawable.surface_compacted_bad
-    VERY_BAD -> Res.drawable.surface_compacted_very_bad
-    HORRIBLE -> Res.drawable.surface_unpaved_horrible
-    VERY_HORRIBLE -> Res.drawable.surface_unpaved_very_horrible
-    IMPASSABLE -> Res.drawable.surface_unpaved_impassable
-    else -> null
-}
-
-private val Smoothness.gravelImage: DrawableResource? get() = when (this) {
-    INTERMEDIATE -> Res.drawable.surface_gravel_intermediate
-    BAD -> Res.drawable.surface_gravel_bad
-    VERY_BAD -> Res.drawable.surface_gravel_very_bad
-    HORRIBLE -> Res.drawable.surface_unpaved_horrible
-    VERY_HORRIBLE -> Res.drawable.surface_unpaved_very_horrible
-    IMPASSABLE -> Res.drawable.surface_unpaved_impassable
-    else -> null
-}
-
-private val Smoothness.pavedDescription: StringResource? get() = when (this) {
-    EXCELLENT -> Res.string.quest_smoothness_description_excellent_paved
-    GOOD -> Res.string.quest_smoothness_description_good_paved
-    INTERMEDIATE -> Res.string.quest_smoothness_description_intermediate_paved
-    BAD -> Res.string.quest_smoothness_description_bad_paved
-    VERY_BAD -> Res.string.quest_smoothness_description_very_bad_paved
-    else -> null
-}
-
-private val Smoothness.settDescription: StringResource? get() = when (this) {
-    GOOD -> Res.string.quest_smoothness_description_good_sett
-    INTERMEDIATE -> Res.string.quest_smoothness_description_intermediate_sett
-    BAD -> Res.string.quest_smoothness_description_bad_sett
-    VERY_BAD -> Res.string.quest_smoothness_description_very_bad_sett
-    else -> null
-}
-
-private val Smoothness.pavingStonesDescription: StringResource? get() = when (this) {
-    EXCELLENT -> Res.string.quest_smoothness_description_excellent_paving_stones
-    GOOD -> Res.string.quest_smoothness_description_good_paving_stones
-    INTERMEDIATE -> Res.string.quest_smoothness_description_intermediate_paving_stones
-    BAD -> Res.string.quest_smoothness_description_bad_paving_stones
-    VERY_BAD -> Res.string.quest_smoothness_description_very_bad_paving_stones
-    else -> null
-}
-
-private val Smoothness.compactedOrGravelDescription: StringResource? get() = when (this) {
-    GOOD -> Res.string.quest_smoothness_description_good_compacted_gravel
-    INTERMEDIATE -> Res.string.quest_smoothness_description_intermediate_compacted_gravel
-    BAD -> Res.string.quest_smoothness_description_bad_compacted_gravel
-    VERY_BAD -> Res.string.quest_smoothness_description_very_bad_compacted_gravel
-    else -> null
-}
+/** Smoothness choices governed by the surface stored under [surfaceKey], e.g. `cycleway:surface`. */
+fun smoothnessAnswersForSurfaceKey(tags: Map<String, String>, surfaceKey: String = "surface"): List<Smoothness> =
+    smoothnessAnswersForSurface(tags[surfaceKey])

@@ -361,7 +361,7 @@ surface_asphalt_very_bad.jpg   CC-BY-SA 4.0      https://commons.wikimedia.org/w
 surface_compacted_bad.jpg      Public Domain     https://wiki.openstreetmap.org/wiki/File:Rough_compacted_track.jpg (helium314)
 surface_compacted_good.jpg     CC-BY-SA 2.0      https://www.geograph.org.uk/photo/3670104 (Alan Hunt)
 surface_compacted_intermedi... CC-BY-SA 2.0      https://www.geograph.org.uk/photo/3670853 (Alan Hunt)
-surface_compacted_very_bad.jpg CC0               https://wiki.openstreetmap.org/wiki/File:Smoothness_very_bad.jpg (rhhsm)
+surface_compacted_very_bad.jpg CC-BY 4.0         https://wiki.openstreetmap.org/wiki/File:Smoothness_very_bad.jpg (Rhhsmits)
 surface_concrete_bad.jpg       CC-BY-SA 2.0      https://wiki.openstreetmap.org/wiki/File:Geograph-6398805-by-Trevor-Littlewood.jpg (Trevor Littlewood)
 surface_concrete_excellent.jpg CC-BY-SA 4.0      https://wiki.openstreetmap.org/wiki/File:Boat_ramp,_Flint_River_Park.JPG (Michael Rivera)
 surface_concrete_good.jpg      CC-BY-SA 4.0      https://wiki.openstreetmap.org/wiki/File:2014-08-29_15_31_39_View_southeast_along_Stuyvesant_Avenue_in_Ewing,_New_Jersey,_with_concrete_pavement_likely_dating_to_the_1950s.JPG (Famartin)
@@ -379,9 +379,33 @@ surface_sett_bad.jpg           CC-BY-SA 4.0      https://wiki.openstreetmap.org/
 surface_sett_good.jpg          CC0               https://wiki.openstreetmap.org/wiki/File:Sett_paving_with_flattened_stones_and_very_shallow_gaps.jpg (NicoHood)
 surface_sett_intermediate.jpg  CC-BY-SA 4.0      https://wiki.openstreetmap.org/wiki/File:Sett_paving_with_mostly_square_but_rough_stones.jpg (Andre Thum)
 surface_sett_very_bad.jpg      CC-BY-SA 4.0      https://wiki.openstreetmap.org/wiki/File:Sett-5-VeryBad-B.jpg (Szem)
-surface_unpaved_horrible.jpg   CC-BY-SA 4.0      https://wiki.openstreetmap.org/wiki/File:Smoothness_horrible.jpg (rhhsm)
+surface_unpaved_horrible.jpg   CC-BY 4.0         https://wiki.openstreetmap.org/wiki/File:Smoothness_horrible.jpg (Rhhsmits)
 surface_unpaved_impassable.jpg Public Domain     https://drive.google.com/file/d/1yZXynVd07IWQPKpBbrlbABzfKHkG9X7R/view?usp=sharing (Tobias Zwick)
 surface_unpaved_very_horrib... CC-BY-SA 4.0      https://wiki.openstreetmap.org/wiki/File:Very_horrible_ruts.jpg (Preslav)
+surface_dirt_intermediate.jpg  CC0               https://wiki.openstreetmap.org/wiki/File:20240303_151530c.jpg (Rhhsmits), cropped and resized
+surface_dirt_bad.jpg           CC0               https://commons.wikimedia.org/wiki/File:Road_with_dirt_surface.jpg (Aktiivimallikansalainen), cropped and resized
+surface_dirt_very_bad.jpg      CC-BY-SA 2.0      https://commons.wikimedia.org/wiki/File:Eroded_byway_-_geograph.org.uk_-_7471811.jpg (David Robinson), cropped and resized
+surface_dirt_horrible.jpg      CC-BY-SA 2.0      https://commons.wikimedia.org/wiki/File:Track_alongside_field_-_geograph.org.uk_-_1100535.jpg (Steve F), cropped and resized
+surface_fine_gravel_intermediate.jpg CC-BY-SA 4.0      https://commons.wikimedia.org/wiki/File:Forest_track_made_of_fine_gravel_no1.jpg (Lukie.80), cropped and resized
+surface_grass_intermediate.jpg CC0               https://commons.wikimedia.org/wiki/File:Grass_road_in_Poland.jpg (Mateusz Konieczny), cropped and resized
+surface_grass_horrible.jpg     CC-BY-SA 4.0      https://wiki.openstreetmap.org/wiki/File:Grass-6-Horrible-A.jpg (Szem), cropped and resized
+surface_grass_paver_intermediate.jpg CC0               https://commons.wikimedia.org/wiki/File:Grass_paver_surface_in_Poland.jpg (Mateusz Konieczny), cropped and resized
+surface_grass_paver_bad.jpg    CC-BY 3.0         https://commons.wikimedia.org/wiki/File:Am_Zwinger_Pirna_119632082.jpg (Kalispera Dell), cropped and resized
+surface_grass_paver_very_bad.jpg CC0               https://commons.wikimedia.org/wiki/File:Uneven_grass_paver_3.jpg (Duja), cropped and resized
+surface_ground_intermediate.jpg CC-BY 4.0         https://wiki.openstreetmap.org/wiki/File:Smoothness_intermediate_unpaved.jpg (Rhhsmits), cropped and resized
+surface_ground_bad.jpg         CC0               https://commons.wikimedia.org/wiki/File:Quite_flat_ground_road_in_fields.jpg (Mateusz Konieczny), cropped and resized
+surface_metal_good.jpg         CC-BY-SA 4.0      https://wiki.openstreetmap.org/wiki/File:Metal-2-Good-A.jpg (Szem), cropped and resized
+surface_metal_intermediate.jpg CC-BY-SA 4.0      https://wiki.openstreetmap.org/wiki/File:Metal-3-Intermediate-A.jpg (Szem), cropped and resized
+surface_mud_very_bad.jpg       CC-BY-SA 3.0      https://commons.wikimedia.org/wiki/File:Dirt_Road_in_Russia_01.JPG (Игоревич), cropped and resized
+surface_sand_bad.jpg           CC-BY-SA 4.0      https://commons.wikimedia.org/wiki/File:Sand_Way.jpg (Kaushik Biswas), cropped and resized
+surface_sand_very_bad.jpg      CC-BY-SA 4.0      https://commons.wikimedia.org/wiki/File:An_800_Km_sandy_road_in_Western_Zambia.jpg (Mundia Wamunyima), cropped and resized
+surface_unhewn_cobblestone_bad.jpg CC-BY-SA 3.0 AT   https://commons.wikimedia.org/wiki/File:Bad_Radkersburg_Murgasse_IMG_0583.jpg (E.mil.mil), cropped and resized
+surface_unhewn_cobblestone_very_bad.jpg CC-BY-SA 3.0      https://commons.wikimedia.org/wiki/File:General_Wade%27s_Military_Road_near_Melgarve_below_Corrieyairack_Pass.JPG (Chiswick Chap), cropped and resized
+surface_wood_good.jpg          CC0               https://commons.wikimedia.org/wiki/File:Wooden_path_in_beaver_camp,_Stary_S%C4%85cz,_Poland.jpg (Michalgwo), cropped and resized
+surface_wood_intermediate.jpg  CC0               https://commons.wikimedia.org/wiki/File:Wooden_path_in_Plitvice_Lakes_National_Park,_Croatia.jpg (Michalgwo), cropped and resized
+surface_wood_bad.jpg           CC0               https://commons.wikimedia.org/wiki/File:Wooden_path_in_the_forest_on_the_trail_to_Trebevi%C4%87.jpg (Michalgwo), cropped and resized
+surface_wood_very_bad.jpg      CC0               https://commons.wikimedia.org/wiki/File:Wooden_bridge_in_poor_condition.jpg (Aktiivimallikansalainen), cropped and resized
+surface_woodchips_intermediate.jpg CC0               https://commons.wikimedia.org/wiki/File:Woodchips_in_Ma%C5%82opolska.jpg (Mateusz Konieczny), cropped and resized
 
 tactile_paving1.jpg            CC-0 1.0          https://commons.wikimedia.org/wiki/File:Tactile_paving_in_China_2.jpg
 tactile_paving2.jpg            CC-0 1.0          https://commons.wikimedia.org/wiki/File:Tactile_paving_in_a_Mass_Rapid_Transit_station_in_Singapore_-_20131105.jpg

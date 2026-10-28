@@ -268,4 +268,80 @@ class AddFootwayWidthTest {
             "bicycle" to "yes",
         ))))
     }
+
+    // R01: segregated footway with total width writes width, not footway:width (audit E1 case 2)
+    @Test fun `segregated footway with existing total width is not eligible`() {
+        assertFalse(quest.isApplicableTo(way(tags = mapOf(
+            "highway" to "footway",
+            "segregated" to "yes",
+            "width" to "1.5",
+        ))))
+    }
+
+    @Test fun `segregated footway without bicycle uses total width key`() {
+        val beforeTags = mapOf(
+            "highway" to "footway",
+            "segregated" to "yes",
+        )
+        assertTrue(quest.isApplicableTo(way(tags = beforeTags)))
+        val afterTags = beforeTags + mapOf("width" to "1.5")
+        assertFalse(quest.isApplicableTo(way(tags = afterTags)))
+        assertEquals(
+            setOf(StringMapEntryAdd("width", "1.5")),
+            quest.answerAppliedTo(WidthAnswer(Length.Meters(1.5), false), beforeTags)
+        )
+    }
+
+    @Test fun `segregated footway with bicycle yes does not reappear after footway width answer`() {
+        val answered = mapOf(
+            "highway" to "footway",
+            "bicycle" to "yes",
+            "segregated" to "yes",
+            "footway:width" to "1.2",
+        )
+        assertFalse(quest.isApplicableTo(way(tags = answered)))
+    }
+
+    @Test fun `estimated total width on segregated footway without bicycle remains eligible`() {
+        assertTrue(quest.isApplicableTo(way(tags = mapOf(
+            "highway" to "footway",
+            "segregated" to "yes",
+            "width" to "1.5",
+            "source:width" to "estimate",
+        ))))
+    }
+
+    @Test fun `precise total width on ordinary footway is not overwritten`() {
+        assertFalse(quest.isApplicableTo(way(tags = mapOf(
+            "highway" to "footway",
+            "width" to "2",
+        ))))
+    }
+
+    @Test fun `footway and cycleway part widths can coexist on segregated path`() {
+        assertFalse(quest.isApplicableTo(way(tags = mapOf(
+            "highway" to "path",
+            "bicycle" to "designated",
+            "foot" to "designated",
+            "segregated" to "yes",
+            "footway:width" to "1.2",
+            "cycleway:width" to "1.5",
+        ))))
+    }
+
+    @Test fun `apply source width ARCore to segregated footway without bicycle`() {
+        assertEquals(
+            setOf(
+                StringMapEntryAdd("width", "1.5"),
+                StringMapEntryAdd("source:width", "ARCore"),
+            ),
+            quest.answerAppliedTo(
+                WidthAnswer(Length.Meters(1.5), true),
+                mapOf(
+                    "highway" to "footway",
+                    "segregated" to "yes",
+                )
+            )
+        )
+    }
 }

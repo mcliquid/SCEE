@@ -216,4 +216,71 @@ class AddCyclewayWidthTest {
             )
         )
     }
+
+    // R01: filter must check cycleway:width when writer uses cycleway:width (audit E1 case 1)
+    @Test fun `segregated cycleway with foot no asks for cycleway width not total width`() {
+        val beforeTags = mapOf(
+            "highway" to "cycleway",
+            "foot" to "no",
+            "segregated" to "yes",
+        )
+        assertTrue(quest.isApplicableTo(way(tags = beforeTags)))
+        val afterTags = beforeTags + mapOf("cycleway:width" to "2")
+        assertFalse(quest.isApplicableTo(way(tags = afterTags)))
+        assertEquals(
+            setOf(StringMapEntryAdd("cycleway:width", "2")),
+            quest.answerAppliedTo(WidthAnswer(Length.Meters(2.0), false), beforeTags)
+        )
+    }
+
+    @Test fun `segregated cycleway with foot no and total width only stays eligible for cycleway width`() {
+        val tags = mapOf(
+            "highway" to "cycleway",
+            "foot" to "no",
+            "segregated" to "yes",
+            "width" to "1.5",
+        )
+        assertTrue(quest.isApplicableTo(way(tags = tags)))
+    }
+
+    @Test fun `segregated cycleway with foot no does not reappear after answering cycleway width`() {
+        val beforeTags = mapOf(
+            "highway" to "cycleway",
+            "foot" to "no",
+            "segregated" to "yes",
+        )
+        val answered = beforeTags + mapOf("cycleway:width" to "2")
+        assertFalse(quest.isApplicableTo(way(tags = answered)))
+    }
+
+    @Test fun `estimated cycleway width on segregated cycleway remains eligible`() {
+        assertTrue(quest.isApplicableTo(way(tags = mapOf(
+            "highway" to "cycleway",
+            "foot" to "designated",
+            "segregated" to "yes",
+            "cycleway:width" to "1.5",
+            "source:cycleway:width" to "estimate",
+        ))))
+    }
+
+    @Test fun `precise cycleway width on segregated way is not overwritten`() {
+        assertFalse(quest.isApplicableTo(way(tags = mapOf(
+            "highway" to "path",
+            "bicycle" to "designated",
+            "foot" to "designated",
+            "segregated" to "yes",
+            "cycleway:width" to "1.8",
+        ))))
+    }
+
+    @Test fun `cycleway and total width can coexist on segregated path`() {
+        assertFalse(quest.isApplicableTo(way(tags = mapOf(
+            "highway" to "path",
+            "bicycle" to "designated",
+            "foot" to "designated",
+            "segregated" to "yes",
+            "width" to "3",
+            "cycleway:width" to "1.5",
+        ))))
+    }
 }

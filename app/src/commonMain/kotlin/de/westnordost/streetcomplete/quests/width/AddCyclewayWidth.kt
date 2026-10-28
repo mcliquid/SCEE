@@ -26,11 +26,12 @@ class AddCyclewayWidth(
             (
               highway = cycleway
               and foot !~ yes|designated
+              and segregated != yes
               and (!width or source:width ~ ".*estimat.*")
             ) or (
               segregated = yes
               and (
-                highway = cycleway and foot ~ yes|designated
+                highway = cycleway
                 or highway ~ path|footway and bicycle != no
                 or highway = bridleway and bicycle ~ designated|yes
               )
@@ -64,8 +65,7 @@ class AddCyclewayWidth(
     }
 
     override fun applyAnswerTo(answer: WidthAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
-        // segregated=yes → cycleway portion width; exclusive or shared (segregated=no) → total width
-        val key = if (tags["segregated"] == "yes") "cycleway:width" else "width"
+        val key = cyclewayWidthTargetKey(tags)
 
         tags[key] = answer.width.toOsmValue()
         if (answer.isARMeasurement) {

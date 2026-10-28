@@ -29,11 +29,27 @@ class AddFootwayWidth(
           ) or (
             segregated = yes
             and (
-              highway = cycleway and foot ~ yes|designated
-              or highway ~ path|footway and bicycle != no
-              or highway = bridleway and bicycle ~ designated|yes
+              (
+                highway = footway
+                and bicycle ~ yes|designated
+                and (!footway:width or source:footway:width ~ ".*estimat.*")
+              ) or (
+                highway = footway
+                and bicycle !~ yes|designated
+                and (!width or source:width ~ ".*estimat.*")
+              ) or (
+                highway = cycleway and foot ~ yes|designated
+                and (!footway:width or source:footway:width ~ ".*estimat.*")
+              ) or (
+                highway = path
+                and bicycle != no
+                and (!footway:width or source:footway:width ~ ".*estimat.*")
+              ) or (
+                highway = bridleway
+                and bicycle ~ designated|yes
+                and (!footway:width or source:footway:width ~ ".*estimat.*")
+              )
             )
-            and (!footway:width or source:footway:width ~ ".*estimat.*")
           ) or (
             highway = footway
             and footway !~ link|crossing
@@ -61,10 +77,7 @@ class AddFootwayWidth(
     }
 
     override fun applyAnswerTo(answer: WidthAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
-        val isExclusive = tags["highway"] == "footway" && tags["bicycle"] != "yes" && tags["bicycle"] != "designated"
-        val isBicyclePermittedFootway =
-            tags["highway"] == "footway" && tags["bicycle"] == "yes" && tags["segregated"] != "yes"
-        val key = if (isExclusive || isBicyclePermittedFootway) "width" else "footway:width"
+        val key = footwayWidthTargetKey(tags)
 
         tags[key] = answer.width.toOsmValue()
         if (answer.isARMeasurement) {

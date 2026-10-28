@@ -169,35 +169,18 @@ if (keystorePropertiesFile.exists()) {
 }
 
 // Fail release packaging when BuildConfig would embed a blank OSM client id.
-val verifyReleaseOAuthClientId = tasks.register("verifyReleaseOAuthClientId") {
-    group = "verification"
-    description = "Ensures release BuildConfig embeds a non-blank SCEE-mc OAuth client id"
-    dependsOn("generateReleaseBuildConfig")
-    doLast {
-        val buildConfigFile = layout.buildDirectory
-            .file("generated/source/buildConfig/release/de/westnordost/streetcomplete/app/BuildConfig.java")
-            .get()
-            .asFile
-        require(buildConfigFile.isFile) {
-            "Missing generated release BuildConfig at ${buildConfigFile.path}"
-        }
-        val text = buildConfigFile.readText()
-        val match = Regex("""OAUTH2_CLIENT_ID_LIVE\s*=\s*"([^"]*)"""").find(text)
-            ?: error("OAUTH2_CLIENT_ID_LIVE not found in release BuildConfig")
-        val embeddedId = match.groupValues[1].trim()
-        require(embeddedId.isNotEmpty()) {
-            "Release BuildConfig.OAUTH2_CLIENT_ID_LIVE is blank. " +
-                "Set app.sceemc.oauth2ClientId (gradle.properties / -P / CI secret) before assembleRelease."
-        }
-        // Length-only check — do not print the client id.
-        require(embeddedId.length >= 8) {
-            "Release OAuth client id is too short to be a valid OSM client id"
-        }
-        logger.lifecycle(
-            "Verified release BuildConfig OAuth client id (length=${embeddedId.length}, value not logged)"
+// Typed task (buildSrc) — configuration-cache safe; only wired to release packaging.
+val verifyReleaseOAuthClientId =
+    tasks.register<VerifyReleaseOAuthClientIdTask>("verifyReleaseOAuthClientId") {
+        group = "verification"
+        description = "Ensures release BuildConfig embeds a non-blank SCEE-mc OAuth client id"
+        dependsOn("generateReleaseBuildConfig")
+        buildConfigFile.set(
+            layout.buildDirectory.file(
+                "generated/source/buildConfig/release/de/westnordost/streetcomplete/app/BuildConfig.java"
+            )
         )
     }
-}
 
 tasks.matching { it.name == "assembleRelease" || it.name == "packageRelease" }.configureEach {
     dependsOn(verifyReleaseOAuthClientId)

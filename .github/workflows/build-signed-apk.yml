@@ -136,8 +136,9 @@ jobs:
           KEY_PASSWORD: ${{ secrets.key_password }}
         run: |
           set -euo pipefail
-          # --no-configuration-cache: ensure OAuth BuildConfig fields are recomputed from gradle.properties
-          ./gradlew :androidApp:assembleRelease --no-configuration-cache \
+          # OAuth client id is injected into gradle.properties above; verifyReleaseOAuthClientId
+          # is configuration-cache compatible and still fails packaging if BuildConfig is blank.
+          ./gradlew :androidApp:assembleRelease --configuration-cache \
             -Pandroid.injected.signing.store.file="${GITHUB_WORKSPACE}/signing-key.jks" \
             -Pandroid.injected.signing.store.password="${STORE_PASSWORD}" \
             -Pandroid.injected.signing.key.alias="${KEY_ALIAS}" \

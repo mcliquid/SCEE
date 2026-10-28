@@ -32,7 +32,11 @@ class AddBarrierOpening(
             barrier ~ gate|entrance|sliding_gate|swing_gate|wicket_gate|bollard|block
             or barrier = cycle_barrier and cycle_barrier ~ single|diagonal
           )
-          and (!maxwidth:physical or source:maxwidth_physical ~ ".*estimat.*")
+          and (
+            !maxwidth:physical
+            or source:maxwidth:physical ~ ".*estimat.*"
+            or (!source:maxwidth:physical and source:maxwidth_physical ~ ".*estimat.*")
+          )
           and (!width or source:width ~ ".*estimat.*")
           and (!maxwidth or source:maxwidth ~ ".*estimat.*")
           and access !~ private|no|customers|agricultural

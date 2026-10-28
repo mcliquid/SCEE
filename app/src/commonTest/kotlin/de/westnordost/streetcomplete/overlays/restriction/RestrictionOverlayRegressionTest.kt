@@ -9,7 +9,6 @@ import de.westnordost.streetcomplete.data.osm.mapdata.RelationMember
 import de.westnordost.streetcomplete.data.overlays.OverlayColor
 import de.westnordost.streetcomplete.data.overlays.OverlayStyle
 import de.westnordost.streetcomplete.overlays.overlaysRegistry
-import de.westnordost.streetcomplete.quests.max_weight.MaxWeightType
 import de.westnordost.streetcomplete.quests.max_weight.Weight
 import de.westnordost.streetcomplete.testutils.inMemoryPrefs
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry

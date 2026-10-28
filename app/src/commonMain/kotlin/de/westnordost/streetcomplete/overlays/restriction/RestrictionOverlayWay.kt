@@ -15,8 +15,6 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.osm.mapdata.key
 import de.westnordost.streetcomplete.osm.ALL_ROADS
 import de.westnordost.streetcomplete.quests.max_weight.Weight
-import de.westnordost.streetcomplete.quests.max_weight.MaxWeightType
-import de.westnordost.streetcomplete.quests.max_weight.osmKey
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.ic_restriction_no_left_turn
 import de.westnordost.streetcomplete.resources.ic_restriction_no_right_turn

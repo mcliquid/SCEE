@@ -47,11 +47,8 @@ import de.westnordost.streetcomplete.data.overlays.ShowElementForm
 import de.westnordost.streetcomplete.data.overlays.Edit
 import de.westnordost.streetcomplete.data.overlays.OverlayAction
 import de.westnordost.streetcomplete.osm.AddConditionalDialog
-import de.westnordost.streetcomplete.quests.max_weight.MaxWeightSignForm
-import de.westnordost.streetcomplete.quests.max_weight.MaxWeightType
+import de.westnordost.streetcomplete.quests.max_weight.WeightRestrictionSignForm
 import de.westnordost.streetcomplete.quests.max_weight.Weight
-import de.westnordost.streetcomplete.quests.max_weight.getIcon
-import de.westnordost.streetcomplete.quests.max_weight.osmKey
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.access_manager_button_add_conditional
 import de.westnordost.streetcomplete.resources.add
@@ -391,10 +388,10 @@ fun RestrictionOverlayWayForm(
                         .joinToString("\n")
 
                     key(selectedRestriction, weightRestriction.type, weightRestriction.type.osmKey in weightRestriction.way.tags) {
-                        MaxWeightSignForm(
-                            type = weightRestriction.type,
-                            weight = editedWeight,
-                            onWeightChange = { newWeight ->
+                        WeightRestrictionSignForm(
+                            value = weightRestriction.type.toMaxWeightRestriction(editedWeight),
+                            onValueChange = { newValue ->
+                                val newWeight = newValue.weight
                                 editedWeight = newWeight
                                 currentRestriction = withWeight(weightRestriction, newWeight)
                             },

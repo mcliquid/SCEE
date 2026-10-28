@@ -116,7 +116,7 @@ class SmoothnessItemKtTest {
             "metal" to listOf(GOOD, INTERMEDIATE),
             "ground" to listOf(INTERMEDIATE, BAD, VERY_BAD, HORRIBLE),
             "dirt" to listOf(INTERMEDIATE, BAD, VERY_BAD, HORRIBLE, VERY_HORRIBLE),
-            "grass" to listOf(INTERMEDIATE, HORRIBLE),
+            "grass" to listOf(INTERMEDIATE, BAD, VERY_BAD, HORRIBLE),
             "sand" to listOf(BAD, VERY_BAD),
             "mud" to listOf(VERY_BAD),
             "woodchips" to listOf(INTERMEDIATE),

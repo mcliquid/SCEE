@@ -21,20 +21,20 @@
     <string name="smoothness_description_very_bad_natural">Tiefe Schlaglöcher, Spurrillen, Steine oder Wurzeln; mehr Bodenfreiheit nötig</string>
 
     <string name="smoothness_no_photo">Noch kein Beispielfoto für diese Oberfläche</string>
-    <string name="smoothness_similar_surface">Beispiel auf ähnlicher Oberfläche: %s</string>
+    <string name="smoothness_similar_surface">Beispiel auf ähnlicher Oberfläche: %1$s</string>
 
-    <string name="overlay_smoothness">Ebenheit</string>
-    <string name="overlay_smoothness_surface">Oberfläche: %s</string>
-    <string name="overlay_smoothness_surface_whole_way">Oberfläche des ganzen Wegs: %s</string>
-    <string name="overlay_smoothness_surface_new">Neue Oberfläche: %s</string>
+    <string name="overlay_smoothness">Oberflächenqualität</string>
+    <string name="overlay_smoothness_surface">Oberfläche: %1$s</string>
+    <string name="overlay_smoothness_surface_whole_way">Oberfläche des ganzen Wegs: %1$s</string>
+    <string name="overlay_smoothness_surface_new">Neue Oberfläche: %1$s</string>
     <string name="overlay_smoothness_surface_unknown">Oberfläche nicht erfasst. Die Beispiele hängen von der Oberfläche ab.</string>
     <string name="overlay_smoothness_surface_generic">Keine Beispiele für diese Oberfläche. Allgemeine Auswahl.</string>
     <string name="overlay_smoothness_set_surface">Zuerst Oberfläche angeben</string>
-    <string name="overlay_smoothness_select">Ebenheit auswählen</string>
+    <string name="overlay_smoothness_select">Oberflächenqualität auswählen</string>
     <string name="overlay_smoothness_confirm">Unverändert</string>
     <string name="overlay_smoothness_confirmed">Als unverändert bestätigt</string>
-    <string name="overlay_smoothness_invalid">Unbekannter Wert: %s</string>
-    <string name="overlay_smoothness_use_common">Ganzer Weg: %s</string>
+    <string name="overlay_smoothness_invalid">Unbekannter Wert: %1$s</string>
+    <string name="overlay_smoothness_use_common">Ganzer Weg: %1$s</string>
     <string name="overlay_smoothness_sidewalk_hint">Gehweg-Tags werden hier nicht bearbeitet.</string>
     <string name="overlay_smoothness_edit_whole">Weg als Ganzes bearbeiten</string>
 </resources>

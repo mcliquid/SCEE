@@ -5,9 +5,9 @@
     <string name="quest_partSmoothness_right">Cycleway on the right</string>
     <string name="quest_partSmoothness_cycle">Cycleway part</string>
     <string name="quest_partSmoothness_foot">Footway part</string>
-    <string name="quest_partSmoothness_existing">Previously mapped: %s</string>
+    <string name="quest_partSmoothness_existing">Previously mapped: %1$s</string>
     <string name="quest_partSmoothness_unanswered">Not assessed</string>
-    <string name="quest_partSmoothness_clear">Do not assess: %s</string>
+    <string name="quest_partSmoothness_clear">Do not assess: %1$s</string>
     <string name="quest_partSmoothness_partial_hint">Assess only the parts you can see. Other parts will remain unchanged.</string>
     <string name="quest_partSmoothness_same">All open parts have the same smoothness</string>
     <string name="quest_partSmoothness_direction">Left and right follow the OSM way direction shown by the arrow.</string>

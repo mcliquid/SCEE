@@ -5,9 +5,9 @@
     <string name="quest_partSmoothness_right">Radweg auf der rechten Seite</string>
     <string name="quest_partSmoothness_cycle">Radweganteil</string>
     <string name="quest_partSmoothness_foot">Gehweganteil</string>
-    <string name="quest_partSmoothness_existing">Bisher eingetragen: %s</string>
+    <string name="quest_partSmoothness_existing">Bisher eingetragen: %1$s</string>
     <string name="quest_partSmoothness_unanswered">Nicht beurteilt</string>
-    <string name="quest_partSmoothness_clear">Nicht beurteilen: %s</string>
+    <string name="quest_partSmoothness_clear">Nicht beurteilen: %1$s</string>
     <string name="quest_partSmoothness_partial_hint">Bewerte nur die sichtbaren Teilflächen. Die übrigen bleiben unverändert.</string>
     <string name="quest_partSmoothness_same">Alle offenen Teilflächen haben dieselbe Ebenheit</string>
     <string name="quest_partSmoothness_direction">Links und rechts beziehen sich auf die OSM-Way-Richtung, die der Pfeil zeigt.</string>

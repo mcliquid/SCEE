@@ -34,10 +34,29 @@ class SmoothnessOverlayStyleTest {
         }
     }
 
-    @Test fun `missing smoothness is neutral, also where it is expected`() {
+    @Test fun `missing smoothness is red without label`() {
         val style = assertIs<OverlayStyle.Polyline>(style("highway" to "residential", "surface" to "asphalt"))
-        assertNull(style.stroke)
+        assertEquals(OverlayColor.Red, style.stroke?.color)
         assertNull(style.label)
+    }
+
+    @Test fun `missing smoothness on unpaved and unknown surface is red`() {
+        assertEquals(OverlayColor.Red, strokeColor("highway" to "track", "surface" to "grass"))
+        assertEquals(OverlayColor.Red, strokeColor("highway" to "footway"))
+    }
+
+    @Test fun `missing smoothness is not highlighted where tagging is not expected`() {
+        assertEquals(OverlayColor.Invisible, strokeColor("highway" to "footway", "indoor" to "yes"))
+        assertEquals(OverlayColor.Invisible, strokeColor("highway" to "footway", "access" to "private"))
+    }
+
+    @Test fun `missing smoothness area is red`() {
+        val style = assertIs<OverlayStyle.Polygon>(style("highway" to "pedestrian", "area" to "yes"))
+        assertEquals(OverlayColor.Red, style.color)
+    }
+
+    @Test fun `segregated way without any smoothness is red`() {
+        assertEquals(OverlayColor.Red, strokeColor("highway" to "path", "segregated" to "yes"))
     }
 
     @Test fun `invalid smoothness is red and labelled`() {
@@ -81,6 +100,7 @@ class SmoothnessOverlayStyleTest {
     }
 
     @Test fun `styled elements are roads and paths but not steps`() {
+        // missing values are styled too, so they can be selected
         val road = way(1, tags = mapOf("highway" to "residential"))
         val path = way(2, tags = mapOf("highway" to "footway"))
         val steps = way(3, tags = mapOf("highway" to "steps", "smoothness" to "bad"))

@@ -16,6 +16,7 @@ import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.WHEELCHAIR
 import de.westnordost.streetcomplete.osm.ALL_PATHS
 import de.westnordost.streetcomplete.osm.ALL_ROADS
+import de.westnordost.streetcomplete.overlays.surface.surfaceTaggingNotExpected
 import de.westnordost.streetcomplete.quests.smoothness.AddPathSmoothness
 import de.westnordost.streetcomplete.quests.smoothness.AddRoadSmoothness
 import de.westnordost.streetcomplete.quests.smoothness.Smoothness
@@ -60,9 +61,9 @@ private val SMOOTHNESS_OVERLAY_HIGHWAYS = ALL_ROADS + ALL_PATHS - "steps"
  * - sequential palette from blue (excellent) via yellow to orange, as proposed in #5486. Few ways
  *   are worse than very bad, so horrible and very horrible share a colour
  * - impassable is black, the colour reserved for "no" / "does not exist"
- * - red is reserved for values that are not valid smoothness values
- * - missing smoothness is not coloured at all (but the way can still be tapped), because
- *   smoothness is not mapped on most ways and colouring all of them would not be helpful
+ * - red marks missing and invalid values, like in the surface overlay. Invalid values are
+ *   additionally labelled with the raw value. Like there, missing values are not highlighted
+ *   where tagging is not expected (indoor, private, links); those ways can still be tapped
  */
 internal val Smoothness.color: Color get() = when (this) {
     EXCELLENT ->     OverlayColor.Blue
@@ -92,14 +93,15 @@ internal fun getSmoothnessStyle(element: Element): OverlayStyle {
         state.whole.smoothness
     }
     val color = when (smoothness) {
-        null -> null
+        // same as in the surface overlay
+        null -> if (surfaceTaggingNotExpected(element)) OverlayColor.Invisible else OverlayColor.Red
         is ParsedSmoothness.Valid -> smoothness.value.color
         is ParsedSmoothness.Invalid -> OverlayColor.Red
     }
     val label = (smoothness as? ParsedSmoothness.Invalid)?.raw
     return if (element.tags["area"] == "yes") {
-        OverlayStyle.Polygon(color ?: OverlayColor.Invisible, label = label)
+        OverlayStyle.Polygon(color, label = label)
     } else {
-        OverlayStyle.Polyline(stroke = color?.let { OverlayStyle.Stroke(it) }, label = label)
+        OverlayStyle.Polyline(stroke = OverlayStyle.Stroke(color), label = label)
     }
 }

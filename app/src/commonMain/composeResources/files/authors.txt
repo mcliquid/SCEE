@@ -388,6 +388,8 @@ surface_dirt_very_bad.jpg      CC-BY-SA 2.0      https://commons.wikimedia.org/w
 surface_dirt_horrible.jpg      CC-BY-SA 2.0      https://commons.wikimedia.org/wiki/File:Track_alongside_field_-_geograph.org.uk_-_1100535.jpg (Steve F), cropped and resized
 surface_fine_gravel_intermediate.jpg CC-BY-SA 4.0      https://commons.wikimedia.org/wiki/File:Forest_track_made_of_fine_gravel_no1.jpg (Lukie.80), cropped and resized
 surface_grass_intermediate.jpg CC0               https://commons.wikimedia.org/wiki/File:Grass_road_in_Poland.jpg (Mateusz Konieczny), cropped and resized
+surface_grass_bad.jpg          CC-BY-SA 2.0      https://commons.wikimedia.org/wiki/File:Muddy_tyre_tracks_on_a_grassy_field_-_geograph.org.uk_-_3200677.jpg (Christine Johnstone), cropped and resized
+surface_grass_very_bad.jpg     CC-BY-SA 2.0      https://commons.wikimedia.org/wiki/File:Grassy_ruts_by_Failand_Lane_-_geograph.org.uk_-_7454261.jpg (Derek Harper), cropped and resized
 surface_grass_horrible.jpg     CC-BY-SA 4.0      https://wiki.openstreetmap.org/wiki/File:Grass-6-Horrible-A.jpg (Szem), cropped and resized
 surface_grass_paver_intermediate.jpg CC0               https://commons.wikimedia.org/wiki/File:Grass_paver_surface_in_Poland.jpg (Mateusz Konieczny), cropped and resized
 surface_grass_paver_bad.jpg    CC-BY 3.0         https://commons.wikimedia.org/wiki/File:Am_Zwinger_Pirna_119632082.jpg (Kalispera Dell), cropped and resized

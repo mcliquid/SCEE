@@ -136,7 +136,7 @@ private val Surface.color get() = when (this) {
         -> OverlayColor.Black
 }
 
-private fun surfaceTaggingNotExpected(element: Element) =
+internal fun surfaceTaggingNotExpected(element: Element) =
     isIndoor(element.tags) || isPrivateOnFoot(element) || isLink(element.tags)
 
 private fun isIndoor(tags: Map<String, String>): Boolean = tags["indoor"] == "yes"

@@ -268,6 +268,8 @@ private val PROFILES: Map<String, SmoothnessProfile> = mapOf(
     "laterite" to natural("laterite", INTERMEDIATE),
     "grass" to natural("grass", INTERMEDIATE, mapOf(
         INTERMEDIATE to SmoothnessPhoto(Res.drawable.surface_grass_intermediate),
+        BAD to SmoothnessPhoto(Res.drawable.surface_grass_bad),
+        VERY_BAD to SmoothnessPhoto(Res.drawable.surface_grass_very_bad),
         HORRIBLE to SmoothnessPhoto(Res.drawable.surface_grass_horrible),
     )),
     "mud" to natural("mud", VERY_BAD, mapOf(

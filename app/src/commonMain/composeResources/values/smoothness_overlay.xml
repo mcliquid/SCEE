@@ -22,21 +22,21 @@
     <string name="smoothness_description_very_bad_natural">Deep potholes, ruts, rocks or roots; higher clearance needed</string>
 
     <string name="smoothness_no_photo">No example photo for this surface yet</string>
-    <string name="smoothness_similar_surface">Example on a similar surface: %s</string>
+    <string name="smoothness_similar_surface">Example on a similar surface: %1$s</string>
 
     <!-- SCEE-mc: smoothness overlay -->
     <string name="overlay_smoothness">Smoothness</string>
-    <string name="overlay_smoothness_surface">Surface: %s</string>
-    <string name="overlay_smoothness_surface_whole_way">Surface of the whole way: %s</string>
-    <string name="overlay_smoothness_surface_new">New surface: %s</string>
+    <string name="overlay_smoothness_surface">Surface: %1$s</string>
+    <string name="overlay_smoothness_surface_whole_way">Surface of the whole way: %1$s</string>
+    <string name="overlay_smoothness_surface_new">New surface: %1$s</string>
     <string name="overlay_smoothness_surface_unknown">Surface not mapped. The examples depend on the surface.</string>
     <string name="overlay_smoothness_surface_generic">No examples for this surface. Generic selection.</string>
     <string name="overlay_smoothness_set_surface">Set surface first</string>
     <string name="overlay_smoothness_select">Select smoothness</string>
     <string name="overlay_smoothness_confirm">Still the same</string>
     <string name="overlay_smoothness_confirmed">Confirmed as unchanged</string>
-    <string name="overlay_smoothness_invalid">Unrecognized value: %s</string>
-    <string name="overlay_smoothness_use_common">Whole way: %s</string>
+    <string name="overlay_smoothness_invalid">Unrecognized value: %1$s</string>
+    <string name="overlay_smoothness_use_common">Whole way: %1$s</string>
     <string name="overlay_smoothness_sidewalk_hint">Sidewalk tags are not edited here.</string>
     <string name="overlay_smoothness_edit_whole">Edit the way as a whole</string>
 </resources>

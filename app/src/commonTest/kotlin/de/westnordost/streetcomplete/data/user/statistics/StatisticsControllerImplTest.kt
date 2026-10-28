@@ -33,6 +33,7 @@ class StatisticsControllerImplTest {
 
     private val questA = "TestQuestTypeA"
     private val questB = "TestQuestTypeB"
+    private val questBAlias = "TestQuestTypeBAlias"
 
     @BeforeTest fun setUp() {
         editTypeStatisticsDao = mock()
@@ -58,7 +59,8 @@ class StatisticsControllerImplTest {
             activeDatesDao,
             lazyOf(countryBoundaries),
             prefs,
-            userLoginSource
+            userLoginSource,
+            mapOf(questBAlias to questB)
         )
         statisticsController.addListener(listener)
     }
@@ -75,12 +77,24 @@ class StatisticsControllerImplTest {
         every { countryBoundaries.getIds(any()) } returns listOf("US-TX", "US", "World")
         statisticsController.addOne(questA, p(0.0, 0.0))
 
-        verify { editTypeStatisticsDao.addOne("TestQuestTypeA") }
+        verify { editTypeStatisticsDao.addOne(questA) }
         verify { countryStatisticsDao.addOne("US") }
-        verify { currentWeekEditTypeStatisticsDao.addOne("TestQuestTypeA") }
+        verify { currentWeekEditTypeStatisticsDao.addOne(questA) }
         verify { currentWeekCountryStatisticsDao.addOne("US") }
         verify { activeDatesDao.addToday() }
         verify { listener.onAddedOne(questA) }
+    }
+
+    @Test fun `adding one alias`() {
+        every { countryBoundaries.getIds(any()) } returns listOf("US-TX", "US", "World")
+        statisticsController.addOne(questBAlias, p(0.0, 0.0))
+
+        verify { editTypeStatisticsDao.addOne(questB) }
+        verify { countryStatisticsDao.addOne("US") }
+        verify { currentWeekEditTypeStatisticsDao.addOne(questB) }
+        verify { currentWeekCountryStatisticsDao.addOne("US") }
+        verify { activeDatesDao.addToday() }
+        verify { listener.onAddedOne(questB) }
     }
 
     @Test fun `adding one one day later`() {
@@ -89,8 +103,8 @@ class StatisticsControllerImplTest {
 
         statisticsController.addOne(questA, p(0.0, 0.0))
 
-        verify { editTypeStatisticsDao.addOne("TestQuestTypeA") }
-        verify { currentWeekEditTypeStatisticsDao.addOne("TestQuestTypeA") }
+        verify { editTypeStatisticsDao.addOne(questA) }
+        verify { currentWeekEditTypeStatisticsDao.addOne(questA) }
         verify { activeDatesDao.addToday() }
         verify { listener.onAddedOne(questA) }
         verify { listener.onUpdatedDaysActive() }
@@ -100,12 +114,24 @@ class StatisticsControllerImplTest {
         every { countryBoundaries.getIds(any()) } returns listOf("US-TX", "US", "World")
         statisticsController.subtractOne(questA, p(0.0, 0.0))
 
-        verify { editTypeStatisticsDao.subtractOne("TestQuestTypeA") }
+        verify { editTypeStatisticsDao.subtractOne(questA) }
         verify { countryStatisticsDao.subtractOne("US") }
-        verify { currentWeekEditTypeStatisticsDao.subtractOne("TestQuestTypeA") }
+        verify { currentWeekEditTypeStatisticsDao.subtractOne(questA) }
         verify { currentWeekCountryStatisticsDao.subtractOne("US") }
         verify { activeDatesDao.addToday() }
         verify { listener.onSubtractedOne(questA) }
+    }
+
+    @Test fun `subtracting one alias`() {
+        every { countryBoundaries.getIds(any()) } returns listOf("US-TX", "US", "World")
+        statisticsController.subtractOne(questBAlias, p(0.0, 0.0))
+
+        verify { editTypeStatisticsDao.subtractOne(questB) }
+        verify { countryStatisticsDao.subtractOne("US") }
+        verify { currentWeekEditTypeStatisticsDao.subtractOne(questB) }
+        verify { currentWeekCountryStatisticsDao.subtractOne("US") }
+        verify { activeDatesDao.addToday() }
+        verify { listener.onSubtractedOne(questB) }
     }
 
     @Test fun `subtracting one one day later`() {
@@ -114,8 +140,8 @@ class StatisticsControllerImplTest {
 
         statisticsController.subtractOne(questA, p(0.0, 0.0))
 
-        verify { editTypeStatisticsDao.subtractOne("TestQuestTypeA") }
-        verify { currentWeekEditTypeStatisticsDao.subtractOne("TestQuestTypeA") }
+        verify { editTypeStatisticsDao.subtractOne(questA) }
+        verify { currentWeekEditTypeStatisticsDao.subtractOne(questA) }
         verify { activeDatesDao.addToday() }
         verify { listener.onSubtractedOne(questA) }
         verify { listener.onUpdatedDaysActive() }
@@ -149,6 +175,7 @@ class StatisticsControllerImplTest {
             types = listOf(
                 EditTypeStatistics(questA, 123),
                 EditTypeStatistics(questB, 44),
+                EditTypeStatistics(questBAlias, 11),
             ),
             countries = listOf(
                 CountryStatistics("DE", 12, 5),
@@ -160,6 +187,7 @@ class StatisticsControllerImplTest {
             currentWeekTypes = listOf(
                 EditTypeStatistics(questA, 321),
                 EditTypeStatistics(questB, 33),
+                EditTypeStatistics(questBAlias, 44),
             ),
             currentWeekCountries = listOf(
                 CountryStatistics("AT", 999, 88),
@@ -175,8 +203,8 @@ class StatisticsControllerImplTest {
         ))
         verify {
             editTypeStatisticsDao.replaceAll(mapOf(
-                "TestQuestTypeA" to 123,
-                "TestQuestTypeB" to 44
+                questA to 123,
+                questB to 55
             ))
         }
         verify {
@@ -187,8 +215,8 @@ class StatisticsControllerImplTest {
         }
         verify {
             currentWeekEditTypeStatisticsDao.replaceAll(mapOf(
-                "TestQuestTypeA" to 321,
-                "TestQuestTypeB" to 33
+                questA to 321,
+                questB to 77
             ))
         }
         verify {

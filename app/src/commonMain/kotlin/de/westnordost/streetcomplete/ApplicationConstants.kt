@@ -8,11 +8,23 @@ import kotlin.time.Duration.Companion.minutes
 
 object ApplicationConstants {
     /**
-     * Changeset `created_by` / HTTP User-Agent product name.
+     * Product name for UI, changeset `created_by`, notes, etc.
      * Android overrides this at startup from BuildConfig (`SCEE-mc`); Desktop/iOS keep the default.
      */
     var NAME = "StreetComplete_ee"
-    val USER_AGENT: String get() = NAME + " " + BuildConfig.VERSION_NAME
+
+    /** OSM/changeset identity: `NAME VERSION` (e.g. `SCEE-mc 64.0`). */
+    val USER_AGENT: String get() = "$NAME ${BuildConfig.VERSION_NAME}"
+
+    /**
+     * Fixed product name for HTTP calls to StreetComplete infrastructure
+     * (statistics API allowlist, ban list, …). Independent of [NAME] / launcher branding.
+     */
+    const val HTTP_USER_AGENT_NAME = "StreetComplete_ee"
+
+    /** HTTP User-Agent: `StreetComplete_ee VERSION`. */
+    val HTTP_USER_AGENT: String get() = "$HTTP_USER_AGENT_NAME ${BuildConfig.VERSION_NAME}"
+
     const val QUESTTYPE_TAG_KEY = "StreetComplete:quest_type" // use original SC here, so statistics are counted
 
     const val DATABASE_NAME = "streetcomplete_v2.db"

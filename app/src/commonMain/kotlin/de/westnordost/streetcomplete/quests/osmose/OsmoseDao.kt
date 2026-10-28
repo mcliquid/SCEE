@@ -1,7 +1,7 @@
 package de.westnordost.streetcomplete.quests.osmose
 
 import androidx.compose.ui.text.intl.LocaleList
-import de.westnordost.streetcomplete.ApplicationConstants.USER_AGENT
+import de.westnordost.streetcomplete.ApplicationConstants.HTTP_USER_AGENT
 import de.westnordost.streetcomplete.data.ConflictAlgorithm
 import de.westnordost.streetcomplete.data.CursorPosition
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
@@ -92,7 +92,7 @@ class OsmoseDao(
         val url = "$csvUrl?zoom=$zoom&item=xxxx&level=$level&limit=500&bbox=${bbox.min.longitude}%2C${bbox.min.latitude}%2C${bbox.max.longitude}%2C${bbox.max.latitude}"
         val requestBuilder = HttpRequestBuilder()
         requestBuilder.url(url)
-        requestBuilder.header("User-Agent", USER_AGENT)
+        requestBuilder.header("User-Agent", HTTP_USER_AGENT)
         if (prefs.getBoolean(PREF_OSMOSE_APP_LANGUAGE, false)) {
             val language = prefs.locale?.language ?: LocaleList.current.firstOrNull()?.language
             if (language != null)
@@ -170,7 +170,7 @@ class OsmoseDao(
             if (falsePositive) "false"
             else "done"
         val requestBuilder = HttpRequestBuilder()
-        requestBuilder.header("User-Agent", USER_AGENT)
+        requestBuilder.header("User-Agent", HTTP_USER_AGENT)
         requestBuilder.url(url)
         try {
             val r = client.get(requestBuilder)
@@ -204,7 +204,7 @@ class OsmoseDao(
     suspend fun doesIssueStillExist(uuid: String): Boolean {
         val url = "https://osmose.openstreetmap.fr/api/0.3/issue/$uuid"
         val requestBuilder = HttpRequestBuilder()
-        requestBuilder.header("User-Agent", USER_AGENT)
+        requestBuilder.header("User-Agent", HTTP_USER_AGENT)
         requestBuilder.url(url)
         return try {
             val r = client.get(requestBuilder)

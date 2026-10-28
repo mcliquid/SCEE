@@ -262,7 +262,8 @@ val commonModule = module {
 
     single { HttpClient {
         defaultRequest {
-            userAgent(ApplicationConstants.USER_AGENT)
+            // Statistics API allowlists StreetComplete / StreetComplete_ee, not SCEE-mc.
+            userAgent(ApplicationConstants.HTTP_USER_AGENT)
         }
         install(ContentEncoding) {
             gzip()
@@ -291,7 +292,7 @@ val commonModule = module {
 
     single { UnsyncedChangesCountSource(get(), get()) }
 
-    factory { VersionIsBannedChecker(get(), "https://streetcomplete.mnalis.com/streetcomplete/banned_versions.txt", ApplicationConstants.USER_AGENT) }
+    factory { VersionIsBannedChecker(get(), "https://streetcomplete.mnalis.com/streetcomplete/banned_versions.txt", ApplicationConstants.HTTP_USER_AGENT) }
 
     single { Uploader(get(), get(), get(), get(), get(), get(), get(named("SerializeSync")), get(), get()) }
 

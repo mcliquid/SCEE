@@ -67,7 +67,7 @@ class PedestrianRoutingClient(
                 val coordinates = positions.joinToString(";") { "${it.longitude},${it.latitude}" }
                 val response = httpClient.get("${baseUrl.trimEnd('/')}/route/v1/foot/$coordinates") {
                     expectSuccess = false
-                    header(HttpHeaders.UserAgent, "${ApplicationConstants.USER_AGENT} SCEE-mc-private-routing")
+                    header(HttpHeaders.UserAgent, "${ApplicationConstants.HTTP_USER_AGENT} SCEE-mc-private-routing")
                     parameter("overview", "full")
                     parameter("geometries", "geojson")
                     parameter("steps", "false")

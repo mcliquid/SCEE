@@ -62,7 +62,7 @@ class PhotonSearchClient(private val http: HttpClient, private val url: String =
             val places = withTimeout(timeoutMillis) {
                 val response = http.get(url) {
                     expectSuccess = false
-                    header(HttpHeaders.UserAgent, "${ApplicationConstants.USER_AGENT} SCEE-mc-Photon-search")
+                    header(HttpHeaders.UserAgent, "${ApplicationConstants.HTTP_USER_AGENT} SCEE-mc-Photon-search")
                     parameter("q", normalized.text)
                     parameter("lat", query.center.latitude)
                     parameter("lon", query.center.longitude)

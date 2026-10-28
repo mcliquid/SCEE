@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 enum class BikeParkingType(val osmValue: String) {
     STANDS("stands"),
     WALL_LOOPS("wall_loops"),
+    BOLLARD("bollard"),
     SAFE_LOOPS("safe_loops"),
     SHED("shed"),
     LOCKERS("lockers"),

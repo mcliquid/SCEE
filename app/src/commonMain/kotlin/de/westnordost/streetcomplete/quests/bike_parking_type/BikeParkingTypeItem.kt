@@ -8,6 +8,7 @@ import org.jetbrains.compose.resources.StringResource
 val BikeParkingType.title: StringResource get() = when (this) {
     STANDS ->           Res.string.quest_bicycle_parking_type_stand
     WALL_LOOPS ->       Res.string.quest_bicycle_parking_type_wheelbender
+    BOLLARD ->          Res.string.quest_bicycle_parking_type_bollard
     SAFE_LOOPS ->       Res.string.quest_bicycle_parking_type_safeloops
     SHED ->             Res.string.quest_bicycle_parking_type_shed
     LOCKERS ->          Res.string.quest_bicycle_parking_type_locker
@@ -21,6 +22,7 @@ val BikeParkingType.title: StringResource get() = when (this) {
 val BikeParkingType.icon: DrawableResource get() = when (this) {
     STANDS ->           Res.drawable.bicycle_parking_type_stand
     WALL_LOOPS ->       Res.drawable.bicycle_parking_type_wheelbenders
+    BOLLARD ->          Res.drawable.bicycle_parking_type_bollard
     SAFE_LOOPS ->       Res.drawable.bicycle_parking_type_safeloops
     SHED ->             Res.drawable.bicycle_parking_type_shed
     LOCKERS ->          Res.drawable.bicycle_parking_type_lockers

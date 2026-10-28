@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.screens.user.login.LoginError.CommunicationError
+import de.westnordost.streetcomplete.screens.user.login.LoginError.MissingClientId
 import de.westnordost.streetcomplete.screens.user.login.LoginError.RequiredPermissionsNotGranted
 import de.westnordost.streetcomplete.ui.common.BackIcon
 import de.westnordost.streetcomplete.ui.common.NonPredictiveBackHandler
@@ -60,14 +61,16 @@ fun LoginScreen(
     val unsyncedChangesCount by viewModel.unsyncedChangesCount.collectAsState()
     var showCommunicationError by remember { mutableStateOf(false) }
     var showPermissionsError by remember { mutableStateOf(false) }
+    var showMissingClientIdError by remember { mutableStateOf(false) }
 
     // handle error state: just show message once and return to login state
     LaunchedEffect(state) {
         val errorState = state as? LoginError
         if (errorState != null) {
-            val errorMessage = when (errorState) {
+            when (errorState) {
                 RequiredPermissionsNotGranted -> showPermissionsError = true
                 CommunicationError -> showCommunicationError = true
+                MissingClientId -> showMissingClientIdError = true
             }
             viewModel.resetLogin()
         }
@@ -170,6 +173,13 @@ fun LoginScreen(
         ToastPopup(
             onDismissRequest = { showPermissionsError = false },
             text = stringResource(Res.string.oauth_failed_permissions)
+        )
+    }
+
+    if (showMissingClientIdError) {
+        ToastPopup(
+            onDismissRequest = { showMissingClientIdError = false },
+            text = stringResource(Res.string.oauth_missing_client_id)
         )
     }
 }

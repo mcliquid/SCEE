@@ -3,6 +3,7 @@
     <string name="action_settings">Einstellungen</string>
     <string name="oauth_communication_error">Login-Server kann nicht erreicht werden</string>
     <string name="oauth_failed_permissions">Login fehlgeschlagen: Alle aufgeführten Berechtigungen müssen gewährt werden</string>
+    <string name="oauth_missing_client_id">OSM-Login ist nicht konfiguriert: setze app.sceemc.oauth2ClientId in ~/.gradle/gradle.properties (Redirect sceemc://oauth) und baue die App neu.</string>
     <string name="pref_category_communication">Kommunikation</string>
     <string name="pref_category_display">Anzeige</string>
     <string name="pref_title_show_notes_not_phrased_as_questions">Alle Hinweise anzeigen</string>

@@ -423,6 +423,7 @@
 
     <string name="oauth_communication_error">Unable to reach the authorization server</string>
     <string name="oauth_failed_permissions">Authorization failed: All listed permissions need to be granted</string>
+    <string name="oauth_missing_client_id">OSM login is not configured: set app.sceemc.oauth2ClientId in ~/.gradle/gradle.properties (redirect sceemc://oauth), then rebuild.</string>
 
     <!-- User statistics screen -->
 

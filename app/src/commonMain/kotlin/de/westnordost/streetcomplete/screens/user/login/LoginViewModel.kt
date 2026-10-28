@@ -52,7 +52,9 @@ data object RequestingAuthorization : LoginState
 data object RetrievingAccessToken : LoginState
 enum class LoginError : LoginState {
     RequiredPermissionsNotGranted,
-    CommunicationError
+    CommunicationError,
+    /** Local/debug build without `app.sceemc.oauth2ClientId` (release builds fail at compile/packaging). */
+    MissingClientId,
 }
 data object LoggedIn : LoginState
 
@@ -67,31 +69,26 @@ class LoginViewModelImpl(
     )
     override val unsyncedChangesCount = MutableStateFlow(0)
 
-    override val authorizationRequestUrl: String get() =
-        oAuthApiClient.getAuthorizationRequestUrl(oauthSession())
+    /**
+     * Authorization URL for the current login attempt. Only valid while [loginState] is
+     * [RequestingAuthorization] after a successful [startLogin] that created an OAuth/PKCE session.
+     */
+    override val authorizationRequestUrl: String get() {
+        val session = oAuthSession
+            ?: error("OAuth session missing; startLogin() must create one before loading the login web view")
+        return oAuthApiClient.getAuthorizationRequestUrl(session)
+    }
 
     /**
-     * One OAuth/PKCE session per login attempt. Created lazily when the authorization URL is first
-     * needed so [OAUTH2_CLIENT_ID] is read from [de.westnordost.streetcomplete.data.user.OsmAuthConfig]
-     * after Android Application startup has applied BuildConfig — not captured as an empty string
-     * at ViewModel construction time.
+     * One OAuth/PKCE session per login attempt. Created in [startLogin] only when
+     * [OAUTH2_CLIENT_ID] is non-blank (from [de.westnordost.streetcomplete.data.user.OsmAuthConfig]
+     * after Android Application startup applied BuildConfig).
      */
     private var oAuthSession: OAuthAuthorizationParams? = null
 
-    private fun oauthSession(): OAuthAuthorizationParams {
-        oAuthSession?.let { return it }
-        val clientId = OAUTH2_CLIENT_ID
-        require(clientId.isNotBlank()) {
-            "OAuth client_id is blank; SCEE-mc release builds require app.sceemc.oauth2ClientId"
-        }
-        return OAuthAuthorizationParams(
-            OAUTH2_AUTHORIZATION_URL,
-            OAUTH2_TOKEN_URL,
-            clientId,
-            OAUTH2_REQUESTED_SCOPES,
-            OAUTH2_REDIRECT_URI
-        ).also { oAuthSession = it }
-    }
+    private fun requireOAuthSession(): OAuthAuthorizationParams =
+        oAuthSession
+            ?: error("OAuth session missing; startLogin() must create one before continuing authorization")
 
     private val loginStatusListener = object : UserLoginSource.Listener {
         override fun onLoggedIn() { loginState.value = LoggedIn }
@@ -110,8 +107,23 @@ class LoginViewModelImpl(
     }
 
     override fun startLogin() {
+        if (loginState.value != LoggedOut) return
         oAuthSession = null
-        loginState.compareAndSet(LoggedOut, RequestingAuthorization)
+        val clientId = OAUTH2_CLIENT_ID
+        if (clientId.isBlank()) {
+            // Debug/local: show a message instead of crashing when opening the login web view.
+            // Release APKs must embed a non-blank client id (Gradle verifyReleaseOAuthClientId).
+            loginState.value = LoginError.MissingClientId
+            return
+        }
+        oAuthSession = OAuthAuthorizationParams(
+            OAUTH2_AUTHORIZATION_URL,
+            OAUTH2_TOKEN_URL,
+            clientId,
+            OAUTH2_REQUESTED_SCOPES,
+            OAUTH2_REDIRECT_URI
+        )
+        loginState.value = RequestingAuthorization
     }
 
     override fun failAuthorization(url: String, errorCode: Int, description: String?) {
@@ -120,7 +132,7 @@ class LoginViewModelImpl(
     }
 
     override fun isAuthorizationResponseUrl(url: String): Boolean =
-        oauthSession().itsForMe(url)
+        oAuthSession?.itsForMe(url) == true
 
     override fun finishAuthorization(authorizationResponseUrl: String) {
         launch {
@@ -134,7 +146,7 @@ class LoginViewModelImpl(
     private suspend fun retrieveAccessToken(authorizationResponseUrl: String): String? {
         try {
             loginState.value = RetrievingAccessToken
-            val accessTokenResponse = oAuthApiClient.getAccessToken(oauthSession(), authorizationResponseUrl)
+            val accessTokenResponse = oAuthApiClient.getAccessToken(requireOAuthSession(), authorizationResponseUrl)
             if (accessTokenResponse.grantedScopes?.containsAll(OAUTH2_REQUIRED_SCOPES) == false) {
                 loginState.value = LoginError.RequiredPermissionsNotGranted
                 return null

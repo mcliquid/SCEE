@@ -90,6 +90,26 @@ class AddBikeParkingTypeTest {
         ))))
     }
 
+    @Test fun `access no with cargo_bike yes is eligible`() {
+        assertTrue(quest.isApplicableTo(node(tags = mapOf(
+            "amenity" to "bicycle_parking",
+            "access" to "no",
+            "cargo_bike" to "yes",
+        ))))
+    }
+
+    @Test fun `answer preserves access and cargo_bike on cargo-only parking`() {
+        val before = mapOf(
+            "amenity" to "bicycle_parking",
+            "access" to "no",
+            "cargo_bike" to "designated",
+        )
+        assertEquals(
+            setOf(StringMapEntryAdd("bicycle_parking", "bollard")),
+            quest.answerAppliedTo(BOLLARD, before),
+        )
+    }
+
     @Test fun `each type has drawable and title resource`() {
         for (type in BikeParkingType.entries) {
             assertTrue(Res.allDrawableResources.containsValue(type.icon), type.name)

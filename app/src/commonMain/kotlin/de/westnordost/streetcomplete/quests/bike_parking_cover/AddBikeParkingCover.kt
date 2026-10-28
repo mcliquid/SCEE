@@ -10,6 +10,7 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.quests.bike_parking.SURVEYABLE_BICYCLE_PARKING_ACCESS
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.quest.YesNoQuestForm
 import de.westnordost.streetcomplete.util.ktx.toYesNo
@@ -20,9 +21,10 @@ class AddBikeParkingCover : OsmFilterQuestType<Boolean>() {
         nodes, ways with
           (
             amenity = bicycle_parking
+            and $SURVEYABLE_BICYCLE_PARKING_ACCESS
             or amenity = charging_station and bicycle ~ yes|designated and lockable = no and motorcar = no
+            and access !~ private|no
           )
-          and access !~ private|no
           and !covered
           and bicycle_parking !~ shed|lockers|building
     """

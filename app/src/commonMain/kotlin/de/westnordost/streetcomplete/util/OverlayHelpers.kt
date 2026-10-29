@@ -74,7 +74,6 @@ fun OverlayCustomizer(
     var showColorInfo by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val prefs: Preferences = koinInject()
-    val indices: List<Int> = remember { getCustomOverlayIndices(prefs).sorted() }
     val icons = remember {
         LinkedHashSet<DrawableResource>(questTypeRegistry.size).apply {
             add(Res.drawable.ic_custom_overlay)
@@ -155,7 +154,7 @@ fun OverlayCustomizer(
     ScrollableAlertDialog(
         onDismissRequest = onDismiss,
         buttonRow = {
-            if (index in indices)
+            if (index in getCustomOverlayIndices(prefs))
                 TextButton({ showDeleteConfirmation = true }) { Text(stringResource(Res.string.delete_confirmation)) }
             TextButton(onDismiss) { Text(stringResource(Res.string.cancel)) }
             TextButton(
@@ -167,8 +166,11 @@ fun OverlayCustomizer(
                     prefs.putString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_ICON, index), icon)
                     prefs.putString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_DASH_FILTER, index), dashFilter.text)
                     prefs.putBoolean(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_HIGHLIGHT_MISSING_DATA, index), highlightMissingData)
-                    if (index !in indices) { // add if it's new, and select it immediately
-                        prefs.putString(Prefs.CUSTOM_OVERLAY_INDICES, (indices + index).joinToString(","))
+                    if (index !in getCustomOverlayIndices(prefs)) { // add if it's new, and select it immediately
+                        prefs.putString(
+                            Prefs.CUSTOM_OVERLAY_INDICES,
+                            (getCustomOverlayIndices(prefs) + index).sorted().joinToString(",")
+                        )
                         prefs.putInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, index)
                     }
                     onChanged(index == prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, 0))
@@ -241,12 +243,8 @@ fun OverlayCustomizer(
         ConfirmationDialog(
             onDismissRequest = { showDeleteConfirmation = false },
             onConfirmed = {
-                val isActive = prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, 0) == index
-                prefs.prefs.keys.forEach { if (it.startsWith("custom_overlay_${index}_")) prefs.prefs.remove(it) }
-                prefs.putString(Prefs.CUSTOM_OVERLAY_INDICES, indices.filterNot { it == index }.joinToString(","))
-                if (isActive)
-                    prefs.putInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, 0)
-                onDeleted(isActive)
+                val deletion = deleteCustomOverlay(prefs, index)
+                onDeleted(deletion.wasSelected)
                 onDismiss()
             },
             text = { Text(stringResource(Res.string.custom_overlay_delete, overlayName)) }
@@ -288,8 +286,7 @@ fun OverlayCustomizer(
 // changesetComment is the overlay title
 fun getFakeCustomOverlays(prefs: Preferences, onlyIfExpertMode: Boolean = true): List<Overlay> {
     if (onlyIfExpertMode && !prefs.getBoolean(Prefs.EXPERT_MODE, false)) return emptyList()
-    return prefs.getString(Prefs.CUSTOM_OVERLAY_INDICES, "0").split(",").mapNotNull { index ->
-        val i = index.toIntOrNull() ?: return@mapNotNull null
+    return getCustomOverlayIndices(prefs).map { i ->
         object : Overlay {
             override fun getStyledElements(mapData: MapDataWithGeometry) = emptySequence<Pair<Element, OverlayStyle>>()
             @Composable
@@ -299,8 +296,8 @@ fun getFakeCustomOverlays(prefs: Preferences, onlyIfExpertMode: Boolean = true):
             override val icon = Res.allDrawableResources[prefs.getString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_ICON, i), "ic_custom_overlay")]
                 ?: Res.drawable.ic_custom_overlay
             override val title = fakeStringResource // use invalid resource placeholder
-            override val name = index // allows to uniquely identify an overlay
-            override val wikiLink = index
+            override val name = i.toString() // allows to uniquely identify an overlay
+            override val wikiLink = i.toString()
             override fun equals(other: Any?): Boolean {
                 return if (other !is Overlay) false
                     else wikiLink == other.wikiLink && icon == other.icon // index identifies overlay, but we also want a changed icon to trigger some reload
@@ -311,8 +308,48 @@ fun getFakeCustomOverlays(prefs: Preferences, onlyIfExpertMode: Boolean = true):
 
 fun getIndexedCustomOverlayPref(pref: String, index: Int) = pref.replace("idx", index.toString())
 fun getCurrentCustomOverlayPref(pref: String, prefs: Preferences) = getIndexedCustomOverlayPref(pref, prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, 0))
-fun getCustomOverlayIndices(prefs: Preferences) = prefs.getString(Prefs.CUSTOM_OVERLAY_INDICES, "0")
-    .split(",").mapNotNull { it.toIntOrNull() }
+
+fun customOverlayPrefKeys(index: Int): List<String> = listOf(
+    Prefs.CUSTOM_OVERLAY_IDX_FILTER,
+    Prefs.CUSTOM_OVERLAY_IDX_COLOR_KEY,
+    Prefs.CUSTOM_OVERLAY_IDX_NAME,
+    Prefs.CUSTOM_OVERLAY_IDX_ICON,
+    Prefs.CUSTOM_OVERLAY_IDX_DASH_FILTER,
+    Prefs.CUSTOM_OVERLAY_IDX_HIGHLIGHT_MISSING_DATA,
+).map { getIndexedCustomOverlayPref(it, index) }
+
+private fun hasCustomOverlaySettings(prefs: Preferences, index: Int): Boolean =
+    customOverlayPrefKeys(index).any { prefs.contains(it) }
+
+fun getCustomOverlayIndices(prefs: Preferences): List<Int> {
+    if (prefs.contains(Prefs.CUSTOM_OVERLAY_INDICES)) {
+        return prefs.getString(Prefs.CUSTOM_OVERLAY_INDICES, "")
+            .split(",").mapNotNull { it.trim().toIntOrNull() }
+    }
+    return if (hasCustomOverlaySettings(prefs, 0)) listOf(0) else emptyList()
+}
+
+data class CustomOverlayDeletion(val wasSelected: Boolean)
+
+/** Removes one user-defined custom overlay from preferences and fixes selection pointers. */
+fun deleteCustomOverlay(prefs: Preferences, index: Int): CustomOverlayDeletion {
+    val wasSelected = prefs.selectedOverlayName == "CustomOverlay"
+        && prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, 0) == index
+    val remaining = getCustomOverlayIndices(prefs).filterNot { it == index }
+    customOverlayPrefKeys(index).forEach { prefs.remove(it) }
+    if (remaining.isEmpty()) {
+        prefs.remove(Prefs.CUSTOM_OVERLAY_INDICES)
+    } else {
+        prefs.putString(Prefs.CUSTOM_OVERLAY_INDICES, remaining.sorted().joinToString(","))
+    }
+    if (prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, 0) == index) {
+        prefs.putInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, remaining.firstOrNull() ?: 0)
+    }
+    if (wasSelected) {
+        prefs.selectedOverlayName = null
+    }
+    return CustomOverlayDeletion(wasSelected)
+}
 
 @OptIn(InternalResourceApi::class)
 val fakeStringResource = StringResource("", "", emptySet())

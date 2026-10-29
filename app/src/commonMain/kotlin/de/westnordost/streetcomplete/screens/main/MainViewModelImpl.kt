@@ -174,7 +174,13 @@ class MainViewModelImpl(
             }
         }
         visibleEditTypeSource.addListener(listener)
-        awaitClose { visibleEditTypeSource.removeListener(listener) }
+        val customOverlayIndicesListener = prefs.addStringListener(Prefs.CUSTOM_OVERLAY_INDICES, "") {
+            trySend(getVisibleOverlays())
+        }
+        awaitClose {
+            visibleEditTypeSource.removeListener(listener)
+            customOverlayIndicesListener.deactivate()
+        }
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, getVisibleOverlays())
 
     private fun getVisibleOverlays(): List<Overlay> =

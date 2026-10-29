@@ -246,6 +246,7 @@ import de.westnordost.streetcomplete.quests.surface.AddFootwayPartSurface
 import de.westnordost.streetcomplete.quests.surface.AddMotorcycleParkingSurface
 import de.westnordost.streetcomplete.quests.surface.AddPathSurface
 import de.westnordost.streetcomplete.quests.surface.AddPitchSurface
+import de.westnordost.streetcomplete.quests.surface.AddRoadAttachedCyclewaySurface
 import de.westnordost.streetcomplete.quests.surface.AddRoadSurface
 import de.westnordost.streetcomplete.quests.surface.AddSidewalkSurface
 import de.westnordost.streetcomplete.quests.tactile_paving.AddTactilePavingBusStop
@@ -729,6 +730,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 201 to AddIsSidepath(),
     EE_QUEST_OFFSET + 209 to AddIsSidepathRoadMetadata(),
     EE_QUEST_OFFSET + 210 to AddCyclewaySeparation(),
+    EE_QUEST_OFFSET + 211 to AddRoadAttachedCyclewaySurface(),
     EE_QUEST_OFFSET + 202 to AddWaterwayCrossing(),
     EE_QUEST_OFFSET + 203 to AddBicycleInPedestrianStreet(),
     EE_QUEST_OFFSET + 204 to AddWaterBottleFill(), // #510 bottle refill survey at water sources

@@ -798,6 +798,9 @@
     <string name="quest_is_sidepath_road_metadata_hint">Für Wege, die bereits als Begleitweg (is_sidepath=yes) erfasst sind: Straße auswählen, entlang derer der Weg verläuft. Straßenklasse → is_sidepath:of, Straßenname → is_sidepath:of:name.</string>
     <string name="quest_is_sidepath_road_metadata_not_sidepath">Kein straßenbegleitender Weg</string>
 
+    <!-- road-attached cycleway track surface (R07) -->
+    <string name="quest_roadAttachedCyclewaySurface_title">Welche Oberfläche hat der Radweg neben der Fahrbahn?</string>
+
     <!-- cycleway separation (R14) -->
     <string name="quest_cycleway_separation_title">Wie ist dieser Radweg baulich abgegrenzt?</string>
     <string name="quest_cycleway_separation_hint">Wähle für jede Seite des Radwegs die bauliche Trennung aus, wie sie auf der Karte dargestellt ist. Die App schreibt die passenden OSM-Tags links/rechts automatisch. Nur physische Merkmale wie Bordsteine, Pfosten oder Bepflanzung — nicht allein Markierungen.</string>

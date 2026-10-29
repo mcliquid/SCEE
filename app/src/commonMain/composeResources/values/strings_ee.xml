@@ -718,6 +718,9 @@
     <string name="quest_is_sidepath_road_metadata_hint">For sidepaths already tagged as such, select the road they run along. Road class goes in is_sidepath:of, the road name in is_sidepath:of:name.</string>
     <string name="quest_is_sidepath_road_metadata_not_sidepath">No Sidepath</string>
 
+    <!-- road-attached cycleway track surface (R07) -->
+    <string name="quest_roadAttachedCyclewaySurface_title">What is the surface of the cycle track beside the road?</string>
+
     <!-- cycleway separation (R14) -->
     <string name="quest_cycleway_separation_title">What physically separates this cycleway from adjacent areas?</string>
     <string name="quest_cycleway_separation_hint">Select the physical separation on each side of the cycleway as shown on the map. The app assigns the correct OSM left/right tags automatically. Only physical features such as kerbs, bollards or vegetation — not road markings alone.</string>

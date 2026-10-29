@@ -34,6 +34,7 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.StringResource
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -43,8 +44,9 @@ fun <T> SidepathChooseRoadForm(
     pathGeometry: ElementGeometry,
     mapAnswer: (ofName: String?, ofHighway: String?) -> T,
     onBack: (() -> Unit)? = null,
-    /** When set, “Can’t say” invokes this instead of [mapAnswer] with nulls (avoids empty tag edits). */
-    onCantSay: (() -> Unit)? = null,
+    bottomOptionLabelRes: StringResource = Res.string.quest_is_sidepath_road_cant_say,
+    /** When set, the bottom option invokes this instead of [mapAnswer] with nulls (EE+209 “No Sidepath”). */
+    onBottomOptionSelected: (() -> Unit)? = null,
     mapDataSource: MapDataWithEditsSource = koinInject(),
     featureDictionary: FeatureDictionary = koinInject(),
 ) {
@@ -115,8 +117,8 @@ fun <T> SidepathChooseRoadForm(
                     )
                 }
                 SidepathRoadSelection.CantSay -> {
-                    if (onCantSay != null) {
-                        onCantSay()
+                    if (onBottomOptionSelected != null) {
+                        onBottomOptionSelected()
                     } else {
                         on(Answer(mapAnswer(null, null)))
                     }
@@ -143,7 +145,7 @@ fun <T> SidepathChooseRoadForm(
                             CandidateRoadLabel(candidate, featureDictionary)
                         }
                         SidepathRoadSelection.CantSay -> {
-                            Text(stringResource(Res.string.quest_is_sidepath_road_cant_say))
+                            Text(stringResource(bottomOptionLabelRes))
                         }
                     }
                 },

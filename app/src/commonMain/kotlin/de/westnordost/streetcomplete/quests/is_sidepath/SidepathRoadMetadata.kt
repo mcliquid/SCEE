@@ -56,3 +56,11 @@ internal fun applySidepathRoadMetadata(tags: Tags, ofName: String?, ofHighway: S
         tags["is_sidepath:of:name"] = ofName
     }
 }
+
+/** Explicit correction: not a sidepath; same association cleanup as [AddIsSidepath] “No”. */
+internal fun applySidepathNotSidepath(tags: Tags) {
+    tags["is_sidepath"] = "no"
+    tags.remove("is_sidepath:of")
+    tags.remove("is_sidepath:of:name")
+    tags.remove("is_sidepath:of:ref")
+}

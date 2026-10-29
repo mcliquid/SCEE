@@ -796,6 +796,7 @@
     <string name="traffic_sign_confirm_proposals">Diese Tags werden zusammen mit den Schildern gespeichert:</string>
     <string name="quest_is_sidepath_road_metadata_title">Welcher Straße ist dieser Begleitweg zugeordnet?</string>
     <string name="quest_is_sidepath_road_metadata_hint">Für Wege, die bereits als Begleitweg (is_sidepath=yes) erfasst sind: Straße auswählen, entlang derer der Weg verläuft. Straßenklasse → is_sidepath:of, Straßenname → is_sidepath:of:name.</string>
+    <string name="quest_is_sidepath_road_metadata_not_sidepath">Kein straßenbegleitender Weg</string>
 
     <!-- cycleway separation (R14) -->
     <string name="quest_cycleway_separation_title">Wie ist dieser Radweg baulich abgegrenzt?</string>

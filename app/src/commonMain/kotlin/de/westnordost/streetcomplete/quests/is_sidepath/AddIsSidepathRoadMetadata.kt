@@ -7,8 +7,8 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
+import de.westnordost.streetcomplete.data.osm.osmquests.Answer
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
-import de.westnordost.streetcomplete.data.osm.osmquests.Action
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.resources.*
 
@@ -43,9 +43,10 @@ class AddIsSidepathRoadMetadata : OsmElementQuestType<SidepathRoadMetadataAnswer
             on = on,
             pathGeometry = geometry,
             mapAnswer = { ofName, ofHighway ->
-                SidepathRoadMetadataAnswer(ofName, ofHighway)
+                SidepathRoadMetadataAnswer.RoadAssociation(ofName, ofHighway)
             },
-            onCantSay = { on(Action.CantSay) },
+            bottomOptionLabelRes = Res.string.quest_is_sidepath_road_metadata_not_sidepath,
+            onBottomOptionSelected = { on(Answer(SidepathRoadMetadataAnswer.NotSidepath)) },
         )
     }
 
@@ -55,6 +56,11 @@ class AddIsSidepathRoadMetadata : OsmElementQuestType<SidepathRoadMetadataAnswer
         geometry: ElementGeometry,
         timestampEdited: Long
     ) {
-        applySidepathRoadMetadata(tags, answer.ofName, answer.ofHighway)
+        when (answer) {
+            is SidepathRoadMetadataAnswer.RoadAssociation ->
+                applySidepathRoadMetadata(tags, answer.ofName, answer.ofHighway)
+            SidepathRoadMetadataAnswer.NotSidepath ->
+                applySidepathNotSidepath(tags)
+        }
     }
 }

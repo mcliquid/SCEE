@@ -128,6 +128,7 @@ fun StyledElement.toGeoJsonFeatures(): List<Feature<Geometry, JsonObject>> {
                 if (it?.dashed == true) {
                     p2["dashed"] = JsonPrimitive(true)
                 }
+                style.arrows?.let { arrows -> p2.putArrowProperties(arrows) }
                 Feature(line, JsonObject(p2))
             }
 
@@ -210,6 +211,26 @@ private fun Color.toRgbaString(): String {
     val c = toArgb()
     return "rgba(${(c shr 16) and 0xFF}, ${(c shr 8) and 0xFF}, ${c and 0xFF}, $alpha)"
 }
+
+private fun MutableMap<String, JsonPrimitive>.putArrowProperties(arrows: OverlayStyle.Arrows) {
+    this[ARROWS] = JsonPrimitive(when {
+        arrows.direction == OverlayStyle.ArrowDirection.BOTH -> ARROWS_DOUBLE
+        arrows.shape == OverlayStyle.ArrowShape.OPEN -> ARROWS_OPEN
+        else -> ARROWS_SOLID
+    })
+    // the arrow image points up, line placement aligns its x-axis with the line direction
+    this[ARROW_ROTATION] = JsonPrimitive(
+        if (arrows.direction == OverlayStyle.ArrowDirection.BACKWARD) 270 else 90
+    )
+    this[ARROW_COLOR] = JsonPrimitive(arrows.color.toRgbaString())
+}
+
+const val ARROWS = "arrows"
+const val ARROWS_SOLID = "solid"
+const val ARROWS_OPEN = "open"
+const val ARROWS_DOUBLE = "double"
+const val ARROW_ROTATION = "arrow-rotation"
+const val ARROW_COLOR = "arrow-color"
 
 private const val ELEMENT_TYPE = "element_type"
 private const val ELEMENT_ID = "element_id"

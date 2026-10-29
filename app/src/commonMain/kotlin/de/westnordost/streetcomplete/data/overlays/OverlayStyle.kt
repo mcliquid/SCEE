@@ -17,7 +17,21 @@ sealed interface OverlayStyle {
         /** label to show on the line (centered) */
         val label: String? = null,
         override val disabled: Boolean = false,
+        /** direction arrows drawn along the line. null if no arrows should be drawn */
+        val arrows: Arrows? = null,
     ) : OverlayStyle
+
+    data class Arrows(
+        /** direction relative to the way's geometry (order of its nodes) */
+        val direction: ArrowDirection,
+        val color: Color,
+        /** shape of the arrow head, to not rely on color alone. Ignored for [ArrowDirection.BOTH] */
+        val shape: ArrowShape = ArrowShape.SOLID,
+    )
+
+    enum class ArrowDirection { FORWARD, BACKWARD, BOTH }
+
+    enum class ArrowShape { SOLID, OPEN }
 
     data class Stroke(
         /** stroke color */

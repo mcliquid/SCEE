@@ -5,6 +5,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.map_oneway_arrow
+import de.westnordost.streetcomplete.resources.map_overlay_arrow_double
+import de.westnordost.streetcomplete.resources.map_overlay_arrow_open
+import de.westnordost.streetcomplete.screens.main.map.has
+import org.maplibre.compose.expressions.value.IconRotationAlignment
+import org.maplibre.compose.expressions.value.SymbolPlacement
 import de.westnordost.streetcomplete.screens.main.map.MapImages
 import de.westnordost.streetcomplete.screens.main.map.byZoom
 import de.westnordost.streetcomplete.screens.main.map.iconNamePrefix
@@ -159,6 +166,7 @@ fun StyleableOverlayLayers(
         join = const(LineJoin.Round),
         onClick = { onClick(it, onClickElement) }
     )
+    OverlayArrowLayers(source)
     LineLayer(
         id = "overlay-fills-outline",
         source = source,
@@ -229,5 +237,42 @@ private inline fun onClick(
     val properties = features.firstOrNull()?.properties ?: return ClickResult.Pass
     return onClickElement(properties)
 }
+
+/** Direction arrows along lines, see [OverlayStyle.Arrows][de.westnordost.streetcomplete.data.overlays.OverlayStyle.Arrows].
+ *  Up to [ARROWS_LINE_ZOOM], one arrow per way (so that also short ways get one), then repeated. */
+@MaplibreComposable @Composable
+private fun OverlayArrowLayers(source: VectorSource) {
+    val arrowImage = switch(
+        condition(feature.has(ARROWS, ARROWS_DOUBLE), image(painterResource(Res.drawable.map_overlay_arrow_double), drawAsSdf = true)),
+        condition(feature.has(ARROWS, ARROWS_OPEN), image(painterResource(Res.drawable.map_overlay_arrow_open), drawAsSdf = true)),
+        fallback = image(painterResource(Res.drawable.map_oneway_arrow), drawAsSdf = true),
+    )
+    for ((placement, zoomRange) in listOf(
+        SymbolPlacement.LineCenter to (ARROWS_MIN_ZOOM to ARROWS_LINE_ZOOM),
+        SymbolPlacement.Line to (ARROWS_LINE_ZOOM to 24f),
+    )) {
+        SymbolLayer(
+            id = "overlay-arrows-" + if (placement == SymbolPlacement.Line) "line" else "center",
+            source = source,
+            minZoom = zoomRange.first,
+            maxZoom = zoomRange.second,
+            filter = all(feature.isLines(), !feature.has("offset"), feature.has(ARROWS)),
+            placement = const(placement),
+            spacing = const(140.dp),
+            iconImage = arrowImage,
+            iconColor = feature[ARROW_COLOR].convertToColor(),
+            iconHaloColor = const(Color.White),
+            iconHaloWidth = const(1.dp),
+            iconSize = byZoom(16 to 0.3f, 19 to 0.5f, 22 to 1f),
+            iconRotate = feature[ARROW_ROTATION].convertToNumber(),
+            iconRotationAlignment = const(IconRotationAlignment.Map),
+            iconAllowOverlap = const(true),
+            iconIgnorePlacement = const(true),
+        )
+    }
+}
+
+private const val ARROWS_MIN_ZOOM = 16f
+private const val ARROWS_LINE_ZOOM = 17.5f
 
 private val MIN_ZOOM = 14f

@@ -13,6 +13,7 @@ import de.westnordost.streetcomplete.overlays.buildings.BuildingsOverlay
 import de.westnordost.streetcomplete.overlays.cycleway.CyclewayOverlay
 import de.westnordost.streetcomplete.overlays.maxspeed.MaxSpeedOverlay
 import de.westnordost.streetcomplete.overlays.mtb_scale.MtbScaleOverlay
+import de.westnordost.streetcomplete.overlays.oneway.OnewayOverlay
 import de.westnordost.streetcomplete.overlays.places.PlacesOverlay
 import de.westnordost.streetcomplete.overlays.sidewalk.SidewalkOverlay
 import de.westnordost.streetcomplete.overlays.smoothness.SmoothnessOverlay
@@ -38,6 +39,7 @@ fun overlaysRegistry(
     (EE_QUEST_OFFSET + 4) to MaxSpeedOverlay(getCountryInfoByLocation),
     1 to SidewalkOverlay(),
     5 to CyclewayOverlay(getCountryInfoByLocation),
+    (EE_QUEST_OFFSET + 5) to OnewayOverlay(),
     2 to StreetParkingOverlay(),
     3 to AddressOverlay(getCountryCodeByLocation),
     4 to PlacesOverlay(getFeature),

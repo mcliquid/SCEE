@@ -1003,4 +1003,21 @@ Out of the box SCEE is configured to behave very similar to StreetComplete.</str
     <string name="maxspeed_overlay_not_editable">This speed limit cannot be edited here without losing information. Please use the tag editor.</string>
     <string name="maxspeed_overlay_type_removed">%1$s will be removed because it no longer matches</string>
     <string name="maxspeed_overlay_kept_tags">Kept unchanged:</string>
+    <string name="oneway_overlay_title">Oneways (bicycle)</string>
+    <string name="oneway_overlay_direction_hint">Directions refer to the drawing direction of the way (order of its nodes), shown by the arrows on the map.</string>
+    <string name="oneway_overlay_general">Oneway (vehicles)</string>
+    <string name="oneway_overlay_bicycle">Bicycles</string>
+    <string name="oneway_overlay_forward">→ Only in way direction</string>
+    <string name="oneway_overlay_backward">← Only against way direction</string>
+    <string name="oneway_overlay_both">⇄ Both directions</string>
+    <string name="oneway_overlay_bicycle_follow">Same as vehicles</string>
+    <string name="oneway_overlay_bicycle_inferred">Currently, both directions are only inferred from (contraflow) cycleway tags; oneway:bicycle is not tagged.</string>
+    <string name="oneway_overlay_roundabout_implied">Roundabout: oneway in way direction is implied, even though oneway is not tagged.</string>
+    <string name="oneway_overlay_no_bicycle_access">Bicycles are not allowed here according to the access tags.</string>
+    <string name="oneway_overlay_conflict">The existing oneway tags contradict each other or the cycleway tags.</string>
+    <string name="oneway_overlay_would_conflict">This selection would contradict the existing cycleway tags. Please use the tag editor.</string>
+    <string name="oneway_overlay_conditional">There are conditional oneway restrictions (marked with * on the map). They are kept unchanged.</string>
+    <string name="oneway_overlay_not_editable_value">The oneway tags have a value that cannot be edited here. Please use the tag editor.</string>
+    <string name="oneway_overlay_not_editable_vehicle">This way has vehicle specific oneway tags (oneway:vehicle / oneway:motor_vehicle) that cannot be edited here. Please use the tag editor.</string>
+    <string name="oneway_overlay_kept_tags">Kept unchanged:</string>
 </resources>

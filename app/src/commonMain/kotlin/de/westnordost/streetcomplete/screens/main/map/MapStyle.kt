@@ -43,7 +43,11 @@ import org.maplibre.compose.util.MaplibreComposable
 import kotlin.math.max
 
 /** Labels of the background map that can be hidden, e.g. by an overlay that replaces them */
-enum class MapLabel { COUNTRIES, LOCALITIES, HOUSE_NUMBERS, ROADS, RIVERS, STREAMS }
+enum class MapLabel {
+    COUNTRIES, LOCALITIES, HOUSE_NUMBERS, ROADS, RIVERS, STREAMS,
+    /** not a label, but the oneway arrows of the background map */
+    ONEWAY_ARROWS,
+}
 
 /**
  * StreetComplete background map style using the tile schema from JawgMaps as defined in
@@ -207,7 +211,7 @@ fun MapStyle(
     RoadLayers(source, colors, roads, paths, serviceRoads, Structure.Bridge)
     RailwayLayer(source, colors, Structure.Bridge)
 
-    OnewayArrowsLayer(source, colors)
+    OnewayArrowsLayer(source, colors, visible = MapLabel.ONEWAY_ARROWS !in hiddenLabels)
     BoundaryLayer(source, colors)
 
     belowLabelsContent()
@@ -502,10 +506,11 @@ private fun BridgeAreasLayers(source: VectorSource, colors: MapColors) {
 }
 
 @Composable @MaplibreComposable
-private fun OnewayArrowsLayer(source: VectorSource, colors: MapColors) {
+private fun OnewayArrowsLayer(source: VectorSource, colors: MapColors, visible: Boolean) {
     SymbolLayer(
         id = "oneway-arrows",
         source = source,
+        visible = visible,
         sourceLayer = "road",
         minZoom = 17f,
         filter = all(feature.isLines(), feature.has("oneway", true)),

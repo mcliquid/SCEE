@@ -830,4 +830,21 @@
     <string name="maxspeed_overlay_not_editable">Diese Höchstgeschwindigkeit kann hier nicht ohne Informationsverlust bearbeitet werden. Bitte den Tag-Editor verwenden.</string>
     <string name="maxspeed_overlay_type_removed">%1$s wird entfernt, weil es nicht mehr passt</string>
     <string name="maxspeed_overlay_kept_tags">Bleibt unverändert:</string>
+    <string name="oneway_overlay_title">Einbahnstraßen (Rad)</string>
+    <string name="oneway_overlay_direction_hint">Richtungen beziehen sich auf die Zeichenrichtung des Wegs (Reihenfolge der Knoten), dargestellt durch die Pfeile auf der Karte.</string>
+    <string name="oneway_overlay_general">Einbahnstraße (Fahrzeuge)</string>
+    <string name="oneway_overlay_bicycle">Fahrräder</string>
+    <string name="oneway_overlay_forward">→ Nur in Wegrichtung</string>
+    <string name="oneway_overlay_backward">← Nur gegen die Wegrichtung</string>
+    <string name="oneway_overlay_both">⇄ Beide Richtungen</string>
+    <string name="oneway_overlay_bicycle_follow">Wie Fahrzeuge</string>
+    <string name="oneway_overlay_bicycle_inferred">Beide Richtungen sind derzeit nur aus Radweg-Tags (Gegenrichtung) abgeleitet; oneway:bicycle ist nicht erfasst.</string>
+    <string name="oneway_overlay_roundabout_implied">Kreisverkehr: Einbahn in Wegrichtung ist impliziert, obwohl oneway nicht erfasst ist.</string>
+    <string name="oneway_overlay_no_bicycle_access">Laut Zugangs-Tags sind Fahrräder hier nicht erlaubt.</string>
+    <string name="oneway_overlay_conflict">Die vorhandenen Einbahn-Tags widersprechen sich oder den Radweg-Tags.</string>
+    <string name="oneway_overlay_would_conflict">Diese Auswahl würde den vorhandenen Radweg-Tags widersprechen. Bitte den Tag-Editor verwenden.</string>
+    <string name="oneway_overlay_conditional">Es gibt bedingte Einbahn-Beschränkungen (auf der Karte mit * markiert). Sie bleiben unverändert.</string>
+    <string name="oneway_overlay_not_editable_value">Die Einbahn-Tags haben einen Wert, der hier nicht bearbeitet werden kann. Bitte den Tag-Editor verwenden.</string>
+    <string name="oneway_overlay_not_editable_vehicle">Dieser Weg hat fahrzeugspezifische Einbahn-Tags (oneway:vehicle / oneway:motor_vehicle), die hier nicht bearbeitet werden können. Bitte den Tag-Editor verwenden.</string>
+    <string name="oneway_overlay_kept_tags">Bleibt unverändert:</string>
 </resources>

@@ -120,7 +120,23 @@ class SidepathQuestTagEditTest {
             element.tags,
         )
         assertTrue(changes.isEmpty())
-        assertFalse(sidepathRoadMetadataAnswerProducesChanges(element.tags, null, "residential"))
+        assertFalse(sidepathRoadMetadataAnswerProducesChanges(element.tags, null, "residential", null))
+    }
+
+    @Test fun `metadata ref road selection produces valid tag edit`() {
+        val element = way(tags = mapOf("highway" to "footway", "is_sidepath" to "yes"))
+        val changes = metadata.answerAppliedTo(
+            SidepathRoadMetadataAnswer.RoadAssociation(null, "primary", "B 33"),
+            element.tags,
+        )
+        assertEquals(
+            setOf(
+                StringMapEntryAdd("is_sidepath:of", "primary"),
+                StringMapEntryAdd("is_sidepath:of:ref", "B 33"),
+            ),
+            changes,
+        )
+        UpdateElementTagsAction(element, StringMapChanges(changes))
     }
 
     @Test fun `metadata named road fills missing name only`() {
@@ -155,10 +171,21 @@ class SidepathQuestTagEditTest {
         val candidate = findCandidateRoads(mapData.getWayGeometry(path.id)!!, mapData).single()
         assertEquals(null, candidate.name)
         val changes = metadata.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(candidate.name, candidate.highway),
+            SidepathRoadMetadataAnswer.RoadAssociation(
+                candidate.name,
+                candidate.highway,
+                candidate.ref,
+            ),
             path.tags,
         )
-        assertEquals(setOf(StringMapEntryAdd("is_sidepath:of", "secondary")), changes)
+        assertEquals(
+            setOf(
+                StringMapEntryAdd("is_sidepath:of", "secondary"),
+                StringMapEntryAdd("is_sidepath:of:ref", "B 471"),
+            ),
+            changes,
+        )
+        UpdateElementTagsAction(path, StringMapChanges(changes))
     }
 
     @Test fun `no nearby road yields empty candidates`() {

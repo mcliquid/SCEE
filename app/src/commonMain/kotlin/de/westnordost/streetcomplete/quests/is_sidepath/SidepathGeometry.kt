@@ -30,6 +30,10 @@ const val SIDEPATH_MAP_DATA_QUERY_PADDING_METERS = 100.0
 internal fun sidepathAssociatedRoadName(tags: Map<String, String>): String? =
     tags["name"]?.takeIf { it.isNotEmpty() }
 
+/** OSM `ref` of a road for `is_sidepath:of:ref`; never synthesized from name or other keys. */
+internal fun sidepathAssociatedRoadRef(tags: Map<String, String>): String? =
+    tags["ref"]?.takeIf { it.isNotEmpty() }
+
 @Serializable
 data class CandidateRoad(
     val element: Element,
@@ -38,7 +42,7 @@ data class CandidateRoad(
     val alignmentDiff: Double,
 ) {
     val name: String? get() = sidepathAssociatedRoadName(element.tags)
-    val ref: String? get() = element.tags["ref"]
+    val ref: String? get() = sidepathAssociatedRoadRef(element.tags)
     val highway: String? get() = element.tags["highway"]
 }
 

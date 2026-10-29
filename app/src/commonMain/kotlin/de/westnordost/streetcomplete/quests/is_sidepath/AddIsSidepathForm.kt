@@ -58,7 +58,7 @@ fun AddIsSidepathForm(
             SidepathChooseRoadForm(
                 on = on,
                 pathGeometry = geometry,
-                mapAnswer = { ofName, ofHighway ->
+                mapAnswer = { ofName, ofHighway, _ ->
                     IsSidepathAnswer.Yes(ofName, ofHighway)
                 },
                 onBack = { step = IsSidepathFormStep.AskIfSidepath },

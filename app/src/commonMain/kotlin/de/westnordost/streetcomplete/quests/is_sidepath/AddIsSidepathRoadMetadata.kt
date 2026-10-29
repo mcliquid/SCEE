@@ -42,13 +42,13 @@ class AddIsSidepathRoadMetadata : OsmElementQuestType<SidepathRoadMetadataAnswer
         SidepathChooseRoadForm(
             on = on,
             pathGeometry = geometry,
-            mapAnswer = { ofName, ofHighway ->
-                SidepathRoadMetadataAnswer.RoadAssociation(ofName, ofHighway)
+            mapAnswer = { ofName, ofHighway, ofRef ->
+                SidepathRoadMetadataAnswer.RoadAssociation(ofName, ofHighway, ofRef)
             },
             bottomOptionLabelRes = Res.string.quest_is_sidepath_road_metadata_not_sidepath,
             onBottomOptionSelected = { on(Answer(SidepathRoadMetadataAnswer.NotSidepath)) },
-            roadSelectionProducesChanges = { ofName, ofHighway ->
-                sidepathRoadMetadataAnswerProducesChanges(element.tags, ofName, ofHighway)
+            roadSelectionProducesChanges = { ofName, ofHighway, ofRef ->
+                sidepathRoadMetadataAnswerProducesChanges(element.tags, ofName, ofHighway, ofRef)
             },
         )
     }
@@ -61,7 +61,7 @@ class AddIsSidepathRoadMetadata : OsmElementQuestType<SidepathRoadMetadataAnswer
     ) {
         when (answer) {
             is SidepathRoadMetadataAnswer.RoadAssociation ->
-                applySidepathRoadMetadata(tags, answer.ofName, answer.ofHighway)
+                applySidepathRoadMetadata(tags, answer.ofName, answer.ofHighway, answer.ofRef)
             SidepathRoadMetadataAnswer.NotSidepath ->
                 applySidepathNotSidepath(tags)
         }

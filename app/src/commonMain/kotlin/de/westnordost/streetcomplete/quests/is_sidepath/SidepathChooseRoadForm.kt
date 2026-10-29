@@ -42,13 +42,13 @@ import org.koin.compose.koinInject
 fun <T> SidepathChooseRoadForm(
     on: (QuestAction<T>) -> Unit,
     pathGeometry: ElementGeometry,
-    mapAnswer: (ofName: String?, ofHighway: String?) -> T,
+    mapAnswer: (ofName: String?, ofHighway: String?, ofRef: String?) -> T,
     onBack: (() -> Unit)? = null,
     bottomOptionLabelRes: StringResource = Res.string.quest_is_sidepath_road_cant_say,
     /** When set, the bottom option invokes this instead of [mapAnswer] with nulls (EE+209 “No Sidepath”). */
     onBottomOptionSelected: (() -> Unit)? = null,
     /** EE+209: block OK when the selected road would not add missing metadata. Default always true (EE+201). */
-    roadSelectionProducesChanges: (ofName: String?, ofHighway: String?) -> Boolean = { _, _ -> true },
+    roadSelectionProducesChanges: (ofName: String?, ofHighway: String?, ofRef: String?) -> Boolean = { _, _, _ -> true },
     mapDataSource: MapDataWithEditsSource = koinInject(),
     featureDictionary: FeatureDictionary = koinInject(),
 ) {
@@ -71,10 +71,7 @@ fun <T> SidepathChooseRoadForm(
         val found = findCandidateRoads(pathGeometry, mapData)
         candidates = found
         if (selection == null && found.isNotEmpty()) {
-            val defaultRoad =
-                found.firstOrNull { roadSelectionProducesChanges(it.name, it.highway) }
-                    ?: found.firstOrNull { it.name != null }
-                    ?: found.first()
+            val defaultRoad = selectDefaultSidepathRoadCandidate(found, roadSelectionProducesChanges)
             selection = SidepathRoadSelection.Road(defaultRoad.element.id)
         }
         loaded = true
@@ -82,7 +79,7 @@ fun <T> SidepathChooseRoadForm(
 
     fun roadAnswerWouldChange(selected: SidepathRoadSelection.Road): Boolean {
         val candidate = candidates.firstOrNull { it.element.id == selected.elementId } ?: return false
-        return roadSelectionProducesChanges(candidate.name, candidate.highway)
+        return roadSelectionProducesChanges(candidate.name, candidate.highway, candidate.ref)
     }
 
     fun selectionIsSubmittable(selected: SidepathRoadSelection?): Boolean = when (selected) {
@@ -129,6 +126,7 @@ fun <T> SidepathChooseRoadForm(
                             mapAnswer(
                                 candidate?.name,
                                 candidate?.highway,
+                                candidate?.ref,
                             )
                         )
                     )
@@ -137,7 +135,7 @@ fun <T> SidepathChooseRoadForm(
                     if (onBottomOptionSelected != null) {
                         onBottomOptionSelected()
                     } else {
-                        on(Answer(mapAnswer(null, null)))
+                        on(Answer(mapAnswer(null, null, null)))
                     }
                 }
                 null -> { /* incomplete */ }

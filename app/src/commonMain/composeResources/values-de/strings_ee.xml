@@ -820,4 +820,14 @@
     <string name="quest_cycleway_separation_guard_rail">Leitplanke</string>
     <string name="quest_cycleway_separation_jersey_barrier">Jersey-Barriere</string>
     <string name="quest_cycleway_separation_ditch">Graben</string>
+    <string name="maxspeed_overlay_title">Höchstgeschwindigkeiten</string>
+    <string name="maxspeed_overlay_value">Höchstgeschwindigkeit: %1$s</string>
+    <string name="maxspeed_overlay_forward">In Zeichenrichtung des Wegs: %1$s</string>
+    <string name="maxspeed_overlay_backward">Gegen die Zeichenrichtung des Wegs: %1$s</string>
+    <string name="maxspeed_overlay_issue_zone_mismatch">Die Höchstgeschwindigkeit widerspricht der Geschwindigkeit der erfassten Zone</string>
+    <string name="maxspeed_overlay_issue_unrestricted_in_zone">maxspeed=none widerspricht der erfassten Geschwindigkeitszone</string>
+    <string name="maxspeed_overlay_issue_invalid">Ungültiger oder nicht unterstützter Wert</string>
+    <string name="maxspeed_overlay_not_editable">Diese Höchstgeschwindigkeit kann hier nicht ohne Informationsverlust bearbeitet werden. Bitte den Tag-Editor verwenden.</string>
+    <string name="maxspeed_overlay_type_removed">%1$s wird entfernt, weil es nicht mehr passt</string>
+    <string name="maxspeed_overlay_kept_tags">Bleibt unverändert:</string>
 </resources>

@@ -993,4 +993,14 @@ Out of the box SCEE is configured to behave very similar to StreetComplete.</str
     <string name="traffic_sign_proposal_removed">%1$s=%2$s will be removed</string>
     <string name="traffic_sign_proposal_remaining">These existing tags stay and still allow what the sign forbids:</string>
     <string name="traffic_sign_confirm_proposals">These tags are saved together with the signs:</string>
+    <string name="maxspeed_overlay_title">Speed limits</string>
+    <string name="maxspeed_overlay_value">Speed limit: %1$s</string>
+    <string name="maxspeed_overlay_forward">In drawing direction of the way: %1$s</string>
+    <string name="maxspeed_overlay_backward">Against drawing direction of the way: %1$s</string>
+    <string name="maxspeed_overlay_issue_zone_mismatch">The speed limit contradicts the speed of the tagged zone</string>
+    <string name="maxspeed_overlay_issue_unrestricted_in_zone">maxspeed=none contradicts the tagged speed zone</string>
+    <string name="maxspeed_overlay_issue_invalid">Invalid or unsupported speed limit value</string>
+    <string name="maxspeed_overlay_not_editable">This speed limit cannot be edited here without losing information. Please use the tag editor.</string>
+    <string name="maxspeed_overlay_type_removed">%1$s will be removed because it no longer matches</string>
+    <string name="maxspeed_overlay_kept_tags">Kept unchanged:</string>
 </resources>

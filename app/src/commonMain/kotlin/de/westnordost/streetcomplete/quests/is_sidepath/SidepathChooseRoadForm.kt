@@ -47,6 +47,8 @@ fun <T> SidepathChooseRoadForm(
     bottomOptionLabelRes: StringResource = Res.string.quest_is_sidepath_road_cant_say,
     /** When set, the bottom option invokes this instead of [mapAnswer] with nulls (EE+209 “No Sidepath”). */
     onBottomOptionSelected: (() -> Unit)? = null,
+    /** EE+209: block OK when the selected road would not add missing metadata. Default always true (EE+201). */
+    roadSelectionProducesChanges: (ofName: String?, ofHighway: String?) -> Boolean = { _, _ -> true },
     mapDataSource: MapDataWithEditsSource = koinInject(),
     featureDictionary: FeatureDictionary = koinInject(),
 ) {
@@ -69,10 +71,24 @@ fun <T> SidepathChooseRoadForm(
         val found = findCandidateRoads(pathGeometry, mapData)
         candidates = found
         if (selection == null && found.isNotEmpty()) {
-            val defaultRoad = found.firstOrNull { it.name != null } ?: found.first()
+            val defaultRoad =
+                found.firstOrNull { roadSelectionProducesChanges(it.name, it.highway) }
+                    ?: found.firstOrNull { it.name != null }
+                    ?: found.first()
             selection = SidepathRoadSelection.Road(defaultRoad.element.id)
         }
         loaded = true
+    }
+
+    fun roadAnswerWouldChange(selected: SidepathRoadSelection.Road): Boolean {
+        val candidate = candidates.firstOrNull { it.element.id == selected.elementId } ?: return false
+        return roadSelectionProducesChanges(candidate.name, candidate.highway)
+    }
+
+    fun selectionIsSubmittable(selected: SidepathRoadSelection?): Boolean = when (selected) {
+        is SidepathRoadSelection.Road -> roadAnswerWouldChange(selected)
+        SidepathRoadSelection.CantSay -> true
+        null -> false
     }
 
     val mapMarkersCallback = LocalMapMarkersCallback.current
@@ -101,11 +117,12 @@ fun <T> SidepathChooseRoadForm(
     QuestForm(
         on = on,
         title = stringResource(Res.string.quest_is_sidepath_road_title),
-        isComplete = loaded && selection != null,
+        isComplete = loaded && selectionIsSubmittable(selection),
         hasChanges = selection != null,
         onClickOk = {
             when (val selected = selection) {
                 is SidepathRoadSelection.Road -> {
+                    if (!roadAnswerWouldChange(selected)) return@QuestForm
                     val candidate = candidates.firstOrNull { it.element.id == selected.elementId }
                     on(
                         Answer(

@@ -43,8 +43,20 @@ internal fun isSidepathRoadMetadataCompletionEligible(
     val missingName = tags["is_sidepath:of:name"].isNullOrEmpty()
     if (!missingOf && !missingName) return false
     if (!hasNearbyAlignedRoad(geometry, mapData)) return false
-    if (missingOf) return true
-    return findCandidateRoads(geometry, mapData).any { it.name != null }
+    return findCandidateRoads(geometry, mapData).any { candidate ->
+        sidepathRoadMetadataAnswerProducesChanges(tags, candidate.name, candidate.highway)
+    }
+}
+
+/** Whether [applySidepathRoadMetadata] would change anything (mirrors its fill-only rules). */
+internal fun sidepathRoadMetadataAnswerProducesChanges(
+    tags: Map<String, String>,
+    ofName: String?,
+    ofHighway: String?,
+): Boolean {
+    if (tags["is_sidepath:of"].isNullOrEmpty() && !ofHighway.isNullOrEmpty()) return true
+    if (tags["is_sidepath:of:name"].isNullOrEmpty() && !ofName.isNullOrEmpty()) return true
+    return false
 }
 
 /** Fill only missing association tags; never overwrite existing values or touch unrelated keys. */

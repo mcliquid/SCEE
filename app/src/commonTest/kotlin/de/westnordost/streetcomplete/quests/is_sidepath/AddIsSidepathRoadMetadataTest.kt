@@ -197,6 +197,37 @@ class AddIsSidepathRoadMetadataTest {
         assertTrue(changes.isEmpty())
     }
 
+    @Test fun `produces changes helper matches applyAnswerTo`() {
+        val tags = mapOf(
+            "highway" to "cycleway",
+            "is_sidepath" to "yes",
+            "is_sidepath:of" to "residential",
+        )
+        assertFalse(
+            sidepathRoadMetadataAnswerProducesChanges(tags, ofName = null, ofHighway = "residential"),
+        )
+        assertTrue(
+            sidepathRoadMetadataAnswerProducesChanges(tags, ofName = "Ring", ofHighway = "residential"),
+        )
+        val changes = questType.answerAppliedTo(
+            SidepathRoadMetadataAnswer.RoadAssociation(ofName = null, ofHighway = "residential"),
+            tags,
+        )
+        assertTrue(changes.isEmpty())
+    }
+
+    @Test fun `matching named road when name already tagged produces no changes`() {
+        val tags = mapOf(
+            "highway" to "footway",
+            "is_sidepath" to "yes",
+            "is_sidepath:of" to "primary",
+            "is_sidepath:of:name" to "Hauptstraße",
+        )
+        assertFalse(
+            sidepathRoadMetadataAnswerProducesChanges(tags, ofName = "Hauptstraße", ofHighway = "primary"),
+        )
+    }
+
     @Test fun `unnamed road writes highway only`() {
         val changes = questType.answerAppliedTo(
             SidepathRoadMetadataAnswer.RoadAssociation(ofName = null, ofHighway = "tertiary"),
@@ -329,6 +360,23 @@ class AddIsSidepathRoadMetadataTest {
                         "is_sidepath" to "yes",
                         "is_sidepath:of" to "primary",
                     ),
+                    roadName = null,
+                ),
+            ),
+        )
+    }
+
+    @Test fun `not applicable when only nearby roads would not add metadata`() {
+        assertEquals(
+            0,
+            applicableCount(
+                sidepathAndRoad(
+                    pathTags = mapOf(
+                        "highway" to "cycleway",
+                        "is_sidepath" to "yes",
+                        "is_sidepath:of" to "residential",
+                    ),
+                    roadHighway = "residential",
                     roadName = null,
                 ),
             ),

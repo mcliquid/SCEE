@@ -47,6 +47,9 @@ class AddIsSidepathRoadMetadata : OsmElementQuestType<SidepathRoadMetadataAnswer
             },
             bottomOptionLabelRes = Res.string.quest_is_sidepath_road_metadata_not_sidepath,
             onBottomOptionSelected = { on(Answer(SidepathRoadMetadataAnswer.NotSidepath)) },
+            roadSelectionProducesChanges = { ofName, ofHighway ->
+                sidepathRoadMetadataAnswerProducesChanges(element.tags, ofName, ofHighway)
+            },
         )
     }
 

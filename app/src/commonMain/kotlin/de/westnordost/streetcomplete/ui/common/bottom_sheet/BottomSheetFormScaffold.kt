@@ -70,6 +70,8 @@ fun BottomSheetFormScaffold(
     /** When false, e.g. while a discard-confirmation dialog is open on top of the form. */
     keyboardDismissEnabled: Boolean = true,
     header: @Composable (() -> Unit)? = null,
+    /** Placed to the left of the header speech bubble (e.g. hide quest). */
+    headerLeading: @Composable (() -> Unit)? = null,
     fab: @Composable (() -> Unit)? = null,
     fab2: @Composable (() -> Unit)? = null,
     note: @Composable (() -> Unit)? = null,
@@ -121,45 +123,66 @@ fun BottomSheetFormScaffold(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (header != null || showCloseButton) {
-                    SpeechBubble(
-                        elevation = elevation,
-                        arrowDirection = SpeechBubbleArrowDirection.Top,
-                        arrowPlacementBias = 0.1f,
-                        modifier = Modifier
-                            .padding(horizontal = 8.dp)
-                            .fillMaxWidth(),
-                        contentPadding =
-                            PaddingValues(start = 4.dp, top = 8.dp, end = 16.dp, bottom = 12.dp),
-                        content = {
-                            Column(Modifier.fillMaxWidth()) {
-                                if (showDragHandle) {
-                                    BottomSheetDragHandle(Modifier.padding(bottom = 8.dp))
-                                } else {
-                                    Spacer(Modifier.size(4.dp))
-                                }
-                                Row {
-                                    AnimatedContent(showCloseButton) { visible ->
-                                        if (visible) {
-                                            IconButton(
-                                                onClick = onDismissRequest,
-                                                modifier = Modifier
-                                                    .padding(end = 12.dp)
-                                                    .semantics { contentDescription = closeButtonLabel },
-                                            ) {
-                                                if (persistentCloseButton) CloseFormIcon() else BackIcon()
-                                            }
-                                        } else {
-                                            Spacer(Modifier.size(12.dp))
-                                        }
+                    val headerBubble: @Composable (Modifier) -> Unit = { bubbleModifier ->
+                        SpeechBubble(
+                            elevation = elevation,
+                            arrowDirection = SpeechBubbleArrowDirection.Top,
+                            arrowPlacementBias = 0.1f,
+                            modifier = bubbleModifier,
+                            contentPadding =
+                                PaddingValues(start = 4.dp, top = 8.dp, end = 16.dp, bottom = 12.dp),
+                            content = {
+                                Column(Modifier.fillMaxWidth()) {
+                                    if (showDragHandle) {
+                                        BottomSheetDragHandle(Modifier.padding(bottom = 8.dp))
+                                    } else {
+                                        Spacer(Modifier.size(4.dp))
                                     }
+                                    Row {
+                                        AnimatedContent(showCloseButton) { visible ->
+                                            if (visible) {
+                                                IconButton(
+                                                    onClick = onDismissRequest,
+                                                    modifier = Modifier
+                                                        .padding(end = 12.dp)
+                                                        .semantics { contentDescription = closeButtonLabel },
+                                                ) {
+                                                    if (persistentCloseButton) CloseFormIcon() else BackIcon()
+                                                }
+                                            } else {
+                                                Spacer(Modifier.size(12.dp))
+                                            }
+                                        }
 
-                                    if (header != null) {
-                                        Box(Modifier.weight(1f)) { header() }
+                                        if (header != null) {
+                                            Box(Modifier.weight(1f)) { header() }
+                                        }
                                     }
                                 }
                             }
+                        )
+                    }
+                    if (headerLeading != null) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.Top,
+                        ) {
+                            Box(Modifier.padding(start = 8.dp, end = 4.dp)) {
+                                headerLeading()
+                            }
+                            headerBubble(
+                                Modifier
+                                    .weight(1f)
+                                    .padding(end = 8.dp)
+                            )
                         }
-                    )
+                    } else {
+                        headerBubble(
+                            Modifier
+                                .padding(horizontal = 8.dp)
+                                .fillMaxWidth()
+                        )
+                    }
                 }
 
                 if (note != null) {

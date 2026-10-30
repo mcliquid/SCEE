@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.unit.dp
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osmnotes.Note
 import de.westnordost.streetcomplete.data.osmnotes.NoteComment
 import de.westnordost.streetcomplete.data.preferences.Preferences
@@ -63,6 +64,7 @@ fun AddNoteCommentForm(
     avatarsCacheDir: Path = koinInject(named("AvatarsCacheDirectory")),
     questsHiddenSource: QuestsHiddenSource = koinInject(),
 ) {
+    val prefs: Preferences = koinInject()
     var noteText by rememberSaveable { mutableStateOf("") }
     var noteImagePaths by rememberSaveable { mutableStateOf(listOf<String>()) }
     var close by rememberSaveable { mutableStateOf(false) }
@@ -90,6 +92,11 @@ fun AddNoteCommentForm(
     ) {
         BottomSheetFormScaffold(
             onDismissRequest = { requestDismiss = true },
+            headerLeading = if (prefs.getBoolean(Prefs.SHOW_HIDE_BUTTON, false)) {
+                { HideButton({ onHideQuest(false) }, { onHideQuest(true) }) }
+            } else {
+                null
+            },
             header = {
                 Text(
                     text = stringResource(quest.type.title),
@@ -122,7 +129,6 @@ fun AddNoteCommentForm(
                             .padding(PaddingValues(horizontal = 24.dp, vertical = 12.dp))
                             .align(Alignment.CenterHorizontally)
                     )
-                    val prefs: Preferences = koinInject()
                     if (prefs.expertMode) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -156,9 +162,6 @@ fun AddNoteCommentForm(
                     visible = noteText.isNotBlank(),
                     onClick = { onCommentNote(noteText.trim(), noteImagePaths, close) },
                 )
-            },
-            fab2 = {
-                HideButton({ onHideQuest(false) }, { onHideQuest(true) })
             },
             modifier = modifier,
         )

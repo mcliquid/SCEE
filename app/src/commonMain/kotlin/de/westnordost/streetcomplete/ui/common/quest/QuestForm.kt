@@ -250,6 +250,11 @@ private fun QuestForm(
     BottomSheetFormScaffold(
         onDismissRequest = ::dismiss,
         keyboardDismissEnabled = !confirmDiscard,
+        headerLeading = if (prefs.getBoolean(Prefs.SHOW_HIDE_BUTTON, false)) {
+            { HideButton({ on(Action.HideQuest) }, { on(Action.TempHideQuest) }) }
+        } else {
+            null
+        },
         header = {
             if (isResurvey) {
                 CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.titleLarge) {
@@ -285,9 +290,7 @@ private fun QuestForm(
         } else {
             null
         },
-        fab2 = {
-            HideButton({ on(Action.HideQuest) }, { on(Action.TempHideQuest) })
-        },        modifier = modifier,
+        modifier = modifier,
     )
 
     if (confirmDiscard) {

@@ -14,6 +14,7 @@ class WifiAutoDownloadStrategy(
      * excursion. Let's make sure he can, even if there is no or bad internet.
      */
 
-    override val maxDownloadAreaInKm2 = 20.0 // that's a radius of about 2.5 km
-    override val desiredScoredMapDataCountInVicinity = 15000
+    // 2.25 times the area and element budget gives 1.5 times the radius at every density.
+    override val maxDownloadAreaInKm2 = 45.0 // radius about 3.78 km
+    override val desiredScoredMapDataCountInVicinity = 33750
 }

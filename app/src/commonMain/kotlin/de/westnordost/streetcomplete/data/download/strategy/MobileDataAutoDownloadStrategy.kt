@@ -9,6 +9,7 @@ class MobileDataAutoDownloadStrategy(
     downloadedTilesSource: DownloadedTilesSource
 ) : AVariableRadiusStrategy(mapDataSource, downloadedTilesSource) {
 
-    override val maxDownloadAreaInKm2 = 10.0 // that's a radius of about 1.5 km
-    override val desiredScoredMapDataCountInVicinity = 7500
+    // 2.25 times the area and element budget gives 1.5 times the radius at every density.
+    override val maxDownloadAreaInKm2 = 22.5 // radius about 2.68 km
+    override val desiredScoredMapDataCountInVicinity = 16875
 }

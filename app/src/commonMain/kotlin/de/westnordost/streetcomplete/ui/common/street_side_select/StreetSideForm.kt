@@ -11,6 +11,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.osm.Sides
@@ -33,6 +34,7 @@ import org.jetbrains.compose.resources.painterResource
     getFloatingPainter: @Composable (T?, Side) -> Painter? = { _, _ -> null },
     getCenterOverlay: @Composable (T?, Side) -> Unit = { _, _ -> },
     lastPicked: List<Sides<T>> = emptyList(),
+    showLastPicked: Boolean = value.left == null && value.right == null,
     enabled: Boolean = true,
     isLeftSideVisible: Boolean = true,
     isRightSideVisible: Boolean = true,
@@ -72,11 +74,12 @@ import org.jetbrains.compose.resources.painterResource
             tilt = mapTilt
         )
 
-        if (enabled && lastPicked.isNotEmpty() && value.left == null && value.right == null) {
+        if (enabled && lastPicked.isNotEmpty() && showLastPicked) {
             LastPickedChipsRow(
                 items = lastPicked,
                 onClick = { onValueChanged(it) },
                 modifier = Modifier
+                    .testTag("street-side-last-picked")
                     .padding(8.dp)
                     .align(Alignment.BottomStart),
                 chipBorder = BorderStroke(1.dp, MaterialTheme.colors.divider),

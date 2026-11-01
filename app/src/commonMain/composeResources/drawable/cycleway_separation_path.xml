@@ -1,0 +1,9 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="128dp"
+    android:height="128dp"
+    android:viewportWidth="256"
+    android:viewportHeight="256">
+    <!-- Each half faces the path centre; StreetSideIllustration mirrors the left half. -->
+    <path android:pathData="M0,0H160V256H0Z" android:fillColor="#dd8888" />
+    <path android:pathData="M160,0H256V256H160Z" android:fillColor="#bfbfbf" />
+</vector>

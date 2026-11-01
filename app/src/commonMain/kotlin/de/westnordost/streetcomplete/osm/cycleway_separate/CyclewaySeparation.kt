@@ -1,6 +1,9 @@
 package de.westnordost.streetcomplete.osm.cycleway_separate
 
+import kotlinx.serialization.Serializable
+
 /** Documented physical separation values from the separation proposal (surveyable on site). */
+@Serializable
 enum class CyclewaySeparation(val osmValue: String) {
     NO("no"),
     KERB("kerb"),

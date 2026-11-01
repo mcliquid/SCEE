@@ -5,6 +5,7 @@ import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.oneway.isOneway
 import de.westnordost.streetcomplete.osm.oneway.isReversedOneway
 import de.westnordost.streetcomplete.ui.common.street_side_select.Side
+import kotlinx.serialization.Serializable
 
 /** Broad filter for separately mapped exclusive cycleways (details in [isCyclewaySeparationEligible]). */
 internal val CYCLEWAY_SEPARATION_BASE_FILTER = """
@@ -34,6 +35,7 @@ data class CyclewaySeparationSideState(
     val needsRightSurvey: Boolean get() = right == SeparationSideSituation.Missing
 }
 
+@Serializable
 data class CyclewaySeparationAnswer(
     val left: CyclewaySeparation?,
     val right: CyclewaySeparation?,
@@ -127,14 +129,23 @@ private fun sideSituation(sideValue: String?, bothValue: String?): SeparationSid
 }
 
 fun applyCyclewaySeparationAnswer(tags: Tags, answer: CyclewaySeparationAnswer) {
+    if (tags["highway"] != "cycleway") return
     val state = parseCyclewaySeparationState(tags) ?: return
     if (state.left == SeparationSideSituation.Conflict || state.right == SeparationSideSituation.Conflict) {
         return
     }
-    if (state.needsLeftSurvey && answer.left != null && tags["separation:left"].isNullOrEmpty()) {
-        tags["separation:left"] = answer.left.osmValue
-    }
-    if (state.needsRightSurvey && answer.right != null && tags["separation:right"].isNullOrEmpty()) {
-        tags["separation:right"] = answer.right.osmValue
+    // Known sides are read-only in this quest, including ordered semicolon values.
+    val left = state.leftValue?.takeIf { it.isNotEmpty() }
+        ?: answer.left?.osmValue.takeIf { state.needsLeftSurvey }
+    val right = state.rightValue?.takeIf { it.isNotEmpty() }
+        ?: answer.right?.osmValue.takeIf { state.needsRightSurvey }
+    if (answer.left == null && answer.right == null) return
+    if (left != null && left == right) {
+        if (tags["separation:both"] != left) tags["separation:both"] = left
+        tags.remove("separation:left")
+        tags.remove("separation:right")
+    } else {
+        if (state.needsLeftSurvey && left != null) tags["separation:left"] = left
+        if (state.needsRightSurvey && right != null) tags["separation:right"] = right
     }
 }

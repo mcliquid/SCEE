@@ -1,6 +1,10 @@
 package de.westnordost.streetcomplete.quests.cycleway_separation
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -9,6 +13,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.cheonjaeung.compose.grid.SimpleGridCells
@@ -17,6 +25,8 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.osmquests.Answer
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
+import de.westnordost.streetcomplete.data.preferences.Preferences
+import org.koin.compose.koinInject
 import de.westnordost.streetcomplete.osm.Sides
 import de.westnordost.streetcomplete.osm.cycleway_separate.CyclewaySeparation
 import de.westnordost.streetcomplete.osm.cycleway_separate.CyclewaySeparationAnswer
@@ -46,6 +56,7 @@ fun AddCyclewaySeparationForm(
     element: Element,
     geometry: ElementGeometry,
     countryInfo: CountryInfo,
+    preferences: Preferences = koinInject(),
 ) {
     val sideState = remember(element.tags) { parseCyclewaySeparationState(element.tags) }
         ?: return
@@ -56,6 +67,13 @@ fun AddCyclewaySeparationForm(
             left = knownSelectionForUiSide(Side.LEFT, sideState, tags),
             right = knownSelectionForUiSide(Side.RIGHT, sideState, tags),
         )
+    }
+
+    val lastPicked = remember(element.tags, preferences) {
+        loadSeparationLastPicked(preferences, tags)?.let { answer ->
+            val restored = separationSelectionsForAnswer(answer, tags)
+            Sides<CyclewaySeparation?>(restored.left ?: initialSelections.left, restored.right ?: initialSelections.right)
+        }
     }
 
     var selections by remember(element.tags) { mutableStateOf(initialSelections) }
@@ -82,26 +100,27 @@ fun AddCyclewaySeparationForm(
 
     QuestForm(
         on = on,
-        isComplete = isSideComplete(Side.LEFT) && isSideComplete(Side.RIGHT),
+        isComplete = (sideState.needsLeftSurvey || sideState.needsRightSurvey) &&
+            isSideComplete(Side.LEFT) && isSideComplete(Side.RIGHT),
         hasChanges = selections.left != initialSelections.left || selections.right != initialSelections.right,
         hintText = hintText,
         onClickOk = {
-            on(Answer(buildAnswer(sideState, tags, selections)))
+            val answer = buildAnswer(sideState, tags, selections)
+            saveSeparationLastPicked(preferences, tags, answer)
+            on(Answer(answer))
         },
         contentPadding = PaddingValues.Zero,
     ) {
         StreetSideForm(
-            value = presentations,
-            onValueChanged = { },
-            getIllustrationPainter = { presentation, _ ->
-                when (presentation) {
-                    is LockedKnown -> painterResource(presentation.value.icon)
-                    is Surveyable -> presentation.selection?.let { painterResource(it.icon) }
-                    is LockedOther -> null
-                    null -> null
-                }
-            },
-            getCenterOverlay = { presentation, _ ->
+            value = selections,
+            onValueChanged = { selections = it },
+            // Perspective choice pictures are not vertically repeating street textures.
+            getIllustrationPainter = { _, _ -> painterResource(Res.drawable.cycleway_separation_path) },
+            lastPicked = listOfNotNull(lastPicked),
+            showLastPicked = selections == initialSelections,
+            modifier = Modifier.clipToBounds().testTag("separation-preview"),
+            getCenterOverlay = { selection, side ->
+                val presentation = presentations[side]
                 when (presentation) {
                     is LockedOther -> {
                         TextWithHalo(
@@ -114,7 +133,13 @@ fun AddCyclewaySeparationForm(
                             modifier = Modifier.padding(horizontal = 4.dp),
                         )
                     }
-                    else -> Unit
+                    else -> Image(
+                        painter = painterResource(selection?.icon ?: Res.drawable.floating_question),
+                        contentDescription = selection?.let { stringResource(it.title) },
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.sizeIn(maxWidth = 64.dp, maxHeight = 64.dp)
+                            .aspectRatio(1f).clip(CircleShape).testTag("separation-selection-${side.name}"),
+                    )
                 }
             },
             onClickSide = { side ->

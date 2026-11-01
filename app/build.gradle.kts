@@ -157,7 +157,10 @@ kotlin {
         getByName("desktopTest") {
             dependsOn(jvmAndroidTest)
             // Skiko's native library for the graphics tests; the desktop launcher brings it in the same way
-            dependencies { implementation(compose.desktop.currentOs) }
+            dependencies {
+                implementation(compose.desktop.currentOs)
+                implementation(libs.composeUiTestJunit4)
+            }
         }
 
         commonMain {

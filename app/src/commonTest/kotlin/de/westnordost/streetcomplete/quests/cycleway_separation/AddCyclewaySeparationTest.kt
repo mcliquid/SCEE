@@ -190,20 +190,65 @@ class AddCyclewaySeparationTest {
         )
     }
 
-    @Test fun `identical values write side keys not separation both`() {
-        val changes = questType.answerAppliedTo(
-            CyclewaySeparationAnswer(CyclewaySeparation.KERB, CyclewaySeparation.KERB),
-            baseTags,
-        )
-        assertEquals(
-            setOf(
-                StringMapEntryAdd("separation:left", "kerb"),
-                StringMapEntryAdd("separation:right", "kerb"),
-            ),
-            changes,
-        )
-        assertTrue(changes.none { it.key == "separation:both" })
+    @Test fun `identical values write separation both`() {
+        assertEquals(setOf(StringMapEntryAdd("separation:both", "kerb")), questType.answerAppliedTo(
+            CyclewaySeparationAnswer(CyclewaySeparation.KERB, CyclewaySeparation.KERB), baseTags))
     }
+
+    @Test fun `filling matching missing side replaces redundant side representation`() {
+        for (side in listOf("left", "right")) {
+            val tags = baseTags + ("separation:$side" to "kerb")
+            val answer = if (side == "left") CyclewaySeparationAnswer(null, CyclewaySeparation.KERB)
+                else CyclewaySeparationAnswer(CyclewaySeparation.KERB, null)
+            val result = applyToTags(tags, answer)
+            assertEquals(baseTags + ("separation:both" to "kerb"), result)
+            assertFalse(questType.isApplicableTo(way(tags = result)))
+            assertTrue(questType.answerAppliedTo(answer, result).isEmpty())
+        }
+    }
+
+    @Test fun `equal existing side values normalize exactly once including ordered compounds`() {
+        for (value in listOf("kerb", "kerb;greenery")) {
+            val tags = baseTags + mapOf("separation:left" to value, "separation:right" to value)
+            val answer = CyclewaySeparationAnswer(CyclewaySeparation.KERB, CyclewaySeparation.KERB)
+            val result = applyToTags(tags, answer)
+            assertEquals(baseTags + ("separation:both" to value), result)
+            assertFalse(questType.isApplicableTo(way(tags = result)))
+            assertTrue(questType.answerAppliedTo(answer, result).isEmpty())
+        }
+    }
+
+    @Test fun `different compound order is not interchangeable and unrelated namespaces survive`() {
+        val tags = baseTags + mapOf("separation:left" to "kerb;greenery", "separation:right" to "greenery;kerb",
+            "buffer:left" to "1", "marking:both" to "solid_line", "separation:left:height" to "0.1",
+            "cycleway:both:separation" to "fence", "cycleway:right:separation:both" to "bollard")
+        assertTrue(questType.answerAppliedTo(CyclewaySeparationAnswer(CyclewaySeparation.KERB,
+            CyclewaySeparation.KERB), tags).isEmpty())
+        val partial = tags - "separation:right"
+        val result = applyToTags(partial, CyclewaySeparationAnswer(null, CyclewaySeparation.FENCE))
+        assertEquals(partial + ("separation:right" to "fence"), result)
+    }
+
+    @Test fun `already canonical both and differing side tags are idempotent`() {
+        for (existing in listOf(mapOf("separation:both" to "kerb"),
+            mapOf("separation:left" to "kerb", "separation:right" to "fence"))) {
+            val tags = baseTags + existing
+            assertTrue(questType.answerAppliedTo(CyclewaySeparationAnswer(CyclewaySeparation.KERB,
+                CyclewaySeparation.FENCE), tags).isEmpty())
+            assertFalse(questType.isApplicableTo(way(tags = tags)))
+        }
+    }
+
+    @Test fun `normalization removes only superseded side keys`() {
+        val tags = baseTags + mapOf("separation:left" to "no", "buffer:right" to "0.5",
+            "marking:right" to "surface", "separation:left:height" to "0",
+            "cycleway:both:separation" to "kerb")
+        assertEquals(tags - "separation:left" + ("separation:both" to "no"),
+            applyToTags(tags, CyclewaySeparationAnswer(null, CyclewaySeparation.NO)))
+    }
+
+    private fun applyToTags(tags: Map<String, String>, answer: CyclewaySeparationAnswer): Map<String, String> =
+        tags.toMutableMap().apply { questType.answerAppliedTo(answer, tags).forEach { it.applyTo(this) } }
 
     @Test fun `bidirectional cycleway uses way direction without swap`() {
         val tags = baseTags + ("oneway:bicycle" to "no")

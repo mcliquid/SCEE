@@ -61,6 +61,45 @@ class AddCyclewayTest {
         assertMinorOnewayApplicability(mapOf("highway" to "service", "service" to "alley", "oneway" to "yes"), true)
     }
 
+    @Test fun `drive-through is excluded from initial survey and every resurvey route`() {
+        for (cyclewayTags in listOf(
+            emptyMap(),
+            mapOf("cycleway" to "track", "check_date:cycleway" to "2001-01-01"),
+            mapOf("cycleway" to "yes"),
+            mapOf("cycleway:left" to "track"),
+        )) {
+            for (oneway in listOf("yes", "no", "-1")) {
+                assertMinorOnewayApplicability(mapOf("highway" to "service", "service" to "drive-through",
+                    "oneway" to oneway) + cyclewayTags, false)
+            }
+        }
+    }
+
+    @Test fun `ordinary eligible service roads without subtype remain applicable`() {
+        assertMinorOnewayApplicability(mapOf("highway" to "service", "oneway" to "yes"), true)
+        assertMinorOnewayApplicability(mapOf("highway" to "service", "cycleway" to "track",
+            "check_date:cycleway" to "2001-01-01"), true)
+    }
+
+    @Test fun `other service subtypes retain initial survey and resurvey eligibility`() {
+        for (service in listOf("alley", "emergency_access")) {
+            assertMinorOnewayApplicability(mapOf("highway" to "service", "service" to service,
+                "oneway" to "yes"), true)
+        }
+        for (service in listOf("alley", "emergency_access", "driveway", "parking_aisle", "slipway")) {
+            assertMinorOnewayApplicability(mapOf("highway" to "service", "service" to service,
+                "cycleway" to "track", "check_date:cycleway" to "2001-01-01"), true)
+        }
+    }
+
+    @Test fun `service exclusion does not affect other highway types even with stray service tag`() {
+        for (highway in listOf("primary", "secondary", "tertiary", "unclassified")) {
+            assertApplicability(mapOf("highway" to highway), bulk = true, single = true)
+            assertApplicability(mapOf("highway" to highway, "service" to "drive-through"),
+                bulk = true, single = true)
+        }
+    }
+
     @Test fun `oneway service drive-through is not applicable`() {
         assertMinorOnewayApplicability(
             mapOf("highway" to "service", "service" to "drive-through", "oneway" to "yes"),

@@ -27,7 +27,7 @@ fun Marker.toGeoJsonFeature(): List<Feature<Geometry, JsonObject>> {
             p["label"] = JsonPrimitive(title)
         }
         p["color"] = JsonPrimitive(color)
-        p["rotation"] = JsonPrimitive(rotation ?: 0.0)
+        if (rotation != null) p["rotation"] = JsonPrimitive(rotation)
         features.add(Feature(geometry.center.toGeometry(), JsonObject(p)))
     }
 

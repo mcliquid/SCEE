@@ -83,23 +83,27 @@ fun GeometryMarkersLayers(markers: Collection<Marker>, haloColor: Color, mapImag
         cap = const(LineCap.Round),
         join = const(LineJoin.Round)
     )
-    SymbolLayer(
-        id = "geo-symbols",
-        source = source,
-        filter = feature.isPoint(),
-        iconImage = image(const(iconNamePrefix) + feature["icon"].convertToString()),
-        iconSize = byZoom(17 to 0.66f, 19 to 1f),
-        iconAllowOverlap = const(true),
-        iconRotate = feature["rotation"].convertToNumber(const(0)),
-        iconRotationAlignment = const(IconRotationAlignment.Map),
-        textField = feature["label"].convertToString(),
-        textColor = feature["color"].convertToColor(const(Color.GeometryMarker)),
-        textSize = const(16.sp),
-        textFont = const(listOf("Roboto Bold")),
-        textAnchor = const(SymbolAnchor.Top),
-        textOffset = textOffset(0.dp, 19.dp),
-        textOptional = const(true),
-    )
+    // Explicit geographic rotations and direction cones keep their map alignment.
+    for (mapAligned in listOf(false, true)) {
+        SymbolLayer(
+            id = if (mapAligned) "geo-symbols-rotated" else "geo-symbols",
+            source = source,
+            filter = all(feature.isPoint(), !feature.has("direction", true),
+                if (mapAligned) feature.has("rotation") else !feature.has("rotation")),
+            iconImage = image(const(iconNamePrefix) + feature["icon"].convertToString()),
+            iconSize = byZoom(17 to 0.66f, 19 to 1f),
+            iconAllowOverlap = const(true),
+            iconRotate = feature["rotation"].convertToNumber(const(0)),
+            iconRotationAlignment = const(if (mapAligned) IconRotationAlignment.Map else IconRotationAlignment.Viewport),
+            textField = feature["label"].convertToString(),
+            textColor = feature["color"].convertToColor(const(Color.GeometryMarker)),
+            textSize = const(16.sp),
+            textFont = const(listOf("Roboto Bold")),
+            textAnchor = const(SymbolAnchor.Top),
+            textOffset = textOffset(0.dp, 19.dp),
+            textOptional = const(true),
+        )
+    }
     SymbolLayer(
         id = "geo-direction",
         source = source,

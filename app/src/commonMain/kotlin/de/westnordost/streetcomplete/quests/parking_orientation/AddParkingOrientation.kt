@@ -43,6 +43,7 @@ class AddParkingOrientation : OsmFilterQuestType<ParkingOrientation>() {
         }
 
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = ParkingOrientation.entries,
             itemContent = {

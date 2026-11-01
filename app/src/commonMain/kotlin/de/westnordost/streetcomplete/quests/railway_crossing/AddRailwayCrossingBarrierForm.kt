@@ -22,6 +22,7 @@ fun AddRailwayCrossingBarrierForm(
     }
 
     ItemSelectQuestForm(
+        submitOnSelection = true,
         on = on,
         items = items,
         itemContent = { item ->

@@ -59,6 +59,7 @@ class AddBollardType : OsmElementQuestType<BollardTypeAnswer> {
     @Composable
     override fun Form(on: (QuestAction<BollardTypeAnswer>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = BollardType.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },

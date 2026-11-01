@@ -36,6 +36,7 @@ class AddFireHydrantPosition : OsmFilterQuestType<FireHydrantPosition>() {
     @Composable
     override fun Form(on: (QuestAction<FireHydrantPosition>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = FireHydrantPosition.entries,
             itemContent = { item ->

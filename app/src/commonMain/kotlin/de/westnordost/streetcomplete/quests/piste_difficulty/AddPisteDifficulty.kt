@@ -49,6 +49,7 @@ class AddPisteDifficulty : OsmElementQuestType<PisteDifficulty> {
     @Composable
     override fun Form(on: (QuestAction<PisteDifficulty>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = PisteDifficulty.entries,
             itemContent = {

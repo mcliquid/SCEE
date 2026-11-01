@@ -39,6 +39,7 @@ class AddShelterType : OsmFilterQuestType<ShelterType>() {
     @Composable
     override fun Form(on: (QuestAction<ShelterType>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = ShelterType.entries.filterNot { it == ShelterType.WEATHER_SHELTER },
             itemContent = { ImageWithLabel(painterResource(it.icon!!), stringResource(it.title!!)) },

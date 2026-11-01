@@ -38,6 +38,7 @@ class AddTreeLeafType : OsmFilterQuestType<TreeLeafTypeAnswer>() {
     @Composable
     override fun Form(on: (QuestAction<TreeLeafTypeAnswer>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = TreeLeafType.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },

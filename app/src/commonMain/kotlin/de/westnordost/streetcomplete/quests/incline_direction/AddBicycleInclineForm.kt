@@ -28,6 +28,7 @@ fun AddBicycleInclineForm(
     var confirmUpAndDown by remember { mutableStateOf(false) }
 
     ItemSelectQuestForm(
+        submitOnSelection = true,
         on = {
             on(when (it) {
                 is Answer<Incline> -> Answer(RegularBicycleInclineAnswer(it.value))

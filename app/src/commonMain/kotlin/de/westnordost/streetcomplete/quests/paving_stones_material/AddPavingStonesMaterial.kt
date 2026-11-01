@@ -34,6 +34,7 @@ class AddPavingStonesMaterial : OsmFilterQuestType<PavingStonesMaterialAnswer>()
     @Composable
     override fun Form(on: (QuestAction<PavingStonesMaterialAnswer>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = PavingStonesMaterial.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },

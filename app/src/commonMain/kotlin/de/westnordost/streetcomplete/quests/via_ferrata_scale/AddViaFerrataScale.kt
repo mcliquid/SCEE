@@ -35,6 +35,7 @@ class AddViaFerrataScale : OsmFilterQuestType<ViaFerrataScale>() {
     @Composable
     override fun Form(on: (QuestAction<ViaFerrataScale>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = ViaFerrataScale.entries,
             itemContent = {

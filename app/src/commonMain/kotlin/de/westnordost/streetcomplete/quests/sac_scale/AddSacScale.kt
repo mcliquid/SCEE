@@ -75,6 +75,7 @@ class AddSacScale : OsmElementQuestType<SacScale> {
     @Composable
     override fun Form(on: (QuestAction<SacScale>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = SacScale.entries,
             itemContent = {

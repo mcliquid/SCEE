@@ -54,6 +54,7 @@ class AddStileType : OsmElementQuestType<StileType> {
     @Composable
     override fun Form(on: (QuestAction<StileType>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = StileType.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },

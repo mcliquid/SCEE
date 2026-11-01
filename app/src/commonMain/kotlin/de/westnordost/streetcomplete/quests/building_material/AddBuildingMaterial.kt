@@ -38,6 +38,7 @@ class AddBuildingMaterial : OsmFilterQuestType<BuildingMaterial>() {
     @Composable
     override fun Form(on: (QuestAction<BuildingMaterial>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = BuildingMaterial.entries,
             itemContent = { ImageWithLabel(painterResource(it.imageRes), stringResource(it.titleRes)) },

@@ -83,6 +83,18 @@ fun MainBottomSheet(
     val koinCrossingType = remember(questTypes) { questTypes.filterIsInstance<AddWaterwayCrossing>().single() }
     var confirmEdit by remember { mutableStateOf<PendingEdit?>(null) }
 
+    val editSubmission = remember(shownBottomSheet) { EditSubmission() }
+    fun submitEdit(
+        type: ElementEditType,
+        geometry: ElementGeometry,
+        action: ElementEditAction,
+        hasExtra: Boolean,
+        key: QuestKey?,
+    ) {
+        // Claim only the final save, so cancelling a survey confirmation keeps the form usable.
+        editSubmission.run { onSubmitEdit(type, geometry, action, hasExtra, key) }
+    }
+
     when (shownBottomSheet) {
         is ShownBottomSheet.CreateOsmNote -> {
             CreateNoteForm(
@@ -134,7 +146,7 @@ fun MainBottomSheet(
                 onEdit = { action, isTagEdit, isEditInContextOf ->
                     val hasExtra = isEditInContextOf && !isTagEdit
                     if (SuppressSurveyConfirmation || isSurvey(shownBottomSheet.quest.geometry)) {
-                        onSubmitEdit(
+                        submitEdit(
                             if (isTagEdit) tagEdit else shownBottomSheet.quest.type,
                             shownBottomSheet.quest.geometry,
                             action,
@@ -186,7 +198,7 @@ fun MainBottomSheet(
                 onDismiss = onDismissByUser,
                 onEdit = { action ->
                     if (SuppressSurveyConfirmation || isSurvey(shownBottomSheet.quest.geometry)) {
-                        onSubmitEdit(
+                        submitEdit(
                             shownBottomSheet.quest.type,
                             shownBottomSheet.quest.geometry,
                             action,
@@ -238,7 +250,7 @@ fun MainBottomSheet(
                     val hasExtra = isEditInContextOf && !isTagEdit
 
                     if (SuppressSurveyConfirmation || isSurvey(geometry)) {
-                        onSubmitEdit(
+                        submitEdit(
                             if (isTagEdit) tagEdit else shownBottomSheet.overlay,
                             geometry,
                             action,
@@ -288,7 +300,7 @@ fun MainBottomSheet(
                 feature = shownBottomSheet.feature,
                 position = mapPosition,
                 onAdd = {
-                    onSubmitEdit(
+                    submitEdit(
                         addNodeEdit,
                         ElementPointGeometry(it.position),
                         CreateNodeAction(it.position, it.tags),
@@ -319,7 +331,7 @@ fun MainBottomSheet(
                         mapPosition = mapPosition,
                         onCrossingEdit = { action, position ->
                             val editType = koinCrossingType
-                            onSubmitEdit(editType, ElementPointGeometry(position), action, false, null)
+                            submitEdit(editType, ElementPointGeometry(position), action, false, null)
                             onSolved(editType.icon, position)
                             onDismiss()
                         },
@@ -336,7 +348,7 @@ fun MainBottomSheet(
                             element.tags.forEach { changeBuilder[it.key] = it.value }
                         }
                         if (action != null) {
-                            onSubmitEdit(
+                            submitEdit(
                                 addNodeEdit,
                                 ElementPointGeometry(element.position),
                                 action,
@@ -362,7 +374,7 @@ fun MainBottomSheet(
                 confirmEdit = null
             },
             onConfirmed = {
-                onSubmitEdit(
+                submitEdit(
                     pendingEdit.elementEditType,
                     pendingEdit.geometry,
                     pendingEdit.elementEditAction,

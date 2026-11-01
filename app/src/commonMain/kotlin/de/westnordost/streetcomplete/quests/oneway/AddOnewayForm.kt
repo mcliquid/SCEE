@@ -19,6 +19,7 @@ fun AddOnewayForm(
 ) {
     val geometryRotation = remember(geometry) { geometry.getOrientationOrZero() }
     ItemSelectQuestForm(
+        submitOnSelection = true,
         on = on,
         items = OnewayAnswer.entries,
         itemContent = { item ->

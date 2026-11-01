@@ -37,6 +37,7 @@ class AddRecyclingType : OsmFilterQuestType<RecyclingType>() {
     @Composable
     override fun Form(on: (QuestAction<RecyclingType>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = RecyclingType.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },

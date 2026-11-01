@@ -19,6 +19,7 @@ fun AddInclineForm(
 ) {
     val geometryRotation = remember(geometry) { geometry.getOrientationOrZero() }
     ItemSelectQuestForm(
+        submitOnSelection = true,
         on = on,
         items = Incline.entries,
         itemContent = { item ->

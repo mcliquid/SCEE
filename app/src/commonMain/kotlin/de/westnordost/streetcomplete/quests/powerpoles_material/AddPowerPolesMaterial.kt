@@ -52,6 +52,7 @@ class AddPowerPolesMaterial : OsmFilterQuestType<PowerPolesMaterialAnswer>() {
     @Composable
     override fun Form(on: (QuestAction<PowerPolesMaterialAnswer>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = PowerPolesMaterial.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },

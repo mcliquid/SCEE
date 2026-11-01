@@ -31,6 +31,7 @@ class AddOrchardType : OsmFilterQuestType<OrchardType>() {
     @Composable
     override fun Form(on: (QuestAction<OrchardType>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = OrchardType.entries,
             itemContent = {

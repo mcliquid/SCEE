@@ -43,6 +43,7 @@ class AddStreetCabinetType : OsmFilterQuestType<StreetCabinetType>() {
     @Composable
     override fun Form(on: (QuestAction<StreetCabinetType>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = StreetCabinetType.entries,
             itemContent = {

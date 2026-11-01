@@ -40,6 +40,7 @@ class AddBicycleBarrierInstallation : OsmFilterQuestType<BicycleBarrierInstallat
     @Composable
     override fun Form(on: (QuestAction<BicycleBarrierInstallationAnswer>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = BicycleBarrierInstallation.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },

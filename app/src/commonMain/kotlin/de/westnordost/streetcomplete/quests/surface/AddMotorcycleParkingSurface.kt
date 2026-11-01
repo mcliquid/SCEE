@@ -54,6 +54,7 @@ class AddMotorcycleParkingSurface : OsmFilterQuestType<Surface>() {
         countryInfo: CountryInfo,
     ) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = Surface.getSelectableValuesForWays(countryInfo.countryCode),
             itemContent = { item ->

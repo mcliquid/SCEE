@@ -64,6 +64,7 @@ class AddPitchSurface : OsmFilterQuestType<Surface>() {
     @Composable
     override fun Form(on: (QuestAction<Surface>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = Surface.selectableValuesForPitches,
             itemContent = { item ->

@@ -22,6 +22,7 @@ fun AddCyclewaySegregationForm(
     countryInfo: CountryInfo,
 ) {
     ItemSelectQuestForm(
+        submitOnSelection = true,
         on = on,
         items = CyclewaySegregation.entries,
         itemContent = { item ->

@@ -38,6 +38,7 @@ class AddDrinkingWaterType : OsmFilterQuestType<DrinkingWaterType>() {
     @Composable
     override fun Form(on: (QuestAction<DrinkingWaterType>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = DrinkingWaterType.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },

@@ -35,6 +35,7 @@ class AddKerbType : OsmFilterQuestType<KerbType>() {
     @Composable
     override fun Form(on: (QuestAction<KerbType>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = KerbType.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },

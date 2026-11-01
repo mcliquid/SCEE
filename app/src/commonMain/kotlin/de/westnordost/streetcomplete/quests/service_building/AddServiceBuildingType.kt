@@ -44,6 +44,7 @@ class AddServiceBuildingType : OsmFilterQuestType<ServiceBuildingType>() {
     @Composable
     override fun Form(on: (QuestAction<ServiceBuildingType>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         GroupedItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             groups = ServiceBuildingTypeCategory.entries,
             topItems = listOf(

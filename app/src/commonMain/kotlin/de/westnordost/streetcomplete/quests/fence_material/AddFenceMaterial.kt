@@ -38,6 +38,7 @@ class AddFenceMaterial : OsmFilterQuestType<FenceMaterial>() {
     @Composable
     override fun Form(on: (QuestAction<FenceMaterial>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = FenceMaterial.entries,
             itemContent = { ImageWithLabel(painterResource(it.imageResId), stringResource(it.titleResId)) },

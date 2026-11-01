@@ -33,6 +33,7 @@ class AddBuildingColour : OsmFilterQuestType<BuildingColour>() {
     @Composable
     override fun Form(on: (QuestAction<BuildingColour>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = BuildingColour.entries,
             itemContent = { ImageWithLabel(painterResource(Res.drawable.ic_building_colour), it.title, colorFilter = it.colorFilter()) },

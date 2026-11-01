@@ -41,6 +41,7 @@ class AddRoofColour : OsmFilterQuestType<RoofColour>() {
         val shape = element.tags["roof:shape"]
         val iconRes = RoofShape.entries.firstOrNull { it.osmValue == shape }?.colorIconResId ?: Res.drawable.ic_roof_colour_gabled
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = RoofColour.entries,
             itemContent = { ImageWithLabel(painterResource(iconRes), it.title, colorFilter = it.colorFilter()) },

@@ -54,6 +54,7 @@ class AddKerbHeight : OsmElementQuestType<KerbHeight> {
     @Composable
     override fun Form(on: (QuestAction<KerbHeight>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
         ItemSelectQuestForm(
+            submitOnSelection = true,
             on = on,
             items = KerbHeight.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },

@@ -26,6 +26,7 @@ fun AddReligionForm(
     }
 
     ItemSelectQuestForm(
+        submitOnSelection = true,
         on = on,
         items = items,
         itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },

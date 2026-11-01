@@ -27,10 +27,12 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.osmquests.Action
 import de.westnordost.streetcomplete.data.osm.osmquests.Answer
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
+import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.osm.Sides
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.dialogs.InfoDialog
 import de.westnordost.streetcomplete.ui.common.dialogs.SimpleItemSelectDialog
+import de.westnordost.streetcomplete.ui.common.last_picked.LastPickedChipsRow
 import de.westnordost.streetcomplete.ui.common.quest.AnswerItem
 import de.westnordost.streetcomplete.ui.common.quest.ItemSelectQuestForm
 import de.westnordost.streetcomplete.ui.common.quest.LocalMapRotation
@@ -41,6 +43,7 @@ import de.westnordost.streetcomplete.ui.common.street_side_select.StreetSideForm
 import de.westnordost.streetcomplete.ui.util.rememberSerializable
 import de.westnordost.streetcomplete.util.math.getOrientationOrZero
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.koinInject
 import org.jetbrains.compose.resources.stringResource
 
 internal fun autoSubmitPartSmoothness(parts: List<SmoothnessPart>): Boolean =
@@ -52,8 +55,14 @@ fun AddPartSmoothnessForm(
     element: Element,
     geometry: ElementGeometry,
     countryInfo: CountryInfo,
+    preferences: Preferences = koinInject(),
 ) {
     val parts = remember(element) { resolveSmoothnessParts(element.tags, element.timestampEdited) }
+    val lastPicked = remember(element) { loadPartSmoothnessLastPicked(preferences, parts, element.tags) }
+    val submitAnswer: (PartSmoothnessAnswer) -> Unit = { answer ->
+        savePartSmoothnessLastPicked(preferences, answer, parts, element.tags)
+        on(Answer(answer))
+    }
     var draft by rememberSerializable(element) { mutableStateOf(PartSmoothnessAnswer(emptyMap())) }
     var selectedKeys by rememberSerializable(element) { mutableStateOf<List<String>>(emptyList()) }
     var confirmSplit by remember { mutableStateOf(false) }
@@ -67,7 +76,7 @@ fun AddPartSmoothnessForm(
         val part = parts.single()
         ItemSelectQuestForm(
             on = { action -> when (action) {
-                is Answer -> on(Answer(PartSmoothnessAnswer(mapOf(part.key to action.value))))
+                is Answer -> submitAnswer(PartSmoothnessAnswer(mapOf(part.key to action.value)))
                 is Action -> on(action)
             } },
             items = smoothnessAnswersForSurface(part.surface),
@@ -77,8 +86,9 @@ fun AddPartSmoothnessForm(
             title = stringResource(Res.string.quest_partSmoothness_title) + " — " + partLabel(part),
             otherAnswers = otherAnswers,
             headerContent = {
-                PartSides(parts, draft, geometry, countryInfo) {}
+                PartSides(parts, draft, geometry, countryInfo, lastPicked, submitAnswer) {}
                 ExistingPartValue(part)
+                PartSmoothnessLastPickedChip(lastPicked, parts, submitAnswer)
             },
         )
     } else {
@@ -87,13 +97,17 @@ fun AddPartSmoothnessForm(
             isComplete = canApplyPartSmoothness(draft, parts),
             hasChanges = draft.values.isNotEmpty(),
             onClickOk = {
-                if (draft.splitBoth) confirmSplit = true else on(Answer(draft))
+                if (draft.splitBoth) confirmSplit = true else submitAnswer(draft)
             },
             otherAnswers = otherAnswers,
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(stringResource(Res.string.quest_partSmoothness_partial_hint))
-                PartSides(parts, draft, geometry, countryInfo) { key -> selectedKeys = listOf(key) }
+                PartSides(parts, draft, geometry, countryInfo, lastPicked.takeIf { draft.values.isEmpty() },
+                    { draft = it }) { key -> selectedKeys = listOf(key) }
+                if (draft.values.isEmpty()) {
+                    PartSmoothnessLastPickedChip(lastPicked, parts) { draft = it }
+                }
                 parts.forEach { part ->
                     OutlinedButton(
                         onClick = { selectedKeys = listOf(part.key) },
@@ -160,7 +174,7 @@ fun AddPartSmoothnessForm(
                     draft.values[part.key]?.let { Text(partLabel(part) + ": " + stringResource(it.title)) }
                 }
             } },
-            confirmButton = { TextButton(onClick = { confirmSplit = false; on(Answer(draft)) }) {
+            confirmButton = { TextButton(onClick = { confirmSplit = false; submitAnswer(draft) }) {
                 Text(stringResource(Res.string.quest_partSmoothness_confirm_split))
             } },
             dismissButton = { TextButton(onClick = { confirmSplit = false }) {
@@ -191,6 +205,8 @@ fun AddPartSmoothnessForm(
     draft: PartSmoothnessAnswer,
     geometry: ElementGeometry,
     countryInfo: CountryInfo,
+    lastPicked: PartSmoothnessAnswer? = null,
+    onRepeat: ((PartSmoothnessAnswer) -> Unit)? = null,
     onClick: (String) -> Unit,
 ) {
     val left = parts.find { it.key == "cycleway:left:smoothness" }
@@ -203,7 +219,8 @@ fun AddPartSmoothnessForm(
         Box(Modifier.fillMaxWidth().height(160.dp)) {
             StreetSideForm(
                 value = Sides(draft.values[left?.key], draft.values[right?.key]),
-                onValueChanged = {},
+                onValueChanged = { lastPicked?.let { onRepeat?.invoke(it) } },
+                lastPicked = lastPicked?.let { listOf(Sides(it.values[left?.key], it.values[right?.key])) }.orEmpty(),
                 getIllustrationPainter = { _, side ->
                     val part = if (side == Side.LEFT) left else right
                     painterResource(if (part?.infrastructure == "lane") Res.drawable.cycleway_lane_white
@@ -223,6 +240,23 @@ fun AddPartSmoothnessForm(
             Image(painterResource(Res.drawable.map_oneway_arrow),
                 contentDescription = stringResource(Res.string.quest_partSmoothness_direction),
                 modifier = Modifier.align(Alignment.Center).size(20.dp, 36.dp).rotate(orientation - rotation))
+        }
+    }
+}
+
+@Composable private fun PartSmoothnessLastPickedChip(
+    answer: PartSmoothnessAnswer?,
+    parts: List<SmoothnessPart>,
+    onClick: (PartSmoothnessAnswer) -> Unit,
+) {
+    if (parts.any { it.key == "cycleway:left:smoothness" || it.key == "cycleway:right:smoothness" }) return
+    LastPickedChipsRow(items = listOfNotNull(answer), onClick = onClick) { previous ->
+        Column {
+            parts.forEach { part ->
+                previous.values[part.key]?.let { value ->
+                    Text(partLabel(part) + ": " + stringResource(value.title))
+                }
+            }
         }
     }
 }

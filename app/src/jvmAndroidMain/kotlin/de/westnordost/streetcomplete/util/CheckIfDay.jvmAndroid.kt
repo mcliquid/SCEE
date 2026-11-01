@@ -12,7 +12,7 @@ import java.util.*
 
 private fun localDateToCalendar(localDate: LocalDate): Calendar {
     val calendar = Calendar.getInstance()
-    calendar.set(localDate.year, localDate.month.value, localDate.dayOfMonth)
+    calendar.set(localDate.year, localDate.monthValue - 1, localDate.dayOfMonth)
     return calendar
 }
 

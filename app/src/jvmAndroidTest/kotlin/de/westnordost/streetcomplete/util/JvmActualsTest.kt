@@ -1,12 +1,27 @@
 package de.westnordost.streetcomplete.util
 
+import com.luckycatlabs.sunrisesunset.Zenith
+import com.luckycatlabs.sunrisesunset.calculator.SolarEventCalculator
+import com.luckycatlabs.sunrisesunset.dto.Location
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.util.logs.*
 import kotlinx.coroutines.*
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
+import java.util.Calendar
 import java.util.TimeZone
 import kotlin.test.*
+
+private fun civilSunriseAt(pos: LatLon, zone: ZoneId, date: LocalDate): ZonedDateTime {
+    val calendar = Calendar.getInstance()
+    calendar.set(date.year, date.monthValue - 1, date.dayOfMonth)
+    val calculator = SolarEventCalculator(Location(pos.latitude, pos.longitude), zone.id)
+    val time = LocalTime.parse(calculator.computeSunriseTime(Zenith.CIVIL, calendar))
+    return ZonedDateTime.of(date, time, zone)
+}
 
 class JvmActualsTest {
     @Test fun `perf thread state is stable and isolated across threads`() {
@@ -45,6 +60,19 @@ class JvmActualsTest {
             assertSame(outer, currentPerfTrace())
         }
         assertSame(previous, currentPerfTrace())
+    }
+
+    @Test fun `civil daylight uses the requested calendar month not the next`() {
+        val berlin = LatLon(52.52, 13.405)
+        val zone = ZoneId.of("Europe/Berlin")
+        val date = LocalDate.parse("2026-01-15")
+        val janSunrise = civilSunriseAt(berlin, zone, date)
+        val febSunrise = civilSunriseAt(berlin, zone, date.withMonth(2))
+        assertTrue(febSunrise.toLocalTime().isBefore(janSunrise.toLocalTime()))
+        val justBeforeJanuarySunrise = janSunrise.minusMinutes(2)
+        assertFalse(isDayAt(berlin, justBeforeJanuarySunrise))
+        val decEvening = java.time.LocalDateTime.parse("2026-12-21T16:30:00").atZone(zone)
+        assertTrue(isDayAt(berlin, decEvening))
     }
 
     @Test fun `civil daylight standard times repeat in different timezones`() {

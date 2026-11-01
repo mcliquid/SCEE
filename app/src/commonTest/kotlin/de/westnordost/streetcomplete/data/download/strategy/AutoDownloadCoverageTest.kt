@@ -14,7 +14,7 @@ import dev.mokkery.answering.returns
 import dev.mokkery.every
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import kotlin.math.PI
 import kotlin.math.sqrt
 import kotlin.test.Test
@@ -33,14 +33,14 @@ class AutoDownloadCoverageTest {
         Triple(WifiAutoDownloadStrategy(mapData, tiles), 20.0, 15000),
     )
 
-    @Test fun `initial density probe stays one tile`() = runTest {
+    @Test fun `initial density probe stays one tile`() = runBlocking {
         every { tiles.contains(any(), any()) } returns false
         for ((strategy) in strategies()) {
             assertEquals(initialTile.asBoundingBox(zoom), strategy.getDownloadBoundingBox(position))
         }
     }
 
-    @Test fun `sparse and empty areas have fifty percent larger capped radius`() = runTest {
+    @Test fun `sparse and empty areas have fifty percent larger capped radius`() = runBlocking {
         every { tiles.contains(any(), any()) } calls { (rect: TilesRect, _: Long) -> rect == initialTile.toTilesRect() }
         for (nodes in listOf(0, 1)) {
             every { mapData.getElementCounts(any()) } returns MapDataSource.ElementCounts(nodes, 0, 0)
@@ -51,7 +51,7 @@ class AutoDownloadCoverageTest {
         }
     }
 
-    @Test fun `dense areas have fifty percent larger density limited radius`() = runTest {
+    @Test fun `dense areas have fifty percent larger density limited radius`() = runBlocking {
         every { tiles.contains(any(), any()) } calls { (rect: TilesRect, _: Long) -> rect == initialTile.toTilesRect() }
         every { mapData.getElementCounts(any()) } returns MapDataSource.ElementCounts(10000, 0, 0)
         val density = 10000 / initialTile.asBoundingBox(zoom).area()
@@ -61,7 +61,7 @@ class AutoDownloadCoverageTest {
         }
     }
 
-    @Test fun `fully cached expanded boundary does not redownload`() = runTest {
+    @Test fun `fully cached expanded boundary does not redownload`() = runBlocking {
         every { mapData.getElementCounts(any()) } returns MapDataSource.ElementCounts(0, 0, 0)
         for ((strategy, oldArea) in strategies()) {
             val boundary = position.enclosingBoundingBox(sqrt(oldArea * 2.25 * 1_000_000 / PI)).enclosingTilesRect(zoom)

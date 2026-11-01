@@ -579,3 +579,32 @@ tasks.withType<Test>().configureEach {
         systemProperty("crossing.vector.fixtures", crossingVectors.get().outputDirectory.dir("files/crossing").get().asFile.absolutePath)
     }
 }
+
+// Desktop launcher and Nucleus packaging live in :desktopApp (streetcomplete#7242); :app desktopMain is shared code only.
+fun configureDesktopRun(task: JavaExec) {
+    task.apply {
+        group = "compose hot reload: run"
+        description =
+            "Runs the SCEE desktop app via :desktopApp (entry point de.westnordost.streetcomplete.MainKt)."
+        actions.clear()
+        dependsOn(":desktopApp:run")
+    }
+}
+
+tasks.matching { it.name == "desktopRun" && it is JavaExec }.configureEach {
+    configureDesktopRun(this as JavaExec)
+}
+
+tasks.register("createDistributable") {
+    group = "nucleus"
+    description =
+        "Builds a portable desktop app directory under desktopApp/build/compose/binaries/."
+    dependsOn(":desktopApp:createDistributable")
+}
+
+tasks.register("packageExe") {
+    group = "nucleus"
+    description =
+        "Builds the launchable Windows app image (portable directory with .exe, not an installer)."
+    dependsOn(":desktopApp:createDistributable")
+}

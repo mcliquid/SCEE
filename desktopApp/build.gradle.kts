@@ -54,6 +54,8 @@ nucleus.application {
     mainClass = "de.westnordost.streetcomplete.MainKt"
     // Nucleus already enables native access, which MapLibre needs, see
     // https://maplibre-compose.pages.dev/maplibre-compose/platform-setup/#java-and-native-access
+    val resourcesDir = rootProject.file("app/src/commonMain/composeResources/files")
+    jvmArgs += "-Dstreetcomplete.resources=$resourcesDir"
     if (hostOs == "macos") {
         // the .app bundle (see below) is signed, which changes LWJGL's native libraries, see
         // https://maplibre-compose.pages.dev/maplibre-compose/platform-setup/#signed-packages

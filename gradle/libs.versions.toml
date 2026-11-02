@@ -6,7 +6,7 @@ agp = "9.5.0"
 compose = "1.12.2"
 buildkonfig = "0.23.0"
 # Keep compatible with Kotlin: https://mokkery.dev/docs/Setup/#compatibility
-mokkery = "3.5.1"
+mokkery = "3.6.0"
 # A development build of Nucleus 3.0, as it fixes some issues with maplibre-compose. Update to 3.0
 # once released
 nucleus = "3.0.0-dev-202610272317"
@@ -14,7 +14,7 @@ nucleus = "3.0.0-dev-202610272317"
 # Kotlin
 kotlinxCoroutines = "1.11.0"
 atomicfu = "0.33.0"
-kotlinxIo = "0.9.1"
+kotlinxIo = "0.9.2"
 kotlinxSerialization = "1.12.0"
 kotlinxDatetime = "0.8.0"
 
@@ -91,7 +91,6 @@ mokkery = { id = "dev.mokkery", version.ref = "mokkery" }
 # Kotlin
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
-kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinxCoroutines" }
 
 # Atomics, locks, synchronization
 kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }

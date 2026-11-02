@@ -355,6 +355,15 @@ class OsmQuestController(
         }
     }
 
+    /** Quests of the given [questTypes] that apply to [element], with the same country restriction
+     *  and surrounding-data checks as normal quest creation */
+    suspend fun createQuestsForElement(
+        element: Element,
+        geometry: ElementGeometry,
+        questTypes: Collection<OsmElementQuestType<*>>
+    ): List<OsmQuest> =
+        createQuestsForElementDeferred(element, geometry, questTypes).awaitAll().filterNotNull()
+
     suspend fun createNonPoiQuestsForElement(element: Element, geometry: ElementGeometry): List<OsmQuest> {
         val ordinary = createQuestsForElementDeferred(element, geometry, allQuestTypes.filter { it.dotColor == null }).awaitAll().filterNotNull()
         val crossings = if (element is Way) withContext(Dispatchers.IO) {

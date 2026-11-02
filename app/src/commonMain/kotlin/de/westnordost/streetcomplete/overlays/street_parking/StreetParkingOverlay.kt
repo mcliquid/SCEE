@@ -13,7 +13,6 @@ import de.westnordost.streetcomplete.data.overlays.OverlayAction
 import de.westnordost.streetcomplete.data.overlays.OverlayColor
 import de.westnordost.streetcomplete.data.overlays.OverlayStyle
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
-import de.westnordost.streetcomplete.osm.ALL_ROADS
 import de.westnordost.streetcomplete.osm.isPrivateOnFoot
 import de.westnordost.streetcomplete.osm.maxspeed.MAX_SPEED_TYPE_KEYS
 import de.westnordost.streetcomplete.osm.street_parking.ParkingPosition
@@ -45,9 +44,7 @@ class StreetParkingOverlay : Overlay {
             nodes, ways, relations with
               amenity = parking
         """).map {
-            val style =
-                if (it is Node) parkingLotPointStyle.copy(disabled = true)
-                else parkingLotAreaStyle.copy(disabled = true)
+            val style = if (it is Node) parkingLotPointStyle else parkingLotAreaStyle
             it to style
         } +
         // chokers
@@ -67,10 +64,12 @@ class StreetParkingOverlay : Overlay {
         geometry: ElementGeometry,
         countryInfo: CountryInfo,
     ) {
-        if (element != null && element.tags["highway"] in ALL_ROADS && element.tags["area"] != "yes") {
-            StreetParkingOverlayForm(on, element, geometry, countryInfo)
-        } else if (element == null || parseNarrowingTrafficCalming(element.tags) != null) {
-            LaneNarrowingTrafficCalmingForm(on, element, geometry)
+        when (getStreetParkingFormType(element)) {
+            StreetParkingFormType.ROAD -> StreetParkingOverlayForm(on, element!!, geometry, countryInfo)
+            StreetParkingFormType.PARKING_LOT -> ParkingLotOverlayForm(on, element!!, geometry, countryInfo)
+            StreetParkingFormType.TRAFFIC_CALMING -> LaneNarrowingTrafficCalmingForm(on, element, geometry)
+            StreetParkingFormType.CREATE -> NewStreetParkingFeatureForm(on, geometry)
+            null -> {}
         }
     }
 }

@@ -1020,4 +1020,15 @@ Out of the box SCEE is configured to behave very similar to StreetComplete.</str
     <string name="oneway_overlay_not_editable_value">The oneway tags have a value that cannot be edited here. Please use the tag editor.</string>
     <string name="oneway_overlay_not_editable_vehicle">This way has vehicle specific oneway tags (oneway:vehicle / oneway:motor_vehicle) that cannot be edited here. Please use the tag editor.</string>
     <string name="oneway_overlay_kept_tags">Kept unchanged:</string>
+
+    <string name="parking_lot_access">Access</string>
+    <string name="parking_lot_fee">Fee</string>
+    <string name="parking_lot_charge">Charge</string>
+    <string name="parking_lot_capacity">Spaces</string>
+    <string name="parking_lot_capacity_disabled">Disabled spaces</string>
+    <string name="parking_lot_maxstay">Max. stay</string>
+    <string name="parking_lot_orientation">Orientation</string>
+    <string name="parking_lot_opening_hours">Opening hours</string>
+    <string name="parking_lot_nothing_to_add">Nothing more to add here. Use the menu to edit tags or leave a note.</string>
+    <string name="parking_lot_add_info">Add or confirm:</string>
 </resources>

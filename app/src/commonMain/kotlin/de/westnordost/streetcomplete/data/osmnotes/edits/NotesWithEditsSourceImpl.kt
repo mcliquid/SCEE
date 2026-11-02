@@ -116,7 +116,8 @@ class NotesWithEditsSourceImpl(
         val positions = noteSource.getAllOpenPositions(bbox).toMutableList()
         for (edit in noteEditsSource.getAllUnsynced(bbox)) {
             when (edit.action) {
-                CREATE, COMMENT -> positions.add(edit.position)
+                CREATE -> positions.add(edit.position)
+                COMMENT -> { /* position unchanged; open notes already listed via getAllOpenPositions */ }
                 CLOSE -> positions.removeAll { it == edit.position }
             }
         }

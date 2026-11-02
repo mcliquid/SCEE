@@ -85,6 +85,41 @@ class NoteDaoTest : StreetCompleteDatabaseTestCase() {
         assertEquals(LatLon(0.5, 0.5), positions.single())
     }
 
+    @Test fun getAllOpenPositionsRespectsBoundingBox() {
+        val inside = createNote(1, LatLon(0.5, 0.5))
+        val outside = createNote(2, LatLon(2.0, 2.0))
+        dao.putAll(listOf(inside, outside))
+
+        val positions = dao.getAllOpenPositions(BoundingBox(0.0, 0.0, 1.0, 1.0))
+        assertEquals(LatLon(0.5, 0.5), positions.single())
+    }
+
+    @Test fun getAllOpenPositionsExcludesHiddenNotes() {
+        val open = createNote(1, LatLon(0.5, 0.5))
+        val hidden = createNote(2, LatLon(0.6, 0.6)).copy(status = Note.Status.HIDDEN)
+        dao.putAll(listOf(open, hidden))
+
+        val positions = dao.getAllOpenPositions(BoundingBox(0.0, 0.0, 1.0, 1.0))
+        assertEquals(LatLon(0.5, 0.5), positions.single())
+    }
+
+    @Test fun getAllOpenPositionsQueriesCoordinatesWithoutLoadingComments() {
+        val hugeText = "x".repeat(50_000)
+        val user = User(5, "PingPong")
+        val note = Note(
+            LatLon(0.5, 0.5),
+            1,
+            5000,
+            null,
+            Note.Status.OPEN,
+            listOf(NoteComment(5000, NoteComment.Action.OPENED, hugeText, user))
+        )
+        dao.put(note)
+
+        assertEquals(LatLon(0.5, 0.5), dao.getAllOpenPositions(BoundingBox(0.0, 0.0, 1.0, 1.0)).single())
+        assertEquals(hugeText, dao.get(1)!!.comments.single().text)
+    }
+
     @Test fun getAllByBbox() {
         val thisIsIn = createNote(1, LatLon(0.5, 0.5))
         val thisIsOut = createNote(2, LatLon(-0.5, 0.5))

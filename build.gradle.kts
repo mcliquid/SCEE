@@ -11,6 +11,14 @@ plugins {
     alias(libs.plugins.nucleus) apply false
 }
 
+allprojects {
+    if (tasks.findByName("prepareKotlinBuildScriptModel") == null) {
+        tasks.register("prepareKotlinBuildScriptModel") {
+            description = "Stub for IDE Kotlin DSL script model preparation"
+        }
+    }
+}
+
 tasks.register<QLeverCountValueByCountryTask>("updateAtmOperators") {
     group = "streetcomplete"
     targetFile = projectDir.resolve("res/country_metadata/atmOperators.yml")

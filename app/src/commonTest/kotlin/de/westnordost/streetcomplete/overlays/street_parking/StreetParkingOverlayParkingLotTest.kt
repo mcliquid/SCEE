@@ -7,7 +7,14 @@ import de.westnordost.streetcomplete.data.StreetCompleteDatabaseConfigurator
 import de.westnordost.streetcomplete.data.initialize
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.edits.ElementIdProvider
+import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
+import de.westnordost.streetcomplete.data.osm.edits.create.CreateNodeAction
+import de.westnordost.streetcomplete.data.osm.edits.create.InsertIntoWayAt
 import de.westnordost.streetcomplete.data.osm.edits.create.RevertCreateNodeAction
+import de.westnordost.streetcomplete.data.osm.edits.create.createNodeAction
+import de.westnordost.streetcomplete.osm.traffic_calming.applyTo
+import de.westnordost.streetcomplete.util.math.PositionOnWaySegment
+import de.westnordost.streetcomplete.util.math.getPositionOnWays
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.createChanges
@@ -41,12 +48,12 @@ import de.westnordost.streetcomplete.testutils.way
 import de.westnordost.streetcomplete.testutils.waysAsMembers
 import de.westnordost.streetcomplete.ui.util.measure.ArSupportChecker
 import dev.mokkery.mock
-import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class StreetParkingOverlayParkingLotTest {
@@ -120,51 +127,61 @@ class StreetParkingOverlayParkingLotTest {
 
     /* ------------------------------------ creation ------------------------------------- */
 
-    @Test fun `new parking node gets only amenity and parking type`() {
+    @Test fun `new parking node gets exactly amenity=parking`() {
         val position = LatLon(1.0, 2.0)
-        for (type in CREATABLE_PARKING_TYPES) {
-            val action = createParkingNodeAction(position, type)
-            assertEquals(mapOf("amenity" to "parking", "parking" to type.osmValue), action.tags)
-            assertEquals(position, action.position)
-            assertTrue(action.insertIntoWays.isEmpty())
-        }
-    }
-
-    @Test fun `street side and lane parking cannot be created as node`() {
-        assertFalse(ParkingType.STREET_SIDE in CREATABLE_PARKING_TYPES)
-        assertFalse(ParkingType.LANE in CREATABLE_PARKING_TYPES)
+        val action = createParkingNodeAction(position)
+        assertEquals(mapOf("amenity" to "parking"), action.tags)
+        assertEquals(position, action.position)
+        // not snapped to or inserted into any road
+        assertTrue(action.insertIntoWays.isEmpty())
     }
 
     @Test fun `created parking node edit can be applied and reverted`() {
         val repos = mock<MapDataRepository>()
         val provider = ElementIdProvider(listOf(ElementKey(ElementType.NODE, -1L)))
-        val action = createParkingNodeAction(LatLon(1.0, 2.0), ParkingType.SURFACE)
+        val action = createParkingNodeAction(LatLon(1.0, 2.0))
         val created = action.createUpdates(repos, provider).creations.single() as Node
-        assertEquals(mapOf("amenity" to "parking", "parking" to "surface"), created.tags)
+        assertEquals(mapOf("amenity" to "parking"), created.tags)
         assertEquals(StreetParkingFormType.PARKING_LOT, getStreetParkingFormType(created))
 
         val revert = action.createReverted(ElementIdProvider(listOf(ElementKey(ElementType.NODE, -2L))))
         assertIs<RevertCreateNodeAction>(revert)
     }
 
-    @Test fun `traffic calming is only selectable on a road, parking always`() {
-        val onRoad = NewStreetParkingFeature.selectable(isOnRoad = true)
-        val offRoad = NewStreetParkingFeature.selectable(isOnRoad = false)
-        for (t in LaneNarrowingTrafficCalming.entries) {
-            assertTrue(NewStreetParkingFeature.TrafficCalming(t) in onRoad)
-            assertFalse(NewStreetParkingFeature.TrafficCalming(t) in offRoad)
-        }
-        for (t in CREATABLE_PARKING_TYPES) {
-            assertTrue(NewStreetParkingFeature.Parking(t) in onRoad)
-            assertTrue(NewStreetParkingFeature.Parking(t) in offRoad)
+    @Test fun `crosshair offers exactly parking and traffic calming`() {
+        assertEquals(
+            listOf(NewStreetParkingFeature.PARKING, NewStreetParkingFeature.TRAFFIC_CALMING),
+            NewStreetParkingFeature.entries
+        )
+    }
+
+    @Test fun `all traffic calming types are still created snapped into the road`() {
+        val pos1 = LatLon(0.0, 0.0)
+        val pos2 = LatLon(0.0, 0.001)
+        val roadLines = listOf(road to listOf(pos1, pos2))
+        // crosshair slightly off the road centre line
+        val positionOnWay = LatLon(0.00001, 0.0005).getPositionOnWays(roadLines, maxDistance = 10.0)
+        assertIs<PositionOnWaySegment>(positionOnWay)
+        assertEquals(0.0, positionOnWay.position.latitude, 1e-9)
+
+        val expected = mapOf(
+            LaneNarrowingTrafficCalming.CHOKER to "choker",
+            LaneNarrowingTrafficCalming.ISLAND to "island",
+            LaneNarrowingTrafficCalming.CHICANE to "chicane",
+            LaneNarrowingTrafficCalming.CHOKED_ISLAND to "choker;island",
+        )
+        assertEquals(LaneNarrowingTrafficCalming.entries.toSet(), expected.keys)
+        for ((type, value) in expected) {
+            val action = createNodeAction(positionOnWay, mock<MapDataWithEditsSource>()) { type.applyTo(it) }
+            assertIs<CreateNodeAction>(action)
+            assertEquals(value, action.tags["traffic_calming"], type.name)
+            assertEquals(listOf(InsertIntoWayAt(road.id, pos1, pos2)), action.insertIntoWays)
         }
     }
 
-    @Test fun `new feature items survive serialization for last picked`() {
-        for (item in NewStreetParkingFeature.all) {
-            val json = Json.encodeToString(NewStreetParkingFeature.serializer(), item)
-            assertEquals(item, Json.decodeFromString(NewStreetParkingFeature.serializer(), json))
-        }
+    @Test fun `traffic calming is not placed when no road is near`() {
+        val roadLines = listOf(road to listOf(LatLon(0.0, 0.0), LatLon(0.0, 0.001)))
+        assertNull(LatLon(0.01, 0.0005).getPositionOnWays(roadLines, maxDistance = 10.0))
     }
 
     /* ------------------------------------ quests --------------------------------------- */
@@ -185,10 +202,10 @@ class StreetParkingOverlayParkingLotTest {
             val types = PARKING_LOT_QUEST_TYPE_NAMES.associateWith { registry.getByName(it) as? OsmElementQuestType<*> }
             types.forEach { (name, type) -> assertNotNull(type, name) }
 
-            val newNode = node(-1, tags = mapOf("amenity" to "parking", "parking" to "surface"))
-            // access is unknown on new nodes -> asked; fee/capacity depend on access -> not yet
+            val newNode = createParkingNodeAction(LatLon(1.0, 2.0)).let { node(-1, it.position, it.tags) }
+            // a new node has no type and no access -> both are asked; fee depends on access -> not yet
             assertEquals(true, types["AddParkingAccess"]!!.isApplicableTo(newNode))
-            assertEquals(false, types["AddParkingType"]!!.isApplicableTo(newNode))
+            assertEquals(true, types["AddParkingType"]!!.isApplicableTo(newNode))
             assertEquals(false, types["AddParkingFee"]!!.isApplicableTo(newNode))
             // parking type is asked for multipolygons without type
             assertEquals(true, types["AddParkingType"]!!.isApplicableTo(lotRelation))

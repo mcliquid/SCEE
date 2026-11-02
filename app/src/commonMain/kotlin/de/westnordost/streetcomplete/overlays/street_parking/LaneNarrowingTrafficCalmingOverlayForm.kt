@@ -16,6 +16,7 @@ import de.westnordost.streetcomplete.data.osm.edits.create.createNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
+import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
@@ -41,7 +42,6 @@ import de.westnordost.streetcomplete.ui.common.quest.OnMap
 import de.westnordost.streetcomplete.ui.ktx.toPx
 import de.westnordost.streetcomplete.util.ktx.toPosition
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
-import de.westnordost.streetcomplete.util.math.PositionOnWay
 import de.westnordost.streetcomplete.util.math.getPositionOnWays
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -60,7 +60,25 @@ fun LaneNarrowingTrafficCalmingForm(
     }
 
     val position = if (element == null) geometry.center else null
-    val positionOnWay = rememberPositionOnRoad(position, mapDataWithEditsSource)
+    val roadLines = remember<Collection<Pair<Way, List<LatLon>>>?>(position != null) {
+        position?.let {
+            mapDataWithEditsSource.getRoadLines(position.enclosingBoundingBox(100.0))
+        }
+    }
+    val metersPerDp = LocalMapMetersPerDp.current
+    val maxDistanceToCrosshair = (metersPerDp * 24).dp.toPx().toDouble()
+    val snapToVertexDistance = (metersPerDp * 12).dp.toPx().toDouble()
+
+    val positionOnWay = remember(position, roadLines) {
+        if (position == null) return@remember null
+        if (roadLines == null) return@remember null
+
+        position.getPositionOnWays(
+            ways = roadLines,
+            maxDistance = maxDistanceToCrosshair,
+            snapToVertexDistance = snapToVertexDistance
+        )
+    }
 
     var confirmRemoveLaneNarrowingTrafficCalming by remember { mutableStateOf(false) }
 
@@ -89,6 +107,7 @@ fun LaneNarrowingTrafficCalmingForm(
             } else if (positionOnWay != null) {
                 val action = createNodeAction(positionOnWay, mapDataWithEditsSource) { selectedItem.applyTo(it) }
                 if (action != null) {
+                    val geometry = ElementPointGeometry(positionOnWay.position)
                     on(Edit(action))
                 }
             }
@@ -117,73 +136,6 @@ fun LaneNarrowingTrafficCalmingForm(
             }
         )
     }
-}
-
-/** Position on a road near the crosshair at [position] to which a new node can be snapped */
-@Composable
-private fun rememberPositionOnRoad(
-    position: LatLon?,
-    mapDataWithEditsSource: MapDataWithEditsSource,
-): PositionOnWay? {
-    val roadLines = remember<Collection<Pair<Way, List<LatLon>>>?>(position != null) {
-        position?.let {
-            mapDataWithEditsSource.getRoadLines(position.enclosingBoundingBox(100.0))
-        }
-    }
-    val metersPerDp = LocalMapMetersPerDp.current
-    val maxDistanceToCrosshair = (metersPerDp * 24).dp.toPx().toDouble()
-    val snapToVertexDistance = (metersPerDp * 12).dp.toPx().toDouble()
-
-    return remember(position, roadLines) {
-        if (position == null) return@remember null
-        if (roadLines == null) return@remember null
-
-        position.getPositionOnWays(
-            ways = roadLines,
-            maxDistance = maxDistanceToCrosshair,
-            snapToVertexDistance = snapToVertexDistance
-        )
-    }
-}
-
-/** Form to create a new node from the crosshair: either a traffic calming on a road or a parking lot */
-@Composable
-fun NewStreetParkingFeatureForm(
-    on: (OverlayAction) -> Unit,
-    geometry: ElementGeometry,
-    mapDataWithEditsSource: MapDataWithEditsSource = koinInject(),
-    preferences: Preferences = koinInject()
-) {
-    val position = geometry.center
-    val positionOnWay = rememberPositionOnRoad(position, mapDataWithEditsSource)
-
-    OnMap {
-        Pin(
-            iconPainter = painterResource(if (positionOnWay != null) Res.drawable.quest_choker else Res.drawable.quest_parking),
-            modifier = Modifier.placedAt((positionOnWay?.position ?: position).toPosition()),
-        )
-    }
-
-    ItemSelectOverlayForm(
-        on = on,
-        itemsPerRow = 2,
-        items = NewStreetParkingFeature.all,
-        selectableItems = NewStreetParkingFeature.selectable(isOnRoad = positionOnWay != null),
-        initialSelectedItem = null,
-        itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },
-        lastPickedItemContent = { Image(painterResource(it.icon), stringResource(it.title), Modifier.height(32.dp)) },
-        onClickOk = { selectedItem ->
-            val action = when (selectedItem) {
-                is NewStreetParkingFeature.Parking ->
-                    createParkingNodeAction(position, selectedItem.parkingType)
-                is NewStreetParkingFeature.TrafficCalming ->
-                    positionOnWay?.let { p -> createNodeAction(p, mapDataWithEditsSource) { selectedItem.value.applyTo(it) } }
-            }
-            if (action != null) on(Edit(action))
-        },
-        prefs = preferences,
-        favoriteKey = "NewStreetParkingFeatureForm",
-    )
 }
 
 private val allRoadsFilter by lazy { """

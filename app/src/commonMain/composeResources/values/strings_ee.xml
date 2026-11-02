@@ -1031,4 +1031,6 @@ Out of the box SCEE is configured to behave very similar to StreetComplete.</str
     <string name="parking_lot_opening_hours">Opening hours</string>
     <string name="parking_lot_nothing_to_add">Nothing more to add here. Use the menu to edit tags or leave a note.</string>
     <string name="parking_lot_add_info">Add or confirm:</string>
+    <string name="street_parking_create_parking">Parking</string>
+    <string name="street_parking_create_traffic_calming">Traffic calming</string>
 </resources>

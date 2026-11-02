@@ -140,7 +140,7 @@ class AerialImageryResolver(
     }
 
     private fun fromManual(source: ManualRasterSource): ResolvedAerialSource {
-        val normalized = RasterTileUrlNormalizer.normalize(source.url)
+        val normalized = normalizeUrl(source.url)
         return ResolvedAerialSource(
             tiles = normalized.tiles,
             scheme = normalized.scheme,
@@ -153,7 +153,7 @@ class AerialImageryResolver(
     }
 
     private fun fromEli(layer: EliLayer, selection: AerialSourceSelection): ResolvedAerialSource {
-        val normalized = RasterTileUrlNormalizer.normalize(layer.url)
+        val normalized = normalizeUrl(layer.url)
         return ResolvedAerialSource(
             tiles = normalized.tiles,
             scheme = normalized.scheme,
@@ -166,7 +166,7 @@ class AerialImageryResolver(
     }
 
     private fun esriResolved(): ResolvedAerialSource {
-        val normalized = RasterTileUrlNormalizer.normalize(ApplicationConstants.RASTER_DEFAULT_URL)
+        val normalized = normalizeUrl(ApplicationConstants.RASTER_DEFAULT_URL)
         return ResolvedAerialSource(
             tiles = normalized.tiles,
             scheme = normalized.scheme,
@@ -175,6 +175,21 @@ class AerialImageryResolver(
             hideLabels = false,
             effectiveSelection = AerialSourceSelection.Esri,
             displayName = "Esri",
+        )
+    }
+
+    /** Used when [RasterTileUrlNormalizer] failed to load (e.g. Android ICU regex init). */
+    internal fun esriFallbackNormalized(): NormalizedRasterSource = ESRI_FALLBACK_NORMALIZED
+
+    private fun normalizeUrl(url: String): NormalizedRasterSource =
+        runCatching { RasterTileUrlNormalizer.normalize(url) }.getOrElse { ESRI_FALLBACK_NORMALIZED }
+
+    companion object {
+        private val ESRI_FALLBACK_NORMALIZED = NormalizedRasterSource(
+            tiles = listOf(
+                "https://server.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            ),
+            scheme = RasterTileScheme.Xyz,
         )
     }
 }

@@ -201,6 +201,13 @@ class AerialImageryResolverTest {
         assertEquals(AerialSourceSelection.Manual("regional"), resolved.effectiveSelection)
     }
 
+    @Test fun `hardcoded esri fallback avoids broken normalizer`() {
+        val (r, _) = resolver()
+        val fallback = r.esriFallbackNormalized()
+        assertTrue(fallback.tiles.single().contains("arcgisonline.com"))
+        assertEquals(RasterTileScheme.Xyz, fallback.scheme)
+    }
+
     @Test fun `selecting aerial source sets theme background aerial`() {
         val preferences = Preferences(MapSettings())
         val store = ManualRasterSourcesStore(preferences)

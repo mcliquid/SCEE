@@ -50,13 +50,10 @@ class CrashReportsUncaughtExceptionHandler(
     }
 
     override fun takeCrashReport(): String? {
-        if (hasCrashReport()) {
-            val errorReport = loadCrashReport()
-            deleteCrashReport()
-            return null
-        } else {
-            return null
-        }
+        if (!hasCrashReport()) return null
+        val errorReport = loadCrashReport()
+        deleteCrashReport()
+        return errorReport
     }
 
     private fun saveCrashReport(text: String) {

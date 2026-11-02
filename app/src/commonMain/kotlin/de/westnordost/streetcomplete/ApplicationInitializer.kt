@@ -13,6 +13,7 @@ import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
 import de.westnordost.streetcomplete.util.logs.DatabaseLogger
 import de.westnordost.streetcomplete.util.logs.KermitLogger
 import de.westnordost.streetcomplete.util.logs.Log
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +36,13 @@ class ApplicationInitializer(
     // need to hold references to these so that they exist and can do their thing
     private val autoSyncer: AutoSyncer,
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + CoroutineName("Application"))
+    private val scope = CoroutineScope(
+        SupervisorJob() +
+            CoroutineName("Application") +
+            CoroutineExceptionHandler { _, error ->
+                Log.e("ApplicationInitializer", "Uncaught coroutine exception", error)
+            },
+    )
 
     fun initialize() {
 

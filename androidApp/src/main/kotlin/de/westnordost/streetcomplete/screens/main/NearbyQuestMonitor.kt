@@ -10,7 +10,6 @@ import android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.net.ConnectivityManager
 import android.os.Binder
 import android.os.Build
 import android.os.Bundle
@@ -33,6 +32,8 @@ import de.westnordost.streetcomplete.resources.quest_monitor_channel_name_found
 import de.westnordost.streetcomplete.resources.quest_monitor_error
 import de.westnordost.streetcomplete.resources.quest_monitor_found
 import de.westnordost.streetcomplete.resources.quest_monitor_running
+import de.westnordost.streetcomplete.data.connection.ActiveNetworkConnection
+import de.westnordost.streetcomplete.data.connection.shouldSkipQuestMonitorBackgroundDownload
 import de.westnordost.streetcomplete.data.download.DownloadController
 import de.westnordost.streetcomplete.data.download.Downloader
 import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesSource
@@ -60,6 +61,7 @@ class NearbyQuestMonitor : Service(), LocationListener, KoinComponent {
     private val downloadController: DownloadController by inject()
     private val downloader: Downloader by inject()
     private val downloadedTilesSource: DownloadedTilesSource by inject()
+    private val activeNetworkConnection: ActiveNetworkConnection by inject()
     private var lastScanCenter = LatLon(0.0, 0.0)
     private val searchRadius = prefs.getFloat(Prefs.QUEST_MONITOR_RADIUS, 50f).toDouble()
     private val download = prefs.getBoolean(Prefs.QUEST_MONITOR_DOWNLOAD, false)
@@ -165,9 +167,16 @@ class NearbyQuestMonitor : Service(), LocationListener, KoinComponent {
             if (download) {
                 // check whether surrounding area should be downloaded
                 if (downloader.isDownloadInProgress) return // download already running
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_GRANTED
-                        && getSystemService<ConnectivityManager>()?.activeNetworkInfo?.isConnected == false)
-                    return // we are not connected (or we're not allowed to check)
+                val networkStateGranted =
+                    ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) ==
+                        PackageManager.PERMISSION_GRANTED
+                if (shouldSkipQuestMonitorBackgroundDownload(
+                        networkStateGranted,
+                        if (networkStateGranted) activeNetworkConnection.snapshotCapabilities() else null,
+                    )
+                ) {
+                    return
+                }
                 val ignoreOlderThan = nowAsEpochMilliseconds() - dataRetainTime
                 val tile = loc.enclosingTilePos(ApplicationConstants.DOWNLOAD_TILE_ZOOM).toTilesRect()
                 if (downloadedTilesSource.contains(tile, ignoreOlderThan)) return // we already have the area

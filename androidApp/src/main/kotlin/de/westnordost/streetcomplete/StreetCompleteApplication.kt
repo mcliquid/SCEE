@@ -3,7 +3,6 @@ package de.westnordost.streetcomplete
 import android.app.ActivityManager
 import android.app.ActivityManager.MemoryInfo
 import android.app.Application
-import android.content.ComponentCallbacks2
 import android.content.res.Configuration
 import androidx.core.content.getSystemService
 import de.westnordost.streetcomplete.data.CacheTrimmer
@@ -67,22 +66,16 @@ class StreetCompleteApplication : Application() {
 
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
-        when (level) {
-            ComponentCallbacks2.TRIM_MEMORY_COMPLETE,
-            ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL -> {
-                // very low on memory -> drop caches
+        when (memoryTrimActionFor(level)) {
+            MemoryTrimAction.CLEAR_CACHES -> {
                 cacheTrimmer.clearCaches()
                 Log.i("StreetCompleteApplication", "onTrimMemory, level $level: ${getMemString()}")
             }
-            ComponentCallbacks2.TRIM_MEMORY_BACKGROUND,
-            ComponentCallbacks2.TRIM_MEMORY_MODERATE,
-            ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE,
-            ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN,
-            ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW -> {
-                // memory needed, but not critical -> trim only
+            MemoryTrimAction.TRIM_CACHES -> {
                 Log.i("StreetCompleteApplication", "onTrimMemory, level $level: ${getMemString()}")
                 cacheTrimmer.trimCaches()
             }
+            MemoryTrimAction.NONE -> {}
         }
     }
 

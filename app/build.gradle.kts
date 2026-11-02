@@ -476,7 +476,7 @@ tasks.register<UpdateInfoPlistTranslationsTask>("updateIosTranslations") {
 tasks.register<UpdateInfoPlistTranslationsTask>("updateMacosTranslations") {
     group = "streetcomplete"
     projectId = poEditorProjectId
-    apiToken = properties["app.streetcomplete.POEditorAPIToken"] as String
+    apiToken = providers.gradleProperty("app.streetcomplete.POEditorAPIToken").get()
     targetDir = projectDir.resolve("../desktopApp/macosLocalizations")
     languageCodes = bcp47ExportLanguages
     strings = mapOf(

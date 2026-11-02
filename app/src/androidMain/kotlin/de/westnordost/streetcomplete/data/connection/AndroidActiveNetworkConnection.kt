@@ -30,12 +30,15 @@ class AndroidActiveNetworkConnection(private val context: Context) : ActiveNetwo
         awaitClose { context.connectivityManager.unregisterNetworkCallback(networkCallback) }
     }
 
-    private fun getCurrentCapabilities(): NetworkCapabilities? {
-        val activeNetwork = context.connectivityManager.activeNetwork ?: return null
-        val networkCapabilities = context.connectivityManager.getNetworkCapabilities(activeNetwork)
+    override fun snapshotCapabilities(): NetworkCapabilities? = readDefaultNetworkCapabilities(context)
 
-        return networkCapabilities?.toNetworkCapabilities()
-    }
+    private fun getCurrentCapabilities(): NetworkCapabilities? = readDefaultNetworkCapabilities(context)
+}
+
+internal fun readDefaultNetworkCapabilities(context: Context): NetworkCapabilities? {
+    val activeNetwork = context.connectivityManager.activeNetwork ?: return null
+    val networkCapabilities = context.connectivityManager.getNetworkCapabilities(activeNetwork)
+    return networkCapabilities?.toNetworkCapabilities()
 }
 
 private val Context.connectivityManager get() = getSystemService<ConnectivityManager>()!!

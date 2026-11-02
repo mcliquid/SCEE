@@ -58,6 +58,13 @@ class NoteDao(private val db: Database) {
             where = inBoundsSql(bbox),
         ) { LatLon(it.getDouble(LATITUDE), it.getDouble(LONGITUDE)) }
 
+    /** Open notes only; avoids loading [COMMENTS] (used for quest blacklisting). */
+    fun getAllOpenPositions(bbox: BoundingBox): List<LatLon> =
+        db.query(NAME,
+            columns = arrayOf(LATITUDE, LONGITUDE),
+            where = inBoundsSql(bbox) + " AND $STATUS = '${Note.Status.OPEN.name}'",
+        ) { LatLon(it.getDouble(LATITUDE), it.getDouble(LONGITUDE)) }
+
     fun getAll(ids: Collection<Long>): List<Note> {
         if (ids.isEmpty()) return emptyList()
         return db.query(NAME, where = "$ID IN (${ids.joinToString(",")})") { it.toNote() }

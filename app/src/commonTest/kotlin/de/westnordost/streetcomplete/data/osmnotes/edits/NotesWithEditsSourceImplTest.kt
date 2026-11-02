@@ -20,6 +20,7 @@ import dev.mokkery.matcher.any
 import dev.mokkery.matcher.matches
 import dev.mokkery.mock
 import dev.mokkery.verify
+import dev.mokkery.verify.VerifyMode.Companion.not
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -208,9 +209,7 @@ class NotesWithEditsSourceImplTest {
         val ps2 = listOf(p(3.0, 2.0), p(5.0, 1.0))
         val bbox = bbox(0.0, 0.0, 6.0, 4.0)
 
-        every { noteController.getAll(any<BoundingBox>()) } returns ps1.mapIndexed { index, position ->
-            note(id = index.toLong() + 1, position = position)
-        }
+        every { noteController.getAllOpenPositions(any()) } returns ps1
         every { noteEditsSource.getAllUnsynced(any()) } returns ps2.mapIndexed { index, position ->
             noteEdit(noteId = -index.toLong() - 1, action = NoteEditAction.CREATE, pos = position)
         }
@@ -218,6 +217,19 @@ class NotesWithEditsSourceImplTest {
         val positions = src.getAllPositions(bbox)
 
         assertTrue(positions.containsAll(ps1 + ps2))
+        verify(not) { noteController.getAll(any<BoundingBox>()) }
+    }
+
+    @Test
+    fun `getAllPositions removes position for unsynced close edit`() {
+        val pos = p(1.0, 2.0)
+        val bbox = bbox(0.0, 0.0, 3.0, 3.0)
+        every { noteController.getAllOpenPositions(any()) } returns listOf(pos)
+        every { noteEditsSource.getAllUnsynced(any()) } returns listOf(
+            noteEdit(noteId = 1, action = NoteEditAction.CLOSE, pos = pos)
+        )
+
+        assertTrue(src.getAllPositions(bbox).isEmpty())
     }
 
     //endregion

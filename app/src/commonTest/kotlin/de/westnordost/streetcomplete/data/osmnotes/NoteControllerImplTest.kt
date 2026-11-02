@@ -50,6 +50,13 @@ class NoteControllerImplTest {
         assertEquals(ret, noteController.getAllPositions(bbox))
     }
 
+    @Test fun `getAllOpenPositions in bbox`() {
+        val bbox = bbox()
+        val ret = listOf(p(), p())
+        every { dao.getAllOpenPositions(bbox) } returns ret
+        assertEquals(ret, noteController.getAllOpenPositions(bbox))
+    }
+
     @Test fun put(): Unit = runBlocking {
         val note = note(1)
 

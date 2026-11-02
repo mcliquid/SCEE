@@ -73,6 +73,18 @@ class NoteDaoTest : StreetCompleteDatabaseTestCase() {
         assertEquals(LatLon(0.5, 0.5), positions.single())
     }
 
+    @Test fun getAllOpenPositions() {
+        val open = createNote(1, LatLon(0.5, 0.5))
+        val closed = createNote(2, LatLon(0.6, 0.6)).copy(
+            status = Note.Status.CLOSED,
+            timestampClosed = nowAsEpochMilliseconds()
+        )
+        dao.putAll(listOf(open, closed))
+
+        val positions = dao.getAllOpenPositions(BoundingBox(0.0, 0.0, 1.0, 1.0))
+        assertEquals(LatLon(0.5, 0.5), positions.single())
+    }
+
     @Test fun getAllByBbox() {
         val thisIsIn = createNote(1, LatLon(0.5, 0.5))
         val thisIsOut = createNote(2, LatLon(-0.5, 0.5))

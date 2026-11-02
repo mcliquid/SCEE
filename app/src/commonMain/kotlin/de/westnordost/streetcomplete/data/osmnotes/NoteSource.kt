@@ -21,6 +21,9 @@ interface NoteSource {
 
     fun getAllPositions(bbox: BoundingBox): List<LatLon>
 
+    /** Positions of open notes in [bbox] (excludes closed). */
+    fun getAllOpenPositions(bbox: BoundingBox): List<LatLon>
+
     fun getAll(bbox: BoundingBox): List<Note>
 
     fun getAll(noteIds: Collection<Long>): List<Note>

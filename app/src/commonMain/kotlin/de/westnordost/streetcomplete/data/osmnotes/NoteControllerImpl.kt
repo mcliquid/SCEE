@@ -91,6 +91,7 @@ class NoteControllerImpl(
     }
 
     override fun getAllPositions(bbox: BoundingBox): List<LatLon> = dao.getAllPositions(bbox)
+    override fun getAllOpenPositions(bbox: BoundingBox): List<LatLon> = dao.getAllOpenPositions(bbox)
     override fun getAll(bbox: BoundingBox): List<Note> = dao.getAll(bbox)
     override fun getAll(noteIds: Collection<Long>): List<Note> = dao.getAll(noteIds)
 

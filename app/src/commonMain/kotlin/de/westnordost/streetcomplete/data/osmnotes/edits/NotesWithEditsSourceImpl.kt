@@ -111,8 +111,17 @@ class NotesWithEditsSourceImpl(
         return note
     }
 
-    // this is used only for blacklisting quest positions, so we can do that (but ideally it should be renamed...)
-    override fun getAllPositions(bbox: BoundingBox): List<LatLon> = noteCache.get(bbox).filterNot { it.isClosed }.map { it.position }
+    // Used only for quest blacklisting; must not load full notes into [noteCache] (OOM on large areas).
+    override fun getAllPositions(bbox: BoundingBox): List<LatLon> {
+        val positions = noteSource.getAllOpenPositions(bbox).toMutableList()
+        for (edit in noteEditsSource.getAllUnsynced(bbox)) {
+            when (edit.action) {
+                CREATE, COMMENT -> positions.add(edit.position)
+                CLOSE -> positions.removeAll { it == edit.position }
+            }
+        }
+        return positions
+    }
 
     override fun getAll(bbox: BoundingBox): Collection<Note> = noteCache.get(bbox)
 

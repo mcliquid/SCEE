@@ -39,7 +39,7 @@ val presetsVersion = "v7.3.0"
 /** Version of the Name Suggestion Index to use
  *  see https://github.com/osmlab/name-suggestion-index/tags for latest version (without leading "v"
  *  */
-val nsiVersion = "8.0.20260918"
+val nsiVersion = "8.0.20261101"
 
 /** Version of the traffic sign catalogue (npm package @osm-traffic-signs/converter) to use and the
  *  SHA-256 of its npm tarball

@@ -27,6 +27,39 @@ class QuestTypesRegistryTest {
     private val countryInfo = CountryInfo(null, listOf(IncompleteCountryInfo()))
 
     @Test
+    fun `quest type registry names are unique`() {
+        Prefs.preferences = inMemoryPrefs()
+
+        val connection = BundledSQLiteDriver().open(":memory:")
+        try {
+            val database = DatabaseImpl(connection).apply { initialize(StreetCompleteDatabaseConfigurator) }
+            val registry = QuestTypeRegistry(
+                load = {
+                    getQuestTypeList(
+                        arSupportChecker = arSupportChecker,
+                        getCountryInfoByLocation = { countryInfo },
+                        getCountryOrSubdivisionCode = { null },
+                        getFeature = { null },
+                        osmoseDao = OsmoseDao(database, Prefs.preferences),
+                        customQuestList = CustomQuestList(),
+                    )
+                }
+            )
+
+            val names = registry.map { it.name }
+            val duplicates = names
+                .groupBy { it }
+                .filter { it.value.size > 1 }
+                .keys
+                .sorted()
+
+            assertEquals(emptyList(), duplicates, "Duplicate quest type names: $duplicates")
+        } finally {
+            connection.close()
+        }
+    }
+
+    @Test
     fun `quest type ordinals are unique in QuestTypeRegistry`() {
         Prefs.preferences = inMemoryPrefs()
 

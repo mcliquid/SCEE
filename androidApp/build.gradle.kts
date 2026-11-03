@@ -57,7 +57,7 @@ android {
     buildTypes {
         all {
             isMinifyEnabled = true
-            isShrinkResources = true
+            //isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             testProguardFile("test-proguard-rules.pro")
             // Explicit switch for ApplicationConstants.DEBUG. Not derived from the package name.

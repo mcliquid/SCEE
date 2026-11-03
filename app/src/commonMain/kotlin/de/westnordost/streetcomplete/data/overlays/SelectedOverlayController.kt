@@ -12,28 +12,36 @@ class SelectedOverlayController(
 
     private val listeners = Listeners<SelectedOverlaySource.Listener>()
 
+    /** While the setter writes prefs, ignore duplicate notifications from [settingsListener]. */
+    private var suppressSettingsNotification = false
+
     // must have local reference because the listeners are only a weak reference
     private val settingsListener: SettingsListener = prefs.onSelectedOverlayNameChanged {
-        listeners.forEach { it.onSelectedOverlayChanged() }
+        if (!suppressSettingsNotification) notifySelectedOverlayChanged()
     }
 
     override var selectedOverlay: Overlay?
         set(value) {
-            when {
-                value == null -> prefs.selectedOverlayName = null
-                value.isCustomOverlayPickerEntry() -> {
-                    value.wikiLink?.toIntOrNull()?.let { prefs.putInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, it) }
-                    if (prefs.selectedOverlayName == /*CustomOverlay::class.simpleName*/ "CustomOverlay") { // todo, but later...
-                        listeners.forEach { it.onSelectedOverlayChanged() }
+            suppressSettingsNotification = true
+            try {
+                when {
+                    value == null -> prefs.selectedOverlayName = null
+                    value.isCustomOverlayPickerEntry() -> {
+                        value.wikiLink?.toIntOrNull()?.let { prefs.putInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, it) }
+                        prefs.selectedOverlayName = /*CustomOverlay::class.simpleName*/ "CustomOverlay" // todo, but later...
                     }
-                    prefs.selectedOverlayName = /*CustomOverlay::class.simpleName*/ "CustomOverlay" // todo, but later...
+                    overlayRegistry.getByName(value.name) != null -> {
+                        // Resolve by stable EditType.name, not instance identity (UI may hold non-registry instances).
+                        prefs.selectedOverlayName = value.name
+                    }
+                    else -> prefs.selectedOverlayName = null
                 }
-                overlayRegistry.getByName(value.name) != null -> {
-                    // Resolve by stable EditType.name, not instance identity (UI may hold non-registry instances).
-                    prefs.selectedOverlayName = value.name
-                }
-                else -> prefs.selectedOverlayName = null
+            } finally {
+                suppressSettingsNotification = false
             }
+            // Always notify: preference listeners may not fire when the stored name is unchanged
+            // (e.g. switching custom-overlay slot) and map/UI must refresh immediately.
+            notifySelectedOverlayChanged()
         }
         get() {
             val stored = prefs.selectedOverlayName ?: return null
@@ -50,5 +58,9 @@ class SelectedOverlayController(
 
     override fun removeListener(listener: SelectedOverlaySource.Listener) {
         listeners.remove(listener)
+    }
+
+    private fun notifySelectedOverlayChanged() {
+        listeners.forEach { it.onSelectedOverlayChanged() }
     }
 }

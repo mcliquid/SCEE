@@ -46,11 +46,13 @@ import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.IO
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -197,7 +199,7 @@ class MainViewModelImpl(
         val listener = object : SelectedOverlaySource.Listener {
             override fun onSelectedOverlayChanged() {
                 // Custom overlay instances are distinct objects per index; briefly clear so UI reloads.
-                if (selectedOverlayController.selectedOverlay?.javaClass?.simpleName == "CustomOverlay") {
+                if (selectedOverlayController.selectedOverlay?.name == "CustomOverlay") {
                     trySend(null)
                     viewModelScope.launch { delay(50); trySend(selectedOverlayController.selectedOverlay) }
                 } else {
@@ -207,7 +209,8 @@ class MainViewModelImpl(
         }
         selectedOverlayController.addListener(listener)
         awaitClose { selectedOverlayController.removeListener(listener) }
-    }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, selectedOverlayController.selectedOverlay)
+    }.buffer(Channel.UNLIMITED)
+        .stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, selectedOverlayController.selectedOverlay)
 
     override val hasShownOverlaysTutorial: Boolean
         get() = prefs.hasShownOverlaysTutorial

@@ -107,6 +107,87 @@ class SelectedOverlayControllerTest {
         assertEquals(2, prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, -1))
         assertSame(registry.first { it.name == "CustomOverlay" }, ctrl.selectedOverlay)
     }
+
+    @Test fun `selecting overlay notifies listeners immediately`() {
+        val registry = registry()
+        val ctrl = controller(registry)
+        var notifications = 0
+        ctrl.addListener(object : SelectedOverlaySource.Listener {
+            override fun onSelectedOverlayChanged() { notifications++ }
+        })
+        val wayLit = registry.first { it.name == "WayLitOverlay" }
+        val surface = registry.first { it.name == "SurfaceOverlay" }
+        ctrl.selectedOverlay = wayLit
+        assertEquals(1, notifications)
+        assertSame(wayLit, ctrl.selectedOverlay)
+        ctrl.selectedOverlay = surface
+        assertEquals(2, notifications)
+        assertSame(surface, ctrl.selectedOverlay)
+    }
+
+    @Test fun `disabling overlay notifies listeners`() {
+        val registry = registry()
+        val ctrl = controller(registry)
+        var notifications = 0
+        ctrl.addListener(object : SelectedOverlaySource.Listener {
+            override fun onSelectedOverlayChanged() { notifications++ }
+        })
+        ctrl.selectedOverlay = registry.first { it.name == "WayLitOverlay" }
+        ctrl.selectedOverlay = null
+        assertEquals(2, notifications)
+        assertNull(ctrl.selectedOverlay)
+    }
+
+    @Test fun `re-selecting same overlay name still notifies listeners`() {
+        val registry = registry()
+        val ctrl = controller(registry)
+        var notifications = 0
+        ctrl.addListener(object : SelectedOverlaySource.Listener {
+            override fun onSelectedOverlayChanged() { notifications++ }
+        })
+        val wayLit = registry.first { it.name == "WayLitOverlay" }
+        ctrl.selectedOverlay = wayLit
+        ctrl.selectedOverlay = WayLitOverlay()
+        assertEquals(2, notifications)
+        assertSame(wayLit, ctrl.selectedOverlay)
+    }
+
+    @Test fun `switching custom overlay slot notifies when name stays CustomOverlay`() {
+        val registry = registry()
+        val prefs = Prefs.preferences
+        prefs.putString(Prefs.CUSTOM_OVERLAY_INDICES, "1,2")
+        prefs.putString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_FILTER, 1), "nodes with highway=primary")
+        prefs.putString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_NAME, 1), "One")
+        prefs.putString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_FILTER, 2), "nodes with highway=secondary")
+        prefs.putString(getIndexedCustomOverlayPref(Prefs.CUSTOM_OVERLAY_IDX_NAME, 2), "Two")
+        val ctrl = controller(registry)
+        var notifications = 0
+        ctrl.addListener(object : SelectedOverlaySource.Listener {
+            override fun onSelectedOverlayChanged() { notifications++ }
+        })
+        val fake1 = getFakeCustomOverlays(prefs, onlyIfExpertMode = false).single { it.wikiLink == "1" }
+        val fake2 = getFakeCustomOverlays(prefs, onlyIfExpertMode = false).single { it.wikiLink == "2" }
+        ctrl.selectedOverlay = fake1
+        assertEquals(1, notifications)
+        assertEquals(1, prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, -1))
+        ctrl.selectedOverlay = fake2
+        assertEquals(2, notifications)
+        assertEquals(2, prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, -1))
+        assertEquals("CustomOverlay", prefs.selectedOverlayName)
+    }
+
+    @Test fun `preference change from outside still notifies listeners`() {
+        val registry = registry()
+        val prefs = Prefs.preferences
+        val ctrl = controller(registry)
+        var notifications = 0
+        ctrl.addListener(object : SelectedOverlaySource.Listener {
+            override fun onSelectedOverlayChanged() { notifications++ }
+        })
+        prefs.selectedOverlayName = "CyclewayOverlay"
+        assertEquals(1, notifications)
+        assertSame(registry.first { it.name == "CyclewayOverlay" }, ctrl.selectedOverlay)
+    }
 }
 
 class OverlaySelectionTest {

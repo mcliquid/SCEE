@@ -29,11 +29,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.overlays.Overlay
+import de.westnordost.streetcomplete.data.overlays.isCustomOverlayPickerEntry
+import de.westnordost.streetcomplete.data.overlays.isSameSelectedOverlay
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
-import de.westnordost.streetcomplete.overlays.custom.CustomOverlay
 import de.westnordost.streetcomplete.util.OverlayCustomizer
-import de.westnordost.streetcomplete.util.fakeStringResource
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -60,20 +60,18 @@ fun OverlayQuickSelector(
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         overlays.forEach {
-            // weird equality because of custom overlays
-            val selected = if (selectedOverlay !is CustomOverlay) it == selectedOverlay
-                else it.wikiLink?.toIntOrNull() == prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, 0)
+            val selected = isSameSelectedOverlay(it, selectedOverlay, prefs)
             val modifier = if (!selected) Modifier
             else Modifier.border(3.dp, Color(0xBBFF5722), CircleShape)
                 .bringIntoViewRequester(bringIntoViewRequester)
             Box(modifier) {
                 Image(
                     painter = painterResource(it.icon),
-                    contentDescription = if (it.title == fakeStringResource) it.wikiLink else stringResource(it.title),
+                    contentDescription = if (it.isCustomOverlayPickerEntry()) it.wikiLink else stringResource(it.title),
                     modifier = Modifier.size(48.dp).combinedClickable(
                         onClick = { onOverlaySelected(if (selected) null else it) },
                         onLongClick = {
-                            if (it.title != fakeStringResource) return@combinedClickable // only for custom overlays
+                            if (!it.isCustomOverlayPickerEntry()) return@combinedClickable // only for custom overlays
                             val index = it.wikiLink?.toIntOrNull() ?: return@combinedClickable
                             showOverlayCustomizer = index
                         }

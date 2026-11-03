@@ -138,7 +138,7 @@ class SelectedOverlayControllerTest {
         assertNull(ctrl.selectedOverlay)
     }
 
-    @Test fun `re-selecting same overlay name still notifies listeners`() {
+    @Test fun `re-selecting same overlay name does not notify listeners`() {
         val registry = registry()
         val ctrl = controller(registry)
         var notifications = 0
@@ -148,8 +148,18 @@ class SelectedOverlayControllerTest {
         val wayLit = registry.first { it.name == "WayLitOverlay" }
         ctrl.selectedOverlay = wayLit
         ctrl.selectedOverlay = WayLitOverlay()
-        assertEquals(2, notifications)
+        assertEquals(1, notifications)
         assertSame(wayLit, ctrl.selectedOverlay)
+    }
+
+    @Test fun `selecting already disabled overlay does not notify listeners`() {
+        val ctrl = controller()
+        var notifications = 0
+        ctrl.addListener(object : SelectedOverlaySource.Listener {
+            override fun onSelectedOverlayChanged() { notifications++ }
+        })
+        ctrl.selectedOverlay = null
+        assertEquals(0, notifications)
     }
 
     @Test fun `switching custom overlay slot notifies when name stays CustomOverlay`() {

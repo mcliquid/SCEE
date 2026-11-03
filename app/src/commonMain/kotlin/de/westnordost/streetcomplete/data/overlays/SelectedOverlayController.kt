@@ -22,6 +22,8 @@ class SelectedOverlayController(
 
     override var selectedOverlay: Overlay?
         set(value) {
+            val previousName = prefs.selectedOverlayName
+            val previousCustomIndex = prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, 0)
             suppressSettingsNotification = true
             try {
                 when {
@@ -39,9 +41,9 @@ class SelectedOverlayController(
             } finally {
                 suppressSettingsNotification = false
             }
-            // Always notify: preference listeners may not fire when the stored name is unchanged
-            // (e.g. switching custom-overlay slot) and map/UI must refresh immediately.
-            notifySelectedOverlayChanged()
+            if (prefs.selectedOverlayName != previousName ||
+                prefs.getInt(Prefs.CUSTOM_OVERLAY_SELECTED_INDEX, 0) != previousCustomIndex
+            ) notifySelectedOverlayChanged()
         }
         get() {
             val stored = prefs.selectedOverlayName ?: return null

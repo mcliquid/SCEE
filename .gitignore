@@ -31,3 +31,6 @@ xcuserdata
 /.ai
 /tools
 /output/
+/docs
+# Local build logs
+release-build.log

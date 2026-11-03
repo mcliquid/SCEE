@@ -93,6 +93,7 @@ import de.westnordost.streetcomplete.quests.crossing.AddCrossing
 import de.westnordost.streetcomplete.quests.crossing_island.AddCrossingIsland
 import de.westnordost.streetcomplete.quests.crossing_kerb_height.AddCrossingKerbHeight
 import de.westnordost.streetcomplete.quests.crossing_markings.AddCrossingMarkings
+import de.westnordost.streetcomplete.quests.crossing_markings_colour.AddCrossingMarkingsColour
 import de.westnordost.streetcomplete.quests.crossing_signals.AddCrossingSignals
 import de.westnordost.streetcomplete.quests.cuisine.AddCuisine
 import de.westnordost.streetcomplete.quests.custom.CustomQuest
@@ -731,6 +732,7 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 209 to AddIsSidepathRoadMetadata(),
     EE_QUEST_OFFSET + 210 to AddCyclewaySeparation(),
     EE_QUEST_OFFSET + 211 to AddRoadAttachedCyclewaySurface(),
+    EE_QUEST_OFFSET + 212 to AddCrossingMarkingsColour(),
     EE_QUEST_OFFSET + 202 to AddWaterwayCrossing(),
     EE_QUEST_OFFSET + 203 to AddBicycleInPedestrianStreet(),
     EE_QUEST_OFFSET + 204 to AddWaterBottleFill(), // #510 bottle refill survey at water sources

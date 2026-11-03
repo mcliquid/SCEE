@@ -622,6 +622,14 @@
     <string name="quest_crossing_marking_value_ladder_paired">Ladder paired</string>
     <string name="quest_crossing_marking_value_zebra_dots">Zebra + dots</string>
     <string name="quest_crossing_marking_value_pictograms">Pictograms</string>
+    <string name="quest_crossing_markings_colour_title">What colours are the markings of this bicycle crossing?</string>
+    <string name="quest_crossing_markings_colour_red">Red</string>
+    <string name="quest_crossing_markings_colour_white">White</string>
+    <string name="quest_crossing_markings_colour_yellow">Yellow</string>
+    <string name="quest_crossing_markings_colour_green">Green</string>
+    <string name="quest_crossing_markings_colour_blue">Blue</string>
+    <string name="quest_crossing_markings_colour_other">Other colour</string>
+    <string name="quest_crossing_markings_colour_other_hint">Enter a colour name (for example orange) or an sRGB hex code (for example #ff8800). Use lowercase English colour names where possible.</string>
 
     <string name="quest_generalRef_hint">Reference number or code</string>
     <string name="quest_generalRef_disabled_msg">This quest is disabled by default because what is signed strongly varies by region and operator. You may need to refine the element selection for your area (e.g. remove street lamps, add maps, only select guideposts with hiking=yes, etc.)</string>

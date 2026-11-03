@@ -556,6 +556,14 @@
     <string name="quest_crossing_marking_value_ladder_paired">Leiter gepaart</string>
     <string name="quest_crossing_marking_value_zebra_dots">Zebrastreifen + Punkte</string>
     <string name="quest_crossing_marking_value_pictograms">Piktogramme</string>
+    <string name="quest_crossing_markings_colour_title">Welche Farben haben die Markierungen dieses Fahrradübergangs?</string>
+    <string name="quest_crossing_markings_colour_red">Rot</string>
+    <string name="quest_crossing_markings_colour_white">Weiß</string>
+    <string name="quest_crossing_markings_colour_yellow">Gelb</string>
+    <string name="quest_crossing_markings_colour_green">Grün</string>
+    <string name="quest_crossing_markings_colour_blue">Blau</string>
+    <string name="quest_crossing_markings_colour_other">Andere Farbe</string>
+    <string name="quest_crossing_markings_colour_other_hint">Farbname (z. B. orange) oder sRGB-Hexcode (z. B. #ff8800) eingeben. Wo möglich englische Farbnamen in Kleinbuchstaben verwenden.</string>
     <string name="quest_crossing_marking_value_zebra">Zebrastreifen</string>
     <string name="quest_crossing_marking_value_zebra_double">Zebrastreifen doppelt</string>
     <string name="pref_quest_pedestrian_crossing_markings_extended">Erweiterung „Gibt es bei diesem Fußgängerüberweg Markierungen auf dem Boden?“ aktivieren, sodass du die Art der Überquerungsmarkierungen definieren kannst</string>

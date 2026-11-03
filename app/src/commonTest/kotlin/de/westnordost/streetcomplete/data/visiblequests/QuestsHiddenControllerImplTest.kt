@@ -11,6 +11,7 @@ import dev.mokkery.answering.repeat
 import dev.mokkery.answering.returns
 import dev.mokkery.answering.sequentially
 import dev.mokkery.every
+import dev.mokkery.matcher.any
 import dev.mokkery.mock
 import dev.mokkery.verify
 import dev.mokkery.verify.VerifyMode.Companion.exactly
@@ -96,6 +97,28 @@ class QuestsHiddenControllerImplTest {
 
         verify { osmDb.add(q) }
         verify { listener.onHid(q, 123) }
+    }
+
+    @Test fun `hide already hidden osm quest does not notify again`() {
+        val q = osmQuestKey(elementId = 1)
+        every { osmDb.getAll() } returns listOf(OsmQuestHiddenAt(q, 123L))
+        every { notesDb.getAll() } returns listOf()
+        every { externalDb.getAll() } returns listOf()
+        listener = mock()
+        ctrl = QuestsHiddenControllerImpl(osmDb, notesDb, externalDb)
+        ctrl.addListener(listener)
+
+        ctrl.hide(q)
+
+        verify(exactly(0)) { osmDb.add(q) }
+        verify(exactly(0)) { listener.onHid(q, any()) }
+    }
+
+    @Test fun `temp hide notifies without persisting`() {
+        val q = osmQuestKey(elementId = 1)
+        ctrl.tempHide(q)
+        verify(exactly(1)) { listener.onHid(q, any()) }
+        verify(exactly(0)) { osmDb.add(q) }
     }
 
     @Test fun `hide osm note quest`() {

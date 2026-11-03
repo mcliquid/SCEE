@@ -86,6 +86,9 @@ class EditHistoryViewModelImpl(
         override fun onAdded(added: Edit) {
             edits.update { edits ->
                 val edits = edits.orEmpty()
+                if (edits.any { it.key == added.key && it.createdTimestamp == added.createdTimestamp }) {
+                    return@update edits
+                }
                 var insertIndex = edits.indexOfLast { it.createdTimestamp > added.createdTimestamp }
                 if (insertIndex == -1) insertIndex = edits.size
                 edits.toMutableList().also { it.add(insertIndex, added) }

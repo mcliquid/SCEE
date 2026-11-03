@@ -54,7 +54,7 @@ fun FloatingSmallerButton(
         exit = scaleOut(tween(100), targetScale = 0.5f) + fadeOut(tween(100)),
     ) {
         FloatingActionButton(
-            onClick = onClick,
+            onClick = if (onLongClick != null) { {} } else onClick,
             enabled = enabled,
             fabSize = 40.dp,
             content = content,

@@ -21,6 +21,7 @@ import dev.mokkery.every
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
 import dev.mokkery.verify
+import dev.mokkery.verify.VerifyMode.Companion.exactly
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -166,6 +167,7 @@ class EditHistoryControllerTest {
     @Test fun `relays hid quest`() {
         val e = questHidden()
         every { mapDataSource.getGeometry(e.elementType, e.elementId) } returns e.geometry
+        every { hiddenQuestsController.get(e.questKey) } returns e.createdTimestamp
         hiddenQuestsListener.onHid(e.questKey, e.createdTimestamp)
         verify { listener.onAdded(e) }
     }
@@ -185,6 +187,7 @@ class EditHistoryControllerTest {
     @Test fun `relays hid note quest`() {
         val e = noteQuestHidden()
         every { notesSource.get(e.note.id) } returns e.note
+        every { hiddenQuestsController.get(e.questKey) } returns e.createdTimestamp
         hiddenQuestsListener.onHid(e.questKey, e.createdTimestamp)
         verify { listener.onAdded(e) }
     }
@@ -199,5 +202,54 @@ class EditHistoryControllerTest {
     @Test fun `relays unhid all note quests`() {
         hiddenQuestsListener.onUnhidAll()
         verify { listener.onInvalidated() }
+    }
+
+    @Test fun `temp hide while quest not in db creates no history entry`() {
+        val e = questHidden()
+        every { hiddenQuestsController.get(e.questKey) } returns null
+        hiddenQuestsListener.onHid(e.questKey, 999L)
+        verify(exactly(0)) { listener.onAdded(any()) }
+    }
+
+    @Test fun `temp hide while quest already permanently hidden creates no history entry`() {
+        val e = questHidden(timestamp = 100L)
+        every { mapDataSource.getGeometry(e.elementType, e.elementId) } returns e.geometry
+        every { hiddenQuestsController.get(e.questKey) } returns 100L
+        hiddenQuestsListener.onHid(e.questKey, 999L)
+        verify(exactly(0)) { listener.onAdded(any()) }
+    }
+
+    @Test fun `permanent hide creates exactly one history entry`() {
+        val e = questHidden(timestamp = 100L)
+        every { mapDataSource.getGeometry(e.elementType, e.elementId) } returns e.geometry
+        every { hiddenQuestsController.get(e.questKey) } returns 100L
+        hiddenQuestsListener.onHid(e.questKey, 100L)
+        hiddenQuestsListener.onHid(e.questKey, 200L)
+        verify(exactly(1)) { listener.onAdded(e) }
+    }
+
+    @Test fun `duplicate permanent hide event with same timestamp relays once per event`() {
+        val e = questHidden(timestamp = 100L)
+        every { mapDataSource.getGeometry(e.elementType, e.elementId) } returns e.geometry
+        every { hiddenQuestsController.get(e.questKey) } returns 100L
+        hiddenQuestsListener.onHid(e.questKey, 100L)
+        hiddenQuestsListener.onHid(e.questKey, 100L)
+        verify(exactly(2)) { listener.onAdded(e) }
+    }
+
+    @Test fun `re-hide after unhide creates new history entry`() {
+        val e1 = questHidden(timestamp = 100L)
+        every { mapDataSource.getGeometry(e1.elementType, e1.elementId) } returns e1.geometry
+        every { hiddenQuestsController.get(e1.questKey) } returns 100L
+        hiddenQuestsListener.onHid(e1.questKey, 100L)
+        verify(exactly(1)) { listener.onAdded(e1) }
+
+        hiddenQuestsListener.onUnhid(e1.questKey, 100L)
+        verify { listener.onDeleted(listOf(e1)) }
+
+        val e2 = questHidden(timestamp = 200L)
+        every { hiddenQuestsController.get(e1.questKey) } returns 200L
+        hiddenQuestsListener.onHid(e1.questKey, 200L)
+        verify(exactly(1)) { listener.onAdded(e2) }
     }
 }

@@ -133,9 +133,7 @@ fun EditHistorySidebar(
         ) {
             items(
                 items = editItems,
-                // NOTE: unfortunately, keys must be parcelable on Android. I wonder how they solved
-                //       that in Compose multiplatform
-                key = { Json.encodeToString(it.edit.key) }
+                key = { editHistoryLazyColumnKey(it.edit) }
             ) { editItem ->
                 Column {
                     DateTimeHeader(
@@ -216,3 +214,7 @@ private fun DateTimeHeader(
         }
     }
 }
+
+/** LazyColumn item key; [Edit.key] alone is not unique for repeated quest-hide events. */
+internal fun editHistoryLazyColumnKey(edit: Edit): String =
+    "${Json.encodeToString(edit.key)}#${edit.createdTimestamp}"

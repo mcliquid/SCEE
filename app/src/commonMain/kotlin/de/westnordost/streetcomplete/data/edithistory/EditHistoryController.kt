@@ -61,9 +61,10 @@ class EditHistoryController(
 
     private val questHiddenListener = object : QuestsHiddenSource.Listener {
         override fun onHid(key: QuestKey, timestamp: Long) {
-            val edit = createQuestHiddenEdit(key, timestamp)
-            if (hiddenQuestsController.get(key) == null) return // must be tempHide -> don't create an edit
-            if (edit != null) onAdded(edit)
+            val storedTimestamp = hiddenQuestsController.get(key) ?: return // tempHide while not in DB
+            if (storedTimestamp != timestamp) return // tempHide while already permanently hidden
+            val edit = createQuestHiddenEdit(key, timestamp) ?: return
+            onAdded(edit)
         }
         override fun onUnhid(key: QuestKey, timestamp: Long) {
             val edit = createQuestHiddenEdit(key, timestamp)

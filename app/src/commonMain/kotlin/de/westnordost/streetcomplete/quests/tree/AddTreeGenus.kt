@@ -44,6 +44,7 @@ class AddTreeGenus : OsmFilterQuestType<TreeAnswer>() {
           natural = tree
           and !genus and !species and !taxon
           and !~"genus:.*" and !~"species:.*" and !~"taxon:.*"
+          and !name:botanical
     """
     override val changesetComment = "Add tree genus/species"
     override val defaultDisabledMessage = Res.string.quest_tree_disabled_msg
@@ -56,7 +57,7 @@ class AddTreeGenus : OsmFilterQuestType<TreeAnswer>() {
 
     @Composable
     override fun Form(on: (QuestAction<TreeAnswer>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
-        TreeGenusForm(on)
+        TreeGenusForm(on, countryInfo)
     }
 
     override fun applyAnswerTo(answer: TreeAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {

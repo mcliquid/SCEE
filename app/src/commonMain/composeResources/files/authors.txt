@@ -293,7 +293,7 @@ produce_tea.jpg                CC-BY-SA 3.0      https://commons.wikimedia.org/w
 produce_tomato.jpg             CC-BY-SA 3.0      https://commons.wikimedia.org/wiki/File:Solanum_lycopersicum_%27Cronos%27,_tomaat_%27Cronos%27.jpg
 produce_tung_nut.jpg           CC-BY-SA 3.0      https://commons.wikimedia.org/wiki/File:Vernicia_fordii5.jpg
 produce_vanilla.jpg            CC-BY-SA 3.0      https://commons.wikimedia.org/wiki/File:Vanilla_pompona_01.jpg
-produce_walnut.jpg             CC-BY-SA 2.0      https://commons.wikimedia.org/wiki/File:Juglans_regia_Echte_Walnussfrucht_1.jpg
+produce_walnut.jpg             CC-BY-SA 2.5      Böhringer Friedrich / https://commons.wikimedia.org/wiki/File:Juglans_regia_Echte_Walnussfrucht_1.jpg
 
 ramp_none.jpg                  CC0               Mateusz Konieczny
 ramp_stroller.jpg              CC0               Mateusz Konieczny
@@ -459,3 +459,29 @@ crossing_type_marked.jpg       CC BY-SA 4.0      https://commons.wikimedia.org/w
 
 surface_metal_grid.jpg         CC-BY-SA 3.0      https://commons.wikimedia.org/wiki/File:Press_grating.jpg (Belt777)
 surface_stepping_stones.jpg    CC-BY-SA 2.0      https://wiki.openstreetmap.org/wiki/File:Stepping_stones_-_geograph.org.uk_-_832601.jpg (Keith Evans)
+tree_genus_acer.jpg           CC-BY-SA 2.5      Willow / https://commons.wikimedia.org/wiki/File:Acer_pseudoplatanus_002.jpg
+tree_genus_quercus.jpg        CC0               W.carter / https://commons.wikimedia.org/wiki/File:New_oak_leaves_with_female_flowers.jpg
+tree_genus_fagus.jpg          PD                Botaurus / https://commons.wikimedia.org/wiki/File:Fagus_sylvatica_-_Leaves_26-04-2010_485.jpg
+tree_genus_carpinus.jpg       CC-BY 4.0         Tournasol7 / https://commons.wikimedia.org/wiki/File:Carpinus_betulus_in_Aveyron_(9).jpg
+tree_genus_betula.jpg         CC-BY-SA 4.0      T. Kebert / https://commons.wikimedia.org/wiki/File:Betula_pendula_leaves_TK_2021-05-15_1.jpg
+tree_genus_tilia.jpg          CC-BY-SA 3.0 rs   Gmihail (Serbian Wikipedia) / https://commons.wikimedia.org/wiki/File:Tilia_cordata_fruits,_winter.jpg
+tree_genus_fraxinus.jpg       CC-BY-SA 3.0      MPF / https://commons.wikimedia.org/wiki/File:EurAshLeaf.jpg
+tree_genus_alnus.jpg          CC-BY-SA 3.0      Bff (original photograph and derivative) / https://commons.wikimedia.org/wiki/File:Alnus_glutinosa(fruits%26seeds).png
+tree_genus_ulmus.jpg          CC-BY-SA 4.0      KaiKemmann / https://commons.wikimedia.org/wiki/File:Underside_of_Ulmus_Glabra_leaves_in_late_June_2023_09_43_33_929000.jpeg
+tree_genus_salix.jpg          CC-BY-SA 2.5      Willow / https://commons.wikimedia.org/wiki/File:Salix_alba_002.jpg
+tree_genus_populus.jpg        CC-BY-SA 4.0      SABENCIA Bertu Ordiales / https://commons.wikimedia.org/wiki/File:Populus_nigra._Chopu_(fueyes).jpg
+tree_genus_aesculus.jpg       CC-BY 2.5         Alvesgaspar / https://commons.wikimedia.org/wiki/File:Aesculus_hippocastanum-1.jpg
+tree_genus_castanea.jpg       CC-BY-SA 3.0      Ekir (original uploader, Hungarian Wikipedia) / https://commons.wikimedia.org/wiki/File:Castanea_sativa_leaves_and_immature_fruit.jpg
+tree_genus_platanus.jpg       CC-BY 2.5         Fanghong / https://commons.wikimedia.org/wiki/File:Platanus_acerifolia_leaves_(1).jpg
+tree_genus_picea.jpg          CC-BY 4.0         AS Photography from Poland / https://commons.wikimedia.org/wiki/File:Spruce_cones_on_a_branch_(54344262840).jpg
+tree_genus_abies.jpg          CC-BY-SA 3.0      Jerzy Opioła / https://commons.wikimedia.org/wiki/File:Abies_alba_R1.JPG
+tree_genus_pinus.jpg          CC-BY-SA 4.0      George Chernilevsky / https://commons.wikimedia.org/wiki/File:Pinus_sylvestris_2020_G2.jpg
+tree_genus_larix.jpg          PD                Roger Griffith (Rosser1954) / https://commons.wikimedia.org/wiki/File:Larix_decidua_developing_cone.JPG
+tree_genus_taxus.jpg          CC-BY-SA 4.0      Didier Descouens / https://commons.wikimedia.org/wiki/File:Taxus_baccata_MHNT.jpg
+tree_genus_pseudotsuga.jpg    CC-BY-SA 4.0      Luis Apiolaza / https://commons.wikimedia.org/wiki/File:Douglas_fir_cone.jpg
+tree_genus_malus.jpg          CC-BY-SA 3.0      Dinnye / https://commons.wikimedia.org/wiki/File:Malus_domestica_unriped_fruit.jpg
+tree_genus_pyrus.jpg          CC-BY-SA 4.0      Didier Descouens / https://commons.wikimedia.org/wiki/File:(MHNT)_Poirier_Fleurs_et_feuilles.jpg
+tree_genus_prunus.jpg         CC-BY 2.5         MPF / https://commons.wikimedia.org/wiki/File:Prunus_avium_fruit.jpg
+tree_genus_juglans.jpg        CC-BY-SA 2.5      Böhringer Friedrich / https://commons.wikimedia.org/wiki/File:Juglans_regia_Echte_Walnussfrucht_1.jpg
+tree_genus_robinia.jpg        CC-BY-SA 4.0      HoHey22 / https://commons.wikimedia.org/wiki/File:Black_Locust_Leaf_Close_Up.jpg
+tree_genus_ginkgo.jpg         CC-BY-SA 4.0      Franz van Duns / https://commons.wikimedia.org/wiki/File:Ginkgo_biloba_leaves_in_radial_arrangement_-_2019-10-25_focus_stack.jpg

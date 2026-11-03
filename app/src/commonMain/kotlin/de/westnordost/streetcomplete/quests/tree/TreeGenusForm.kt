@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
+import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.osm.osmquests.Answer
@@ -18,6 +19,7 @@ import de.westnordost.streetcomplete.data.preferences.addLastPicked
 import de.westnordost.streetcomplete.data.preferences.getLastPicked
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.quest_leafType_tree_is_just_a_stump
+import de.westnordost.streetcomplete.resources.tree_genus_visual
 import de.westnordost.streetcomplete.screens.main.map.getTreeGenus
 import de.westnordost.streetcomplete.ui.common.auto_complete_text.AutoCompleteTextField
 import de.westnordost.streetcomplete.ui.common.quest.AnswerItem
@@ -36,12 +38,19 @@ import kotlinx.coroutines.runBlocking
 import de.westnordost.streetcomplete.util.readBundledLines
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import java.text.Normalizer
-import java.util.Locale
-import java.util.regex.Pattern
 
 @Composable
-fun TreeGenusForm(on: (QuestAction<TreeAnswer>) -> Unit) {
+fun TreeGenusForm(on: (QuestAction<TreeAnswer>) -> Unit, countryInfo: CountryInfo) {
+    val hasVisualCatalog = hasVisualTreeCatalog(countryInfo.countryCode)
+    var advanced by rememberSaveable { mutableStateOf(false) }
+    if (hasVisualCatalog && !advanced) {
+        TreeGenusVisualForm(on, onAdvanced = { advanced = true })
+    } else {
+        TreeGenusTextForm(on, onVisual = if (hasVisualCatalog) ({ advanced = false }) else null)
+    }
+}
+@Composable
+private fun TreeGenusTextForm(on: (QuestAction<TreeAnswer>) -> Unit, onVisual: (() -> Unit)?) {
     var name by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue()) }
     var selectedTree by remember { mutableStateOf<Tree?>(null) }
     val prefs: Preferences = koinInject()
@@ -77,8 +86,13 @@ fun TreeGenusForm(on: (QuestAction<TreeAnswer>) -> Unit) {
             prefs.addLastPicked("AddTreeGenusForm", "${tree.isSpecies}§${tree.name}")
             on(Answer(tree))
         },
-        otherAnswers = { listOf(AnswerItem(stringResource(Res.string.quest_leafType_tree_is_just_a_stump)) {
-            on(Answer(NotTreeButStump))})
+        otherAnswers = {
+            buildList {
+                if (onVisual != null) add(AnswerItem(stringResource(Res.string.tree_genus_visual), onVisual))
+                add(AnswerItem(stringResource(Res.string.quest_leafType_tree_is_just_a_stump)) {
+                    on(Answer(NotTreeButStump))
+                })
+            }
         }
     ) {
         AutoCompleteTextField(
@@ -144,14 +158,4 @@ val treeFile = PlatformFile(FileKit.filesDir, "trees.csv")
 
 private fun getSelectedTree(input: String, lastPickedAnswers: List<String>): Tree? {
     return getTrees(input, lastPickedAnswers).firstOrNull { canonicalize(it.toDisplayString()) == canonicalize(input) }
-}
-
-private val FIND_DIACRITICS: Pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+")
-
-private fun canonicalize(str: String): String {
-    return stripDiacritics(str).lowercase(Locale.US)
-}
-
-private fun stripDiacritics(str: String): String {
-    return FIND_DIACRITICS.matcher(Normalizer.normalize(str, Normalizer.Form.NFD)).replaceAll("")
 }

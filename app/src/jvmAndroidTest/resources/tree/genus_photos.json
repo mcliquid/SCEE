@@ -1,0 +1,1224 @@
+[
+  {
+    "genus": "Acer",
+    "title": "Acer pseudoplatanus 002.jpg",
+    "author": "Willow",
+    "source": "https://commons.wikimedia.org/wiki/File:Acer_pseudoplatanus_002.jpg",
+    "license": "CC BY-SA 2.5",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_acer.jpg",
+    "wikidata": "Q42292",
+    "originalFile": "tree_genus_acer_detail.jpg",
+    "originalSize": [
+      720,
+      540
+    ],
+    "originalSha256": "413a9e735005a12fde09675a665422b32f92754e7ed616ad52027396d4dc435e",
+    "crop": [
+      45,
+      0,
+      585,
+      540
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "8a463f8ed6321382392b654188c006d73fc141131771ce303f5eafb90620cc9b",
+        "bytes": 5232
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "5918ebd87c1f133c0c94e5594d592849813c0dcaca89ffc5a0bf692790cda943",
+        "bytes": 10601
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "e0f5d8dc7ad7df4fb48c554e2c51fb8267f5ae0f03adc2be03f1ebb280793249",
+        "bytes": 17624
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "73804c6ff97645689601b5479a65c5029f06946c95f536b64136aec39c5d831e",
+        "bytes": 36696
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Quercus",
+    "title": "New oak leaves with female flowers.jpg",
+    "author": "W.carter",
+    "source": "https://commons.wikimedia.org/wiki/File:New_oak_leaves_with_female_flowers.jpg",
+    "license": "CC0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_quercus.jpg",
+    "wikidata": "Q12004",
+    "originalFile": "tree_genus_quercus_example.jpg",
+    "originalSize": [
+      720,
+      540
+    ],
+    "originalSha256": "1ded92abe25772d7047ba58a6440bb376d46ac285d4a2240e9bb0a0eb9db9fd0",
+    "crop": [
+      72,
+      0,
+      612,
+      540
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "62ac07954abf5fcfab8148d52b50f31875f579d7c78997103811c5fe09de6a7e",
+        "bytes": 4201
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "f1385e57e7de72883fb15675a1f8391e59c01762dfd35ce9208a221693115ab2",
+        "bytes": 7794
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "0f89436a3fd8b4485a8722f32c0843a9e817efaee5371979280ec161bd7a2844",
+        "bytes": 12463
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "38dbbd9f2efbbdc275dc89347d2eeb0fa95ba262f3190af340b48b51e8554152",
+        "bytes": 24905
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Fagus",
+    "title": "Fagus sylvatica - Leaves 26-04-2010 485.jpg",
+    "author": "Botaurus",
+    "source": "https://commons.wikimedia.org/wiki/File:Fagus_sylvatica_-_Leaves_26-04-2010_485.jpg",
+    "license": "Public domain",
+    "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_fagus.jpg",
+    "wikidata": "Q25403",
+    "originalFile": "tree_genus_fagus_example.jpg",
+    "originalSize": [
+      720,
+      540
+    ],
+    "originalSha256": "ad099dd4a0567c5fd8f6add5c33327d8d3ab2bbd03957c493b22fb065ca740ce",
+    "crop": [
+      63,
+      0,
+      603,
+      540
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "c16eb50847d1ee724cee9c043eea80681190707cbc0890f653f0421c3cf4d905",
+        "bytes": 4056
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "b96d25ad438670082108cb3e5c0e81fdfe4ec3c688699a06cccabbbde2ca857c",
+        "bytes": 7690
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "ac6d3e2ca96bfe7cd89dc983d999be2b42d18ddd92c186497077c0e16b997f85",
+        "bytes": 12053
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "3b5ae14f026242d5a665b78be69af9b802ab1b01a61c7d3d36049f2f4f7370b5",
+        "bytes": 24416
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Carpinus",
+    "title": "Carpinus betulus in Aveyron (9).jpg",
+    "author": "Tournasol7",
+    "source": "https://commons.wikimedia.org/wiki/File:Carpinus_betulus_in_Aveyron_(9).jpg",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_carpinus.jpg",
+    "wikidata": "Q158513",
+    "originalFile": "tree_genus_carpinus_example.jpg",
+    "originalSize": [
+      720,
+      480
+    ],
+    "originalSha256": "a3938f895dbd63f6cc7c1162ceb17a2e47a5aa5f2f7de392c8b95c560ea53fae",
+    "crop": [
+      72,
+      0,
+      552,
+      480
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "9911fc054ffbdc9e5c438284bb253d240cf0a8599ac2bdf662efaf6154ef8ebb",
+        "bytes": 4837
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "4951a3320baba17ba3309feeb940193903c7b2e4649060ee30b4ba3becbac4c3",
+        "bytes": 9255
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "2bf47d11d3e2415b8a72873cb0647c64173517137dcc4d4ea472cea31c5bd185",
+        "bytes": 14698
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "16a5b8552cb67409fe0d9e1ac44a04ed77dd23c8c9fb24f83eb552de81729d9a",
+        "bytes": 27785
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Betula",
+    "title": "Betula pendula leaves TK 2021-05-15 1.jpg",
+    "author": "T. Kebert",
+    "source": "https://commons.wikimedia.org/wiki/File:Betula_pendula_leaves_TK_2021-05-15_1.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_betula.jpg",
+    "wikidata": "Q25243",
+    "originalFile": "tree_genus_betula_example.jpg",
+    "originalSize": [
+      720,
+      480
+    ],
+    "originalSha256": "26252214b8584ebf40e7e4ca646ab14e23cc51031cb613f98531b3d179d77c1f",
+    "crop": [
+      108,
+      0,
+      588,
+      480
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "2b5ffc51de539419582914b82853cb51854df76c3cd9e0d0724d4f39851e0dcc",
+        "bytes": 4721
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "45ac94eb87b3a309bf06b2e58fa3d435818f88eada6aefb351592a4f4af401a9",
+        "bytes": 8996
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "f85eeecebc19fd5a2f90cb07d198e42f86b49b0972423e416ba97b5b4a56835d",
+        "bytes": 14502
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "b76089e039b8d6fe483edf4ca7726fe65df607466a3a6622bb47f91b03a4af6b",
+        "bytes": 29114
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Tilia",
+    "title": "Tilia cordata fruits, winter.jpg",
+    "author": "Gmihail (Serbian Wikipedia)",
+    "source": "https://commons.wikimedia.org/wiki/File:Tilia_cordata_fruits,_winter.jpg",
+    "license": "CC BY-SA 3.0 rs",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/rs/deed.en",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_tilia.jpg",
+    "wikidata": "Q127849",
+    "originalFile": "tree_genus_tilia_detail.jpg",
+    "originalSize": [
+      720,
+      720
+    ],
+    "originalSha256": "ec22b2fa3eec6d96d5c3c283e1a712644b3b1176c75c11ca23ad6d963a3854df",
+    "crop": [
+      0,
+      0,
+      720,
+      720
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "246860cf6edc75355c503fa97da6e390b60ae38c40a8e9bc8a42be13502fd338",
+        "bytes": 6713
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "37bfa2cd70dac4577a72e064c86fe4f3317d4b39357b2b21a37113810a768069",
+        "bytes": 13050
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "d00c98df46fe21f2fee5304cb34f7f3e166d453c80f8188b1d3b53360b18b4bc",
+        "bytes": 21017
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "7200c8bf7eab000a1dc7c550c893594e8c2b62ef3d3f01bb998c6c5b06082b4d",
+        "bytes": 41353
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Fraxinus",
+    "title": "EurAshLeaf.jpg",
+    "author": "MPF",
+    "source": "https://commons.wikimedia.org/wiki/File:EurAshLeaf.jpg",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_fraxinus.jpg",
+    "wikidata": "Q128887",
+    "originalFile": "tree_genus_fraxinus_detail.jpg",
+    "originalSize": [
+      421,
+      720
+    ],
+    "originalSha256": "5acbed40d9e654482c0f98aa3e7db318034f56cfc4dc1b6fb8ef8f7625ddc90c",
+    "crop": [
+      0,
+      0,
+      421,
+      720
+    ],
+    "padded": true,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "68d8591bbff59dcbcfebe07598ce09152be3c26d10a3cc93fd0e6c494556c11d",
+        "bytes": 3249
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "f3cb13580c23846b9b551b4ee58c04f829db99f713fd337f6dc5f182380253f1",
+        "bytes": 5698
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "f46a28768a6d2b5bb5d81b54b618d04e1d58070229eb6845ff7e8bc592065992",
+        "bytes": 8811
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "cce9477aa214f8ff151c1f3753a4d1065923155fbeda8dfd6385a2a658dc58d2",
+        "bytes": 16138
+      }
+    },
+    "modifications": "Full subject preserved with white square padding; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Alnus",
+    "title": "Alnus glutinosa(fruits&seeds).png",
+    "author": "Bff (original photograph and derivative)",
+    "source": "https://commons.wikimedia.org/wiki/File:Alnus_glutinosa(fruits%26seeds).png",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_alnus.jpg",
+    "wikidata": "Q25239",
+    "originalFile": "tree_genus_alnus_detail.jpg",
+    "originalSize": [
+      720,
+      514
+    ],
+    "originalSha256": "6a88738bfff2dc4718594157e5b96b995440298d82aba18621bbe18e76298fdc",
+    "crop": [
+      103,
+      0,
+      617,
+      514
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "25bb898b4d3ef2c4024693915f7ca05972f43b0a8cdf640b6b90cc9a0e599342",
+        "bytes": 4328
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "583bfaf4b11b7f941a0e7d39a18140d9fc1d1e70e7e9242add792c3bcaeba972",
+        "bytes": 7714
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "4ce648749296cb0127b3abdfe11f9e7db305d521b16b9b729ff93f8f7d01c317",
+        "bytes": 11864
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "0f15a0fe172c74b6deb46a65b75f4adc2ef3a425c3b45378ad08073da542dea4",
+        "bytes": 21960
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Ulmus",
+    "title": "Underside of Ulmus Glabra leaves in late June 2023 09 43 33 929000.jpeg",
+    "author": "KaiKemmann",
+    "source": "https://commons.wikimedia.org/wiki/File:Underside_of_Ulmus_Glabra_leaves_in_late_June_2023_09_43_33_929000.jpeg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_ulmus.jpg",
+    "wikidata": "Q131113",
+    "originalFile": "tree_genus_ulmus_detail.jpg",
+    "originalSize": [
+      540,
+      720
+    ],
+    "originalSha256": "c12189d1d90bf63dcfb4eeaa57e027c060d334a0a8dd00a1f61f9ff06eeea4e7",
+    "crop": [
+      0,
+      63,
+      540,
+      603
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "ee44b2748c5b5344b0f2e937c53178d6bd0325e79d53ac9cae8e5def75b7370a",
+        "bytes": 6252
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "3e091426858f1398a83f52c570d7b5c775f50e9835ba393d3ae0be3c65bef86e",
+        "bytes": 12629
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "003cbfedba929a30495c342f61f39369acc62b9a82aae3f830487da764c77900",
+        "bytes": 21151
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "2643e874823403ea76bf5c2e267b34aa5140052915c838c47640c7a24a88be8c",
+        "bytes": 43811
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Salix",
+    "title": "Salix alba 002.jpg",
+    "author": "Willow",
+    "source": "https://commons.wikimedia.org/wiki/File:Salix_alba_002.jpg",
+    "license": "CC BY-SA 2.5",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_salix.jpg",
+    "wikidata": "Q36050",
+    "originalFile": "tree_genus_salix_example.jpg",
+    "originalSize": [
+      720,
+      540
+    ],
+    "originalSha256": "99844e4fa04b914e7f21b4d9b0a4186c584a13e44af2a664a346d10c655ae0a4",
+    "crop": [
+      81,
+      0,
+      621,
+      540
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "3e88c3a26e54943eca0ff80924ff6e602bca953c68a27644ebde2155eabde1de",
+        "bytes": 7501
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "e9edc0d9c7babbcf1693f8d6c46a1acfd72ec2e59c39d308bf0ca3b2174d54e3",
+        "bytes": 16113
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "4e3bde6c1a43c9d7768aab176126e125a1c5eb1b4b08d4238c3472bed0e9e57b",
+        "bytes": 27120
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "c87ba87010e2f3b856e85e596ee97e950b2c0f244e2cb1779b69fed206e60c98",
+        "bytes": 54992
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Populus",
+    "title": "Populus nigra. Chopu (fueyes).jpg",
+    "author": "SABENCIA Bertu Ordiales",
+    "source": "https://commons.wikimedia.org/wiki/File:Populus_nigra._Chopu_(fueyes).jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_populus.jpg",
+    "wikidata": "Q25356",
+    "originalFile": "tree_genus_populus_example.jpg",
+    "originalSize": [
+      474,
+      720
+    ],
+    "originalSha256": "f5a034e815d5810e6d4dd74a4b6a4df2fd8310e9e2474a292876f9a187dbe434",
+    "crop": [
+      0,
+      86,
+      474,
+      560
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "f1d4a33b2ff2a006db6e09d3fd27d2713b7e00e95f4f5005d8d1b4f954a1f669",
+        "bytes": 5944
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "15d03347f3bbb55fe59d00ff4589f704c679388d878c7fdf965645dcece5c70c",
+        "bytes": 12277
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "f456abf126b890db1757a9b51646364783093d1c0411f5e0b0cf95cdb0f2696d",
+        "bytes": 20514
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "8d54638ce5faf600b22fcaff5835722abc8130275354f50a2cc88b3401df6d0d",
+        "bytes": 41719
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Aesculus",
+    "title": "Aesculus hippocastanum-1.jpg",
+    "author": "Alvesgaspar",
+    "source": "https://commons.wikimedia.org/wiki/File:Aesculus_hippocastanum-1.jpg",
+    "license": "CC BY 2.5",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.5",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_aesculus.jpg",
+    "wikidata": "Q158752",
+    "originalFile": "tree_genus_aesculus_example.jpg",
+    "originalSize": [
+      720,
+      540
+    ],
+    "originalSha256": "15b65e3c1c07fb74178a7b7b13436978ec0784ee80006cf8603d1cff4caf7789",
+    "crop": [
+      99,
+      0,
+      639,
+      540
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "ad0b2e233b81ce9106464c7b5976c16f8a5e32d26fcfd9c9b3be3db25706a334",
+        "bytes": 6099
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "2b0b9ebdacd98f466c32ceadcc616a8bf2dd9bb625e2a1cb638def0a5ee88608",
+        "bytes": 12774
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "6f68b2b43f0c115d016ecb61c9e3189a3afa8c4e3f8d11dbec6b47855cce2045",
+        "bytes": 22343
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "30f046f14650d869f03ab43b3f664390989b6626738165ca6877c3020ec78b51",
+        "bytes": 50967
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Castanea",
+    "title": "Castanea sativa leaves and immature fruit.jpg",
+    "author": "Ekir (original uploader, Hungarian Wikipedia)",
+    "source": "https://commons.wikimedia.org/wiki/File:Castanea_sativa_leaves_and_immature_fruit.jpg",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_castanea.jpg",
+    "wikidata": "Q129324",
+    "originalFile": "tree_genus_castanea_example.jpg",
+    "originalSize": [
+      720,
+      540
+    ],
+    "originalSha256": "a50e0f464f0d449781d36218a9e7fe788907f78e9732346aa98363e8eb4b4b64",
+    "crop": [
+      126,
+      0,
+      666,
+      540
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "56b8d9d70afecd80686bca6548e4b6ccd3e6ce452df10c3c50a24161a67e3e53",
+        "bytes": 5171
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "57ec4c5140d599e20de4b364d82ee4e40eb16edb9eaf11aab767b281dd600f05",
+        "bytes": 9875
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "ffad9a29b3e48c8246b6b14b4f83236fa96d2519e5ee65297e84913834ec5f69",
+        "bytes": 15720
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "d9e64e8200666c1c7b744e8f6a230dc9dc6c711861c02fda38386a3ba54856e5",
+        "bytes": 31028
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Platanus",
+    "title": "Platanus acerifolia leaves (1).jpg",
+    "author": "Fanghong",
+    "source": "https://commons.wikimedia.org/wiki/File:Platanus_acerifolia_leaves_(1).jpg",
+    "license": "CC BY 2.5",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.5",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_platanus.jpg",
+    "wikidata": "Q163025",
+    "originalFile": "tree_genus_platanus_example.jpg",
+    "originalSize": [
+      720,
+      540
+    ],
+    "originalSha256": "8646fb540802ecd876e2b74de1dfdce47b07edad2fbd8a172c37a6bbac58e608",
+    "crop": [
+      63,
+      0,
+      603,
+      540
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "d508654947b061142708ffade9062a4594567cb7b1ebd4be16555a9576edd3fb",
+        "bytes": 7600
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "2a4b286f89a489ead0583a14ecd35e1d585dbab13c18593b1049f25146260669",
+        "bytes": 16847
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "790276c2654dfd0ba3bf2a48836a97bd34d49d3b6be2d82312448c65fab0db6a",
+        "bytes": 30082
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "0b3014e34602faa091f3f0e7f659e4b2145dba38f7d0092fd10978bf2b9bce1c",
+        "bytes": 67590
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Picea",
+    "title": "Spruce cones on a branch (54344262840).jpg",
+    "author": "AS Photography from Poland",
+    "source": "https://commons.wikimedia.org/wiki/File:Spruce_cones_on_a_branch_(54344262840).jpg",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_picea.jpg",
+    "wikidata": "Q26782",
+    "originalFile": "tree_genus_picea_detail.jpg",
+    "originalSize": [
+      720,
+      480
+    ],
+    "originalSha256": "e3b44afc5ddd5921131cdbad0d3616d50aadf4d06220fa7de7bb19a2112446fe",
+    "crop": [
+      156,
+      0,
+      636,
+      480
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "644469944cb329686e0821a13e14655e05c173596e3f3c12c5896e3d1517aa80",
+        "bytes": 5885
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "49ca5e1bbfd95d23520f3b514ad32777ac9c3ef38a134e40d75ce4fd5a2f39f4",
+        "bytes": 12649
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "07e157adb624c491aa095c77828544e64bfbe7fbba81ddb672e1d70c51e6762d",
+        "bytes": 21788
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "cc75a4d159b43081b93b274eaf28abc9e98983816d4137e0d6af524fdac2ad69",
+        "bytes": 46481
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Abies",
+    "title": "Abies alba R1.JPG",
+    "author": "Jerzy Opioła",
+    "source": "https://commons.wikimedia.org/wiki/File:Abies_alba_R1.JPG",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_abies.jpg",
+    "wikidata": "Q25350",
+    "originalFile": "tree_genus_abies_detail.jpg",
+    "originalSize": [
+      720,
+      540
+    ],
+    "originalSha256": "827be0f13cf5a6c4550faea4f4ffe40743fe9378edf61328d570337570ebd20b",
+    "crop": [
+      90,
+      0,
+      630,
+      540
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "43302da7b163b8a38c05613003bcb709b025e7e8f274a33ff54217207eb572ef",
+        "bytes": 4985
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "eb707171aaaaeda2fbac24727de2e011a996c44db4ca37adf6a8ab1543241828",
+        "bytes": 10612
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "0d7052d4dc31c64264d88575a52875e22841302eff0deea8eae9d50f4ec80663",
+        "bytes": 18062
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "2b060d79da295ef218391dcc6640f67dc8d6b26535b43ee8474dfea44074fcc8",
+        "bytes": 37634
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Pinus",
+    "title": "Pinus sylvestris 2020 G2.jpg",
+    "author": "George Chernilevsky",
+    "source": "https://commons.wikimedia.org/wiki/File:Pinus_sylvestris_2020_G2.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_pinus.jpg",
+    "wikidata": "Q12024",
+    "originalFile": "tree_genus_pinus_example.jpg",
+    "originalSize": [
+      720,
+      480
+    ],
+    "originalSha256": "01f435314b1b231e7a768c8fdcbdd0d446a7a1732990e856a33ff9a16b795234",
+    "crop": [
+      108,
+      0,
+      588,
+      480
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "d1c46b6d3d95fa000ba4ab87491155bc1550d9097a85a19b18118c216ce389c9",
+        "bytes": 7551
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "07dda8630d4524c7792405dc2893f2a89d2fd55a665267bd169ea299bc390b0f",
+        "bytes": 16205
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "2c4f655c105bb9e662934476e202846b49f5a3aa4db608fce249231f1fef85e6",
+        "bytes": 27188
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "88f525a540cf8f3f73a400256f56b114118141e9e81aab705deec22242ffd053",
+        "bytes": 55139
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Larix",
+    "title": "Larix decidua developing cone.JPG",
+    "author": "Roger Griffith (Rosser1954)",
+    "source": "https://commons.wikimedia.org/wiki/File:Larix_decidua_developing_cone.JPG",
+    "license": "Public domain",
+    "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_larix.jpg",
+    "wikidata": "Q25618",
+    "originalFile": "tree_genus_larix_detail.jpg",
+    "originalSize": [
+      539,
+      720
+    ],
+    "originalSha256": "88a6eee86bf91ff1f9a8e7733a7b4450c66e92599d239f8fe2e604e4aba1ace1",
+    "crop": [
+      0,
+      81,
+      539,
+      620
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "5cab38ba1ca593f944ab9aa0cc2d533f93b9b0695abc66e87e9eeb7e7396dc76",
+        "bytes": 4008
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "f5db36c169224238f15546c45f108f1142e9b5c3e3e55f9447e432801626fb60",
+        "bytes": 7399
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "fc81f04b66f3c9c5d155a5ca1f1377661c5ffee4075209286fcc2e2bba2fbdf4",
+        "bytes": 11467
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "615b98564b89ec1d90368849224c6db1c9e7f510040330c674aa4553f9d63e92",
+        "bytes": 22589
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Taxus",
+    "title": "Taxus baccata MHNT.jpg",
+    "author": "Didier Descouens",
+    "source": "https://commons.wikimedia.org/wiki/File:Taxus_baccata_MHNT.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_taxus.jpg",
+    "wikidata": "Q27355",
+    "originalFile": "tree_genus_taxus_detail.jpg",
+    "originalSize": [
+      720,
+      628
+    ],
+    "originalSha256": "ab373355b62f9911d6e90b563f07c0d6f7e3218fb9f310cca52f7f06f1aec67f",
+    "crop": [
+      55,
+      0,
+      683,
+      628
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "78a3a65a63506e6a6da9e91baefd87748bb0b07a65743577190a6f346f54af83",
+        "bytes": 5898
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "c434de36dcc57dfcf9a1f55cbe5f0ef57327824e344d1dfaa63b4ba7fc8b60fa",
+        "bytes": 11416
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "edd0e87a53a6f9463879fa5bf04bddc3142afa36b34f102ce031cc0c7676aa29",
+        "bytes": 18416
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "5101c988b318c84bf4ff13f133eeb058a2e563561de04552b7fdc07181b89bdb",
+        "bytes": 37862
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Pseudotsuga",
+    "title": "Douglas fir cone.jpg",
+    "author": "Luis Apiolaza",
+    "source": "https://commons.wikimedia.org/wiki/File:Douglas_fir_cone.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_pseudotsuga.jpg",
+    "wikidata": "Q158771",
+    "originalFile": "tree_genus_pseudotsuga_detail.jpg",
+    "originalSize": [
+      540,
+      720
+    ],
+    "originalSha256": "67d95cdfee62d8bc0a8a54bd3316eb35b69aabe9ff88a1d9f5517da82070b542",
+    "crop": [
+      0,
+      45,
+      540,
+      585
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "368d3099292c8224c53892f96a7e70da9ea230ac7918489dbecaa367c4b29477",
+        "bytes": 7335
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "2337e3af2875b6bbf067a71406591185c451add4fb3eae66d22d17cd67f113ba",
+        "bytes": 15851
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "ee1b9213cfecba2ff12320bf383d6fb6a2d74fe2c9234f72fab99f9f6cc3517c",
+        "bytes": 27093
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "9a7c4c113cf1eb1c99c8352b22b46fa964ff0ee5db380c496073555bfa9269a4",
+        "bytes": 56083
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Malus",
+    "title": "Malus domestica unriped fruit.jpg",
+    "author": "Dinnye",
+    "source": "https://commons.wikimedia.org/wiki/File:Malus_domestica_unriped_fruit.jpg",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_malus.jpg",
+    "wikidata": "Q104819",
+    "originalFile": "tree_genus_malus_example.jpg",
+    "originalSize": [
+      720,
+      482
+    ],
+    "originalSha256": "de58d95b3e9baa69911eed0ca300f3eb3fb14695ca9fa0975ca16faeed60c208",
+    "crop": [
+      131,
+      0,
+      613,
+      482
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "3a91e741039a00ad50270b62b8f324537eee6d65cdb5797ff0334888c60e4008",
+        "bytes": 4910
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "a47531dfb2e37a262cc4115a607deb3847574011c647863b1bcdef606a4f6eb0",
+        "bytes": 9138
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "a244517b3beac388f728a2598fc7eb360453bc6f2d4cf880d58c421cf8dd18fc",
+        "bytes": 14684
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "a076582bca3438e3bc06cdcb1fa509065dc9c948255b96f4f55c79cba29deb83",
+        "bytes": 28912
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Pyrus",
+    "title": "(MHNT) Poirier Fleurs et feuilles.jpg",
+    "author": "Didier Descouens",
+    "source": "https://commons.wikimedia.org/wiki/File:(MHNT)_Poirier_Fleurs_et_feuilles.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_pyrus.jpg",
+    "wikidata": "Q434",
+    "originalFile": "tree_genus_pyrus_detail.jpg",
+    "originalSize": [
+      720,
+      634
+    ],
+    "originalSha256": "ae05c3bb3acca239819c84ae000b23df34bf367c9cbae903ed1a3211c14a20dd",
+    "crop": [
+      43,
+      0,
+      677,
+      634
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "1a2884771839f6a62f77b0f631196441ee00d1f289a03b6948f13f01c76c07a6",
+        "bytes": 5279
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "419fbaf8529b2942c004cc5661a29b957097a7310ac2eda69c364dcb4472cdfa",
+        "bytes": 10325
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "0763529c0179450efea4e2a93307e73a1823190d74c8cc009fc3175b9aa329ce",
+        "bytes": 16360
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "dff9ca6064b54ac3a2595fef8101e16f42e088803e2c714667e1b1b43c07a26e",
+        "bytes": 32356
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Prunus",
+    "title": "Prunus avium fruit.jpg",
+    "author": "MPF",
+    "source": "https://commons.wikimedia.org/wiki/File:Prunus_avium_fruit.jpg",
+    "license": "CC BY 2.5",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.5",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_prunus.jpg",
+    "wikidata": "Q190545",
+    "originalFile": "tree_genus_prunus_detail.jpg",
+    "originalSize": [
+      716,
+      720
+    ],
+    "originalSha256": "db0c10a13fa33e1278419bfe8dd165c09874fb6f7f223d7390d8785a765167aa",
+    "crop": [
+      0,
+      2,
+      716,
+      718
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "84545d82eb0ba9eae84cfee506594beefc1e4a4ceeb6b10f953c614aadbf1287",
+        "bytes": 7915
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "3f0a86a43553ce5a46963dd63c4087981d31572368bf09a38cc5ed9cf2826a46",
+        "bytes": 16164
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "302009d8710b7e70e0b9248fab5f686a75fb4b22c241e7c148a21b0ad3b8261e",
+        "bytes": 26734
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "528a001f8133ce49c596c846a43f7c7fe6f7ec99b6e89ce9a69083dcd88c3a55",
+        "bytes": 53952
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Juglans",
+    "title": "Juglans regia Echte Walnussfrucht 1.jpg",
+    "author": "Böhringer Friedrich",
+    "source": "https://commons.wikimedia.org/wiki/File:Juglans_regia_Echte_Walnussfrucht_1.jpg",
+    "license": "CC BY-SA 2.5",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.5",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_juglans.jpg",
+    "wikidata": "Q2453469",
+    "originalFile": "tree_genus_juglans_detail.jpg",
+    "originalSize": [
+      540,
+      720
+    ],
+    "originalSha256": "c1d2eda5102df4c1e1e0d255182c93dafa93e433795a737a16002cc0f1fdb0c6",
+    "crop": [
+      0,
+      45,
+      540,
+      585
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "7b9c4db80478bc6f07b78cfc80fe8f4d73cde8177c7e6de0079dc4312c99a897",
+        "bytes": 4589
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "72184e253031f3de40119f0aa4f0b1bf0970cb8327f5b558cc366f40eb9231f5",
+        "bytes": 8772
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "5667c2d6b17204d135eecb833d054a73712565cfc362c03a9b078ab6302a6b7a",
+        "bytes": 14082
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "cceb1d9fbc35d5c21723ab19b174382af91ac1b8c2b5d7babb51939fabd91191",
+        "bytes": 28035
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Robinia",
+    "title": "Black Locust Leaf Close Up.jpg",
+    "author": "HoHey22",
+    "source": "https://commons.wikimedia.org/wiki/File:Black_Locust_Leaf_Close_Up.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_robinia.jpg",
+    "wikidata": "Q472943",
+    "originalFile": "tree_genus_robinia_detail.jpg",
+    "originalSize": [
+      405,
+      720
+    ],
+    "originalSha256": "b6674b9c5f930f6145835aeb5d3b7321845aa5d564c58f81435a565a4cfe68ac",
+    "crop": [
+      0,
+      50,
+      405,
+      455
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "c63ac5d92cc51695d5d0b82423be9eb326195e24df08f47d70541f8b4e2ca9ca",
+        "bytes": 5155
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "58005d3ea072dff9f23b8aec2a3199e07992113dd1db6697c9c939ec93dafff8",
+        "bytes": 9032
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "39ea94e6679823832b02d419016867be364482f76c9ca36806929322b8b50889",
+        "bytes": 13647
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "e6a57c614a4a9acceb127cc1c283fc629580916c3b4f38ad62479b1bc03452df",
+        "bytes": 25161
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  },
+  {
+    "genus": "Ginkgo",
+    "title": "Ginkgo biloba leaves in radial arrangement - 2019-10-25 focus stack.jpg",
+    "author": "Franz van Duns",
+    "source": "https://commons.wikimedia.org/wiki/File:Ginkgo_biloba_leaves_in_radial_arrangement_-_2019-10-25_focus_stack.jpg",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "retrieved": "2026-11-02",
+    "file": "tree_genus_ginkgo.jpg",
+    "wikidata": "Q149461",
+    "originalFile": "tree_genus_ginkgo_example.jpg",
+    "originalSize": [
+      720,
+      480
+    ],
+    "originalSha256": "22c9396f3bb82e4b9b19fe7c6d497c846ef4be3dd1a13e3aef7bffb6b4d7a73f",
+    "crop": [
+      120,
+      0,
+      600,
+      480
+    ],
+    "padded": false,
+    "variants": {
+      "mdpi": {
+        "size": 128,
+        "sha256": "ba3df6c2e943ccc9886a9c6ce73fe62500c5182f9b2ea671445b6fae0a0cc655",
+        "bytes": 3876
+      },
+      "hdpi": {
+        "size": 192,
+        "sha256": "34989e172267af0d94685c2f3aeee0a64a0e2b43f19c356cfe97af3f51911ef2",
+        "bytes": 7014
+      },
+      "xhdpi": {
+        "size": 256,
+        "sha256": "b0d382728030ed9f17d242d2823ae1ebe98935c6683b1213ee5e68894a1dd58e",
+        "bytes": 11070
+      },
+      "xxhdpi": {
+        "size": 384,
+        "sha256": "db9a65d8ad73b97759dca06f7479c84d60161921ca667a36f0be08671fee0bd1",
+        "bytes": 21752
+      }
+    },
+    "modifications": "Manually framed square crop; resized and JPEG recompressed."
+  }
+]

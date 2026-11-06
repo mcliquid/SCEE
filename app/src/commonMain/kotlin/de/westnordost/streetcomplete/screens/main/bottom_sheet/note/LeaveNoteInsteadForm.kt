@@ -128,7 +128,7 @@ import org.koin.compose.koinInject
                     visible = noteText.isNotBlank(),
                     onClick = {
                         coroutineScope.launch {
-                            val context = getEditTypeContextForNote(element, editType, featureDictionary, !swapGpxOsm)
+                            val context = getEditTypeContextForNote(element, editType, featureDictionary, questTypeRegistry, !swapGpxOsm)
                             onLeaveNote("$context\n\n${noteText.trim()}", noteImagePaths, !swapGpxOsm)
                         }
                     },

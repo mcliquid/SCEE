@@ -49,7 +49,7 @@ fun <I> SimpleItemSelectDialog(
     ) {
         AlertDialogLayout(
             modifier = modifier,
-            title = { Text(title) },
+            title = { Text(stringResource(Res.string.quest_roofShape_select_one)) },
             content = {
                 Column(Modifier
                     .fadingVerticalScrollEdges(scrollState, 64.dp)

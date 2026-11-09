@@ -119,7 +119,7 @@ fun <T> SidepathChooseRoadForm(
         onClickOk = {
             when (val selected = selection) {
                 is SidepathRoadSelection.Road -> {
-                    if (!roadAnswerWouldChange(selected)) return@QuestForm
+                    if (!selectionIsSubmittable(selected)) return@QuestForm
                     val candidate = candidates.firstOrNull { it.element.id == selected.elementId }
                     on(
                         Answer(

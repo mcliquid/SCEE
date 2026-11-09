@@ -8,7 +8,6 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmElementQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
-import de.westnordost.streetcomplete.osm.FILTER_FOOT_OR_BICYCLE_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
 import de.westnordost.streetcomplete.quests.getPrefixedFullElementSelectionPref
@@ -16,29 +15,7 @@ import de.westnordost.streetcomplete.resources.*
 
 class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer> {
 
-    private val elementFilter = """
-        ways with
-          (
-            (
-              highway = cycleway
-              and cycleway !~ sidewalk|link|sidepath|crossing
-            )
-            or
-            (
-              highway = footway
-              and footway !~ sidewalk|link|crossing
-            )
-            or
-            (
-              highway = path
-              and (bicycle or foot)
-              and path !~ sidewalk|link|crossing|sidepath
-            )
-          )
-          and !is_sidepath
-          and area != yes
-          and ($FILTER_FOOT_OR_BICYCLE_ACCESSIBLE)
-    """.trimIndent()
+    private val elementFilter = ADD_IS_SIDEPATH_ELEMENT_FILTER
 
     private val filter by lazy {
         prefs
@@ -69,7 +46,10 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer> {
         mapData.ways.filter { path ->
             if (!filter.matches(path)) return@filter false
             val geometry = mapData.getWayGeometry(path.id) ?: return@filter false
-            hasNearbyAlignedRoad(geometry, mapData)
+            when (path.tags["is_sidepath"]) {
+                "yes" -> isSidepathRoadMetadataCompletionEligible(path, geometry, mapData)
+                else -> hasNearbyAlignedRoad(geometry, mapData)
+            }
         }
 
     /**
@@ -77,7 +57,10 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer> {
      * Returning null here would re-fetch only path.bounds+20m and can miss long sparse roads,
      * making the quest disappear after updates.
      */
-    override fun isApplicableTo(element: Element): Boolean = filter.matches(element)
+    override fun isApplicableTo(element: Element): Boolean? {
+        if (!filter.matches(element)) return false
+        return null
+    }
 
     @Composable
     override fun Form(
@@ -101,23 +84,23 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer> {
     ) {
         when (answer) {
             is IsSidepathAnswer.Yes -> {
-                tags["is_sidepath"] = "yes"
-                val ofName = answer.ofName
-                if (!ofName.isNullOrEmpty()) {
-                    tags["is_sidepath:of:name"] = ofName
+                if (tags["is_sidepath"] != "yes") {
+                    tags["is_sidepath"] = "yes"
                 }
                 val ofHighway = answer.ofHighway
                 if (!ofHighway.isNullOrEmpty()) {
-                    tags["is_sidepath:of"] = ofHighway
+                    applySidepathRoadAssociationFromSelection(
+                        tags,
+                        answer.ofName,
+                        ofHighway,
+                        answer.ofRef,
+                    )
+                } else {
+                    applySidepathRoadMetadata(tags, answer.ofName, answer.ofHighway, answer.ofRef)
                 }
             }
 
-            IsSidepathAnswer.No -> {
-                tags["is_sidepath"] = "no"
-                tags.remove("is_sidepath:of")
-                tags.remove("is_sidepath:of:name")
-                tags.remove("is_sidepath:of:ref")
-            }
+            IsSidepathAnswer.No -> applySidepathNotSidepath(tags)
 
             IsSidepathAnswer.IsSidewalk ->
                 tags["footway"] = "sidewalk"

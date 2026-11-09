@@ -160,7 +160,7 @@ class SidepathGeometryTest {
         assertEquals(listOf(2L, 3L), candidates.map { it.element.id })
     }
 
-    @Test fun `dual carriageway same name keeps both ways as candidates`() {
+    @Test fun `dual carriageway same name dedupes to one candidate`() {
         val pathStart = p(0.0, 0.0)
         val pathEnd = pathStart.translate(50.0, 45.0)
         val path = way(1, listOf(1, 2), mapOf("highway" to "footway"))
@@ -180,8 +180,31 @@ class SidepathGeometryTest {
         ))
 
         val candidates = findCandidateRoads(mapData.getWayGeometry(path.id)!!, mapData)
-        assertEquals(2, candidates.size)
-        assertTrue(candidates.all { it.name == "Hauptstraße" })
+        assertEquals(1, candidates.size)
+        assertEquals("Hauptstraße", candidates.single().name)
+    }
+
+    @Test fun `different names with same ref remain separate candidates`() {
+        val pathStart = p(0.0, 0.0)
+        val pathEnd = pathStart.translate(40.0, 0.0)
+        val path = way(1, listOf(1, 2), mapOf("highway" to "footway"))
+
+        val aStart = pathStart.translate(5.0, 90.0)
+        val aEnd = aStart.translate(40.0, 0.0)
+        val a = way(2, listOf(3, 4), mapOf("highway" to "secondary", "ref" to "L 201b", "name" to "Nord"))
+
+        val bStart = pathStart.translate(6.0, 270.0)
+        val bEnd = bStart.translate(40.0, 0.0)
+        val b = way(3, listOf(5, 6), mapOf("highway" to "secondary", "ref" to "L 201b", "name" to "Süd"))
+
+        val mapData = createMapData(
+            mapOf(
+                path to ElementPolylinesGeometry(listOf(listOf(pathStart, pathEnd)), pathStart),
+                a to ElementPolylinesGeometry(listOf(listOf(aStart, aEnd)), aStart),
+                b to ElementPolylinesGeometry(listOf(listOf(bStart, bEnd)), bStart),
+            ),
+        )
+        assertEquals(2, findCandidateRoads(mapData.getWayGeometry(path.id)!!, mapData).size)
     }
 
     @Test fun `no candidates when nothing nearby`() {

@@ -20,7 +20,16 @@ fun AddIsSidepathForm(
     element: Element,
     geometry: ElementGeometry,
 ) {
-    var step by rememberSaveable { mutableStateOf(IsSidepathFormStep.AskIfSidepath) }
+    val completingExistingSidepath = element.tags["is_sidepath"] == "yes"
+    var step by rememberSaveable {
+        mutableStateOf(
+            if (completingExistingSidepath) {
+                IsSidepathFormStep.ChooseRoad
+            } else {
+                IsSidepathFormStep.AskIfSidepath
+            }
+        )
+    }
 
     when (step) {
         IsSidepathFormStep.AskIfSidepath -> {
@@ -58,10 +67,41 @@ fun AddIsSidepathForm(
             SidepathChooseRoadForm(
                 on = on,
                 pathGeometry = geometry,
-                mapAnswer = { ofName, ofHighway, _ ->
-                    IsSidepathAnswer.Yes(ofName, ofHighway)
+                mapAnswer = { ofName, ofHighway, ofRef ->
+                    IsSidepathAnswer.Yes(ofName, ofHighway, ofRef)
                 },
-                onBack = { step = IsSidepathFormStep.AskIfSidepath },
+                onBack = if (completingExistingSidepath) {
+                    null
+                } else {
+                    { step = IsSidepathFormStep.AskIfSidepath }
+                },
+                bottomOptionLabelRes = if (completingExistingSidepath) {
+                    Res.string.quest_is_sidepath_road_metadata_not_sidepath
+                } else {
+                    Res.string.quest_is_sidepath_road_cant_say
+                },
+                onBottomOptionSelected = if (completingExistingSidepath) {
+                    { on(Answer(IsSidepathAnswer.No)) }
+                } else {
+                    null
+                },
+                roadSelectionProducesChanges = if (completingExistingSidepath) {
+                    { ofName, ofHighway, ofRef ->
+                        sidepathRoadMetadataAnswerProducesChanges(
+                            element.tags,
+                            ofName,
+                            ofHighway,
+                            ofRef,
+                        ) || sidepathAssociationTagsMatchSelection(
+                            element.tags,
+                            ofName,
+                            ofHighway,
+                            ofRef,
+                        )
+                    }
+                } else {
+                    { _, _, _ -> true }
+                },
             )
         }
     }

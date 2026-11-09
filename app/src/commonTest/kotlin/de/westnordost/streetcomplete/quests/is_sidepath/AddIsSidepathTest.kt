@@ -46,18 +46,24 @@ class AddIsSidepathTest {
     }
 
     @Test fun `bicycle permission overrides private access on cycleway`() {
-        assertTrue(questType.isApplicableTo(way(tags = mapOf(
-            "highway" to "cycleway",
-            "access" to "private",
-            "bicycle" to "yes",
-        ))))
+        assertEquals(
+            null,
+            questType.isApplicableTo(way(tags = mapOf(
+                "highway" to "cycleway",
+                "access" to "private",
+                "bicycle" to "yes",
+            ))),
+        )
     }
 
     @Test fun `not applicable to private cycleway without bicycle permission`() {
-        assertFalse(questType.isApplicableTo(way(tags = mapOf(
-            "highway" to "cycleway",
-            "access" to "private",
-        ))))
+        assertEquals(
+            false,
+            questType.isApplicableTo(way(tags = mapOf(
+                "highway" to "cycleway",
+                "access" to "private",
+            ))),
+        )
     }
 
     // region tagging
@@ -123,7 +129,25 @@ class AddIsSidepathTest {
         assertTrue(changes.none { it.key == "is_sidepath:of" })
     }
 
-    @Test fun `apply yes never writes is_sidepath of ref`() {
+    @Test fun `apply yes writes ref when provided`() {
+        assertEquals(
+            setOf(
+                StringMapEntryAdd("is_sidepath", "yes"),
+                StringMapEntryAdd("is_sidepath:of", "primary"),
+                StringMapEntryAdd("is_sidepath:of:name", "Hauptstraße"),
+                StringMapEntryAdd("is_sidepath:of:ref", "L 201b"),
+            ),
+            questType.answerApplied(
+                IsSidepathAnswer.Yes(
+                    ofName = "Hauptstraße",
+                    ofHighway = "primary",
+                    ofRef = "L 201b",
+                )
+            ),
+        )
+    }
+
+    @Test fun `apply yes without ref does not write is_sidepath of ref`() {
         val changes = questType.answerApplied(
             IsSidepathAnswer.Yes(ofName = "Hauptstraße", ofHighway = "primary")
         )
@@ -164,19 +188,37 @@ class AddIsSidepathTest {
 
     // region isApplicableTo
 
-    @Test fun `isApplicableTo is true for matching path regardless of nearby roads`() {
+    @Test fun `isApplicableTo is null for matching untagged path pending geometry`() {
         val path = way(tags = mapOf("highway" to "footway"))
-        assertTrue(questType.isApplicableTo(path))
+        assertEquals(null, questType.isApplicableTo(path))
     }
 
     @Test fun `isApplicableTo is false for non-matching element`() {
         val road = way(tags = mapOf("highway" to "residential"))
-        assertFalse(questType.isApplicableTo(road))
+        assertEquals(false, questType.isApplicableTo(road))
     }
 
-    @Test fun `isApplicableTo is false for already tagged sidepath`() {
-        val path = way(tags = mapOf("highway" to "footway", "is_sidepath" to "yes"))
-        assertFalse(questType.isApplicableTo(path))
+    @Test fun `isApplicableTo is false for fully associated sidepath`() {
+        val path = way(
+            tags = mapOf(
+                "highway" to "footway",
+                "is_sidepath" to "yes",
+                "is_sidepath:of" to "primary",
+                "is_sidepath:of:name" to "Hauptstraße",
+            ),
+        )
+        assertEquals(false, questType.isApplicableTo(path))
+    }
+
+    @Test fun `single flow ref only road does not leave follow-up quest eligible`() {
+        val original = mapOf("highway" to "footway")
+        val changes = questType.answerAppliedTo(
+            IsSidepathAnswer.Yes(ofName = null, ofHighway = "secondary", ofRef = "L 201b"),
+            original,
+        )
+        val updated = original.toMutableMap()
+        changes.filterIsInstance<StringMapEntryAdd>().forEach { updated[it.key] = it.value }
+        assertEquals(false, questType.isApplicableTo(way(tags = updated)))
     }
 
     // endregion

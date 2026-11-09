@@ -274,7 +274,7 @@ class AddCyclewaySeparationTest {
     }
 
     @Test fun `existing sidepath and segregation quests unchanged`() {
-        assertTrue(AddIsSidepath().isApplicableTo(way(tags = mapOf("highway" to "footway"))))
+        assertEquals(null, AddIsSidepath().isApplicableTo(way(tags = mapOf("highway" to "footway"))))
         assertTrue(AddCyclewaySegregation().isApplicableTo(way(tags = mapOf(
             "highway" to "footway",
             "bicycle" to "designated",

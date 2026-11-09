@@ -58,9 +58,16 @@ fun ElementGeometry.eligiblePolylines(): List<List<LatLon>> =
 fun ElementGeometry.asOpenPolylineOrNull(): List<LatLon>? =
     eligiblePolylines().singleOrNull()
 
+/** Roads that would yield the same `is_sidepath:of*` association tags are merged (closest kept). */
+private data class SidepathRoadAssociationKey(
+    val highway: String?,
+    val name: String?,
+    val ref: String?,
+)
+
 /**
  * Returns eligible nearby roads sorted by distance, then alignment, then element id.
- * Does not deduplicate same-name ways (keeps highlighting unambiguous).
+ * Multiple OSM ways with the same association identity appear once (nearest segment).
  */
 fun findCandidateRoads(
     pathGeometry: ElementGeometry,
@@ -93,7 +100,19 @@ fun findCandidateRoads(
             .thenBy { it.name == null }
             .thenBy { it.alignmentDiff }
             .thenBy { it.element.id }
-    )
+    ).deduplicateByAssociationIdentity()
+}
+
+private fun List<CandidateRoad>.deduplicateByAssociationIdentity(): List<CandidateRoad> {
+    val seen = linkedSetOf<SidepathRoadAssociationKey>()
+    val result = ArrayList<CandidateRoad>(size)
+    for (candidate in this) {
+        val key = SidepathRoadAssociationKey(candidate.highway, candidate.name, candidate.ref)
+        if (seen.add(key)) {
+            result.add(candidate)
+        }
+    }
+    return result
 }
 
 fun hasNearbyAlignedRoad(

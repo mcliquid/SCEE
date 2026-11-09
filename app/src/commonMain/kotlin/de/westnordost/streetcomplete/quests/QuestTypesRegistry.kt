@@ -140,7 +140,6 @@ import de.westnordost.streetcomplete.quests.incline_direction.AddStepsIncline
 import de.westnordost.streetcomplete.quests.cycleway_separation.AddCyclewaySeparation
 import de.westnordost.streetcomplete.quests.internet_access.AddInternetAccess
 import de.westnordost.streetcomplete.quests.is_sidepath.AddIsSidepath
-import de.westnordost.streetcomplete.quests.is_sidepath.AddIsSidepathRoadMetadata
 import de.westnordost.streetcomplete.quests.kerb_height.AddKerbHeight
 import de.westnordost.streetcomplete.quests.kerb_type.AddKerbType
 import de.westnordost.streetcomplete.quests.lamp_type.AddLampType
@@ -729,7 +728,6 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 58 to AddOnewayBicycle(),
     EE_QUEST_OFFSET + 69 to AddCyclewayPartSmoothness(),
     EE_QUEST_OFFSET + 201 to AddIsSidepath(),
-    EE_QUEST_OFFSET + 209 to AddIsSidepathRoadMetadata(),
     EE_QUEST_OFFSET + 210 to AddCyclewaySeparation(),
     EE_QUEST_OFFSET + 211 to AddRoadAttachedCyclewaySurface(),
     EE_QUEST_OFFSET + 212 to AddCrossingMarkingsColour(),

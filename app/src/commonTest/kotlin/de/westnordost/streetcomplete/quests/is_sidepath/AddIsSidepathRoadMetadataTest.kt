@@ -19,19 +19,19 @@ import kotlin.test.assertTrue
 
 class AddIsSidepathRoadMetadataTest {
 
-    private lateinit var questType: AddIsSidepathRoadMetadata
+    private lateinit var questType: AddIsSidepath
 
     @BeforeTest
     fun setUp() {
         Prefs.preferences = mockPrefs3()
-        questType = AddIsSidepathRoadMetadata()
+        questType = AddIsSidepath()
     }
 
     // region applyAnswerTo
 
     @Test fun `fills missing highway and name on classified cycleway`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(ofName = "Hauptstraße", ofHighway = "primary"),
+            IsSidepathAnswer.Yes(ofName = "Hauptstraße", ofHighway = "primary"),
             mapOf("highway" to "cycleway", "is_sidepath" to "yes"),
         )
         assertEquals(
@@ -45,31 +45,28 @@ class AddIsSidepathRoadMetadataTest {
 
     @Test fun `fills missing metadata on classified footway`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(ofName = "Ring", ofHighway = "secondary"),
+            IsSidepathAnswer.Yes(ofName = "Ring", ofHighway = "secondary"),
             mapOf("highway" to "footway", "is_sidepath" to "yes"),
         )
         assertTrue(changes.contains(StringMapEntryAdd("is_sidepath:of", "secondary")))
         assertTrue(changes.contains(StringMapEntryAdd("is_sidepath:of:name", "Ring")))
     }
 
-    @Test fun `writes only missing is_sidepath of when name already present`() {
+    @Test fun `writes missing of when name already present`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(ofName = "Other", ofHighway = "primary"),
+            IsSidepathAnswer.Yes(ofName = "Hauptstraße", ofHighway = "primary"),
             mapOf(
                 "highway" to "footway",
                 "is_sidepath" to "yes",
                 "is_sidepath:of:name" to "Hauptstraße",
             ),
         )
-        assertEquals(
-            setOf(StringMapEntryAdd("is_sidepath:of", "primary")),
-            changes,
-        )
+        assertEquals(setOf(StringMapEntryAdd("is_sidepath:of", "primary")), changes)
     }
 
-    @Test fun `writes only missing name when highway already present`() {
+    @Test fun `explicit selection adds name and updates highway`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(ofName = "Hauptstraße", ofHighway = "secondary"),
+            IsSidepathAnswer.Yes(ofName = "Hauptstraße", ofHighway = "secondary"),
             mapOf(
                 "highway" to "cycleway",
                 "is_sidepath" to "yes",
@@ -77,30 +74,30 @@ class AddIsSidepathRoadMetadataTest {
             ),
         )
         assertEquals(
-            setOf(StringMapEntryAdd("is_sidepath:of:name", "Hauptstraße")),
+            setOf(
+                StringMapEntryModify("is_sidepath:of", "primary", "secondary"),
+                StringMapEntryAdd("is_sidepath:of:name", "Hauptstraße"),
+            ),
             changes,
         )
     }
 
-    @Test fun `does not overwrite conflicting highway`() {
+    @Test fun `explicit selection replaces conflicting highway and name`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(ofName = "Hauptstraße", ofHighway = "secondary"),
+            IsSidepathAnswer.Yes(ofName = "Hauptstraße", ofHighway = "secondary"),
             mapOf(
                 "highway" to "cycleway",
                 "is_sidepath" to "yes",
                 "is_sidepath:of" to "primary",
             ),
         )
-        assertEquals(
-            setOf(StringMapEntryAdd("is_sidepath:of:name", "Hauptstraße")),
-            changes,
-        )
-        assertTrue(changes.none { it.key == "is_sidepath:of" && (it as StringMapEntryAdd).value == "secondary" })
+        assertTrue(changes.contains(StringMapEntryModify("is_sidepath:of", "primary", "secondary")))
+        assertTrue(changes.contains(StringMapEntryAdd("is_sidepath:of:name", "Hauptstraße")))
     }
 
-    @Test fun `does not overwrite conflicting name`() {
+    @Test fun `explicit selection replaces conflicting name`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(ofName = "Neue Straße", ofHighway = "primary"),
+            IsSidepathAnswer.Yes(ofName = "Neue Straße", ofHighway = "primary"),
             mapOf(
                 "highway" to "footway",
                 "is_sidepath" to "yes",
@@ -108,10 +105,12 @@ class AddIsSidepathRoadMetadataTest {
             ),
         )
         assertEquals(
-            setOf(StringMapEntryAdd("is_sidepath:of", "primary")),
+            setOf(
+                StringMapEntryAdd("is_sidepath:of", "primary"),
+                StringMapEntryModify("is_sidepath:of:name", "Hauptstraße", "Neue Straße"),
+            ),
             changes,
         )
-        assertTrue(changes.none { it.key == "is_sidepath:of:name" })
     }
 
     @Test fun `preserves is_sidepath of ref and unrelated tags`() {
@@ -124,7 +123,7 @@ class AddIsSidepathRoadMetadataTest {
             "lit" to "yes",
         )
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(ofName = "Altstraße", ofHighway = "primary"),
+            IsSidepathAnswer.Yes(ofName = "Altstraße", ofHighway = "primary", ofRef = "B 1"),
             original,
         )
         assertTrue(changes.none { it.key in setOf("is_sidepath", "is_sidepath:of:ref", "surface", "lit", "foot") })
@@ -132,7 +131,7 @@ class AddIsSidepathRoadMetadataTest {
 
     @Test fun `does not write empty road name`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(ofName = "", ofHighway = "residential"),
+            IsSidepathAnswer.Yes(ofName = "", ofHighway = "residential"),
             mapOf("highway" to "footway", "is_sidepath" to "yes"),
         )
         assertTrue(changes.none { it.key == "is_sidepath:of:name" })
@@ -141,10 +140,11 @@ class AddIsSidepathRoadMetadataTest {
 
     @Test fun `not sidepath sets is_sidepath no without road metadata`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.NotSidepath,
+            IsSidepathAnswer.No,
             mapOf("highway" to "cycleway", "is_sidepath" to "yes"),
         )
         assertEquals(setOf(StringMapEntryModify("is_sidepath", "yes", "no")), changes)
+        assertTrue(changes.none { it.key == "is_sidepath:of" })
     }
 
     @Test fun `not sidepath removes is_sidepath of and name`() {
@@ -154,7 +154,7 @@ class AddIsSidepathRoadMetadataTest {
             "is_sidepath:of" to "secondary",
             "is_sidepath:of:name" to "Example Street",
         )
-        val changes = questType.answerAppliedTo(SidepathRoadMetadataAnswer.NotSidepath, original)
+        val changes = questType.answerAppliedTo(IsSidepathAnswer.No, original)
         assertEquals(setOf(StringMapEntryModify("is_sidepath", "yes", "no")), changes.filterIsInstance<StringMapEntryModify>().toSet())
         assertEquals(
             setOf("is_sidepath:of", "is_sidepath:of:name"),
@@ -169,7 +169,7 @@ class AddIsSidepathRoadMetadataTest {
             "is_sidepath:of" to "primary",
             "is_sidepath:of:ref" to "B 33",
         )
-        val changes = questType.answerAppliedTo(SidepathRoadMetadataAnswer.NotSidepath, original)
+        val changes = questType.answerAppliedTo(IsSidepathAnswer.No, original)
         assertEquals(
             setOf("is_sidepath:of", "is_sidepath:of:ref"),
             changes.filterIsInstance<StringMapEntryDelete>().map { it.key }.toSet(),
@@ -185,13 +185,13 @@ class AddIsSidepathRoadMetadataTest {
             "surface" to "asphalt",
             "lit" to "yes",
         )
-        val changes = questType.answerAppliedTo(SidepathRoadMetadataAnswer.NotSidepath, original)
+        val changes = questType.answerAppliedTo(IsSidepathAnswer.No, original)
         assertTrue(changes.none { it.key in setOf("highway", "foot", "surface", "lit") })
     }
 
     @Test fun `not sidepath quest no longer applicable`() {
         val tags = mapOf("highway" to "cycleway", "is_sidepath" to "yes")
-        val changes = questType.answerAppliedTo(SidepathRoadMetadataAnswer.NotSidepath, tags)
+        val changes = questType.answerAppliedTo(IsSidepathAnswer.No, tags)
         val updated = tags.toMutableMap()
         changes.forEach { change ->
             when (change) {
@@ -200,12 +200,12 @@ class AddIsSidepathRoadMetadataTest {
                 is StringMapEntryDelete -> updated.remove(change.key)
             }
         }
-        assertFalse(questType.isApplicableTo(way(tags = updated)))
+        assertEquals(false, questType.isApplicableTo(way(tags = updated)))
     }
 
     @Test fun `road association with nulls writes nothing`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(ofName = null, ofHighway = null),
+            IsSidepathAnswer.Yes(ofName = null, ofHighway = null),
             mapOf("highway" to "cycleway", "is_sidepath" to "yes"),
         )
         assertTrue(changes.isEmpty())
@@ -232,10 +232,11 @@ class AddIsSidepathRoadMetadataTest {
             ),
         )
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(ofName = null, ofHighway = "residential"),
+            IsSidepathAnswer.Yes(ofName = null, ofHighway = "residential"),
             tags,
         )
         assertTrue(changes.isEmpty())
+        assertTrue(sidepathAssociationTagsMatchSelection(tags, ofName = null, ofHighway = "residential", ofRef = null))
     }
 
     @Test fun `matching named road when name already tagged produces no changes`() {
@@ -252,7 +253,7 @@ class AddIsSidepathRoadMetadataTest {
 
     @Test fun `writes ref when road has reference only`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(
+            IsSidepathAnswer.Yes(
                 ofName = null,
                 ofHighway = "primary",
                 ofRef = "B 33",
@@ -270,7 +271,7 @@ class AddIsSidepathRoadMetadataTest {
 
     @Test fun `writes name and ref when both provided`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(
+            IsSidepathAnswer.Yes(
                 ofName = "Beispielstraße",
                 ofHighway = "primary",
                 ofRef = "B 33",
@@ -287,11 +288,11 @@ class AddIsSidepathRoadMetadataTest {
         )
     }
 
-    @Test fun `writes only missing ref when of already present`() {
+    @Test fun `explicit selection adds ref when of already present`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(
+            IsSidepathAnswer.Yes(
                 ofName = null,
-                ofHighway = "secondary",
+                ofHighway = "primary",
                 ofRef = "B 33",
             ),
             mapOf(
@@ -303,9 +304,9 @@ class AddIsSidepathRoadMetadataTest {
         assertEquals(setOf(StringMapEntryAdd("is_sidepath:of:ref", "B 33")), changes)
     }
 
-    @Test fun `writes only missing name when ref already present`() {
+    @Test fun `explicit selection adds name when ref already present`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(
+            IsSidepathAnswer.Yes(
                 ofName = "Ring",
                 ofHighway = "primary",
                 ofRef = "B 33",
@@ -320,9 +321,9 @@ class AddIsSidepathRoadMetadataTest {
         assertEquals(setOf(StringMapEntryAdd("is_sidepath:of:name", "Ring")), changes)
     }
 
-    @Test fun `does not overwrite existing ref`() {
+    @Test fun `explicit selection replaces conflicting ref`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(
+            IsSidepathAnswer.Yes(
                 ofName = null,
                 ofHighway = "primary",
                 ofRef = "B 99",
@@ -334,12 +335,12 @@ class AddIsSidepathRoadMetadataTest {
                 "is_sidepath:of:ref" to "B 33",
             ),
         )
-        assertTrue(changes.isEmpty())
+        assertEquals(setOf(StringMapEntryModify("is_sidepath:of:ref", "B 33", "B 99")), changes)
     }
 
     @Test fun `unnamed road writes highway only`() {
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(ofName = null, ofHighway = "tertiary"),
+            IsSidepathAnswer.Yes(ofName = null, ofHighway = "tertiary"),
             mapOf("highway" to "cycleway", "is_sidepath" to "yes"),
         )
         assertEquals(
@@ -348,12 +349,39 @@ class AddIsSidepathRoadMetadataTest {
         )
     }
 
+    @Test fun `unnamed unclassified association is complete without redundant quest`() {
+        assertEquals(
+            0,
+            applicableCount(
+                sidepathAndRoad(
+                    pathTags = mapOf(
+                        "highway" to "path",
+                        "foot" to "yes",
+                        "is_sidepath" to "yes",
+                        "is_sidepath:of" to "unclassified",
+                    ),
+                    roadHighway = "unclassified",
+                    roadName = null,
+                ),
+            ),
+        )
+    }
+
+    @Test fun `unnamed unclassified can be saved from sidepath yes without prior association`() {
+        val changes = questType.answerAppliedTo(
+            IsSidepathAnswer.Yes(ofName = null, ofHighway = "unclassified"),
+            mapOf("highway" to "path", "foot" to "yes", "is_sidepath" to "yes"),
+        )
+        assertEquals(setOf(StringMapEntryAdd("is_sidepath:of", "unclassified")), changes)
+    }
+
     // endregion
 
     // region isApplicableTo
 
     @Test fun `not applicable when both association tags present`() {
-        assertFalse(
+        assertEquals(
+            false,
             questType.isApplicableTo(
                 way(
                     tags = mapOf(
@@ -368,23 +396,25 @@ class AddIsSidepathRoadMetadataTest {
     }
 
     @Test fun `not applicable for is_sidepath no`() {
-        assertFalse(
+        assertEquals(
+            false,
             questType.isApplicableTo(
                 way(tags = mapOf("highway" to "cycleway", "is_sidepath" to "no")),
             ),
         )
     }
 
-    @Test fun `not applicable for unclassified cycleway`() {
-        assertFalse(questType.isApplicableTo(way(tags = mapOf("highway" to "cycleway"))))
+    @Test fun `unclassified cycleway matches tag filter pending geometry`() {
+        assertEquals(null, questType.isApplicableTo(way(tags = mapOf("highway" to "cycleway"))))
     }
 
-    @Test fun `not applicable for unclassified footway`() {
-        assertFalse(questType.isApplicableTo(way(tags = mapOf("highway" to "footway"))))
+    @Test fun `unclassified footway matches tag filter pending geometry`() {
+        assertEquals(null, questType.isApplicableTo(way(tags = mapOf("highway" to "footway"))))
     }
 
     @Test fun `applicable tag filter for sidepath yes missing of`() {
-        assertTrue(
+        assertEquals(
+            null,
             questType.isApplicableTo(
                 way(tags = mapOf("highway" to "cycleway", "is_sidepath" to "yes")),
             ),
@@ -392,7 +422,8 @@ class AddIsSidepathRoadMetadataTest {
     }
 
     @Test fun `not applicable tag filter when ref already present without name`() {
-        assertFalse(
+        assertEquals(
+            false,
             questType.isApplicableTo(
                 way(
                     tags = mapOf(
@@ -407,7 +438,8 @@ class AddIsSidepathRoadMetadataTest {
     }
 
     @Test fun `not applicable tag filter when name already present without ref`() {
-        assertFalse(
+        assertEquals(
+            false,
             questType.isApplicableTo(
                 way(
                     tags = mapOf(
@@ -422,7 +454,8 @@ class AddIsSidepathRoadMetadataTest {
     }
 
     @Test fun `applicable tag filter for sidepath yes missing name only`() {
-        assertTrue(
+        assertEquals(
+            null,
             questType.isApplicableTo(
                 way(
                     tags = mapOf(
@@ -436,7 +469,8 @@ class AddIsSidepathRoadMetadataTest {
     }
 
     @Test fun `applicable tag filter for footway sidewalk with is_sidepath yes`() {
-        assertTrue(
+        assertEquals(
+            null,
             questType.isApplicableTo(
                 way(
                     tags = mapOf(
@@ -584,10 +618,10 @@ class AddIsSidepathRoadMetadataTest {
             "is_sidepath:of" to "primary",
             "is_sidepath:of:name" to "Hauptstraße",
         )
-        assertFalse(questType.isApplicableTo(way(tags = tags)))
+        assertEquals(false, questType.isApplicableTo(way(tags = tags)))
     }
 
-    @Test fun `three ref roads with same ref remain distinct candidates`() {
+    @Test fun `three ref road segments with same ref dedupe to one candidate`() {
         val roadStart = p(0.0, 0.0)
         val roadEnd = roadStart.translate(50.0, 45.0)
         val road2Start = roadStart.translate(8.0, 135.0)
@@ -611,8 +645,8 @@ class AddIsSidepathRoadMetadataTest {
             ),
         )
         val candidates = findCandidateRoads(mapData.getWayGeometry(path.id)!!, mapData)
-        assertEquals(3, candidates.size)
-        assertEquals(setOf(1L, 2L, 3L), candidates.map { it.element.id }.toSet())
+        assertEquals(1, candidates.size)
+        assertEquals("B 33", candidates.single().ref)
     }
 
     @Test fun `default preselection prefers candidate that can add ref`() {
@@ -642,7 +676,7 @@ class AddIsSidepathRoadMetadataTest {
     @Test fun `quest not applicable after adding ref association`() {
         val original = mapOf("highway" to "footway", "is_sidepath" to "yes")
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(
+            IsSidepathAnswer.Yes(
                 ofName = null,
                 ofHighway = "primary",
                 ofRef = "B 33",
@@ -657,7 +691,7 @@ class AddIsSidepathRoadMetadataTest {
                 is StringMapEntryDelete -> updated.remove(change.key)
             }
         }
-        assertFalse(questType.isApplicableTo(way(tags = updated)))
+        assertEquals(false, questType.isApplicableTo(way(tags = updated)))
     }
 
     @Test fun `quest not applicable after adding name association`() {
@@ -667,7 +701,7 @@ class AddIsSidepathRoadMetadataTest {
             "is_sidepath:of" to "primary",
         )
         val changes = questType.answerAppliedTo(
-            SidepathRoadMetadataAnswer.RoadAssociation(ofName = "Ring", ofHighway = "primary"),
+            IsSidepathAnswer.Yes(ofName = "Ring", ofHighway = "primary"),
             original,
         )
         val updated = original.toMutableMap()
@@ -678,15 +712,13 @@ class AddIsSidepathRoadMetadataTest {
                 is StringMapEntryDelete -> updated.remove(change.key)
             }
         }
-        assertFalse(questType.isApplicableTo(way(tags = updated)))
+        assertEquals(false, questType.isApplicableTo(way(tags = updated)))
     }
 
-    @Test fun `AddIsSidepath still excludes already tagged sidepath for classification`() {
-        val classification = AddIsSidepath()
-        assertFalse(
-            classification.isApplicableTo(
-                way(tags = mapOf("highway" to "footway", "is_sidepath" to "yes")),
-            ),
+    @Test fun `sidepath yes without association needs geometry to determine applicability`() {
+        assertEquals(
+            null,
+            questType.isApplicableTo(way(tags = mapOf("highway" to "footway", "is_sidepath" to "yes"))),
         )
     }
 

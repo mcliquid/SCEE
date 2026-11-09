@@ -99,28 +99,45 @@ class NoteEditsControllerImpl(
     override fun markImagesActivated(id: Long): Boolean =
         lock.withLock { editsDB.markImagesActivated(id) }
 
+    override fun getOldestUnsyncedExcluding(noteIds: Set<Long>): NoteEdit? = editsDB.getOldestUnsyncedExcluding(noteIds)
+
+    override fun getCreationAttempt(id: Long): NoteCreationAttempt? = editsDB.getCreationAttempt(id)
+
+    override fun beginCreation(id: Long, text: String): Boolean = editsDB.beginCreation(id, text)
+
+    override fun clearRejectedCreation(id: Long) = editsDB.clearRejectedCreation(id)
+
+    override fun discardUncertainCreation(id: Long) {
+        val edit = lock.withLock { editsDB.discardUncertainCreation(id) }
+        onDeletedEdits(listOf(edit))
+        for (imagePath in edit.imagePaths) fileSystem.delete(Path(imagePath), mustExist = false)
+    }
+
+    override fun acknowledgeCreation(id: Long, noteId: Long) = editsDB.acknowledgeCreation(id, noteId)
+
     override fun markSynced(edit: NoteEdit, note: Note) {
-        var markSyncedSuccess = false
+        val markSyncedSuccess = lock.withLock { editsDB.markSynced(edit, note.id) }
+        // Persist success before deleting attachments or notifying fallible listeners.
         for (imagePath in edit.imagePaths) {
             fileSystem.delete(Path(imagePath), mustExist = false)
         }
-        lock.withLock {
-            if (edit.noteId != note.id) {
-                editsDB.updateNoteId(edit.noteId, note.id)
-            }
-            markSyncedSuccess = editsDB.markSynced(edit.id)
-        }
-
         if (markSyncedSuccess) {
-            onSyncedEdit(edit.copy(isSynced = true))
+            onSyncedEdit(edit.copy(noteId = note.id, isSynced = true))
         }
     }
 
     override fun markSyncFailed(edit: NoteEdit): Boolean =
         delete(edit)
 
-    override fun undo(edit: NoteEdit): Boolean =
-        delete(edit)
+    override fun undo(edit: NoteEdit): Boolean {
+        // Every attempted note write requires the explicit resolution/discard confirmation.
+        val deleted = lock.withLock { editsDB.deleteUnattemptedCreation(edit.id) }
+        if (deleted) {
+            onDeletedEdits(listOf(edit))
+            for (imagePath in edit.imagePaths) fileSystem.delete(Path(imagePath), mustExist = false)
+        }
+        return deleted
+    }
 
     override fun deleteSyncedOlderThan(timestamp: Long): Int {
         var deletedCount = 0
@@ -141,9 +158,9 @@ class NoteEditsControllerImpl(
         val deleteSuccess = lock.withLock { editsDB.delete(edit.id) }
         if (deleteSuccess) {
             onDeletedEdits(listOf(edit))
-            return false
+            return true
         }
-        return true
+        return false
     }
 
     override fun updateElementIds(idUpdates: Collection<ElementIdUpdate>) {

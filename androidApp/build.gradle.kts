@@ -30,7 +30,7 @@ android {
         minSdk = 25
         targetSdk = 37
         // Bump for each published SCEE-mc APK so Android treats it as an in-place update.
-        versionCode = 6407
+        versionCode = 6408
         versionName = providers.gradleProperty("app.streetcomplete.versionName").get()
 
         // no x86: the MapLibre Compose runtime has no x86 build, and other native libraries must

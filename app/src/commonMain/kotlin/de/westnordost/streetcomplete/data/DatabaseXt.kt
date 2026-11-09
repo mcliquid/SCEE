@@ -1,13 +1,19 @@
 package de.westnordost.streetcomplete.data
 
 fun Database.initialize(configurator: DatabaseConfigurator) {
+    val supportedVersion = configurator.version
+    val storedVersion = rawQuery("PRAGMA user_version") { it.getInt("user_version") }.single()
+    check(storedVersion <= supportedVersion) {
+        "Unsafe database downgrade: schema $storedVersion requires newer software (supported $supportedVersion)"
+    }
     // on single-threaded access to the database, this has little impact, though
     // see https://www.sqlite.org/wal.html
     exec("PRAGMA journal_mode=WAL")
 
     transaction {
         val oldVersion = rawQuery("PRAGMA user_version") { it.getInt("user_version") }.single()
-        val newVersion = configurator.version
+        val newVersion = supportedVersion
+        check(oldVersion <= newVersion) { "Database was upgraded concurrently; downgrade refused" }
         if (oldVersion < newVersion) {
             if (oldVersion == 0) {
                 configurator.onCreate(this)

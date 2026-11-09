@@ -1,9 +1,12 @@
 package de.westnordost.streetcomplete.data.osmnotes.edits
 
 import de.westnordost.streetcomplete.ApplicationConstants
-import de.westnordost.streetcomplete.data.ConflictException
 import de.westnordost.streetcomplete.data.osmnotes.NoteController
 import de.westnordost.streetcomplete.data.osmnotes.NotesApiClient
+import de.westnordost.streetcomplete.data.osmnotes.Note
+import de.westnordost.streetcomplete.data.osmnotes.NoteLookup
+import de.westnordost.streetcomplete.data.osmnotes.NoteUnavailableException
+import de.westnordost.streetcomplete.util.ktx.format
 import de.westnordost.streetcomplete.data.osmnotes.PhotoServiceApiClient
 import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditAction.CLOSE
 import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditAction.COMMENT
@@ -14,12 +17,9 @@ import de.westnordost.streetcomplete.data.upload.OnUploadedChangeListener
 import de.westnordost.streetcomplete.data.user.UserDataSource
 import de.westnordost.streetcomplete.util.logs.Log
 import io.ktor.http.encodeURLPathPart
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Mutex
@@ -37,13 +37,8 @@ class NoteEditsUploader(
     var uploadedChangeListener: OnUploadedChangeListener? = null
 
     private val mutex = Mutex()
-    private val scope = CoroutineScope(SupervisorJob() + CoroutineName("NoteEditsUploader"))
 
-    /** Uploads all edits to notes
-     *
-     *  Drops any edits where the upload failed because of a conflict but keeps any notes where
-     *  the upload failed because attached photos could not be uploaded (so it can try again
-     *  later). */
+    /** Upload independent note edits, retaining rejected and uncertain writes for review. */
     suspend fun upload() = mutex.withLock { withContext(Dispatchers.IO) {
         // first look if any images have not been activated yet
         uploadMissedImageActivations()
@@ -64,59 +59,105 @@ class NoteEditsUploader(
     }
 
     private suspend fun uploadEdits() {
+        val blockedNotes = mutableSetOf<Long>()
+        var uncertain: Exception? = null
         while (true) {
             currentCoroutineContext().ensureActive()
-            val edit = noteEditsController.getOldestUnsynced() ?: break
+            val edit = (if (blockedNotes.isEmpty()) noteEditsController.getOldestUnsynced()
+                else noteEditsController.getOldestUnsyncedExcluding(blockedNotes)) ?: break
             /* the sync of local change -> API and its response should not be cancellable because
              * otherwise an inconsistency in the data would occur. E.g. a note could be uploaded
              * twice  */
-            withContext(NonCancellable) { uploadEdit(edit) }
+            try {
+                withContext(NonCancellable) { uploadEdit(edit) }
+            } catch (e: NoteCreationUncertainException) {
+                blockedNotes.add(edit.noteId)
+                if (uncertain == null) uncertain = e
+            } catch (e: NoteWriteRejectedException) {
+                blockedNotes.add(edit.noteId)
+                if (uncertain == null) uncertain = e
+            }
+        }
+        uncertain?.let { throw it }
+    }
+
+    /** Call only after explicit user confirmation; this performs GET, never CREATE. */
+    suspend fun resolveCreation(editId: Long, serverNoteId: Long) = mutex.withLock {
+        require(serverNoteId > 0)
+        val edit = checkNotNull(noteEditsController.get(editId))
+        val attempt = checkNotNull(noteEditsController.getCreationAttempt(editId))
+        check(!edit.isSynced && edit.action == CREATE && attempt.noteId == null)
+        val note = getAcknowledgedNote(serverNoteId)
+        val opening = note.comments.firstOrNull()
+        require(note.id == serverNoteId && note.position.latitude == edit.position.latitude.format(7).toDouble() &&
+            note.position.longitude == edit.position.longitude.format(7).toDouble() && opening?.text == attempt.text &&
+            opening.user?.id == userDataSource.userId) { "The selected note does not match this upload" }
+        withContext(NonCancellable) {
+            noteEditsController.acknowledgeCreation(editId, serverNoteId)
+            noteEditsController.markSynced(edit, note)
+            noteController.put(note)
         }
     }
 
+    /** Explicitly confirmed discard; serialize against CREATE and reconciliation. */
+    suspend fun discardUncertainCreation(editId: Long) = mutex.withLock {
+        val attempt = checkNotNull(noteEditsController.getCreationAttempt(editId))
+        if (attempt.noteId != null) {
+            // Acknowledged writes finish through sync; only an unavailable target permits discard.
+            check(notesApi.lookup(attempt.noteId) is NoteLookup.Unavailable) {
+                "The acknowledged note is available; synchronize to finish this write"
+            }
+        }
+        noteEditsController.discardUncertainCreation(editId)
+    }
+
+    private suspend fun getAcknowledgedNote(id: Long): Note = when (val result = notesApi.lookup(id)) {
+        is NoteLookup.Available -> result.note
+        is NoteLookup.Unavailable -> throw NoteUnavailableException(result)
+    }
+
     private suspend fun uploadEdit(edit: NoteEdit) {
-        // try to upload the image and track if we have them
-        val imageText = uploadAndGetAttachedPhotosText(edit.imagePaths)
-        val trackText = uploadAndGetAttachedTrackText(edit.track, edit.text)
-        val text = edit.text.orEmpty() + imageText + trackText
-
-        // done, try to upload the note to OSM
-        try {
-            val note = when (edit.action) {
-                CREATE -> notesApi.create(edit.position, text)
-                COMMENT -> notesApi.comment(edit.noteId, text)
-                CLOSE -> notesApi.close(edit.noteId, text)
+        val attempt = noteEditsController.getCreationAttempt(edit.id)
+        if (attempt != null && attempt.noteId == null) throw NoteCreationUncertainException(edit.id)
+        val note = if (attempt?.noteId != null) {
+            try {
+                getAcknowledgedNote(attempt.noteId)
+            } catch (e: NoteUnavailableException) {
+                throw NoteCreationUncertainException(edit.id, e)
             }
-
-            Log.d(TAG,
-                "Uploaded a ${edit.action.name} to ${note.id}" +
-                    " at ${edit.position.latitude}, ${edit.position.longitude}"
-            )
-            uploadedChangeListener?.onUploaded(NOTE, edit.position)
-
-            noteEditsController.markSynced(edit, note)
-            noteController.put(note)
-
-            if (edit.imagePaths.isNotEmpty()) {
-                imageUploader.activate(note.id)
-                noteEditsController.markImagesActivated(note.id)
+        } else {
+            val imageText = uploadAndGetAttachedPhotosText(edit.imagePaths)
+            val trackText = uploadAndGetAttachedTrackText(edit.track, edit.text)
+            val text = edit.text.orEmpty() + imageText + trackText
+            if (!noteEditsController.beginCreation(edit.id, text)) {
+                // Undo can remove the edit before the atomic reservation; no POST happened.
+                if (noteEditsController.get(edit.id) == null) return
+                throw NoteCreationUncertainException(edit.id)
             }
-        } catch (e: ConflictException) {
-            Log.d(TAG,
-                "Dropped a ${edit.action.name} to ${edit.noteId}" +
-                    " at ${edit.position.latitude}, ${edit.position.longitude}: ${e.message}"
-            )
-            uploadedChangeListener?.onDiscarded(NOTE, edit.position)
-
-            noteEditsController.markSyncFailed(edit)
-
-            // should update the note if there was a conflict, so it doesn't happen again
-            val updatedNote = notesApi.get(edit.noteId)
-            if (updatedNote != null) {
-                noteController.put(updatedNote)
-            } else {
-                noteController.delete(edit.noteId)
+            try {
+                val response = when (edit.action) {
+                    CREATE -> notesApi.create(edit.position, text)
+                    COMMENT -> notesApi.comment(edit.noteId, text)
+                    CLOSE -> notesApi.close(edit.noteId, text)
+                }
+                noteEditsController.acknowledgeCreation(edit.id, response.id)
+                response
+            } catch (e: Exception) {
+                if (e.isDefinitiveNoteWriteRejection()) {
+                    noteEditsController.clearRejectedCreation(edit.id)
+                    if (e is de.westnordost.streetcomplete.data.AuthorizationException) throw e
+                    throw NoteWriteRejectedException(edit.id, e)
+                }
+                throw NoteCreationUncertainException(edit.id, e)
             }
+        }
+        Log.d(TAG, "Uploaded a ${edit.action.name} to ${note.id}")
+        noteEditsController.markSynced(edit, note)
+        noteController.put(note)
+        uploadedChangeListener?.onUploaded(NOTE, edit.position)
+        if (edit.imagePaths.isNotEmpty()) {
+            imageUploader.activate(note.id)
+            noteEditsController.markImagesActivated(edit.id)
         }
     }
 

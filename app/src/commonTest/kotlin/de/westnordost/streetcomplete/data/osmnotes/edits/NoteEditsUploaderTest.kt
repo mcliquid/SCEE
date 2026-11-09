@@ -31,6 +31,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertFailsWith
+import de.westnordost.streetcomplete.data.osmnotes.edits.NoteWriteRejectedException
 
 class NoteEditsUploaderTest {
 
@@ -53,6 +55,7 @@ class NoteEditsUploaderTest {
         noteEditsController = mock {
             every { getOldestNeedingImagesActivation() } returns null
             every { getOldestUnsynced() } returns null
+            every { beginCreation(any(), any()) } returns true
         }
         userDataSource = mock()
         tracksApi = mock()
@@ -124,46 +127,13 @@ class NoteEditsUploaderTest {
         verify { listener.onUploaded("NOTE", pos) }
     }
 
-    @Test fun `fail uploading note comment because of a conflict`(): Unit = runBlocking {
-        val pos = p(1.0, 13.0)
-        val edit = noteEdit(noteId = 1L, action = NoteEditAction.COMMENT, text = "abc", pos = pos)
-        val note = note(1)
-
-        every { noteEditsController.getOldestUnsynced() } sequentially {
-            returns(edit)
-            repeat { returns(null) }
-        }
+    @Test fun `definitive rejection clears reservation but preserves local comment`() = runBlocking {
+        val edit = noteEdit(action = NoteEditAction.COMMENT)
+        every { noteEditsController.getOldestUnsynced() } returns edit
         everySuspend { notesApi.comment(any(), any()) } throws ConflictException()
-        everySuspend { notesApi.get(1L) } returns note
-
-        upload()
-
-        verifySuspend { notesApi.comment(1L, "abc") }
-        verify { noteController.put(note) }
-        verify { noteEditsController.markSyncFailed(edit) }
-        verifyNoMoreCalls(imageUploader)
-        verify { listener.onDiscarded("NOTE", pos) }
-    }
-
-    @Test fun `fail uploading note comment because note was deleted`(): Unit = runBlocking {
-        val pos = p(1.0, 13.0)
-        val edit = noteEdit(noteId = 1L, action = NoteEditAction.COMMENT, text = "abc", pos = pos)
-        val note = note(1)
-
-        every { noteEditsController.getOldestUnsynced() } sequentially {
-            returns(edit)
-            repeat { returns(null) }
-        }
-        everySuspend { notesApi.comment(any(), any()) } throws ConflictException()
-        everySuspend { notesApi.get(1L) } returns null
-
-        upload()
-
-        verifySuspend { notesApi.comment(1L, "abc") }
-        verify { noteController.delete(note.id) }
-        verify { noteEditsController.markSyncFailed(edit) }
-        verifyNoMoreCalls(imageUploader)
-        verify { listener.onDiscarded("NOTE", pos) }
+        assertFailsWith<NoteWriteRejectedException> { upload() }
+        verify { noteEditsController.clearRejectedCreation(edit.id) }
+        verify(exactly(0)) { noteEditsController.markSyncFailed(any()) }
     }
 
     @Test fun `upload several note edits`(): Unit = runBlocking {

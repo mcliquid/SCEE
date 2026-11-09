@@ -24,7 +24,8 @@ class NoteEditsControllerImplTest {
     @BeforeTest fun setUp() {
         db = mock {
             every { delete(any()) } returns true
-            every { markSynced(any()) } returns true
+            every { deleteUnattemptedCreation(any()) } returns true
+            every { markSynced(any(), any()) } returns true
         }
 
         listener = mock()
@@ -37,6 +38,13 @@ class NoteEditsControllerImplTest {
 
         verify { db.add(any()) }
         verify { listener.onAddedEdit(any()) }
+    }
+
+    @Test fun `comment undo returns actual deletion result`() {
+        val edit = noteEdit(action = NoteEditAction.COMMENT)
+        kotlin.test.assertTrue(ctrl.undo(edit))
+        every { db.deleteUnattemptedCreation(any()) } returns false
+        kotlin.test.assertFalse(ctrl.undo(edit))
     }
 
     @Test fun syncFailed() {
@@ -52,9 +60,9 @@ class NoteEditsControllerImplTest {
         val note = note(1)
 
         ctrl.markSynced(edit, note)
-        val editSynced = edit.copy(isSynced = true)
+        val editSynced = edit.copy(noteId = note.id, isSynced = true)
 
-        verify { db.markSynced(3) }
+        verify { db.markSynced(edit, note.id) }
         verify(not) { db.updateNoteId(any(), any()) }
         verify { listener.onSyncedEdit(editSynced) }
     }
@@ -64,10 +72,10 @@ class NoteEditsControllerImplTest {
         val note = note(123)
 
         ctrl.markSynced(edit, note)
-        val editSynced = edit.copy(isSynced = true)
+        val editSynced = edit.copy(noteId = note.id, isSynced = true)
 
-        verify { db.markSynced(3) }
-        verify { db.updateNoteId(-100L, 123L) }
+        verify { db.markSynced(edit, note.id) }
+
         verify { listener.onSyncedEdit(editSynced) }
     }
 

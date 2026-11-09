@@ -166,13 +166,15 @@ fun MainBottomSheet(
                     }
                 },
                 onLeaveNote = { noteText, noteImagePaths, isGpx ->
-                    onCreateNote(
-                        shownBottomSheet.quest.geometry.center,
-                        noteText,
-                        noteImagePaths,
-                        null,
-                        isGpx,
-                    )
+                    editSubmission.run {
+                        onCreateNote(
+                            shownBottomSheet.quest.geometry.center,
+                            noteText,
+                            noteImagePaths,
+                            null,
+                            isGpx,
+                        )
+                    }
                     onSolved(shownBottomSheet.quest.type.icon, shownBottomSheet.quest.position)
                     onDismiss()
                 },
@@ -218,13 +220,15 @@ fun MainBottomSheet(
                     }
                 },
                 onLeaveNote = { noteText, noteImagePaths, isGpx ->
-                    onCreateNote(
-                        shownBottomSheet.quest.geometry.center,
-                        noteText,
-                        noteImagePaths,
-                        null,
-                        isGpx,
-                    )
+                    editSubmission.run {
+                        onCreateNote(
+                            shownBottomSheet.quest.geometry.center,
+                            noteText,
+                            noteImagePaths,
+                            null,
+                            isGpx,
+                        )
+                    }
                     onSolved(shownBottomSheet.quest.type.icon, shownBottomSheet.quest.position)
                     onDismiss()
                 },
@@ -271,13 +275,15 @@ fun MainBottomSheet(
                 },
                 onLeaveNote = { noteText, noteImagePaths, isGpx ->
                     val center = shownBottomSheet.geometry?.center ?: mapPosition
-                    onCreateNote(
-                        center,
-                        noteText,
-                        noteImagePaths,
-                        null,
-                        isGpx,
-                    )
+                    editSubmission.run {
+                        onCreateNote(
+                            center,
+                            noteText,
+                            noteImagePaths,
+                            null,
+                            isGpx,
+                        )
+                    }
                     onSolved(shownBottomSheet.overlay.icon, center)
                     onDismiss()
                 },

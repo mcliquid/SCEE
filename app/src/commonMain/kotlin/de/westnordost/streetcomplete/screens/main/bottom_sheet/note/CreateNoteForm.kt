@@ -31,6 +31,7 @@ import de.westnordost.streetcomplete.data.osmtracks.Trackpoint
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.quests.note_comments.NoteForm
 import de.westnordost.streetcomplete.resources.*
+import de.westnordost.streetcomplete.screens.main.bottom_sheet.EditSubmission
 import de.westnordost.streetcomplete.ui.common.FloatingOkButton
 import de.westnordost.streetcomplete.ui.common.FloatingSmallerButton
 import de.westnordost.streetcomplete.ui.common.Pin
@@ -62,6 +63,7 @@ fun CreateNoteForm(
     val downloadedTilesSource: DownloadedTilesSource = koinInject()
     val hasGpxButton = prefs.getBoolean(Prefs.GPX_BUTTON, false)
     val swapGpxOsm = hasGpxButton && prefs.getBoolean(Prefs.SWAP_GPX_NOTE_BUTTONS, false)
+    val submission = remember { EditSubmission() }
     var answer: (() -> Unit)? by remember { mutableStateOf(null) }
 
     var requestDismiss by remember { mutableStateOf(false) }
@@ -138,6 +140,6 @@ fun CreateNoteForm(
         }
     }
     if (answer != null) {
-        OutsideAreaDialog(position, downloadedTilesSource, { answer?.invoke() }, { answer = null })
+        OutsideAreaDialog(position, downloadedTilesSource, { submission.run { answer?.invoke() } }, { answer = null })
     }
 }

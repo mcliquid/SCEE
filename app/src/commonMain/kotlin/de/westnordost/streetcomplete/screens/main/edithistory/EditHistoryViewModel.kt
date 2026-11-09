@@ -7,6 +7,10 @@ import de.westnordost.streetcomplete.data.edithistory.Edit
 import de.westnordost.streetcomplete.data.edithistory.EditHistoryController
 import de.westnordost.streetcomplete.data.edithistory.EditHistorySource
 import de.westnordost.streetcomplete.data.edithistory.EditKey
+import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEdit
+import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditAction
+import de.westnordost.streetcomplete.data.osmnotes.edits.NoteCreationAttempt
+import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditsController
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestHidden
 import de.westnordost.streetcomplete.data.osm.edits.ElementEdit
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
@@ -39,7 +43,8 @@ abstract class EditHistoryViewModel : ViewModel() {
     abstract suspend fun getEditElement(edit: Edit): Element?
     abstract suspend fun getEditGeometry(edit: Edit): ElementGeometry
 
-    abstract fun undo(editKey: EditKey)
+    abstract suspend fun getNoteCreationAttempt(edit: Edit): NoteCreationAttempt?
+    abstract suspend fun undo(editKey: EditKey): Boolean
 }
 
 data class EditItem(
@@ -53,6 +58,7 @@ class EditHistoryViewModelImpl(
     private val mapDataSource: MapDataWithEditsSource,
     private val editHistoryController: EditHistoryController,
     private val uploadProgressSource: UploadProgressSource,
+    private val noteEditsController: NoteEditsController,
 ) : EditHistoryViewModel() {
 
     private val edits = MutableStateFlow<List<Edit>?>(null)
@@ -74,12 +80,16 @@ class EditHistoryViewModelImpl(
         else -> null
     } ?: ElementPointGeometry(edit.position)
 
-    override fun undo(editKey: EditKey) {
-        launch(Dispatchers.IO) {
-            val edit = editHistoryController.get(editKey) ?: return@launch
-            if (!isEditUndoEnabled(edit, uploadProgressSource.isUploadInProgress)) return@launch
-            editHistoryController.undo(editKey)
-        }
+    override suspend fun getNoteCreationAttempt(edit: Edit): NoteCreationAttempt? = withContext(Dispatchers.IO) {
+        if (edit is NoteEdit && !edit.isSynced)
+            noteEditsController.getCreationAttempt(edit.id)
+        else null
+    }
+
+    override suspend fun undo(editKey: EditKey): Boolean = withContext(Dispatchers.IO) {
+        val edit = editHistoryController.get(editKey) ?: return@withContext false
+        if (!isEditUndoEnabled(edit, uploadProgressSource.isUploadInProgress)) return@withContext false
+        editHistoryController.undo(editKey)
     }
 
     private val editHistoryListener = object : EditHistorySource.Listener {

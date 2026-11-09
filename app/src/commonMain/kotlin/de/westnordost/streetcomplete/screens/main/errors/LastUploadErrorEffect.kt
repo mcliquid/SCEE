@@ -9,6 +9,9 @@ import androidx.compose.runtime.setValue
 import de.westnordost.streetcomplete.data.AuthorizationException
 import de.westnordost.streetcomplete.data.ConnectionException
 import de.westnordost.streetcomplete.data.upload.VersionBannedException
+import de.westnordost.streetcomplete.data.osmnotes.edits.NoteCreationUncertainException
+import de.westnordost.streetcomplete.data.osmnotes.edits.NoteWriteRejectedException
+import de.westnordost.streetcomplete.data.osmnotes.NoteUnavailableException
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.ToastPopup
 import org.jetbrains.compose.resources.stringResource
@@ -20,6 +23,8 @@ fun LastUploadErrorEffect(
     lastError: Exception,
     onReportError: (error: Exception) -> Unit
 ) {
+    var showRejectedNote by remember { mutableStateOf(false) }
+    var showUncertainNote by remember { mutableStateOf(false) }
     var showUploadErrorDialog by remember { mutableStateOf(false) }
     var shownVersionBanned by remember { mutableStateOf<String?>(null) }
     var showServerError by remember { mutableStateOf<Boolean>(false) }
@@ -27,6 +32,8 @@ fun LastUploadErrorEffect(
 
     LaunchedEffect(lastError) {
         when (lastError) {
+            is NoteCreationUncertainException -> showUncertainNote = true
+            is NoteWriteRejectedException -> showRejectedNote = true
             is VersionBannedException -> {
                 shownVersionBanned = lastError.banReason
             }
@@ -40,6 +47,18 @@ fun LastUploadErrorEffect(
                 showUploadErrorDialog = true
             }
         }
+    }
+
+    if (showUncertainNote && lastError is NoteCreationUncertainException) {
+        UncertainNoteDialog(
+            editId = lastError.editId,
+            onDismiss = { showUncertainNote = false },
+            unavailable = (lastError.cause as? NoteUnavailableException)?.reason,
+        )
+    }
+
+    if (showRejectedNote) {
+        ToastPopup(onDismissRequest = { showRejectedNote = false }, text = stringResource(Res.string.note_write_rejected))
     }
 
     if (shownVersionBanned != null) {

@@ -11,6 +11,8 @@ import de.westnordost.streetcomplete.data.download.tiles.enclosingTilePos
 import de.westnordost.streetcomplete.data.osm.edits.upload.ElementEditsUploader
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditsUploader
+import de.westnordost.streetcomplete.data.osmnotes.edits.NoteCreationUncertainException
+import de.westnordost.streetcomplete.data.osmnotes.edits.NoteWriteRejectedException
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
 import de.westnordost.streetcomplete.data.user.UserLoginController
 import de.westnordost.streetcomplete.data.user.UserLoginSource
@@ -106,8 +108,13 @@ class Uploader(
                         elementEditsUploader.upload()
                         if (!userLoginSource.isLoggedIn) return@withLock // avoid the 2 below in debug apk
                         val otherStart = Perf.mark()
-                        noteEditsUploader.upload()
+                        val uncertain = try {
+                            noteEditsUploader.upload()
+                            null
+                        } catch (e: NoteCreationUncertainException) { e }
+                        catch (e: NoteWriteRejectedException) { e }
                         externalSourceQuestController.upload()
+                        uncertain?.let { throw it }
                         uploadTrace.addMs("otherUploads", Perf.ms(otherStart))
                     }
                 }

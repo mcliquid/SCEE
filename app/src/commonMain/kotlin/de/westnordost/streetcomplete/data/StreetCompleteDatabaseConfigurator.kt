@@ -18,6 +18,7 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmQuestsHiddenTable
 import de.westnordost.streetcomplete.data.osmcal.CalendarEventsTable
 import de.westnordost.streetcomplete.data.osmnotes.NoteTable
 import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditsTable
+import de.westnordost.streetcomplete.data.osmnotes.edits.NoteCreationAttemptsTable
 import de.westnordost.streetcomplete.data.osmnotes.notequests.NoteQuestsHiddenTable
 import de.westnordost.streetcomplete.data.presets.EditTypePresetsTable
 import de.westnordost.streetcomplete.data.user.achievements.UserAchievementsTable
@@ -31,7 +32,7 @@ import de.westnordost.streetcomplete.quests.osmose.OsmoseTable
 import de.westnordost.streetcomplete.util.logs.Log
 
 object StreetCompleteDatabaseConfigurator : DatabaseConfigurator {
-    override val version = 23
+    override val version = 24
 
     override fun onCreate(db: Database) {
         // OSM notes
@@ -40,6 +41,7 @@ object StreetCompleteDatabaseConfigurator : DatabaseConfigurator {
 
         // changes made on OSM notes
         db.exec(NoteEditsTable.CREATE)
+        db.exec(NoteCreationAttemptsTable.CREATE)
         db.exec(NoteEditsTable.SPATIAL_INDEX_CREATE)
         db.exec(NoteEditsTable.NOTE_ID_INDEX_CREATE)
 
@@ -274,6 +276,8 @@ object StreetCompleteDatabaseConfigurator : DatabaseConfigurator {
             db.deleteQuest("AddChargingStationCapacity")
             db.deleteQuest("AddChargingStationBicycleCapacity")
         }
+
+        if (oldVersion < 24) db.exec(NoteCreationAttemptsTable.CREATE)
 
         createSceeTables(db)
     }

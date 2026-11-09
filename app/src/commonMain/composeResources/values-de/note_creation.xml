@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="note_creation_uncertain">Der Server hat diese Notizänderung möglicherweise ausgeführt, aber die Bestätigung konnte nicht gespeichert werden. Lokaler Text und Fotos bleiben erhalten. Diese und folgende Änderungen derselben Notiz werden nicht automatisch wiederholt. Prüfe den Notizverlauf vor der Auflösung oder dem Verwerfen.</string>
+    <string name="note_resolution_id">ID der vorhandenen OSM-Notiz</string>
+    <string name="note_resolution_link">Vorhandene Notiz zuordnen</string>
+    <string name="note_resolution_discard">Lokale Änderung verwerfen</string>
+    <string name="note_resolution_failed">Die Zuordnung konnte nicht sicher abgeschlossen werden. Pruefe die ausgewaehlte Notiz und versuche es erneut.</string>
+    <string name="note_resolution_link_confirm">Ich habe diese vorhandene Notiz geprueft. Ohne neue Erstellung zuordnen:</string>
+    <string name="note_resolution_discard_confirm">Diese ausstehende lokale Änderung und ihre lokalen Fotos löschen? Der Server hat sie möglicherweise bereits ausgeführt. Keine OSM-Notiz wird dadurch verändert.</string>
+    <string name="note_creation_acknowledged">Der Server hat diese Änderung bestätigt. Synchronisiere zum lokalen Abschluss. Ist die Notiz verschwunden oder versteckt, kannst du diese lokale Bearbeitung nach Prüfung des Verlaufs ausdrücklich verwerfen. Es wird kein neuer Schreibzugriff ausgeführt.</string>
+    <string name="note_resolution_comment">Autor, Text und Zeit identifizieren nicht eindeutig, welcher lokale Kommentar oder Abschluss erfolgreich war. Behalte die Bearbeitung oder verwirf sie nach Prüfung des Verlaufs ausdrücklich. Keine automatische Wiederholung oder Zuordnung.</string>
+    <string name="note_resolution_history">Notizverlauf ansehen</string>
+    <string name="note_resolution_missing">Die bestätigte Notiz ist nicht verfügbar: Sie fehlt oder ist nicht mehr zugänglich. Lokale Daten bleiben bis zur ausdrücklichen Auflösung erhalten.</string>
+    <string name="note_resolution_hidden">Der Server meldet diese Notiz als versteckt (HTTP 410). Lokale Daten bleiben bis zur ausdrücklichen Auflösung erhalten.</string>
+    <string name="note_resolution_network">Die Notiz konnte wegen eines Verbindungsfehlers nicht geprüft werden. Lokale Daten sind unverändert. Versuche es später erneut.</string>
+    <string name="note_resolution_state">Diese Bearbeitung wurde verändert oder hat Folgeänderungen. Öffne sie erneut und prüfe Folgeänderungen, bevor du eine neue Notiz verwirfst.</string>
+    <string name="note_write_rejected">Der Server hat diese Notizänderung abgelehnt. Lokaler Text und Fotos bleiben erhalten. Prüfe die Notiz und korrigiere oder verwirf die ausstehende Bearbeitung ausdrücklich.</string>
+</resources>

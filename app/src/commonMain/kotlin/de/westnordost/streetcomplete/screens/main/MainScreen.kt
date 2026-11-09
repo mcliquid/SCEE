@@ -824,6 +824,7 @@ fun MainScreen(
                 onUndoEdit = { editHistoryViewModel.undo(it.key) },
                 onDismissRequest = sheet::close,
                 getEditElement = editHistoryViewModel::getEditElement,
+                getNoteCreationAttempt = editHistoryViewModel::getNoteCreationAttempt,
             )
         }
 

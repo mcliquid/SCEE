@@ -60,15 +60,17 @@ class NotesApiClientImpl(
         }
     }
 
-    override suspend fun get(id: Long): Note? = wrapApiClientExceptions {
+    override suspend fun get(id: Long): Note? = (lookup(id) as? NoteLookup.Available)?.note
+
+    override suspend fun lookup(id: Long): NoteLookup = wrapApiClientExceptions {
         try {
             val response = httpClient.get(baseUrl + "notes/$id") { expectSuccess = true }
             val source = response.bodyAsChannel().asSource().buffered()
-            return notesApiParser.parseNotes(source).singleOrNull()
+            NoteLookup.Available(notesApiParser.parseNotes(source).single())
         } catch (e: ClientRequestException) {
             when (e.response.status) {
-                // hidden by moderator, does not exist (yet)
-                HttpStatusCode.Gone, HttpStatusCode.NotFound -> return null
+                HttpStatusCode.Gone -> NoteLookup.Unavailable.HIDDEN
+                HttpStatusCode.NotFound -> NoteLookup.Unavailable.MISSING
                 else -> throw e
             }
         }

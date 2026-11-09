@@ -2,6 +2,8 @@ package de.westnordost.streetcomplete.ui.common.dialogs
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberUpdatedState
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesSource
 import de.westnordost.streetcomplete.data.download.tiles.enclosingTilePos
@@ -17,6 +19,7 @@ fun OutsideAreaDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val confirm = rememberUpdatedState(onConfirm)
     if (!downloadedTilesSource.contains(position.enclosingTilePos(ApplicationConstants.DOWNLOAD_TILE_ZOOM).toTilesRect(), 0L))
         ConfirmationDialog(
             onDismissRequest = onDismiss,
@@ -24,5 +27,5 @@ fun OutsideAreaDialog(
             text = { Text(stringResource(Res.string.outside_downloaded_area_warning)) },
             onConfirmed = onConfirm
         )
-    else onConfirm()
+    else LaunchedEffect(Unit) { confirm.value() }
 }

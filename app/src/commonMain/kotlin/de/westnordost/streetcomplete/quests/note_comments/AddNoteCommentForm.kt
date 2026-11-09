@@ -36,6 +36,7 @@ import de.westnordost.streetcomplete.data.quest.OsmNoteQuestKey
 import de.westnordost.streetcomplete.data.quest.Quest
 import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenSource
 import de.westnordost.streetcomplete.resources.*
+import de.westnordost.streetcomplete.screens.main.bottom_sheet.EditSubmission
 import de.westnordost.streetcomplete.ui.common.FloatingOkButton
 import de.westnordost.streetcomplete.ui.common.bottom_sheet.BottomSheetFormScaffold
 import de.westnordost.streetcomplete.ui.common.quest.HideButton
@@ -65,6 +66,7 @@ fun AddNoteCommentForm(
     questsHiddenSource: QuestsHiddenSource = koinInject(),
 ) {
     val prefs: Preferences = koinInject()
+    val submission = remember(note.id) { EditSubmission() }
     var noteText by rememberSaveable { mutableStateOf("") }
     var noteImagePaths by rememberSaveable { mutableStateOf(listOf<String>()) }
     var close by rememberSaveable { mutableStateOf(false) }
@@ -160,7 +162,7 @@ fun AddNoteCommentForm(
             fab = {
                 FloatingOkButton(
                     visible = noteText.isNotBlank(),
-                    onClick = { onCommentNote(noteText.trim(), noteImagePaths, close) },
+                    onClick = { submission.run { onCommentNote(noteText.trim(), noteImagePaths, close) } },
                 )
             },
             modifier = modifier,

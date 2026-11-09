@@ -22,9 +22,8 @@ enum class UploadWorkOutcome { Success, Retry, Failure }
  * (`Result.failure()`). That is 1 initial attempt + [maxAutomaticRetries] automatic retries.
  *
  * A retry enqueues a new [Uploader.upload] starting from `getOldestUnsynced()`.
- * It does not resume the failed HTTP call. A transport failure after a successful
- * server-side create can theoretically duplicate that create on a later run; that
- * already exists for manual retry.
+ * It does not resume the failed HTTP call. Note CREATE reservations survive retries;
+ * an uncertain outcome requires manual review and is not a retryable connection error.
  */
 fun uploadWorkOutcome(
     error: Throwable?,

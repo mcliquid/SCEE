@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="note_creation_uncertain">The server may have applied this note change, but confirmation could not be saved. Your local text and photos are retained. This change and later changes on this note will not be repeated automatically. Check the note history before resolving or discarding it.</string>
+    <string name="note_resolution_id">Existing OSM note ID</string>
+    <string name="note_resolution_link">Link existing note</string>
+    <string name="note_resolution_discard">Discard local change</string>
+    <string name="note_resolution_failed">Resolution failed. The note was not safely resolved. Check the selected note and try again.</string>
+    <string name="note_resolution_link_confirm">I checked this existing note. Link it without creating a new note:</string>
+    <string name="note_resolution_discard_confirm">Delete this pending local change and its local photos? The server may already have applied it. This does not change any OSM note.</string>
+    <string name="note_creation_acknowledged">The server acknowledged this change. Synchronize to finish local processing. If the note is missing or hidden, you can explicitly discard this local edit after checking its history; no new request will be sent.</string>
+    <string name="note_resolution_comment">Matching author, text and time does not identify which local comment or close succeeded. Keep this edit, or explicitly discard it after checking the note history. No automatic retry or automatic matching is performed.</string>
+    <string name="note_resolution_history">View note history</string>
+    <string name="note_resolution_missing">The acknowledged note is unavailable (missing or no longer accessible). Your local data is retained until you explicitly resolve it.</string>
+    <string name="note_resolution_hidden">The server reports this note as hidden (HTTP 410). Your local data is retained until you explicitly resolve it.</string>
+    <string name="note_resolution_network">The note could not be checked because of a connection error. Local data is unchanged. Try again later.</string>
+    <string name="note_resolution_state">This edit changed or has dependent changes. Reopen it and review subsequent edits before discarding a new note.</string>
+    <string name="note_write_rejected">The server rejected this note change. Local text and photos are retained. Check the note and correct or explicitly discard the pending edit.</string>
+</resources>

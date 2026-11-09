@@ -54,8 +54,13 @@ import de.westnordost.streetcomplete.util.locale.DateTimeFormatStyle
 import de.westnordost.streetcomplete.util.locale.LocalDateFormatter
 import de.westnordost.streetcomplete.util.locale.LocalTimeFormatter
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
+import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEdit
+import de.westnordost.streetcomplete.data.osmnotes.edits.NoteCreationAttempt
+import de.westnordost.streetcomplete.screens.main.errors.UncertainNoteDialog
 import kotlinx.serialization.json.Json
 import org.jetbrains.compose.resources.stringResource
+import org.jetbrains.compose.resources.StringResource
 import kotlin.time.Instant
 
 /** Shows the edit history in a sidebar. The edit history is grouped by time and date, ordered by
@@ -66,16 +71,18 @@ fun EditHistorySidebar(
     selectedEdit: Edit?,
     isUploading: Boolean,
     onSelectEdit: (Edit) -> Unit,
-    onUndoEdit: (Edit) -> Unit,
+    onUndoEdit: suspend (Edit) -> Boolean,
     onDismissRequest: () -> Unit,
     getEditElement: suspend (Edit) -> Element?,
+    getNoteCreationAttempt: suspend (Edit) -> NoteCreationAttempt?,
     modifier: Modifier = Modifier,
 ) {
     val scope = rememberCoroutineScope()
 
+    var resolveNoteId by remember { mutableStateOf<Long?>(null) }
     var showUndoDialog by remember { mutableStateOf(false) }
     var editElement by rememberSerializable { mutableStateOf<Element?>(null) }
-    var showUndoNotAvailable by remember { mutableStateOf(false) }
+    var undoUnavailableMessage by remember { mutableStateOf<StringResource?>(null) }
 
     // scrolling to selected item
     val selectedIndex = remember(selectedEdit) {
@@ -96,14 +103,28 @@ fun EditHistorySidebar(
     val backProgress by rememberPredictiveBackProgress(onBackCompleted = onDismissRequest)
     val dir = LocalLayoutDirection.current.dir
 
-    fun onClickUndoEdit(edit: Edit) {
-        if (isEditUndoEnabled(edit, isUploading)) {
-            scope.launch {
-                editElement = getEditElement(edit)
-                showUndoDialog = true
-            }
-        } else {
-            showUndoNotAvailable = true
+    suspend fun routeProtectedNote(edit: Edit): Boolean {
+        getNoteCreationAttempt(edit) ?: return false
+        resolveNoteId = (edit as NoteEdit).id
+        return true
+    }
+
+    fun onClickUndoEdit(edit: Edit, confirmed: Boolean = false) {
+        if (!isEditUndoEnabled(edit, isUploading)) {
+            undoUnavailableMessage = Res.string.toast_undo_unavailable
+            return
+        }
+        scope.launch {
+            try {
+                if (routeProtectedNote(edit)) return@launch
+                if (confirmed) {
+                    if (!onUndoEdit(edit) && !routeProtectedNote(edit)) undoUnavailableMessage = Res.string.toast_undo_unavailable
+                } else {
+                    editElement = getEditElement(edit)
+                    showUndoDialog = true
+                }
+            } catch (e: CancellationException) { throw e }
+            catch (e: Exception) { undoUnavailableMessage = Res.string.toast_undo_unavailable }
         }
     }
 
@@ -162,20 +183,18 @@ fun EditHistorySidebar(
                 showUndoDialog = false
                 editElement = null
             },
-            onConfirmed = {
-                if (isEditUndoEnabled(selectedEdit, isUploading)) {
-                    onUndoEdit(selectedEdit)
-                } else {
-                    showUndoNotAvailable = true
-                }
-            }
+            onConfirmed = { onClickUndoEdit(selectedEdit, confirmed = true) }
         )
     }
 
-    if (showUndoNotAvailable) {
+    resolveNoteId?.let { id ->
+        UncertainNoteDialog(id, onDismiss = { resolveNoteId = null })
+    }
+
+    undoUnavailableMessage?.let { message ->
         ToastPopup(
-            onDismissRequest = { showUndoNotAvailable = false },
-            text = stringResource(Res.string.toast_undo_unavailable)
+            onDismissRequest = { undoUnavailableMessage = null },
+            text = stringResource(message)
         )
     }
 }

@@ -112,7 +112,9 @@ kotlin {
         }
 
         withDeviceTest {
-            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+            instrumentationRunner = if (providers.gradleProperty("noteRestartTest").orNull == "true")
+                "de.westnordost.streetcomplete.NoteRestartInstrumentation"
+            else "androidx.test.runner.AndroidJUnitRunner"
         }
 
         compilerOptions {

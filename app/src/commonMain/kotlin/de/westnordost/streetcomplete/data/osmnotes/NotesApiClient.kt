@@ -47,6 +47,11 @@ interface NotesApiClient {
      */
     suspend fun get(id: Long): Note?
 
+    /** Unlike get(), preserves 404/410 distinctions for recovery; network errors still throw. */
+    suspend fun lookup(id: Long): NoteLookup =
+        get(id)?.let { NoteLookup.Available(it) } ?: NoteLookup.Unavailable.UNKNOWN
+
+
     // copy of comment with different URL
     suspend fun close(id: Long, comment: String): Note
 
@@ -65,3 +70,11 @@ interface NotesApiClient {
      */
     suspend fun getAllOpen(bounds: BoundingBox, limit: Int? = null): List<Note>
 }
+
+sealed interface NoteLookup {
+    data class Available(val note: Note) : NoteLookup
+    enum class Unavailable : NoteLookup { MISSING, HIDDEN, UNKNOWN }
+}
+
+class NoteUnavailableException(val reason: NoteLookup.Unavailable) :
+    RuntimeException("Acknowledged note is unavailable: $reason")

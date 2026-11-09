@@ -49,6 +49,12 @@ class NoteEditsDao(private val db: Database) {
             orderBy = CREATED_TIMESTAMP
         ) { it.toNoteEdit() }
 
+    fun getOldestUnsyncedExcluding(noteIds: Set<Long>): NoteEdit? =
+        db.queryOne(NAME,
+            where = "$IS_SYNCED = 0 AND $NOTE_ID NOT IN (${noteIds.joinToString(",")})",
+            orderBy = CREATED_TIMESTAMP
+        ) { it.toNoteEdit() }
+
     fun getUnsyncedCount(): Int =
         db.queryOne(NAME,
             columns = arrayOf("COUNT(*) as count"),
@@ -89,15 +95,61 @@ class NoteEditsDao(private val db: Database) {
             orderBy = CREATED_TIMESTAMP
         ) { LatLon(it.getDouble(LATITUDE), it.getDouble(LONGITUDE)) }
 
+    fun getCreationAttempt(id: Long): NoteCreationAttempt? =
+        db.queryOne(NoteCreationAttemptsTable.NAME, where = "edit_id = $id") {
+            NoteCreationAttempt(it.getString("text"), it.getLongOrNull("note_id"))
+        }
+
+    fun beginCreation(id: Long, text: String): Boolean = db.transaction {
+        val edit = get(id) ?: return@transaction false
+        if (edit.isSynced) return@transaction false
+        db.insertOrIgnore(NoteCreationAttemptsTable.NAME, listOf("edit_id" to id, "text" to text)) != -1L
+    }
+
+    fun clearRejectedCreation(id: Long) {
+        db.delete(NoteCreationAttemptsTable.NAME, "edit_id = $id AND note_id IS NULL")
+    }
+
+    fun acknowledgeCreation(id: Long, noteId: Long) {
+        check(db.update(NoteCreationAttemptsTable.NAME, listOf("note_id" to noteId), "edit_id = $id") == 1)
+    }
+
+    fun markSynced(edit: NoteEdit, noteId: Long): Boolean = db.transaction {
+        if (edit.noteId != noteId) updateNoteId(edit.noteId, noteId)
+        check(markSynced(edit.id)) { "Note edit ${edit.id} no longer exists" }
+        true
+    }
+
     fun markSynced(id: Long): Boolean =
         db.update(NAME, listOf(IS_SYNCED to 1), "$ID = $id", null) == 1
 
-    fun delete(id: Long): Boolean =
+    fun deleteUnattemptedCreation(id: Long): Boolean = db.transaction {
+        if (getCreationAttempt(id) != null) return@transaction false
+        delete(id)
+    }
+
+    fun discardUncertainCreation(id: Long): NoteEdit = db.transaction {
+        val edit = checkNotNull(get(id))
+        checkNotNull(getCreationAttempt(id))
+        check(!edit.isSynced)
+        check(edit.action != NoteEditAction.CREATE || getAllUnsyncedForNote(edit.noteId).size == 1) {
+            "Dependent edits must be reviewed before discarding this note"
+        }
+        check(delete(id))
+        edit
+    }
+
+    fun delete(id: Long): Boolean = db.transaction {
+        db.delete(NoteCreationAttemptsTable.NAME, "edit_id = $id")
         db.delete(NAME, "$ID = $id") == 1
+    }
 
     fun deleteAll(ids: List<Long>): Int {
         if (ids.isEmpty()) return 0
-        return db.delete(NAME, "$ID IN (${ids.joinToString(",")})")
+        return db.transaction {
+            db.delete(NoteCreationAttemptsTable.NAME, "edit_id IN (${ids.joinToString(",")})")
+            db.delete(NAME, "$ID IN (${ids.joinToString(",")})")
+        }
     }
 
     fun getSyncedOlderThan(timestamp: Long): List<NoteEdit> =

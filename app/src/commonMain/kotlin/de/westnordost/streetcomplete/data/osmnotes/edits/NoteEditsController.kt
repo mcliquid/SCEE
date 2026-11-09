@@ -20,6 +20,18 @@ interface NoteEditsController : NoteEditsSource {
 
     fun markImagesActivated(id: Long): Boolean
 
+    fun getOldestUnsyncedExcluding(noteIds: Set<Long>): NoteEdit?
+
+    fun getCreationAttempt(id: Long): NoteCreationAttempt?
+
+    fun beginCreation(id: Long, text: String): Boolean
+
+    fun clearRejectedCreation(id: Long)
+
+    fun discardUncertainCreation(id: Long)
+
+    fun acknowledgeCreation(id: Long, noteId: Long)
+
     fun markSynced(edit: NoteEdit, note: Note)
 
     fun markSyncFailed(edit: NoteEdit): Boolean

@@ -25,7 +25,7 @@ class AddIsSidepath : OsmElementQuestType<IsSidepathAnswer> {
 
     override val changesetComment = "Specify whether a path is a sidepath of a road"
     override val wikiLink = "Key:is_sidepath"
-    override val icon = Res.drawable.ic_quest_poi_bicycle
+    override val icon = Res.drawable.quest_sidepath_road
     override val hint = Res.string.quest_is_sidepath_hint
     override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
     override val title = Res.string.quest_is_sidepath_title

@@ -43,7 +43,7 @@ class AddSidepathUsage : OsmElementQuestType<SidepathUsageAnswer> {
 
     override val changesetComment = "Specify whether separately mapped cycleways are compulsory"
     override val wikiLink = "Tag:bicycle=use_sidepath"
-    override val icon = Res.drawable.quest_bicycleway
+    override val icon = Res.drawable.quest_sidepath_usage
     override val title = Res.string.quest_sidepath_usage_title
     override val achievements = listOf(BICYCLIST)
     override val enabledInCountries = NoCountriesExcept(*SIDEPATH_USAGE_COUNTRIES.toTypedArray())

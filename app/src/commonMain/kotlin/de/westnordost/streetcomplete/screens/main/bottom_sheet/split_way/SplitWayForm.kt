@@ -3,14 +3,10 @@ package de.westnordost.streetcomplete.screens.main.bottom_sheet.split_way
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,7 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitAtLinePosition
@@ -36,7 +32,6 @@ import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.crosshair
 import de.westnordost.streetcomplete.resources.ic_check_32
 import de.westnordost.streetcomplete.resources.ok
 import de.westnordost.streetcomplete.resources.quest_split_way_many_splits_confirmation_description
@@ -54,7 +49,6 @@ import de.westnordost.streetcomplete.ui.common.quest.LocalMapMarkersCallback
 import de.westnordost.streetcomplete.ui.common.quest.Marker
 import de.westnordost.streetcomplete.ui.common.quest.OnMap
 import de.westnordost.streetcomplete.ui.ktx.toPx
-import de.westnordost.streetcomplete.ui.theme.Dimensions
 import de.westnordost.streetcomplete.ui.util.rememberSerializable
 import de.westnordost.streetcomplete.util.ktx.toPosition
 import de.westnordost.streetcomplete.util.math.distanceTo
@@ -67,6 +61,8 @@ import org.koin.compose.koinInject
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+
+const val SPLIT_WAY_SNAP_TARGET_TAG = "split_way_snap_target"
 
 /** Form that lets the user split an OSM way */
 @Composable
@@ -189,18 +185,18 @@ fun SplitWayForm(
     }
 
     Box(modifier = modifier.fillMaxSize()) {
-        val openFormPadding = Dimensions.getOpenQuestFormMapPadding(
-            LocalWindowInfo.current,
-            WindowInsets.safeDrawing.asPaddingValues()
-        )
-        Icon(
-            painter = painterResource(Res.drawable.crosshair),
-            contentDescription = null,
-            modifier = Modifier
-                .padding(openFormPadding)
-                .align(Alignment.Center),
-            tint = MaterialTheme.colors.onSurface.copy(alpha = ContentAlpha.medium)
-        )
+        // The way is snapped to the center of the map (see Crosshair()), so as long as it is not
+        // within reach, show the snip preview there, dimmed, as a hint where to move the way to
+        if (scissorsPosition == null) {
+            Image(
+                painter = painterResource(Res.drawable.scissors_cut_preview),
+                contentDescription = null,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .testTag(SPLIT_WAY_SNAP_TARGET_TAG),
+                alpha = ContentAlpha.medium
+            )
+        }
 
         BottomSheetFormScaffold(
             onDismissRequest = ::dismiss,

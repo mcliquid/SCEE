@@ -25,9 +25,15 @@ import de.westnordost.streetcomplete.data.overlays.Edit
 import de.westnordost.streetcomplete.data.overlays.OverlayAction
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.osm.changeToSteps
+import de.westnordost.streetcomplete.data.osm.osmquests.Answer as QuestAnswer
+import de.westnordost.streetcomplete.data.osm.osmquests.Action as QuestAction
 import de.westnordost.streetcomplete.osm.surface.Surface
+import de.westnordost.streetcomplete.osm.surface.SurfaceTracktypeResolution
+import de.westnordost.streetcomplete.osm.surface.applyTo
 import de.westnordost.streetcomplete.osm.surface.icon
+import de.westnordost.streetcomplete.osm.surface.surfaceAnswerNeedsConflictDialog
 import de.westnordost.streetcomplete.osm.surface.title
+import de.westnordost.streetcomplete.quests.surface.SurfaceTracktypeConflictForm
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.item_select.ImageWithLabel
 import de.westnordost.streetcomplete.ui.common.overlay.ItemPairSelectOverlayForm
@@ -49,8 +55,31 @@ import org.koin.compose.koinInject
     val originalItem = remember(element) { parseSurfaceOverlayAnswer(element.tags) }
 
     var selectedItem by rememberSerializable(originalItem) { mutableStateOf(originalItem) }
+    var conflictSurface by remember { mutableStateOf<Surface?>(null) }
 
     val items = Surface.getSelectableValuesForWays(countryInfo.countryCode)
+
+    val pendingConflict = conflictSurface
+    if (pendingConflict != null) {
+        SurfaceTracktypeConflictForm(
+            tags = element.tags,
+            countryInfo = countryInfo,
+            on = { action ->
+                when (action) {
+                    is QuestAnswer<SurfaceTracktypeResolution> -> {
+                        val changesBuilder = StringMapChangesBuilder(element.tags)
+                        action.value.applyTo(changesBuilder)
+                        updateElementTagsActionOrNull(element, changesBuilder.create())?.let { on(Edit(it)) }
+                    }
+                    QuestAction.CantSay, QuestAction.Dismiss -> on(de.westnordost.streetcomplete.data.overlays.Action.Dismiss)
+                    else -> Unit
+                }
+            },
+            onBack = { conflictSurface = null },
+            initialSurface = pendingConflict,
+        )
+        return
+    }
 
     @Composable fun createOtherAnswers(): List<AnswerItem> {
         val result = ArrayList<AnswerItem>()
@@ -109,9 +138,13 @@ import org.koin.compose.koinInject
                 itemContent = { SurfaceItemContent(it) },
                 lastPickedItemContent = { LastPickedSurfaceContent(it) },
                 onClickOk = { selectedItem ->
-                    val changesBuilder = StringMapChangesBuilder(element.tags)
-                    SingleSurface(selectedItem).applyTo(changesBuilder)
-                    updateElementTagsActionOrNull(element, changesBuilder.create())?.let { on(Edit(it)) }
+                    if (surfaceAnswerNeedsConflictDialog(element.tags, selectedItem)) {
+                        conflictSurface = selectedItem
+                    } else {
+                        val changesBuilder = StringMapChangesBuilder(element.tags)
+                        SingleSurface(selectedItem).applyTo(changesBuilder)
+                        updateElementTagsActionOrNull(element, changesBuilder.create())?.let { on(Edit(it)) }
+                    }
                 },
                 prefs = preferences,
                 favoriteKey = "SurfaceOverlayForm.Single",

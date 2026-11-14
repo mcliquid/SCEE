@@ -1759,6 +1759,12 @@
     <string name="quest_tourism_information_map">Map</string>
     <string name="quest_tourism_information_guidepost">Guidepost</string>
 
+    <string name="quest_surface_tracktype_conflict_explanation">Surface material and track firmness describe different things, but these values look inconsistent. Correct one value, confirm a justifiable exception, or leave without editing.</string>
+    <string name="quest_surface_tracktype_conflict_current">Current: %1$s · %2$s</string>
+    <string name="quest_surface_tracktype_conflict_correct_surface">Correct surface material…</string>
+    <string name="quest_surface_tracktype_conflict_correct_tracktype">Correct track firmness…</string>
+    <string name="quest_surface_tracktype_conflict_keep_both">Both values are correct</string>
+
     <string name="quest_tracktype_title">What’s the surface firmness of this track?</string>
     <string name="quest_tracktype_grade1">Solid</string>
     <string name="quest_tracktype_grade2">Mostly solid</string>

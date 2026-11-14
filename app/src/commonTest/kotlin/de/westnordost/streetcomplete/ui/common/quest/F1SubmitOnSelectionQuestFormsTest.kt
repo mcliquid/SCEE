@@ -59,7 +59,7 @@ class F1SubmitOnSelectionQuestFormsTest {
 
     @Test fun `F1 quest forms wire submitOnSelection`() {
         val withSubmitOnSelection = listOf(
-            "de/westnordost/streetcomplete/quests/surface/AddRoadSurface.kt",
+            "de/westnordost/streetcomplete/quests/surface/AddRoadSurfaceForm.kt",
             "de/westnordost/streetcomplete/quests/surface/AddPathSurfaceForm.kt",
             "de/westnordost/streetcomplete/quests/surface/AddPathPartSurfaceForm.kt",
             "de/westnordost/streetcomplete/quests/smoothness/AddSmoothnessForm.kt",

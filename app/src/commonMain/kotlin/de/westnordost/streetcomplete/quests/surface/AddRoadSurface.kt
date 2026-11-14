@@ -10,21 +10,14 @@ import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.surface.INVALID_SURFACES
-import de.westnordost.streetcomplete.osm.surface.INVALID_SURFACES_FOR_TRACKTYPES
-import de.westnordost.streetcomplete.osm.surface.Surface
+import de.westnordost.streetcomplete.osm.surface.SurfaceTracktypeResolution
 import de.westnordost.streetcomplete.osm.surface.UNPAVED_SURFACES
 import de.westnordost.streetcomplete.osm.surface.applyTo
-import de.westnordost.streetcomplete.osm.surface.icon
-import de.westnordost.streetcomplete.osm.surface.title
 import de.westnordost.streetcomplete.quests.FullElementSelectionDialog
 import de.westnordost.streetcomplete.quests.questPrefix
 import de.westnordost.streetcomplete.resources.*
-import de.westnordost.streetcomplete.ui.common.item_select.ImageWithLabel
-import de.westnordost.streetcomplete.ui.common.quest.ItemSelectQuestForm
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 
-class AddRoadSurface : OsmFilterQuestType<Surface>() {
+class AddRoadSurface : OsmFilterQuestType<SurfaceTracktypeResolution>() {
 
     override val elementFilter = """
         ways with
@@ -42,9 +35,6 @@ class AddRoadSurface : OsmFilterQuestType<Surface>() {
             )
             or surface ~ ${UNPAVED_SURFACES.joinToString("|")} and surface older today -6 years
             or surface older today -12 years
-            ${INVALID_SURFACES_FOR_TRACKTYPES.entries.joinToString("\n") { (tracktype, surfaces) ->
-            "or tracktype = $tracktype and surface ~ ${surfaces.joinToString("|")}"
-            }}
           )
           and (access !~ private|no or (foot and foot !~ private|no))
           and ice_road != yes
@@ -57,23 +47,11 @@ class AddRoadSurface : OsmFilterQuestType<Surface>() {
     override val achievements = listOf(CAR, BICYCLIST)
 
     @Composable
-    override fun Form(on: (QuestAction<Surface>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
-        ItemSelectQuestForm(
-            on = on,
-            items = Surface.getSelectableValuesForWays(countryInfo.countryCode),
-            itemContent = { item ->
-                ImageWithLabel(item.icon?.let { painterResource(it) }, stringResource(item.title))
-            },
-            favoriteKey = "AddRoadSurfaceForm",
-            submitOnSelection = true,
-            title = stringResource(
-                if (element.tags["area"] == "yes") Res.string.quest_streetSurface_square_title
-                else Res.string.quest_streetSurface_title
-            ),
-        )
+    override fun Form(on: (QuestAction<SurfaceTracktypeResolution>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
+        AddRoadSurfaceForm(on, element, geometry, countryInfo)
     }
 
-    override fun applyAnswerTo(answer: Surface, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+    override fun applyAnswerTo(answer: SurfaceTracktypeResolution, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         answer.applyTo(tags)
     }
 

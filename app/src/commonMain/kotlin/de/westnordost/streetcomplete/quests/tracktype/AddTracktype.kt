@@ -9,11 +9,20 @@ import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.BICYCLIST
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.osm.surface.SurfaceTracktypeResolution
+import de.westnordost.streetcomplete.osm.surface.applyTo
 import de.westnordost.streetcomplete.osm.surface.UNPAVED_SURFACES
-import de.westnordost.streetcomplete.osm.updateWithCheckDate
+import de.westnordost.streetcomplete.osm.surface.tracktypeAnswerNeedsConflictDialog
+import de.westnordost.streetcomplete.quests.surface.SurfaceTracktypeConflictForm
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.item_select.ImageWithLabel
 import de.westnordost.streetcomplete.ui.common.quest.ItemSelectQuestForm
+import de.westnordost.streetcomplete.ui.util.rememberSerializable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import de.westnordost.streetcomplete.data.osm.osmquests.Action
+import de.westnordost.streetcomplete.data.osm.osmquests.Answer
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -23,7 +32,7 @@ private val SEALED_SURFACES = setOf(
     "asphalt", "concrete", "chipseal", "paved", "concrete:plates", "concrete:lanes",
 )
 
-class AddTracktype : OsmFilterQuestType<Tracktype>() {
+class AddTracktype : OsmFilterQuestType<SurfaceTracktypeResolution>() {
 
     override val elementFilter = """
         ways with
@@ -47,16 +56,41 @@ class AddTracktype : OsmFilterQuestType<Tracktype>() {
     override val achievements = listOf(CAR, BICYCLIST)
 
     @Composable
-    override fun Form(on: (QuestAction<Tracktype>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
+    override fun Form(on: (QuestAction<SurfaceTracktypeResolution>) -> Unit, element: Element, geometry: ElementGeometry, countryInfo: CountryInfo) {
+        var conflictTracktype by rememberSerializable { mutableStateOf<Tracktype?>(null) }
+        val pendingTracktype = conflictTracktype
+        if (pendingTracktype != null) {
+            SurfaceTracktypeConflictForm(
+                tags = element.tags,
+                countryInfo = countryInfo,
+                on = on,
+                onBack = { conflictTracktype = null },
+                initialTracktype = pendingTracktype,
+            )
+            return
+        }
+
         ItemSelectQuestForm(
-            on = on,
+            on = { action ->
+                when (action) {
+                    is Answer<Tracktype> -> {
+                        val tracktype = action.value
+                        if (tracktypeAnswerNeedsConflictDialog(element.tags, tracktype.osmValue)) {
+                            conflictTracktype = tracktype
+                        } else {
+                            on(Answer(SurfaceTracktypeResolution.TracktypeOnly(tracktype.osmValue)))
+                        }
+                    }
+                    is Action -> on(action)
+                }
+            },
             items = Tracktype.entries,
             itemContent = { ImageWithLabel(painterResource(it.icon), stringResource(it.title)) },
             submitOnSelection = true,
         )
     }
 
-    override fun applyAnswerTo(answer: Tracktype, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
-        tags.updateWithCheckDate("tracktype", answer.osmValue)
+    override fun applyAnswerTo(answer: SurfaceTracktypeResolution, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+        answer.applyTo(tags)
     }
 }

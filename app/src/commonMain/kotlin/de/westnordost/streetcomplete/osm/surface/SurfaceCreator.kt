@@ -1,7 +1,6 @@
 package de.westnordost.streetcomplete.osm.surface
 
 import de.westnordost.streetcomplete.osm.Tags
-import de.westnordost.streetcomplete.osm.removeCheckDatesForKey
 import de.westnordost.streetcomplete.osm.updateCheckDateForKey
 import de.westnordost.streetcomplete.osm.updateWithCheckDate
 
@@ -30,16 +29,6 @@ fun Surface.applyTo(tags: Tags, prefix: String? = null, updateCheckDate: Boolean
 
     val hasChangedSurfaceCategory =
         hasChanged && parseSurfaceCategory(osmValue) != parseSurfaceCategory(previousOsmValue)
-
-    val invalidTracktype =
-        prefix == null && osmValue in INVALID_SURFACES_FOR_TRACKTYPES[tags["tracktype"]].orEmpty()
-
-    // category of surface changed -> likely that tracktype is not correct anymore
-    // if tracktype and surface don't match at all, also delete tracktype
-    if (prefix == null && (hasChangedSurfaceCategory || invalidTracktype)) {
-        tags.remove("tracktype")
-        tags.removeCheckDatesForKey("tracktype")
-    }
 
     val isRefinement = when (previousOsmValue) {
         "paved" -> osmValue in PAVED_SURFACES

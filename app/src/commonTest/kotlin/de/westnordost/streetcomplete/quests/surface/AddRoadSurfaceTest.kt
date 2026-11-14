@@ -25,16 +25,18 @@ class AddRoadSurfaceTest {
         assertIsApplicable("highway" to "residential")
     }
 
-    @Test fun `applicable where poor tracktype conflicts with paved surface`() {
-        assertIsApplicable("highway" to "track", "surface" to "asphalt", "tracktype" to "grade5")
+    @Test fun `not applicable where poor tracktype conflicts with paved surface without stale surface`() {
+        assertIsNotApplicable("highway" to "track", "surface" to "asphalt", "tracktype" to "grade5")
+        assertIsNotApplicable("highway" to "track", "surface" to "asphalt", "tracktype" to "grade3")
     }
 
-    @Test fun `applicable where high quality tracktype conflicts with poor surface`() {
-        assertIsApplicable("highway" to "track", "surface" to "sand", "tracktype" to "grade1")
+    @Test fun `not applicable where high quality tracktype conflicts with poor surface without stale surface`() {
+        assertIsNotApplicable("highway" to "track", "surface" to "sand", "tracktype" to "grade1")
     }
 
     @Test fun `not applicable to tagged surface with fitting tracktype`() {
         assertIsNotApplicable("highway" to "track", "surface" to "asphalt", "tracktype" to "grade1")
+        assertIsNotApplicable("highway" to "track", "surface" to "compacted", "tracktype" to "grade1")
     }
 
     @Test fun `applicable to surface tags not providing proper info`() {

@@ -38,6 +38,7 @@ class GpxNotesStoreTest {
         assertEquals(1, text.occurrences("first"))
         assertEquals(1, text.occurrences("second"))
         assertFalse(SystemFileSystem.exists(Path(directory, "notex.gpx.tmp")))
+        assertFalse(SystemFileSystem.exists(Path(directory, "notex.gpx.bak")))
     }
 
     @Test fun `parallel writes do not drop or duplicate a note`() = runBlocking {
@@ -68,7 +69,7 @@ class GpxNotesStoreTest {
         store().append("kept", emptyList(), p(), null)
         val before = readNotes()
         var fail = true
-        val flaky = GpxNotesStore(SystemFileSystem, directory) { if (fail) throw IOException("disk") }
+        val flaky = GpxNotesStore(SystemFileSystem, directory, beforeCommit = { if (fail) throw IOException("disk") })
         var threw = false
         try {
             flaky.append("lost", emptyList(), p(), null)
@@ -112,6 +113,56 @@ class GpxNotesStoreTest {
         assertTrue(controller.saveGpxNote(p(), "yes", emptyList(), null))
         assertEquals(1, readNotes().occurrences("yes"))
         assertEquals(0, readNotes().occurrences("nope"))
+    }
+
+    @Test fun `atomic replace failure still installs the finished file`() = runBlocking {
+        store().append("kept", emptyList(), p(), null)
+        val flaky = GpxNotesStore(SystemFileSystem, directory, failAtomicReplace = { true })
+        flaky.append("added", emptyList(), p(), null)
+        val text = readNotes()
+        assertEquals(1, text.occurrences("kept"))
+        assertEquals(1, text.occurrences("added"))
+        assertFalse(SystemFileSystem.exists(Path(directory, "notex.gpx.tmp")))
+        assertFalse(SystemFileSystem.exists(Path(directory, "notex.gpx.bak")))
+    }
+
+    @Test fun `a failed backup install restores the original and the next write succeeds`() = runBlocking {
+        store().append("kept", emptyList(), p(), null)
+        val before = readNotes()
+        var failInstall = true
+        val flaky = GpxNotesStore(
+            SystemFileSystem,
+            directory,
+            failAtomicReplace = { true },
+            failBackupInstall = { failInstall },
+        )
+        var threw = false
+        try {
+            flaky.append("lost", emptyList(), p(), null)
+        } catch (_: IOException) {
+            threw = true
+        }
+        assertTrue(threw)
+        assertEquals(before, readNotes())
+        assertFalse(SystemFileSystem.exists(Path(directory, "notex.gpx.tmp")))
+        assertFalse(SystemFileSystem.exists(Path(directory, "notex.gpx.bak")))
+        failInstall = false
+        flaky.append("after", emptyList(), p(), null)
+        val text = readNotes()
+        assertEquals(1, text.occurrences("kept"))
+        assertEquals(0, text.occurrences("lost"))
+        assertEquals(1, text.occurrences("after"))
+    }
+
+    @Test fun `an interrupted replacement is recovered by the next write`() = runBlocking {
+        store().append("kept", emptyList(), p(), null)
+        SystemFileSystem.atomicMove(notesFile, Path(directory, "notex.gpx.bak"))
+        assertFalse(SystemFileSystem.exists(notesFile))
+        store().append("after", emptyList(), p(), null)
+        val text = readNotes()
+        assertEquals(1, text.occurrences("kept"))
+        assertEquals(1, text.occurrences("after"))
+        assertFalse(SystemFileSystem.exists(Path(directory, "notex.gpx.bak")))
     }
 
     private fun store() = GpxNotesStore(SystemFileSystem, directory)

@@ -21,6 +21,8 @@ internal class GpxNotesStore(
     private val fileSystem: FileSystem,
     private val directory: Path,
     private val beforeCommit: () -> Unit = {},
+    private val failAtomicReplace: () -> Boolean = { false },
+    private val failBackupInstall: () -> Boolean = { false },
 ) {
     private val mutex = Mutex()
     private val serializer = GpxNoteSerializer(ApplicationConstants.USER_AGENT)
@@ -33,6 +35,7 @@ internal class GpxNotesStore(
     ) {
         mutex.withLock {
             fileSystem.createDirectories(directory, mustCreate = false)
+            recoverInterrupted(NOTES_FILE)
             val imageText = if (imagePaths.isEmpty()) {
                 ""
             } else {
@@ -55,23 +58,72 @@ internal class GpxNotesStore(
     private fun writeTrack(recordedTrack: List<Trackpoint>?): String? {
         if (recordedTrack.isNullOrEmpty()) return null
         var i = 1
-        while (fileSystem.exists(Path(directory, "track_$i.gpx"))) i += 1
+        while (true) {
+            val name = "track_$i.gpx"
+            recoverInterrupted(name)
+            if (!fileSystem.exists(Path(directory, name))) break
+            i += 1
+        }
         val name = "track_$i.gpx"
         replace(name, serializer.serializeTrack(name.substringBefore(".gpx"), recordedTrack))
         return name
     }
 
     private fun replace(fileName: String, text: String) {
-        val tempName = "$fileName.tmp"
-        val temp = Path(directory, tempName)
+        recoverInterrupted(fileName)
+        val temp = Path(directory, "$fileName.tmp")
         val target = Path(directory, fileName)
+        val backup = Path(directory, "$fileName.bak")
         fileSystem.sink(temp).buffered().use { it.writeString(text) }
-        try {
-            fileSystem.atomicMove(temp, target)
-        } catch (_: IOException) {
-            fileSystem.sink(target).buffered().use { it.writeString(text) }
-            fileSystem.delete(temp, mustExist = false)
+        if (replaceAtomically(temp, target)) {
+            fileSystem.delete(backup, mustExist = false)
+            return
         }
+        // Never truncate the live file. Park it, then move the finished temp into place.
+        val hadTarget = fileSystem.exists(target)
+        if (hadTarget) {
+            if (fileSystem.exists(backup)) fileSystem.delete(backup, mustExist = false)
+            try {
+                fileSystem.atomicMove(target, backup)
+            } catch (e: IOException) {
+                fileSystem.delete(temp, mustExist = false)
+                throw e
+            }
+        }
+        try {
+            if (failBackupInstall()) throw IOException("backup install")
+            fileSystem.atomicMove(temp, target)
+        } catch (e: IOException) {
+            if (hadTarget && !fileSystem.exists(target) && fileSystem.exists(backup)) {
+                fileSystem.atomicMove(backup, target)
+            }
+            fileSystem.delete(temp, mustExist = false)
+            throw e
+        }
+        fileSystem.delete(backup, mustExist = false)
+    }
+
+    private fun replaceAtomically(temp: Path, target: Path): Boolean {
+        if (failAtomicReplace()) return false
+        return try {
+            fileSystem.atomicMove(temp, target)
+            true
+        } catch (_: IOException) {
+            false
+        }
+    }
+
+    /** A crash between parking the old file and installing the new one leaves only the `.bak`. */
+    private fun recoverInterrupted(fileName: String) {
+        val target = Path(directory, fileName)
+        val backup = Path(directory, "$fileName.bak")
+        val temp = Path(directory, "$fileName.tmp")
+        if (!fileSystem.exists(target) && fileSystem.exists(backup)) {
+            fileSystem.atomicMove(backup, target)
+        } else if (fileSystem.exists(backup)) {
+            fileSystem.delete(backup, mustExist = false)
+        }
+        if (fileSystem.exists(temp)) fileSystem.delete(temp, mustExist = false)
     }
 
     private companion object {

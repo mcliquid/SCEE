@@ -14,7 +14,18 @@ interface NoteEditsController : NoteEditsSource {
         imagePaths: List<String> = emptyList(),
         track: List<Trackpoint>? = null,
         isGpxNote: Boolean = false
-    )
+    ): Boolean
+
+    /**
+     * Appends one local GPX note. False when the file was not written; a failure does not block
+     * the next note. Callers must not show success on false.
+     */
+    suspend fun saveGpxNote(
+        position: LatLon,
+        text: String?,
+        imagePaths: List<String> = emptyList(),
+        track: List<Trackpoint>? = null,
+    ): Boolean
 
     fun getOldestNeedingImagesActivation(): NoteEdit?
 

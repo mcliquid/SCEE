@@ -41,6 +41,7 @@ import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.screens.main.map.getIcon
 import de.westnordost.streetcomplete.screens.main.map.getTitle
 import de.westnordost.streetcomplete.ui.common.quest.Marker
+import de.westnordost.streetcomplete.util.ktx.async
 import de.westnordost.streetcomplete.util.ktx.launch
 import de.westnordost.streetcomplete.util.logs.Perf
 import de.westnordost.streetcomplete.util.logs.PerfTrace
@@ -49,6 +50,7 @@ import de.westnordost.streetcomplete.util.logs.withPerfTrace
 import de.westnordost.streetcomplete.util.ktx.truncateTo6Decimals
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
 import de.westnordost.streetcomplete.util.math.enlargedBy
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.channels.BufferOverflow
@@ -94,7 +96,7 @@ abstract class MainBottomSheetViewModel : ViewModel() {
         imagePaths: List<String> = emptyList(),
         trackpoints: List<Trackpoint>? = null,
         isGpx: Boolean = false,
-    )
+    ): Deferred<Boolean>
 }
 
 @Stable
@@ -326,9 +328,12 @@ class MainBottomSheetViewModelImpl(
         imagePaths: List<String>,
         trackpoints: List<Trackpoint>?,
         isGpx: Boolean,
-    ) {
-        launch(Dispatchers.IO) {
-            noteEditsController.add(0, NoteEditAction.CREATE, position, text, imagePaths, trackpoints, isGpx)
+    ): Deferred<Boolean> = async(Dispatchers.IO) {
+        if (isGpx) {
+            noteEditsController.saveGpxNote(position, text, imagePaths, trackpoints)
+        } else {
+            noteEditsController.add(0, NoteEditAction.CREATE, position, text, imagePaths, trackpoints, false)
+            true
         }
     }
 

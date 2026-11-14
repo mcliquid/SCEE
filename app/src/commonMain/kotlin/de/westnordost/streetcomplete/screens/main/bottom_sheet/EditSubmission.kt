@@ -14,4 +14,9 @@ internal class EditSubmission {
             throw e
         }
     }
+
+    /** Lets the user retry after an async save that did not succeed. */
+    fun release() {
+        submitted = false
+    }
 }

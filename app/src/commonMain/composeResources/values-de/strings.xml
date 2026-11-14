@@ -778,6 +778,7 @@ Wenn es eine Busspur gibt, hinterlasse bitte stattdessen einen Hinweis.</string>
     <string name="team_mode_deactivated">Team-Modus deaktiviert</string>
     <string name="undo_confirm_title2">Folgende Bearbeitung rückgängig machen?</string>
     <string name="toast_undo_unavailable">Diese Bearbeitung wurde bereits synchronisiert und kann nicht rückgängig gemacht werden</string>
+    <string name="toast_gpx_note_not_saved">Die GPX-Notiz konnte nicht gespeichert werden</string>
     <string name="quest_cycleway_value_separate">separat auf Karte eingezeichnet</string>
     <string name="created_note_action_title">Hinweis erstellt</string>
     <string name="commented_note_action_title">Hinweis kommentiert</string>

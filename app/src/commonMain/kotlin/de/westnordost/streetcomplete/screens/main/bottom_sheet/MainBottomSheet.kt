@@ -5,6 +5,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import de.westnordost.osmfeatures.Feature
@@ -29,6 +30,8 @@ import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.quests.note_comments.AddNoteCommentForm
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.quest_create_note
+import de.westnordost.streetcomplete.resources.toast_gpx_note_not_saved
+import de.westnordost.streetcomplete.ui.common.ToastPopup
 import de.westnordost.streetcomplete.screens.main.ShownBottomSheet
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.note.CreateNoteForm
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.overlay.OverlayFormContainer
@@ -41,6 +44,10 @@ import de.westnordost.streetcomplete.ui.common.quest.MapOverlayContent
 import de.westnordost.streetcomplete.ui.common.quest.Marker
 import de.westnordost.streetcomplete.util.math.PositionOnWay
 import org.jetbrains.compose.resources.DrawableResource
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 /**
@@ -67,7 +74,7 @@ fun MainBottomSheet(
         key: QuestKey?,
     ) -> Unit,
     onCommentNote: (Note, String?, List<String>, close: Boolean) -> Unit,
-    onCreateNote: (LatLon, String, List<String>, List<Trackpoint>?, isGpx: Boolean) -> Unit,
+    onCreateNote: (LatLon, String, List<String>, List<Trackpoint>?, isGpx: Boolean) -> Deferred<Boolean>,
     shownBottomSheet: ShownBottomSheet,
     mapRotation: Float,
     mapTilt: Float,
@@ -82,8 +89,36 @@ fun MainBottomSheet(
     val questTypes: QuestTypeRegistry = koinInject()
     val koinCrossingType = remember(questTypes) { questTypes.filterIsInstance<AddWaterwayCrossing>().single() }
     var confirmEdit by remember { mutableStateOf<PendingEdit?>(null) }
-
+    var gpxNoteSaveFailed by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     val editSubmission = remember(shownBottomSheet) { EditSubmission() }
+
+    fun createNote(
+        position: LatLon,
+        text: String,
+        images: List<String>,
+        tracks: List<Trackpoint>?,
+        isGpx: Boolean,
+        onSaved: () -> Unit,
+    ) {
+        if (!isGpx) {
+            onCreateNote(position, text, images, tracks, false)
+            onSaved()
+            return
+        }
+        scope.launch {
+            val saved = try {
+                onCreateNote(position, text, images, tracks, true).await()
+            } catch (e: CancellationException) {
+                throw e
+            }
+            if (saved) onSaved() else {
+                editSubmission.release()
+                gpxNoteSaveFailed = true
+            }
+        }
+    }
+
     fun submitEdit(
         type: ElementEditType,
         geometry: ElementGeometry,
@@ -99,15 +134,10 @@ fun MainBottomSheet(
         is ShownBottomSheet.CreateOsmNote -> {
             CreateNoteForm(
                 onLeaveNote = { noteText, noteImagePaths, trackpoints, isGpx ->
-                    onCreateNote(
-                        mapPosition,
-                        noteText,
-                        noteImagePaths,
-                        trackpoints,
-                        isGpx,
-                    )
-                    onSolved(Res.drawable.quest_create_note, mapPosition)
-                    onDismiss()
+                    createNote(mapPosition, noteText, noteImagePaths, trackpoints, isGpx) {
+                        onSolved(Res.drawable.quest_create_note, mapPosition)
+                        onDismiss()
+                    }
                 },
                 onDismiss = onDismissByUser,
                 trackpoints = shownBottomSheet.trackpoints,
@@ -167,16 +197,17 @@ fun MainBottomSheet(
                 },
                 onLeaveNote = { noteText, noteImagePaths, isGpx ->
                     editSubmission.run {
-                        onCreateNote(
+                        createNote(
                             shownBottomSheet.quest.geometry.center,
                             noteText,
                             noteImagePaths,
                             null,
                             isGpx,
-                        )
+                        ) {
+                            onSolved(shownBottomSheet.quest.type.icon, shownBottomSheet.quest.position)
+                            onDismiss()
+                        }
                     }
-                    onSolved(shownBottomSheet.quest.type.icon, shownBottomSheet.quest.position)
-                    onDismiss()
                 },
                 onHideQuest = { tempHide ->
                     onHideQuest(shownBottomSheet.quest.key, tempHide)
@@ -221,16 +252,17 @@ fun MainBottomSheet(
                 },
                 onLeaveNote = { noteText, noteImagePaths, isGpx ->
                     editSubmission.run {
-                        onCreateNote(
+                        createNote(
                             shownBottomSheet.quest.geometry.center,
                             noteText,
                             noteImagePaths,
                             null,
                             isGpx,
-                        )
+                        ) {
+                            onSolved(shownBottomSheet.quest.type.icon, shownBottomSheet.quest.position)
+                            onDismiss()
+                        }
                     }
-                    onSolved(shownBottomSheet.quest.type.icon, shownBottomSheet.quest.position)
-                    onDismiss()
                 },
                 onHideQuest = { tempHide ->
                     val key = ExternalSourceQuestKey(shownBottomSheet.quest.id, shownBottomSheet.quest.source)
@@ -276,16 +308,17 @@ fun MainBottomSheet(
                 onLeaveNote = { noteText, noteImagePaths, isGpx ->
                     val center = shownBottomSheet.geometry?.center ?: mapPosition
                     editSubmission.run {
-                        onCreateNote(
+                        createNote(
                             center,
                             noteText,
                             noteImagePaths,
                             null,
                             isGpx,
-                        )
+                        ) {
+                            onSolved(shownBottomSheet.overlay.icon, center)
+                            onDismiss()
+                        }
                     }
-                    onSolved(shownBottomSheet.overlay.icon, center)
-                    onDismiss()
                 },
                 onSetOverlayVisible = onSetOverlayVisible,
                 overlay = shownBottomSheet.overlay,
@@ -390,6 +423,13 @@ fun MainBottomSheet(
                 onDismiss()
             },
             onToggleDontShowAgain = { SuppressSurveyConfirmation = it }
+        )
+    }
+
+    if (gpxNoteSaveFailed) {
+        ToastPopup(
+            onDismissRequest = { gpxNoteSaveFailed = false },
+            text = stringResource(Res.string.toast_gpx_note_not_saved),
         )
     }
 }

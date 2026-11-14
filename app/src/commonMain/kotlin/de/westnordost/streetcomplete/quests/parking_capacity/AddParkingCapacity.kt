@@ -6,7 +6,6 @@ import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.filter
-import de.westnordost.streetcomplete.data.osm.osmquests.Answer
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.CAR
@@ -14,10 +13,8 @@ import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.updateWithCheckDate
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.*
-import de.westnordost.streetcomplete.ui.common.quest.AnswerItem
 import de.westnordost.streetcomplete.ui.common.quest.CountInputQuestForm
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 
 class AddParkingCapacity : OsmFilterQuestType<Int>() {
 
@@ -45,17 +42,12 @@ class AddParkingCapacity : OsmFilterQuestType<Int>() {
         CountInputQuestForm(
             on = on,
             icon = painterResource(Res.drawable.ic_car),
-            otherAnswers = {
-                if (element.tags["capacity:disabled"] != "yes")
-                    listOf(AnswerItem(stringResource(Res.string.quest_parking_capacity_disabled_answer_yes)) {
-                        on(Answer(-1))
-                    })
-                else emptyList()
-            }
+            minimum = 0,
         )
     }
 
     override fun applyAnswerTo(answer: Int, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
+        require(answer >= 0) { "capacity must be a non-negative integer, got $answer" }
         tags.updateWithCheckDate("capacity", answer.toString())
     }
 }

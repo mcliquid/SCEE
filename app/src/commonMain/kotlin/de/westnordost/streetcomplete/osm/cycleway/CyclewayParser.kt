@@ -176,7 +176,8 @@ private fun parseDirectionForSide(
         "yes" -> Direction.FORWARD
         "-1" ->  Direction.BACKWARD
         "no" ->  Direction.BOTH
-        else ->  when (tags["$sidewalkKey:oneway:bicycle"]) {
+        // An independent track never inherits the sidewalk's bicycle direction.
+        else -> if (cycleway == TRACK) null else when (tags["$sidewalkKey:oneway:bicycle"]) {
             "yes" -> Direction.FORWARD
             "-1" ->  Direction.BACKWARD
             "no" ->  when (tags["$sidewalkKey:bicycle:signed"]) {

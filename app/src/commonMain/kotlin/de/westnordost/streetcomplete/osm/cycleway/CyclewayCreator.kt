@@ -137,6 +137,9 @@ private fun Sides<CyclewayAndDirection>.applyOnewayNotForCyclists(tags: Tags) {
 private fun CyclewayAndDirection.applyTo(tags: Tags, isRight: Boolean, isLeftHandTraffic: Boolean) {
     val side = if (isRight) "right" else "left"
     val cyclewayKey = "cycleway:$side"
+    // A confirmed track can coexist with independent bicycle access on the sidewalk.
+    val confirmsExistingTrack = cycleway == TRACK && tags[cyclewayKey] == "track" &&
+        tags["$cyclewayKey:segregated"] != "no"
 
     when (cycleway) {
         NONE, NONE_NO_ONEWAY -> {
@@ -239,14 +242,14 @@ private fun CyclewayAndDirection.applyTo(tags: Tags, isRight: Boolean, isLeftHan
     if (!touchedSegregatedValue) {
         tags.remove("$cyclewayKey:segregated")
     }
-    // no matter what option was chosen, if it's not SIDEWALK_OK, remove that cycling is signed and ok on sidewalk if it's there
-    if (cycleway != SIDEWALK_OK && tags["sidewalk:$side:bicycle"] == "yes" && tags["sidewalk:$side:bicycle:signed"] == "yes") {
+    // Clear former sidewalk access when changing facilities, but not when confirming a track.
+    if (!confirmsExistingTrack && cycleway != SIDEWALK_OK && tags["sidewalk:$side:bicycle"] == "yes" && tags["sidewalk:$side:bicycle:signed"] == "yes") {
         tags.remove("sidewalk:$side:bicycle")
         tags.remove("sidewalk:$side:bicycle:signed")
         tags.remove("sidewalk:$side:oneway:bicycle")
     }
     // if anything that is not SIDEWALK_EXPLICIT is chosen, remove sidewalk:<side>:bicycle=designated if it's there
-    if (cycleway != SIDEWALK_EXPLICIT && tags["sidewalk:$side:bicycle"] == "designated") {
+    if (!confirmsExistingTrack && cycleway != SIDEWALK_EXPLICIT && tags["sidewalk:$side:bicycle"] == "designated") {
         tags.remove("sidewalk:$side:bicycle")
         tags.remove("sidewalk:$side:oneway:bicycle")
     }

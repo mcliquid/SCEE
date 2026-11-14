@@ -114,6 +114,7 @@ class ElementEditsControllerImplTest {
 
         every { idProvider.get(any()) } returns ElementIdProvider(listOf())
 
+        every { db.getAll() } returns listOf(edit)
         ctrl.undo(edit)
 
         verifyDelete(edit)
@@ -170,6 +171,7 @@ class ElementEditsControllerImplTest {
 
         every { idProvider.get(any()) } returns elementIdProvider
 
+        every { db.getAll() } returns listOf(edit)
         ctrl.undo(edit)
 
         verifyDelete(edit)

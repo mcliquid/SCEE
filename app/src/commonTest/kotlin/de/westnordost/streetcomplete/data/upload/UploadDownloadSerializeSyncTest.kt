@@ -394,7 +394,7 @@ private class SerializeSyncHarness {
 
     fun queueElementEdits(vararg edits: ElementEdit) {
         val remaining = edits.toMutableList()
-        every { elementEditsController.getOldestUnsynced() } calls {
+        every { elementEditsController.claimOldestUnsynced() } calls {
             remaining.removeFirstOrNull()
         }
     }

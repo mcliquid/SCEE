@@ -42,9 +42,10 @@ class EditHistoryProtectedUndoTest {
         single<FileSystem> { SystemFileSystem }
     }) }
     @After fun close() { koin.close() }
-    private fun show(attempt: suspend () -> NoteCreationAttempt?, undo: suspend () -> Boolean) {
+    private fun show(attempt: suspend () -> NoteCreationAttempt?, undo: suspend () -> Boolean,
+        shownEdit: de.westnordost.streetcomplete.data.edithistory.Edit = edit) {
         compose.setContent { KoinIsolatedContext(koin) { MaterialTheme {
-            EditHistorySidebar(listOf(EditItem(edit, false, false)), edit, false, {},
+            EditHistorySidebar(listOf(EditItem(shownEdit, false, false)), shownEdit, false, {},
                 onUndoEdit = { undo() }, onDismissRequest = {}, getEditElement = { null },
                 getNoteCreationAttempt = { attempt() })
         } } }
@@ -93,4 +94,12 @@ class EditHistoryProtectedUndoTest {
         compose.waitUntil { undos == 1 }
         assertEquals(1, undos)
     }
+    @Test fun `controller claim refusal shows upload retry message`() {
+        show({ null }, { throw de.westnordost.streetcomplete.data.osm.edits.ElementEditUploadInProgressException() },
+            shownEdit = de.westnordost.streetcomplete.testutils.edit())
+        compose.onNodeWithContentDescription("Undo").performClick()
+        compose.onNodeWithText("Undo").performClick()
+        compose.onNodeWithText("This edit is being uploaded. Try undo again after the upload finishes.").assertExists()
+    }
+
 }

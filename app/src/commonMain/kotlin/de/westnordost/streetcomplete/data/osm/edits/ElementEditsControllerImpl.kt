@@ -32,6 +32,8 @@ class ElementEditsControllerImpl(
     private val listeners = Listeners<ElementEditsSource.Listener>()
 
     private val lock = ReentrantLock()
+    // In-memory only; uncertain replies and process-death recovery still require A1.
+    private var uploadClaim: Long? = null
 
     private val editCache by lazy {
         val c = hashMapOf<Long, ElementEdit>()
@@ -83,6 +85,18 @@ class ElementEditsControllerImpl(
     override fun getOldestUnsynced(): ElementEdit? =
         getAllUnsynced().minByOrNull { it.createdTimestamp }
 
+    override fun claimOldestUnsynced(): ElementEdit? = lock.withLock {
+        if (uploadClaim != null) return null
+        val edit = editCache.values.filterNot { it.isSynced }.minByOrNull { it.createdTimestamp } ?: return null
+        uploadClaim = edit.id
+        edit
+    }
+
+    override fun releaseUploadClaim(editId: Long) = lock.withLock {
+        check(uploadClaim == editId)
+        uploadClaim = null
+    }
+
     override fun getIdProvider(id: Long): ElementIdProvider = lock.withLock {
         deletedIdProviders[id]?.let { return ElementIdProvider(it) }
         if (id in emptyIdProviderCache) return ElementIdProvider(emptyList())
@@ -106,7 +120,7 @@ class ElementEditsControllerImpl(
             var sourceKeys = emptyMap<Long, ExternalSourceQuestKey>()
             database.transaction {
                 val allEdits = editsDB.getAll()
-                deleteEdits = allEdits.filter { it.createdTimestamp < timestamp && it.isSynced }
+                deleteEdits = allEdits.filter { it.createdTimestamp < timestamp && it.isSynced && it.id != uploadClaim }
                 val ids = deleteEdits.map { it.id }
                 providers = ids.associateWith { elementIdProviderDB.get(it) }
                 sourceKeys = externalSourceKeys(deleteEdits)
@@ -188,14 +202,15 @@ class ElementEditsControllerImpl(
         var removed = emptyList<ElementEdit>()
         var revert: ElementEdit? = null
         lock.withLock {
-            editCache
-            if (edit.isSynced) {
-                val action = edit.action
+            val currentEdit = editCache[edit.id] ?: return false
+            removed = getEditsBasedOnElementsCreatedByEdit(currentEdit)
+            if (removed.any { it.id == uploadClaim }) throw ElementEditUploadInProgressException()
+            if (currentEdit.isSynced) {
+                val action = currentEdit.action
                 if (action !is IsActionRevertable) return false
-                revert = ElementEdit(0, edit.type, edit.originalGeometry, edit.source,
-                    nowAsEpochMilliseconds(), false, action.createReverted(getIdProvider(edit.id)), edit.isNearUserLocation)
+                revert = ElementEdit(0, currentEdit.type, currentEdit.originalGeometry, currentEdit.source,
+                    nowAsEpochMilliseconds(), false, action.createReverted(getIdProvider(currentEdit.id)), currentEdit.isNearUserLocation)
             }
-            removed = getEditsBasedOnElementsCreatedByEdit(edit)
             val providers = removed.associate { it.id to elementIdProviderDB.get(it.id) }
             val sourceKeys = externalSourceKeys(removed)
             database.transaction {

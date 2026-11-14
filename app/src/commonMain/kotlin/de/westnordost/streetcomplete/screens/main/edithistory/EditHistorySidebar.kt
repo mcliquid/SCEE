@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.data.edithistory.Edit
+import de.westnordost.streetcomplete.data.osm.edits.ElementEditUploadInProgressException
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.screens.main.isEditUndoEnabled
@@ -114,7 +115,8 @@ fun EditHistorySidebar(
 
     fun onClickUndoEdit(edit: Edit, confirmed: Boolean = false) {
         if (!isEditUndoEnabled(edit, isUploading)) {
-            undoUnavailableMessage = Res.string.toast_undo_unavailable
+            undoUnavailableMessage = if (isUploading && edit.isSynced == false)
+                Res.string.toast_undo_upload_in_progress else Res.string.toast_undo_unavailable
             return
         }
         scope.launch {
@@ -129,6 +131,7 @@ fun EditHistorySidebar(
                     showUndoDialog = true
                 }
             } catch (e: CancellationException) { throw e }
+            catch (e: ElementEditUploadInProgressException) { undoUnavailableMessage = Res.string.toast_undo_upload_in_progress }
             catch (e: Exception) { undoUnavailableMessage = Res.string.toast_undo_unavailable }
         }
     }

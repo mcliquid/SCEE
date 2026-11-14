@@ -274,12 +274,14 @@ class MainViewModelImpl(
 
     override val isUploading: StateFlow<Boolean> = callbackFlow {
         val listener = object : UploadProgressSource.Listener {
-            override fun onStarted() { trySend(true) }
-            override fun onFinished() { trySend(false) }
+            override fun onStarted() { trySend(Unit) }
+            override fun onFinished() { trySend(Unit) }
         }
         uploadProgressSource.addListener(listener)
+        trySend(Unit)
         awaitClose { uploadProgressSource.removeListener(listener) }
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, uploadProgressSource.isUploadInProgress)
+    }.map { uploadProgressSource.isUploadInProgress }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, uploadProgressSource.isUploadInProgress)
 
     override val isDownloading: StateFlow<Boolean> = callbackFlow {
         val listener = object : DownloadProgressSource.Listener {

@@ -36,11 +36,20 @@ interface ElementEditsController : ElementEditsSource {
      *  the undo history */
     fun deleteSyncedOlderThan(timestamp: Long): Int
 
+    /** Transient claim shared with undo; no other element upload may start until released. */
+    fun claimOldestUnsynced(): ElementEdit?
+
+    fun releaseUploadClaim(editId: Long)
+
     fun markSynced(edit: ElementEdit, elementUpdates: MapDataUpdates)
 
     fun markSyncFailed(edit: ElementEdit)
 
     /** Undo edit with the given id. If unsynced yet, will delete the edit if it is undoable. If
-     *  already synced, will add a revert of that edit as a new edit, if possible */
+     *  already synced, will add a revert of that edit as a new edit, if possible.
+     *  @throws ElementEditUploadInProgressException if this edit or a dependent edit is claimed */
     fun undo(edit: ElementEdit): Boolean
 }
+
+/** Undo must be retried after the current upload completes. */
+class ElementEditUploadInProgressException : IllegalStateException("This edit is being uploaded. Try undo again after the upload finishes.")

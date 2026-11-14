@@ -53,12 +53,16 @@ class ElementEditsUploader(
     suspend fun upload() = mutex.withLock { withContext(Dispatchers.IO) {
         while (true) {
             currentCoroutineContext().ensureActive()
-            val edit = elementEditsController.getOldestUnsynced() ?: break
+            val edit = elementEditsController.claimOldestUnsynced() ?: break
             val getIdProvider: () -> ElementIdProvider = { elementEditsController.getIdProvider(edit.id) }
             /* the sync of local change -> API and its response should not be cancellable because
              * otherwise an inconsistency in the data would occur. E.g. no "star" for an uploaded
              * change, a change could be uploaded twice etc */
-            withContext(NonCancellable) { uploadEdit(edit, getIdProvider) }
+            try {
+                withContext(NonCancellable) { uploadEdit(edit, getIdProvider) }
+            } finally {
+                elementEditsController.releaseUploadClaim(edit.id)
+            }
             if (ApplicationConstants.DEBUG && !UserLoginController.loggedIn)
                 break // slow uploading is much better to read in logs
         }

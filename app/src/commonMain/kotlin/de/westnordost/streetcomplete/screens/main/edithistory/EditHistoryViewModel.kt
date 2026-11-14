@@ -12,6 +12,7 @@ import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditAction
 import de.westnordost.streetcomplete.data.osmnotes.edits.NoteCreationAttempt
 import de.westnordost.streetcomplete.data.osmnotes.edits.NoteEditsController
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestHidden
+import de.westnordost.streetcomplete.data.osm.edits.ElementEditUploadInProgressException
 import de.westnordost.streetcomplete.data.osm.edits.ElementEdit
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
@@ -88,7 +89,11 @@ class EditHistoryViewModelImpl(
 
     override suspend fun undo(editKey: EditKey): Boolean = withContext(Dispatchers.IO) {
         val edit = editHistoryController.get(editKey) ?: return@withContext false
-        if (!isEditUndoEnabled(edit, uploadProgressSource.isUploadInProgress)) return@withContext false
+        if (!isEditUndoEnabled(edit, uploadProgressSource.isUploadInProgress)) {
+            if (edit is ElementEdit && !edit.isSynced && uploadProgressSource.isUploadInProgress)
+                throw ElementEditUploadInProgressException()
+            return@withContext false
+        }
         editHistoryController.undo(editKey)
     }
 

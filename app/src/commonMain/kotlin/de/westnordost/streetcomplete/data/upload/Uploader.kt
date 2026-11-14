@@ -22,6 +22,7 @@ import de.westnordost.streetcomplete.util.logs.Perf
 import de.westnordost.streetcomplete.util.logs.PerfTrace
 import de.westnordost.streetcomplete.util.logs.withPerfTrace
 import de.westnordost.streetcomplete.util.platform.PlatformToaster
+import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -64,12 +65,12 @@ class Uploader(
         elementEditsUploader.uploadedChangeListener = uploadedChangeRelay
     }
 
-    override var isUploadInProgress: Boolean = false
-        private set
+    private val activeUploads = atomic(0)
+    override val isUploadInProgress: Boolean get() = activeUploads.value > 0
 
     suspend fun upload() {
         try {
-            isUploadInProgress = true
+            activeUploads.incrementAndGet()
             listeners.forEach { it.onStarted() }
 
             if (bannedInfo == null) {
@@ -132,7 +133,7 @@ class Uploader(
             listeners.forEach { it.onError(e) }
             throw e
         } finally {
-            isUploadInProgress = false
+            activeUploads.decrementAndGet()
             listeners.forEach { it.onFinished() }
         }
     }

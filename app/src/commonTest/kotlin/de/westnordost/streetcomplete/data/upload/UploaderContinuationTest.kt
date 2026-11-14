@@ -13,6 +13,7 @@ import de.westnordost.streetcomplete.testutils.noteEdit
 import dev.mokkery.mock
 import dev.mokkery.every
 import dev.mokkery.everySuspend
+import dev.mokkery.answering.calls
 import dev.mokkery.answering.returns
 import dev.mokkery.answering.throws
 import dev.mokkery.matcher.any
@@ -22,7 +23,14 @@ import dev.mokkery.verify.VerifyMode.Companion.exactly
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respondOk
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.sync.Mutex
 import kotlin.test.*
 
@@ -36,7 +44,7 @@ class UploaderContinuationTest {
     private val external = mock<ExternalSourceQuestController>()
     private val client = HttpClient(MockEngine { respondOk("") })
     private val elements = ElementEditsUploader(
-        mock<ElementEditsController> { every { getOldestUnsynced() } returns null }, edits,
+        mock<ElementEditsController> { every { claimOldestUnsynced() } returns null }, edits,
         mock(), mock(), mock(), mock(), external, mock())
     private val uploader = Uploader(
         NoteEditsUploader(edits, mock(), mock(), mock(), mock(), mock()), elements,
@@ -81,4 +89,21 @@ class UploaderContinuationTest {
         uploader.upload()
         verifySuspend(exactly(1)) { external.upload() }
     }
+    @Test fun `cancelled overlapping request leaves progress active until the other upload finishes`() = runBlocking {
+        every { edits.getOldestUnsynced() } returns null
+        val entered = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        everySuspend { external.upload() } calls { entered.complete(Unit); release.await() }
+        val first = async(Dispatchers.Default) { uploader.upload() }
+        try {
+            withTimeout(10000) { entered.await() }
+            val second = launch(start = CoroutineStart.UNDISPATCHED) { uploader.upload() }
+            assertTrue(uploader.isUploadInProgress)
+            second.cancelAndJoin()
+            assertTrue(uploader.isUploadInProgress, "finishing one request must not hide the other")
+        } finally { release.complete(Unit) }
+        withTimeout(10000) { first.await() }
+        assertFalse(uploader.isUploadInProgress)
+    }
+
 }

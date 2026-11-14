@@ -31,6 +31,7 @@ xcuserdata
 /.ai
 /tools
 /output/
-/docs
+/docs/*
+!/docs/reliability-audit/
 # Local build logs
 release-build.log

@@ -29,6 +29,7 @@ class ElementEditsControllerImpl(
     private val cleanExternalSourceEdits: ((Collection<Long>) -> Unit)? = null,
 ) : ElementEditsController {
 
+    private val reviewsDB = ElementEditReviewsDao(database)
     private val listeners = Listeners<ElementEditsSource.Listener>()
 
     private val lock = ReentrantLock()
@@ -75,9 +76,15 @@ class ElementEditsControllerImpl(
         add(ElementEdit(0, type, geometry, source, nowAsEpochMilliseconds(), false, newAction, isNearUserLocation), key)
     }
 
-    override fun get(id: Long): ElementEdit? = lock.withLock { editCache[id] }
+    override fun get(id: Long): ElementEdit? = lock.withLock {
+        val blocked = blockedByReview()
+        editCache[id]?.let { it.copy(review = blocked[id]) }
+    }
 
-    override fun getAll(): List<ElementEdit> = lock.withLock { editCache.values.toList() }
+    override fun getAll(): List<ElementEdit> = lock.withLock {
+        val blocked = blockedByReview()
+        editCache.values.map { it.copy(review = blocked[it.id]) }
+    }
 
     override fun getAllUnsynced(): List<ElementEdit> =
         getAll().filterNot { it.isSynced }
@@ -85,11 +92,59 @@ class ElementEditsControllerImpl(
     override fun getOldestUnsynced(): ElementEdit? =
         getAllUnsynced().minByOrNull { it.createdTimestamp }
 
-    override fun claimOldestUnsynced(): ElementEdit? = lock.withLock {
+    override fun claimOldestUnsynced(excludedIds: Set<Long>): ElementEdit? = lock.withLock {
         if (uploadClaim != null) return null
-        val edit = editCache.values.filterNot { it.isSynced }.minByOrNull { it.createdTimestamp } ?: return null
+        val blocked = blockedByReview()
+        val edit = editCache.values.filter { !it.isSynced && it.id !in excludedIds && it.id !in blocked &&
+            it.action.elementKeys.none { key -> key.id <= 0 } }
+            .minWithOrNull(compareBy<ElementEdit> { it.createdTimestamp }.thenBy { it.id }) ?: return null
         uploadClaim = edit.id
         edit
+    }
+
+    private fun blockedByReview(): Map<Long, ElementEditReview> {
+        val blocked = editCache.values.filterNot { it.isSynced }
+            .mapNotNull { edit -> edit.review?.let { edit.id to it } }.toMap().toMutableMap()
+        val queue = ArrayDeque(blocked.keys.sorted())
+        while (queue.isNotEmpty()) {
+            val id = queue.removeFirst()
+            val edit = editCache.getValue(id)
+            val count = edit.action.newElementsCount
+            val keys = edit.action.elementKeys + if (count.nodes + count.ways + count.relations > 0)
+                elementIdProviderDB.get(id).getAll() else emptyList()
+            for (key in keys) for (dependent in editElementsDB.getAllByElement(key.type, key.id)) {
+                if (editCache[dependent]?.isSynced == false && dependent !in blocked) {
+                    blocked[dependent] = blocked.getValue(id)
+                    queue.addLast(dependent)
+                }
+            }
+        }
+        return blocked
+    }
+
+    override fun markRejected(editId: Long, rejection: ElementUploadRejectedException) {
+        lock.withLock {
+            check(uploadClaim == editId)
+            val edit = editCache[editId] ?: error("Claimed edit disappeared")
+            check(!edit.isSynced)
+            val review = ElementEditReview(editId, rejection.httpStatus,
+                sanitizeRejectionReason(rejection.message.orEmpty()), nowAsEpochMilliseconds())
+            database.transaction { reviewsDB.put(review) }
+            editCache[editId] = edit.copy(review = review)
+        }
+        listeners.forEach { it.onReviewChanged() }
+    }
+
+    override fun retryRejectedEdit(editId: Long): Boolean {
+        lock.withLock {
+            if (uploadClaim == editId) throw ElementEditUploadInProgressException()
+            val edit = editCache[editId] ?: return false
+            if (edit.review == null) return false
+            database.transaction { reviewsDB.delete(listOf(editId)) }
+            editCache[editId] = edit.copy(review = null)
+        }
+        listeners.forEach { it.onReviewChanged() }
+        return true
     }
 
     override fun releaseUploadClaim(editId: Long) = lock.withLock {
@@ -128,6 +183,7 @@ class ElementEditsControllerImpl(
                     deletedCount = editsDB.deleteAll(ids)
                     editElementsDB.deleteAll(ids)
                     elementIdProviderDB.deleteAll(ids)
+                    reviewsDB.delete(ids)
                 }
                 val kept = elementEditIdsKeptAfterCleanup(allEdits, deleteEdits)
                 cleanExternalSourceEdits?.invoke(kept)
@@ -168,6 +224,7 @@ class ElementEditsControllerImpl(
         val syncedEdit by lazy { edit.copy(isSynced = true) }
         lock.withLock {
             editCache
+            check(editCache[edit.id]?.review == null) { "Rejected edit must be explicitly retried before synchronization" }
             val updatedEdits = mutableListOf<ElementEdit>()
             database.transaction {
                 elementUpdates.idUpdates.flatMapTo(editIdsToUpdate) {
@@ -254,6 +311,7 @@ class ElementEditsControllerImpl(
         editsDB.deleteAll(ids)
         editElementsDB.deleteAll(ids)
         elementIdProviderDB.deleteAll(ids)
+        reviewsDB.delete(ids)
         ids.forEach { externalSourceDB.deleteElementEdit(it) }
     }
 

@@ -1,5 +1,8 @@
 package de.westnordost.streetcomplete.data.osm.mapdata
 
+import de.westnordost.streetcomplete.data.osm.edits.ElementUploadRejectedException
+import de.westnordost.streetcomplete.data.osm.edits.sanitizeRejectionReason
+import io.ktor.client.statement.bodyAsText
 import de.westnordost.streetcomplete.data.ConflictException
 import de.westnordost.streetcomplete.data.QueryTooBigException
 import de.westnordost.streetcomplete.data.user.UserAccessTokenSource
@@ -43,6 +46,9 @@ class MapDataApiClientImpl(
             return createMapDataUpdates(changedElements, updates, ignoreRelation)
         } catch (e: ClientRequestException) {
             when (e.response.status) {
+                // cgimap parses/validates the osmChange before committing its transaction.
+                HttpStatusCode.BadRequest -> throw ElementUploadRejectedException(400,
+                    sanitizeRejectionReason(e.response.bodyAsText()))
                 // current element version is outdated or current changeset has been closed already
                 HttpStatusCode.Conflict,
                     // an element referred to by another element does not exist (anymore) or was redacted

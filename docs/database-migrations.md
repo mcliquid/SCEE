@@ -50,6 +50,7 @@ installed/released builds cannot be inferred from Git commits alone.
 | pre-23 addons | fork | External-source hidden/edit links, Osmose and quest element index; IF NOT EXISTS | Yes; old code swallowed errors |
 | 23 / fork 1 | fork | Crossing quest table/index plus previous addons, commit 00451c14e5 | IF NOT EXISTS |
 | 24 / fork 2 | fork | Note CREATE/COMMENT/CLOSE attempt journal, commit 4d919e5376 | Once only, previous fork structures required |
+| fork 3 | fork | Persistent element rejection/review table; requires split migration tracks | Once only |
 | 25 file gate | fork | Validate and translate historical progress into two tracks | Metadata absent only on verified legacy schemas |
 
 Legacy schema 22 (including upstream-only), fork 23 and fork 24 are supported
@@ -80,3 +81,42 @@ The file gate intentionally prevents older applications from opening new files.
 Future upstream integration must update its own track and migration bodies; merging
 upstream alone does not constitute an audited integration. This mechanism avoids
 numeric collisions, not arbitrary incompatible changes to serialized edit payloads.
+
+## Rejected element edits (fork 3)
+
+osm_element_edit_reviews is keyed by the stable local edit ID. Rows explicitly
+represent needs_review and hold the confirmed HTTP status (currently 400), a
+sanitized reason of at most 512 characters and an epoch-millisecond rejection time.
+Original actions and allocations are not rewritten or marked synced. Add/update,
+retry deletion and ordinary edit deletion use the controller's B9 transactions;
+cache and history invalidation follow commit. A2 claims are retained through rejection
+persistence and released by finally. Retry and undo use the same controller lock.
+
+Only HTTP 400 **from the changeset upload operation** is converted to the typed
+ElementUploadRejectedException. CGImap parses and validates the osmChange and commits
+at the end of that handler ([source](https://github.com/zerebubuth/openstreetmap-cgimap/blob/master/src/api06/changeset_upload_handler.cpp)).
+Read/changeset-metadata errors and generic exception messages are not classified as
+edit validation rejection. Unknown 4xx (including 406/422), authentication, conflict,
+413, timeout, rate limiting, I/O, 5xx and parsing failures retain their separate error
+paths. In particular, an uncertain response never creates a review row. Unexpected
+local IllegalArgumentException now propagates rather than silently deleting edits.
+
+The queue consults review state plus indexed element-reference dependencies. Rejected
+roots block transitive descendants and later edits using the same element keys.
+Allocated negative IDs participate in this graph. Unknown temporary target references
+are skipped; a final payload guard rejects unresolved node/member references before
+opening/sending an upload. Negative references to creations within the same osmChange
+remain valid. A per-pass considered set prevents repeated attempts, even if explicit
+retry occurs concurrently. Independent eligible edits continue, then the outer uploader
+continues note/external uploads before surfacing the review summary.
+
+The existing history shows a Needs review label and an accessible information button.
+Its dialog identifies the local edit, rejection code/reason or blocking root, and
+provides explicit retry via the normal UploadController and undo via the existing
+lifecycle. Rejected revert actions are included in history for recovery. Retry clears
+the root review atomically; dependent blocks are derived and disappear as IDs resolve.
+
+This is not an attempt journal. A lost successful reply, process death after remote
+commit, or local acknowledgement failure still has the A1 duplicate-upload exposure.
+B2 trace/photo deduplication is unchanged. An actual process kill and WorkManager
+scheduler execution require separate device validation.

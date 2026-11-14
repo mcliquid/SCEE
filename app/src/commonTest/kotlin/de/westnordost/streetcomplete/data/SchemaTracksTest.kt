@@ -17,7 +17,7 @@ class SchemaTracksTest {
 
     @Test fun `fresh schema and repeated initialization have independent progress`() = database { db ->
         db.initialize(StreetCompleteDatabaseConfigurator)
-        assertEquals(mapOf("upstream" to 22, "fork" to 2), SchemaTracks.read(db))
+        assertEquals(mapOf("upstream" to 22, "fork" to 3), SchemaTracks.read(db))
         val before = snapshot(db)
         db.initialize(StreetCompleteDatabaseConfigurator)
         assertEquals(before, snapshot(db))
@@ -30,7 +30,7 @@ class SchemaTracksTest {
             val before = snapshot(db)
             db.initialize(StreetCompleteDatabaseConfigurator)
             before.forEach { (table, rows) -> assertEquals(rows, snapshot(db)[table], "v$version $table") }
-            assertEquals(mapOf("upstream" to 22, "fork" to 2), SchemaTracks.read(db))
+            assertEquals(mapOf("upstream" to 22, "fork" to 3), SchemaTracks.read(db))
             val complete = snapshot(db)
             db.initialize(StreetCompleteDatabaseConfigurator)
             assertEquals(complete, snapshot(db))
@@ -39,10 +39,15 @@ class SchemaTracksTest {
 
     @Test fun `upstream only 22 adds fork structures without changing user data`() = database { db ->
         LegacySchemaFixtures.create(db, 22, upstreamOnly = true)
+        val edits = ElementEditsDao(db, AllEditTypes(emptyList(), listOf(TestElementEditType)), TestElementEditType, TestElementEditType)
+        val pending = edit(action = CreateNodeAction(p(), mapOf("amenity" to "bench")))
+        edits.put(pending)
+        ElementIdProviderDao(db).assign(pending.id, 1, 0, 0)
+        NoteEditsDao(db).add(noteEdit(action = NoteEditAction.CREATE))
         val before = snapshot(db)
         db.initialize(StreetCompleteDatabaseConfigurator)
         before.forEach { (table, rows) -> assertEquals(rows, snapshot(db)[table]) }
-        assertEquals(mapOf("upstream" to 22, "fork" to 2), SchemaTracks.read(db))
+        assertEquals(mapOf("upstream" to 22, "fork" to 3), SchemaTracks.read(db))
     }
 
     @Test fun `failure after DDL rolls back progress and schema and can retry`() = database { db ->
@@ -59,7 +64,7 @@ class SchemaTracksTest {
         assertEquals(before, snapshot(db))
         assertEquals(23, db.rawQuery("PRAGMA user_version") { it.getInt("user_version") }.single())
         db.initialize(StreetCompleteDatabaseConfigurator)
-        assertEquals(2, SchemaTracks.read(db)["fork"])
+        assertEquals(3, SchemaTracks.read(db)["fork"])
     }
 
     @Test fun `upstream 23 is not skipped because old fork used 23 and 24`() = database { db ->
@@ -70,11 +75,11 @@ class SchemaTracksTest {
                 SchemaTracks.migrate(db, 23, { database, old ->
                     assertEquals(22, old)
                     database.exec("CREATE TABLE upstream_23 (id INTEGER)")
-                }, listOf({}, {}))
+                }, listOf({}, {}, {}))
             }
         }
         db.initialize(future)
-        assertEquals(mapOf("upstream" to 23, "fork" to 2), SchemaTracks.read(db))
+        assertEquals(mapOf("upstream" to 23, "fork" to 3), SchemaTracks.read(db))
         db.initialize(future) // duplicate DDL would fail
         assertTrue(db.tableInfo("upstream_23").isNotEmpty())
         assertFailsWith<IllegalStateException> { db.initialize(StreetCompleteDatabaseConfigurator) }
@@ -86,7 +91,7 @@ class SchemaTracksTest {
         val future = object : DatabaseConfigurator by StreetCompleteDatabaseConfigurator {
             override fun migrate(db: Database, oldVersion: Int) {
                 SchemaTracks.migrate(db, 23, { database, _ -> database.exec("CREATE TABLE upstream_23 (id INTEGER)") },
-                    listOf({}, {}, { it.exec("CREATE TABLE fork_3 (id INTEGER)"); error("injected") }))
+                    listOf({}, {}, {}, { it.exec("CREATE TABLE fork_3 (id INTEGER)"); error("injected") }))
             }
         }
         assertFailsWith<IllegalStateException> { db.initialize(future) }
@@ -114,6 +119,25 @@ class SchemaTracksTest {
         val before = snapshot(db)
         assertFailsWith<IllegalStateException> { db.initialize(StreetCompleteDatabaseConfigurator) }
         assertEquals(before, snapshot(db))
+    }
+
+    @Test fun `B11 tracked database upgrades fork 2 to review fork 3 with DDL rollback`() = database { db ->
+        LegacySchemaFixtures.create(db, 24)
+        seed(db, 24)
+        SchemaTracks.create(db, 22, 2)
+        db.exec("PRAGMA user_version=25")
+        val before = snapshot(db)
+        val failing = object : Database by db {
+            override fun exec(sql: String, args: Array<Any>?) {
+                db.exec(sql, args)
+                if (sql.contains("CREATE TABLE osm_element_edit_reviews")) error("injected review DDL failure")
+            }
+        }
+        assertFailsWith<IllegalStateException> { failing.initialize(StreetCompleteDatabaseConfigurator) }
+        assertEquals(before, snapshot(db))
+        db.initialize(StreetCompleteDatabaseConfigurator)
+        assertEquals(mapOf("upstream" to 22, "fork" to 3), SchemaTracks.read(db))
+        before.filterKeys { it != SchemaTracks.TABLE }.forEach { (table, rows) -> assertEquals(rows, snapshot(db)[table]) }
     }
 
     private fun seed(db: Database, version: Int) {

@@ -39,6 +39,7 @@ class EditHistoryController(
     private val listeners = Listeners<EditHistorySource.Listener>()
 
     private val osmElementEditsListener = object : ElementEditsSource.Listener {
+        override fun onReviewChanged() { onInvalidated() }
         override fun onAddedEdit(edit: ElementEdit) {
             if (edit.action !is IsRevertAction) onAdded(edit)
         }
@@ -49,7 +50,7 @@ class EditHistoryController(
             if (edit.action !is IsRevertAction) onSynced(edit)
         }
         override fun onDeletedEdits(edits: List<ElementEdit>) {
-            onDeleted(edits.filter { it.action !is IsRevertAction })
+            onDeleted(edits.filter { it.action !is IsRevertAction || it.review != null })
         }
     }
 
@@ -132,7 +133,7 @@ class EditHistoryController(
         val maxAge = nowAsEpochMilliseconds() - MAX_UNDO_HISTORY_AGE
 
         val result = ArrayList<Edit>()
-        result += elementEditsController.getAll().filter { it.action !is IsRevertAction }
+        result += elementEditsController.getAll().filter { it.action !is IsRevertAction || it.review != null }
         result += noteEditsController.getAll()
         result += hiddenQuestsController.getAllNewerThan(maxAge).mapNotNull { (key, timestamp) ->
             createQuestHiddenEdit(key, timestamp)

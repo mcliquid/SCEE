@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import de.westnordost.streetcomplete.data.osm.edits.ElementEditsNeedReviewException
 import de.westnordost.streetcomplete.data.AuthorizationException
 import de.westnordost.streetcomplete.data.ConnectionException
 import de.westnordost.streetcomplete.data.upload.VersionBannedException
@@ -23,6 +24,7 @@ fun LastUploadErrorEffect(
     lastError: Exception,
     onReportError: (error: Exception) -> Unit
 ) {
+    var showElementReview by remember { mutableStateOf(false) }
     var showRejectedNote by remember { mutableStateOf(false) }
     var showUncertainNote by remember { mutableStateOf(false) }
     var showUploadErrorDialog by remember { mutableStateOf(false) }
@@ -32,6 +34,7 @@ fun LastUploadErrorEffect(
 
     LaunchedEffect(lastError) {
         when (lastError) {
+            is ElementEditsNeedReviewException -> showElementReview = true
             is NoteCreationUncertainException -> showUncertainNote = true
             is NoteWriteRejectedException -> showRejectedNote = true
             is VersionBannedException -> {
@@ -55,6 +58,10 @@ fun LastUploadErrorEffect(
             onDismiss = { showUncertainNote = false },
             unavailable = (lastError.cause as? NoteUnavailableException)?.reason,
         )
+    }
+
+    if (showElementReview) {
+        ToastPopup(onDismissRequest = { showElementReview = false }, text = stringResource(Res.string.element_review_upload_error))
     }
 
     if (showRejectedNote) {

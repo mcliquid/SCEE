@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.data.osm.edits.upload
 
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.ApplicationConstants.EDIT_ACTIONS_NOT_ALLOWED_TO_USE_LOCAL_CHANGES
+import de.westnordost.streetcomplete.data.osm.edits.UnresolvedElementReferenceException
 import de.westnordost.streetcomplete.data.ConflictException
 import de.westnordost.streetcomplete.data.osm.edits.ElementEdit
 import de.westnordost.streetcomplete.data.osm.edits.ElementIdProvider
@@ -9,6 +10,9 @@ import de.westnordost.streetcomplete.data.osm.edits.upload.changesets.OpenChange
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementIdUpdate
 import de.westnordost.streetcomplete.data.osm.mapdata.ChangesetTooLargeException
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataApiClient
+import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
+import de.westnordost.streetcomplete.data.osm.mapdata.ElementType
+import de.westnordost.streetcomplete.data.osm.mapdata.Relation
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataChanges
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataSource
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataUpdates
@@ -115,6 +119,7 @@ class ElementEditUploader(
         changes: MapDataChanges,
         newChangeset: Boolean
     ): MapDataUpdates {
+        changes.requireResolvedReferences()
         val start = Perf.mark()
         try {
             val changesetId = if (newChangeset) {
@@ -180,4 +185,20 @@ class ElementEditUploader(
         )
         return updates
     }
+}
+
+/** Negative IDs may refer only to creations in this same atomic osmChange. */
+internal fun MapDataChanges.requireResolvedReferences() {
+    val created = creations.mapTo(HashSet()) { ElementKey(it.type, it.id) }
+    val invalidTarget = creations.any { it.id >= 0 } || (modifications + deletions).any { it.id <= 0 }
+    val unresolved = (creations + modifications).any { element ->
+        when (element) {
+            is Way -> element.nodeIds.any {
+                it <= 0 && ElementKey(ElementType.NODE, it) !in created }
+            is Relation -> element.members.any {
+                it.ref <= 0 && ElementKey(it.type, it.ref) !in created }
+            else -> false
+        }
+    }
+    if (invalidTarget || unresolved) throw UnresolvedElementReferenceException()
 }

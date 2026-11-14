@@ -4,6 +4,9 @@ import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.data.ConflictException
 import de.westnordost.streetcomplete.Prefs
+import de.westnordost.streetcomplete.data.osm.edits.ElementUploadRejectedException
+import de.westnordost.streetcomplete.data.osm.edits.ElementEditsNeedReviewException
+import de.westnordost.streetcomplete.data.osm.edits.UnresolvedElementReferenceException
 import de.westnordost.streetcomplete.data.osm.edits.ElementEdit
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditsController
 import de.westnordost.streetcomplete.data.osm.edits.ElementIdProvider
@@ -51,21 +54,34 @@ class ElementEditsUploader(
     private val mutex = Mutex()
 
     suspend fun upload() = mutex.withLock { withContext(Dispatchers.IO) {
+        val considered = mutableSetOf<Long>()
+        val blocked = mutableSetOf<Long>()
         while (true) {
             currentCoroutineContext().ensureActive()
-            val edit = elementEditsController.claimOldestUnsynced() ?: break
+            val edit = elementEditsController.claimOldestUnsynced(considered.toSet()) ?: break
+            considered.add(edit.id)
             val getIdProvider: () -> ElementIdProvider = { elementEditsController.getIdProvider(edit.id) }
             /* the sync of local change -> API and its response should not be cancellable because
              * otherwise an inconsistency in the data would occur. E.g. no "star" for an uploaded
              * change, a change could be uploaded twice etc */
             try {
-                withContext(NonCancellable) { uploadEdit(edit, getIdProvider) }
+                withContext(NonCancellable) {
+                    try { uploadEdit(edit, getIdProvider) }
+                    catch (e: ElementUploadRejectedException) {
+                        elementEditsController.markRejected(edit.id, e)
+                    } catch (e: UnresolvedElementReferenceException) { blocked.add(edit.id) }
+                }
             } finally {
                 elementEditsController.releaseUploadClaim(edit.id)
             }
             if (ApplicationConstants.DEBUG && !UserLoginController.loggedIn)
                 break // slow uploading is much better to read in logs
         }
+        val pending = elementEditsController.getAllUnsynced()
+        blocked.retainAll(pending.mapTo(HashSet()) { it.id })
+        pending.filter { it.review != null || it.action.elementKeys.any { key -> key.id <= 0 } }
+            .mapTo(blocked) { it.id }
+        if (blocked.isNotEmpty()) throw ElementEditsNeedReviewException(blocked.toList())
     } }
 
     private suspend fun uploadEdit(edit: ElementEdit, getIdProvider: () -> ElementIdProvider) {
@@ -131,13 +147,6 @@ class ElementEditsUploader(
             }
             localMs += Perf.ms(updateStart)
             trace?.addMs("localAfter", localMs)
-        } catch (e: IllegalArgumentException) {
-            Log.d(TAG, "Dropped a $editActionClassName: ${e.message}")
-            uploadedChangeListener?.onDiscarded(edit.type.name, edit.position)
-
-            val after = Perf.mark()
-            elementEditsController.markSyncFailed(edit)
-            trace?.addMs("localAfter", Perf.ms(after))
         } finally {
             trace?.logEdit(index, edit.type.name)
         }

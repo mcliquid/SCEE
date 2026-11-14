@@ -1,0 +1,11 @@
+<resources>
+    <string name="element_review_attention">Prüfung erforderlich</string>
+    <string name="element_review_identity">Lokale Änderung #%1$d</string>
+    <string name="element_review_unresolved">Wartet auf noch nicht aufgelöste temporäre Elementverweise. Rückgängig entfernt diese Änderung über den normalen Verlauf.</string>
+    <string name="element_review_dependency">Blockiert durch die abgelehnte lokale Änderung #%1$d. Erneut versuchen gibt die ursprüngliche Änderung wieder frei.</string>
+    <string name="element_review_rejected">Der Server hat diese Änderung abgelehnt (HTTP %1$d). Automatische Wiederholungen sind gesperrt.</string>
+    <string name="element_review_retry">Erneut hochladen</string>
+    <string name="element_review_undo">Diese Änderung rückgängig machen</string>
+    <string name="element_review_upload_error">Einige Änderungen müssen geprüft werden. Öffne den Verlauf, um den Grund zu sehen, einen neuen Versuch zu erlauben oder sie rückgängig zu machen. Unabhängige Änderungen wurden verarbeitet.</string>
+    <string name="element_review_action_failed">Aktion nicht verfügbar. Warte auf den Upload oder versuche es erneut.</string>
+</resources>

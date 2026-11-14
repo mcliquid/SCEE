@@ -253,7 +253,7 @@ class ElementUploadClaimsTest : StreetCompleteDatabaseTestCase() {
     }
 }
 
-private class ClaimTestServer : MapDataApiClient {
+internal class ClaimTestServer : MapDataApiClient {
     val nodes = mutableMapOf<Long, Node>()
     var calls = 0
     var whileInFlight: (suspend () -> Unit)? = null

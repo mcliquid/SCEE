@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.dp
+import de.westnordost.streetcomplete.data.osm.edits.ElementEdit
 import de.westnordost.streetcomplete.data.edithistory.Edit
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditUploadInProgressException
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -80,6 +81,7 @@ fun EditHistorySidebar(
 ) {
     val scope = rememberCoroutineScope()
 
+    var reviewEditId by remember { mutableStateOf<Long?>(null) }
     var resolveNoteId by remember { mutableStateOf<Long?>(null) }
     var showUndoDialog by remember { mutableStateOf(false) }
     var undoTargetId by remember { mutableStateOf<String?>(null) }
@@ -121,6 +123,10 @@ fun EditHistorySidebar(
         }
         scope.launch {
             try {
+                if (edit is ElementEdit && (edit.review != null || edit.action.elementKeys.any { it.id <= 0 }) && !confirmed) {
+                    reviewEditId = edit.id
+                    return@launch
+                }
                 if (routeProtectedNote(edit)) return@launch
                 if (confirmed) {
                     if (!onUndoEdit(edit) && !routeProtectedNote(edit)) undoUnavailableMessage = Res.string.toast_undo_unavailable
@@ -170,6 +176,9 @@ fun EditHistorySidebar(
                         showDate = editItem.showDate,
                         showTime = editItem.showTime
                     )
+                    if (editItem.edit is ElementEdit && (editItem.edit.review != null || editItem.edit.action.elementKeys.any { it.id <= 0 })) {
+                        Text(stringResource(Res.string.element_review_attention), style = MaterialTheme.typography.caption)
+                    }
                     EditHistoryItem(
                         selected = selectedEdit == editItem.edit,
                         onSelect = { onSelectEdit(editItem.edit) },
@@ -212,6 +221,14 @@ fun EditHistorySidebar(
                 }
             }
         )
+    }
+
+    reviewEditId?.let { id ->
+        RejectedElementEditDialog(id, onDismiss = { reviewEditId = null }, onUndo = {
+            val edit = edits.filterIsInstance<ElementEdit>().find { it.id == id }
+            reviewEditId = null
+            if (edit != null) onClickUndoEdit(edit, confirmed = true)
+        })
     }
 
     resolveNoteId?.let { id ->

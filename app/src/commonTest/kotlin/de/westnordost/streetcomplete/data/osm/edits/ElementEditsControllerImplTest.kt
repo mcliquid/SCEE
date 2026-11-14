@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.data.osm.edits
 
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import de.westnordost.streetcomplete.data.initialize
 import de.westnordost.streetcomplete.data.DatabaseImpl
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChanges
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
@@ -41,7 +42,7 @@ class ElementEditsControllerImplTest {
         idProvider = mock()
 
         listener = mock()
-        ctrl = ElementEditsControllerImpl(db, elementsDb, idProvider, DatabaseImpl(BundledSQLiteDriver().open(":memory:")), mock())
+        ctrl = ElementEditsControllerImpl(db, elementsDb, idProvider, DatabaseImpl(BundledSQLiteDriver().open(":memory:")).apply { initialize(de.westnordost.streetcomplete.data.StreetCompleteDatabaseConfigurator) }, mock())
         ctrl.addListener(listener)
     }
 

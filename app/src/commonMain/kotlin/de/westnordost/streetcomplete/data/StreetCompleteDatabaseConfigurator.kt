@@ -5,6 +5,7 @@ import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestTabl
 import de.westnordost.streetcomplete.data.logs.LogsTable
 import de.westnordost.streetcomplete.data.osm.created_elements.CreatedElementsTable
 import de.westnordost.streetcomplete.data.osm.edits.EditElementsTable
+import de.westnordost.streetcomplete.data.osm.edits.ElementEditReviewsTable
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditsTable
 import de.westnordost.streetcomplete.data.osm.edits.ElementIdProviderTable
 import de.westnordost.streetcomplete.data.osm.edits.upload.changesets.OpenChangesetsTable
@@ -38,6 +39,7 @@ object StreetCompleteDatabaseConfigurator : DatabaseConfigurator {
     private val forkMigrations: List<(Database) -> Unit> = listOf(
         { createSceeTables(it) }, // fork:1, formerly user_version 23
         { it.exec(NoteCreationAttemptsTable.CREATE) }, // fork:2, formerly user_version 24
+        { it.exec(ElementEditReviewsTable.CREATE) }, // fork:3, persistent rejected element edits
     )
 
     override fun migrate(db: Database, oldVersion: Int) {
@@ -98,9 +100,12 @@ object StreetCompleteDatabaseConfigurator : DatabaseConfigurator {
                 "Fork note journal migration is marked complete but its schema is inconsistent"
             }
         }
+        if (fork >= 3) check(db.tableInfo(ElementEditReviewsTable.NAME).map { it.name }.toSet() ==
+            setOf("edit_id", "state", "http_status", "reason", "rejected_at")) { "Missing or inconsistent element review migration" }
     }
 
     override fun onCreate(db: Database) {
+        db.exec(ElementEditReviewsTable.CREATE)
         // OSM notes
         db.exec(NoteTable.CREATE)
         db.exec(NoteTable.SPATIAL_INDEX_CREATE)

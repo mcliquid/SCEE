@@ -44,7 +44,7 @@ class ElementEditTransactionsTest : StreetCompleteDatabaseTestCase() {
     @Test fun `delete rolls back after each write and retries`() {
         addCreation()
         val edit = controller.getAll().single()
-        checkFailures(4) { controller.undo(edit) }
+        checkFailures(5) { controller.undo(edit) }
         assertEquals(listOf("deleted"), events)
         assertTrue(edits.getAll().isEmpty())
     }
@@ -54,7 +54,7 @@ class ElementEditTransactionsTest : StreetCompleteDatabaseTestCase() {
         val edit = controller.getAll().single()
         controller.markSynced(edit, MapDataUpdates(idUpdates = listOf(ElementIdUpdate(ElementType.NODE, -1, 42))))
         val synced = controller.get(edit.id)!!
-        checkFailures(6) { assertTrue(controller.undo(synced)) }
+        checkFailures(7) { assertTrue(controller.undo(synced)) }
         assertEquals(listOf("deleted", "added"), events)
         assertFalse(controller.getAll().single().isSynced)
     }
@@ -91,7 +91,7 @@ class ElementEditTransactionsTest : StreetCompleteDatabaseTestCase() {
                 assertEquals(1, controller.getIdProvider(edit.id).getAll().size)
             }
         })
-        checkFailures(4) { controller.undo(edit) }
+        checkFailures(5) { controller.undo(edit) }
         assertNull(controller.getExternalSourceQuestKey(edit.id))
     }
 
@@ -99,7 +99,7 @@ class ElementEditTransactionsTest : StreetCompleteDatabaseTestCase() {
         addCreation()
         val edit = controller.getAll().single()
         controller.markSynced(edit, MapDataUpdates())
-        checkFailures(4) { controller.deleteSyncedOlderThan(Long.MAX_VALUE) }
+        checkFailures(5) { controller.deleteSyncedOlderThan(Long.MAX_VALUE) }
         assertTrue(controller.getAll().isEmpty())
     }
 

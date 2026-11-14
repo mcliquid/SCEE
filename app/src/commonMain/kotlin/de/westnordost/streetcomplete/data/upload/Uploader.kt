@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.data.upload
 
 import com.russhwolf.settings.ObservableSettings
 import de.westnordost.streetcomplete.ApplicationConstants
+import de.westnordost.streetcomplete.data.osm.edits.ElementEditsNeedReviewException
 import de.westnordost.streetcomplete.data.AuthorizationException
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.resources.Res
@@ -106,8 +107,12 @@ class Uploader(
                         uploadTrace.addMs("waitSerializeSync", Perf.ms(waitStart))
                         // element edit and note edit uploader must run in sequence because the notes may need
                         // to be updated if the element edit uploader creates new elements to which notes refer
-                        elementEditsUploader.upload()
-                        if (!userLoginSource.isLoggedIn) return@withLock // avoid the 2 below in debug apk
+                        val review = try { elementEditsUploader.upload(); null }
+                            catch (e: ElementEditsNeedReviewException) { e }
+                        if (!userLoginSource.isLoggedIn) {
+                            review?.let { throw it }
+                            return@withLock
+                        } // avoid the 2 below in debug apk
                         val otherStart = Perf.mark()
                         val uncertain = try {
                             noteEditsUploader.upload()
@@ -116,6 +121,7 @@ class Uploader(
                         catch (e: NoteWriteRejectedException) { e }
                         externalSourceQuestController.upload()
                         uncertain?.let { throw it }
+                        review?.let { throw it }
                         uploadTrace.addMs("otherUploads", Perf.ms(otherStart))
                     }
                 }

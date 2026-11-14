@@ -9,6 +9,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.material.Icon
+import de.westnordost.streetcomplete.data.osm.edits.ElementEdit
+import de.westnordost.streetcomplete.resources.*
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -65,7 +70,11 @@ fun EditHistoryItem(
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                MapButton(onClick = onUndo, enabled = undoEnabled, contentPadding = 8.dp) { UndoIcon() }
+                MapButton(onClick = onUndo, enabled = undoEnabled, contentPadding = 8.dp) {
+                    if (edit is ElementEdit && (edit.review != null || edit.action.elementKeys.any { it.id <= 0 }))
+                        Icon(painterResource(Res.drawable.ic_info_outline_24), stringResource(Res.string.element_review_attention))
+                    else UndoIcon()
+                }
             }
         }
     }

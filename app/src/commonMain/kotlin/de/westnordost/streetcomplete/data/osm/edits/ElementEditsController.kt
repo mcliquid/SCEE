@@ -37,7 +37,11 @@ interface ElementEditsController : ElementEditsSource {
     fun deleteSyncedOlderThan(timestamp: Long): Int
 
     /** Transient claim shared with undo; no other element upload may start until released. */
-    fun claimOldestUnsynced(): ElementEdit?
+    fun claimOldestUnsynced(excludedIds: Set<Long> = emptySet()): ElementEdit?
+
+    fun markRejected(editId: Long, rejection: ElementUploadRejectedException)
+
+    fun retryRejectedEdit(editId: Long): Boolean
 
     fun releaseUploadClaim(editId: Long)
 

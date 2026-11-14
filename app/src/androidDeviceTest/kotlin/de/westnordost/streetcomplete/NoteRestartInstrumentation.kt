@@ -44,13 +44,15 @@ class NoteRestartInstrumentation : Instrumentation() {
                 if (comment) NoteEditAction.COMMENT else NoteEditAction.CREATE,
                 "restart-safe", if (comment) emptyList() else listOf(photo.path), 1L, false, !comment, null))
             old.exec("DROP TABLE osm_note_creation_attempts")
+            old.exec("DROP TABLE scee_schema_tracks")
+            old.exec("DROP TABLE IF EXISTS osm_element_edit_reviews")
             old.exec("PRAGMA user_version = 23")
             old.close()
             photo.writeBytes(byteArrayOf(1, 2, 3))
         }
         val db = DatabaseImpl(BundledSQLiteDriver().open(file.path))
         db.initialize(StreetCompleteDatabaseConfigurator)
-        check(db.rawQuery("PRAGMA user_version") { it.getInt("user_version") }.single() == 24)
+        check(db.rawQuery("PRAGMA user_version") { it.getInt("user_version") }.single() == StreetCompleteDatabaseConfigurator.version)
         val dao = NoteEditsDao(db)
         val controller = NoteEditsControllerImpl(dao, SystemFileSystem)
         val client = HttpClient(CIO) {

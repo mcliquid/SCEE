@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.data
 
 import de.westnordost.streetcomplete.data.osmnotes.edits.NoteCreationAttemptsTable
+import de.westnordost.streetcomplete.data.osm.edits.ElementEditReviewsTable
 import de.westnordost.streetcomplete.data.osm.edits.ElementEditsDao
 import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.WaterwayCrossingTestData
 import de.westnordost.streetcomplete.data.osm.mapdata.*
@@ -22,6 +23,7 @@ class DatabaseInitializationPhase2Test : StreetCompleteDatabaseTestCase() {
         db.exec("DROP TABLE ${WaterwayCrossingQuestTable.NAME}")
         db.exec("DROP TABLE ${NoteCreationAttemptsTable.NAME}")
         db.exec("DROP TABLE ${SchemaTracks.TABLE}")
+        db.exec("DROP TABLE ${ElementEditReviewsTable.NAME}")
         db.exec("PRAGMA user_version = 22")
         val f = WaterwayCrossingTestData()
         NodeDao(db).putAll(f.data.nodes.toList())
@@ -69,6 +71,7 @@ class DatabaseInitializationPhase2Test : StreetCompleteDatabaseTestCase() {
 
     @Test fun `schema 23 software refuses existing schema 24 journal`() {
         db.exec("DROP TABLE ${SchemaTracks.TABLE}")
+        db.exec("DROP TABLE ${ElementEditReviewsTable.NAME}")
         db.exec("PRAGMA user_version = 24")
         db.insert(NoteCreationAttemptsTable.NAME, listOf("edit_id" to 77, "text" to "keep me"))
         val oldSoftware = object : DatabaseConfigurator by StreetCompleteDatabaseConfigurator {
@@ -80,7 +83,7 @@ class DatabaseInitializationPhase2Test : StreetCompleteDatabaseTestCase() {
     }
 
     private fun snapshotExistingTables(): Map<String, List<String>> = db.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name != '${WaterwayCrossingQuestTable.NAME}' AND name != '${NoteCreationAttemptsTable.NAME}' AND name != '${SchemaTracks.TABLE}'"
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name != '${WaterwayCrossingQuestTable.NAME}' AND name != '${NoteCreationAttemptsTable.NAME}' AND name != '${SchemaTracks.TABLE}' AND name != '${ElementEditReviewsTable.NAME}'"
     ) { it.getString("name") }.associateWith { table ->
         val columns = db.tableInfo(table).joinToString(" || '|' || ") { "quote(\"${it.name}\")" }
         db.rawQuery("SELECT $columns AS snapshot FROM \"$table\" ORDER BY snapshot") { it.getString("snapshot") }

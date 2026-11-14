@@ -158,6 +158,8 @@ class NoteCreationSafetyTest : StreetCompleteDatabaseTestCase() {
         val edit = pending(listOf("photo.jpg"))
         val before = dao.get(edit.id)
         db.exec("DROP TABLE ${NoteCreationAttemptsTable.NAME}")
+        db.exec("DROP TABLE scee_schema_tracks")
+        db.exec("DROP TABLE IF EXISTS osm_element_edit_reviews")
         db.exec("PRAGMA user_version = 23")
         db.initialize(de.westnordost.streetcomplete.data.StreetCompleteDatabaseConfigurator)
         assertEquals(before, dao.get(edit.id))

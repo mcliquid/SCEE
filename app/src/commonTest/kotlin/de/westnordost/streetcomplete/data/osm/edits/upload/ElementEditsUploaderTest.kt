@@ -49,7 +49,7 @@ class ElementEditsUploaderTest {
     private lateinit var listener: OnUploadedChangeListener
 
     @BeforeTest fun setUp() {
-        elementEditsController = mock()
+        elementEditsController = mock { every { getAllUnsynced() } returns emptyList() }
         mapDataController = mock()
         noteEditsController = mock()
 
@@ -67,7 +67,7 @@ class ElementEditsUploaderTest {
     @Test fun `crossing conflict refresh still fetches nodes absent from complete responses`() = runBlocking {
         val f = WaterwayCrossingTestData()
         val edit = edit(action = f.bridge)
-        every { elementEditsController.claimOldestUnsynced() } sequentially { returns(edit); repeat { returns(null) } }
+        every { elementEditsController.claimOldestUnsynced(any()) } sequentially { returns(edit); repeat { returns(null) } }
         everySuspend { singleUploader.upload(any(), any()) } throws ConflictException()
         everySuspend { mapDataApi.getWayComplete(f.road.id) } returns null
         everySuspend { mapDataApi.getWayComplete(f.water.id) } returns f.repo.getWayComplete(f.water.id)
@@ -81,7 +81,7 @@ class ElementEditsUploaderTest {
     @Test fun `crossing conflict refresh reuses complete way nodes and still fetches missing ones`() = runBlocking {
         val f = WaterwayCrossingTestData()
         val edit = edit(action = f.bridge)
-        every { elementEditsController.claimOldestUnsynced() } sequentially { returns(edit); repeat { returns(null) } }
+        every { elementEditsController.claimOldestUnsynced(any()) } sequentially { returns(edit); repeat { returns(null) } }
         everySuspend { singleUploader.upload(any(), any()) } throws ConflictException()
         everySuspend { mapDataApi.getWayComplete(f.road.id) } returns f.repo.getWayComplete(f.road.id)
         everySuspend { mapDataApi.getWayComplete(f.water.id) } returns f.repo.getWayComplete(f.water.id)
@@ -95,7 +95,7 @@ class ElementEditsUploaderTest {
         val edit = edit()
         val updates = MapDataUpdates()
         val job = launch(start = CoroutineStart.LAZY) { uploader.upload() }
-        every { elementEditsController.claimOldestUnsynced() } sequentially {
+        every { elementEditsController.claimOldestUnsynced(any()) } sequentially {
             returns(edit)
             repeat { returns(null) }
         }
@@ -107,7 +107,7 @@ class ElementEditsUploaderTest {
         job.start()
         job.join()
 
-        verify(exactly(1)) { elementEditsController.claimOldestUnsynced() }
+        verify(exactly(1)) { elementEditsController.claimOldestUnsynced(any()) }
         verify { elementEditsController.markSynced(edit, updates) }
         verify { noteEditsController.updateElementIds(any()) }
         verify { mapDataController.updateAll(updates) }
@@ -118,7 +118,7 @@ class ElementEditsUploaderTest {
         val edit = edit()
         val updates = MapDataUpdates()
 
-        every { elementEditsController.claimOldestUnsynced() } sequentially {
+        every { elementEditsController.claimOldestUnsynced(any()) } sequentially {
             returns(edit)
             repeat { returns(null) }
         }
@@ -150,7 +150,7 @@ class ElementEditsUploaderTest {
         everySuspend { mapDataApi.getWayComplete(1) } returns null
 
         // the edit is the first in the upload queue and the uploader throws a conflict exception
-        every { elementEditsController.claimOldestUnsynced() } sequentially {
+        every { elementEditsController.claimOldestUnsynced(any()) } sequentially {
             returns(edit)
             repeat { returns(null) }
         }

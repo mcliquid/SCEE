@@ -74,25 +74,25 @@ class ElementEditsDao(
     }
 
     fun get(id: Long): ElementEdit? =
-        db.queryOne(NAME, where = "$ID = $id") { it.toElementEdit() }
+        db.queryOne(READ_TABLE, where = "$ID = $id") { it.toElementEdit() }
 
     fun getOldestUnsynced(): ElementEdit? =
-        db.queryOne(NAME,
+        db.queryOne(READ_TABLE,
             where = "$IS_SYNCED = 0",
             orderBy = CREATED_TIMESTAMP
         ) { it.toElementEdit() }
 
     fun getUnsyncedCount(): Int =
-        db.queryOne(NAME,
+        db.queryOne(READ_TABLE,
             columns = arrayOf("COUNT(*) AS count"),
             where = "$IS_SYNCED = 0"
         ) { it.getInt("count") } ?: 0
 
     fun getAllUnsynced(): List<ElementEdit> =
-        db.query(NAME, where = "$IS_SYNCED = 0", orderBy = CREATED_TIMESTAMP) { it.toElementEdit() }
+        db.query(READ_TABLE, where = "$IS_SYNCED = 0", orderBy = CREATED_TIMESTAMP) { it.toElementEdit() }
 
     fun getAll(): List<ElementEdit> =
-        db.query(NAME, orderBy = "$IS_SYNCED, $CREATED_TIMESTAMP") { it.toElementEdit() }
+        db.query(READ_TABLE, orderBy = "$IS_SYNCED, $CREATED_TIMESTAMP") { it.toElementEdit() }
 
     fun markSynced(id: Long): Boolean =
         db.update(NAME, listOf(IS_SYNCED to 1), "$ID = $id") == 1
@@ -106,7 +106,7 @@ class ElementEditsDao(
     }
 
     fun getSyncedOlderThan(timestamp: Long): List<ElementEdit> =
-        db.query(NAME, where = "$IS_SYNCED = 1 AND $CREATED_TIMESTAMP < $timestamp") { it.toElementEdit() }
+        db.query(READ_TABLE, where = "$IS_SYNCED = 1 AND $CREATED_TIMESTAMP < $timestamp") { it.toElementEdit() }
 
     private fun ElementEdit.toPairs(): List<Pair<String, Any?>> = listOfNotNull(
         if (id <= 0) null else ID to id,
@@ -132,5 +132,8 @@ class ElementEditsDao(
         getInt(IS_SYNCED) == 1,
         json.decodeFromString(PolymorphicSerializer(ElementEditAction::class), getString(ACTION)),
         getInt(IS_NEAR_USER_LOCATION) == 1,
+        getIntOrNull("http_status")?.let { ElementEditReview(getLong(ID), it, getString("reason"), getLong("rejected_at")) },
     )
 }
+
+private const val READ_TABLE = "osm_element_edits LEFT JOIN osm_element_edit_reviews ON osm_element_edits.id = osm_element_edit_reviews.edit_id"

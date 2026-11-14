@@ -1,0 +1,11 @@
+<resources>
+    <string name="element_review_attention">Needs review</string>
+    <string name="element_review_identity">Local edit #%1$d</string>
+    <string name="element_review_unresolved">Waiting for unresolved temporary element references. Undo removes this edit using the normal edit history.</string>
+    <string name="element_review_dependency">Blocked by rejected local edit #%1$d. Retry retries that original edit.</string>
+    <string name="element_review_rejected">The server rejected this edit (HTTP %1$d). Automatic retries are blocked.</string>
+    <string name="element_review_retry">Retry upload</string>
+    <string name="element_review_undo">Undo this edit</string>
+    <string name="element_review_upload_error">Some edits need review. Open the edit history to see the reason, allow a retry or undo them. Independent edits were processed.</string>
+    <string name="element_review_action_failed">Action unavailable. Wait for the upload or try again.</string>
+</resources>

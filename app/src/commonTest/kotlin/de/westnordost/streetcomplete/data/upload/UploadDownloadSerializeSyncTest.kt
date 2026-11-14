@@ -277,7 +277,7 @@ private class SerializeSyncHarness {
     lateinit var releaseExternal: CompletableDeferred<Unit>
     lateinit var externalDownloadEntered: CompletableDeferred<Unit>
 
-    val elementEditsController: ElementEditsController = mock()
+    val elementEditsController: ElementEditsController = mock { every { getAllUnsynced() } returns emptyList() }
     val mapDataController: MapDataController = mock()
     val noteEditsController: NoteEditsController = mock()
     val noteController: NoteController = mock()
@@ -394,7 +394,7 @@ private class SerializeSyncHarness {
 
     fun queueElementEdits(vararg edits: ElementEdit) {
         val remaining = edits.toMutableList()
-        every { elementEditsController.claimOldestUnsynced() } calls {
+        every { elementEditsController.claimOldestUnsynced(any()) } calls {
             remaining.removeFirstOrNull()
         }
     }

@@ -43,8 +43,12 @@ class UploaderContinuationTest {
     }
     private val external = mock<ExternalSourceQuestController>()
     private val client = HttpClient(MockEngine { respondOk("") })
+    private val elementController = mock<ElementEditsController> {
+        every { claimOldestUnsynced(any()) } returns null
+        every { getAllUnsynced() } returns emptyList()
+    }
     private val elements = ElementEditsUploader(
-        mock<ElementEditsController> { every { claimOldestUnsynced() } returns null }, edits,
+        elementController, edits,
         mock(), mock(), mock(), mock(), external, mock())
     private val uploader = Uploader(
         NoteEditsUploader(edits, mock(), mock(), mock(), mock(), mock()), elements,
@@ -103,6 +107,17 @@ class UploaderContinuationTest {
             assertTrue(uploader.isUploadInProgress, "finishing one request must not hide the other")
         } finally { release.complete(Unit) }
         withTimeout(10000) { first.await() }
+        assertFalse(uploader.isUploadInProgress)
+    }
+
+    @Test fun `rejected element still allows note and external uploads before reporting review`() = runBlocking<Unit> {
+        every { edits.getOldestUnsynced() } returns null
+        val rejected = de.westnordost.streetcomplete.testutils.edit().copy(review =
+            de.westnordost.streetcomplete.data.osm.edits.ElementEditReview(1, 400, "invalid", 123))
+        every { elementController.getAllUnsynced() } returns listOf(rejected)
+        assertFailsWith<de.westnordost.streetcomplete.data.osm.edits.ElementEditsNeedReviewException> { uploader.upload() }
+        verify { edits.getOldestUnsynced() }
+        verifySuspend(exactly(1)) { external.upload() }
         assertFalse(uploader.isUploadInProgress)
     }
 

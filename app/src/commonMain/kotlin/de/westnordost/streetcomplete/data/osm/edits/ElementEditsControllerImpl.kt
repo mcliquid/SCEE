@@ -24,6 +24,7 @@ class ElementEditsControllerImpl(
     private val editsDB: ElementEditsDao,
     private val editElementsDB: EditElementsDao,
     private val elementIdProviderDB: ElementIdProviderDao,
+    private val cleanExternalSourceEdits: ((Collection<Long>) -> Unit)? = null,
 ) : ElementEditsController, KoinComponent {
 
     private val externalSourceQuestController: ExternalSourceQuestController by inject()
@@ -94,15 +95,18 @@ class ElementEditsControllerImpl(
         lock.withLock {
             val allEdits = editsDB.getAll()
             deleteEdits = allEdits.filter { it.createdTimestamp < timestamp && it.isSynced }
-            if (deleteEdits.isEmpty()) return 0
-            val ids = deleteEdits.map { it.id }
-            editCache.keys.removeAll(ids)
-            deletedCount = editsDB.deleteAll(ids)
-            editElementsDB.deleteAll(ids)
-            externalSourceQuestController.cleanElementEdits(
-                elementEditIdsKeptAfterCleanup(allEdits, deleteEdits)
-            )
+            if (deleteEdits.isNotEmpty()) {
+                val ids = deleteEdits.map { it.id }
+                editCache.keys.removeAll(ids)
+                deletedCount = editsDB.deleteAll(ids)
+                editElementsDB.deleteAll(ids)
+            }
+            // Orphans must go even when every remaining edit is still inside the undo window.
+            val kept = elementEditIdsKeptAfterCleanup(allEdits, deleteEdits)
+            cleanExternalSourceEdits?.invoke(kept)
+                ?: externalSourceQuestController.cleanElementEdits(kept)
         }
+        if (deleteEdits.isEmpty()) return 0
         onDeletedEdits(deleteEdits)
         /* must be deleted after the callback because the callback might want to get the id provider
            for that edit */

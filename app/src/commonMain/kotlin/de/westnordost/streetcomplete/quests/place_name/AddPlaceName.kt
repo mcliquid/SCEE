@@ -130,11 +130,16 @@ class AddPlaceName(
                 onDismissRequest = { showBrandNameDialog = false },
                 buttonRow = {
                     TextButton({ showBrandNameDialog = false }) { Text(stringResource(Res.string.cancel)) }
-                    TextButton({
-                        val feature = suggestions.firstOrNull { it.name == brand.text } // hope that we don't have 2 features with the same name...
-                        if (feature == null) on(Answer(PlaceNameAnswer.BrandName(brand.text)))
-                        else on(Answer(PlaceNameAnswer.FeatureName(feature)))
-                    }) { Text(stringResource(Res.string.ok)) }
+                    TextButton(
+                        onClick = {
+                            val trimmed = brand.text.trim()
+                            if (trimmed.isEmpty()) return@TextButton
+                            val feature = suggestions.firstOrNull { it.name == trimmed }
+                            if (feature == null) on(Answer(PlaceNameAnswer.BrandName(trimmed)))
+                            else on(Answer(PlaceNameAnswer.FeatureName(feature)))
+                        },
+                        enabled = brand.text.trim().isNotEmpty(),
+                    ) { Text(stringResource(Res.string.ok)) }
                 },
                 title = { Text(stringResource(Res.string.quest_name_brand)) },
                 text = {
@@ -159,12 +164,17 @@ class AddPlaceName(
                 }
             }
             is PlaceNameAnswer.FeatureName -> {
-                for (addTag in answer.feature.addTags)
+                for (addTag in answer.feature.addTags) {
                     tags[addTag.key] = addTag.value
+                }
+                clearStaleNameUncertaintyTags(tags)
             }
             is PlaceNameAnswer.BrandName -> {
-                tags["brand"] = answer.name
-                tags["name"] = answer.name
+                val name = answer.name.trim()
+                require(name.isNotEmpty())
+                tags["brand"] = name
+                tags["name"] = name
+                clearStaleNameUncertaintyTags(tags)
             }
         }
     }
@@ -282,3 +292,14 @@ sealed interface PlaceNameAnswer {
 }
 
 data class PlaceName(val localizedNames: List<LocalizedName>) : PlaceNameAnswer
+
+/** Same fixme/noname cleanup as [de.westnordost.streetcomplete.osm.localized_name.LocalizedName.applyTo]. */
+private fun clearStaleNameUncertaintyTags(tags: Tags) {
+    if (tags["name"].isNullOrEmpty() && tags["brand"].isNullOrEmpty()) return
+    tags.remove("noname")
+    tags.remove("name:signed")
+    val fixmeTargets = setOf("name", "Name", "Name?", "name?")
+    for (key in listOf("fixme", "FIXME")) {
+        if (tags[key] in fixmeTargets) tags.remove(key)
+    }
+}

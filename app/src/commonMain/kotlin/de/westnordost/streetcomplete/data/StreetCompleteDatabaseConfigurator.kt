@@ -32,7 +32,73 @@ import de.westnordost.streetcomplete.quests.osmose.OsmoseTable
 import de.westnordost.streetcomplete.util.logs.Log
 
 object StreetCompleteDatabaseConfigurator : DatabaseConfigurator {
-    override val version = 24
+    // File-format gate: legacy software must refuse databases with independent migration tracks.
+    override val version = 25
+    internal const val UPSTREAM_VERSION = 22
+    private val forkMigrations: List<(Database) -> Unit> = listOf(
+        { createSceeTables(it) }, // fork:1, formerly user_version 23
+        { it.exec(NoteCreationAttemptsTable.CREATE) }, // fork:2, formerly user_version 24
+    )
+
+    override fun migrate(db: Database, oldVersion: Int) {
+        if (oldVersion == 0) {
+            onCreate(db)
+            SchemaTracks.create(db, UPSTREAM_VERSION, forkMigrations.size)
+        } else {
+            val tracked = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+                arrayOf(SchemaTracks.TABLE)) { it.getString("name") }.isNotEmpty()
+            if (!tracked) {
+                check(oldVersion in 22..24) {
+                    "Cannot safely identify legacy schema $oldVersion; migration tracks are missing"
+                }
+                val fork = (oldVersion - 22).coerceAtLeast(0)
+                validateSchema(db, fork)
+                check(fork >= 1 || db.tableInfo(de.westnordost.streetcomplete.data.osm.osmquests.WaterwayCrossingQuestTable.NAME).isEmpty()) {
+                    "Legacy schema marker disagrees with crossing migration; refusing to guess"
+                }
+                check(fork >= 2 || db.tableInfo(NoteCreationAttemptsTable.NAME).isEmpty()) {
+                    "Legacy schema marker disagrees with note upload journal; refusing to guess"
+                }
+                SchemaTracks.create(db, 22, fork)
+            } else {
+                check(oldVersion == version) { "Migration tracks disagree with database file-format marker" }
+                val progress = SchemaTracks.read(db)
+                validateSchema(db, progress.getValue("fork"))
+            }
+            SchemaTracks.migrate(db, UPSTREAM_VERSION, ::onUpgrade, forkMigrations)
+        }
+        validateSchema(db, forkMigrations.size)
+    }
+
+    private fun validateSchema(db: Database, fork: Int) {
+        val required = listOf(NoteTable.NAME, NoteEditsTable.NAME, ElementEditsTable.NAME,
+            EditElementsTable.NAME, ElementIdProviderTable.NAME, NodeTable.NAME, WayTables.NAME,
+            WayTables.NAME_NODES, RelationTables.NAME, RelationTables.NAME_MEMBERS,
+            WayGeometryTable.NAME, RelationGeometryTable.NAME, CreatedElementsTable.NAME,
+            VisibleEditTypeTable.NAME, QuestTypeOrderTable.NAME, EditTypePresetsTable.NAME,
+            OsmQuestTable.NAME, OsmQuestsHiddenTable.NAME, NoteQuestsHiddenTable.NAME,
+            OpenChangesetsTable.NAME, DownloadedTilesTable.NAME, LogsTable.NAME,
+            CalendarEventsTable.TABLE, UserAchievementsTable.NAME, UserLinksTable.NAME,
+            ActiveDatesTable.NAME, CountryStatisticsTable.NAME, CountryStatisticsTable.NAME_CURRENT_WEEK,
+            EditTypeStatisticsTable.NAME, EditTypeStatisticsTable.NAME_CURRENT_WEEK)
+        for (table in required) check(db.tableInfo(table).isNotEmpty()) { "Missing legacy table $table" }
+        check(db.tableInfo(ElementEditsTable.NAME).map { it.name }.toSet() == setOf(
+            "id", "quest_type", "geometry", "source", "latitude", "longitude", "created", "synced", "action", "is_near")) {
+            "Unknown element edit schema; refusing destructive recovery"
+        }
+        if (fork >= 1) {
+            check(db.tableInfo(de.westnordost.streetcomplete.data.osm.osmquests.WaterwayCrossingQuestTable.NAME)
+                .map { it.name }.toSet() == setOf("quest_type", "element_id", "element_type", "latitude", "longitude", "crossing_id")) { "Fork crossing migration is marked complete but its table is missing" }
+            check(db.tableInfo(ExternalSourceQuestTables.NAME_EDITS).isNotEmpty()) { "Missing external-source edit links" }
+        }
+        if (fork >= 2) {
+            val journal = db.tableInfo(NoteCreationAttemptsTable.NAME)
+            check(journal.map { it.name }.toSet() == setOf("edit_id", "text", "note_id") &&
+                journal.single { it.name == "edit_id" }.primaryKey == 1) {
+                "Fork note journal migration is marked complete but its schema is inconsistent"
+            }
+        }
+    }
 
     override fun onCreate(db: Database) {
         // OSM notes
@@ -277,9 +343,6 @@ object StreetCompleteDatabaseConfigurator : DatabaseConfigurator {
             db.deleteQuest("AddChargingStationBicycleCapacity")
         }
 
-        if (oldVersion < 24) db.exec(NoteCreationAttemptsTable.CREATE)
-
-        createSceeTables(db)
     }
 
     private fun createSceeTables(db: Database) {
@@ -289,14 +352,14 @@ object StreetCompleteDatabaseConfigurator : DatabaseConfigurator {
         db.exec(de.westnordost.streetcomplete.data.osm.osmquests.WaterwayCrossingQuestTable.CREATE)
         db.exec(de.westnordost.streetcomplete.data.osm.osmquests.WaterwayCrossingQuestTable.INDEX_CREATE)
         // create other source tables
-        db.tryExec(ExternalSourceQuestTables.CREATE_HIDDEN)
-        db.tryExec(ExternalSourceQuestTables.CREATE_EDITS)
+        db.exec(ExternalSourceQuestTables.CREATE_HIDDEN)
+        db.exec(ExternalSourceQuestTables.CREATE_EDITS)
 
         // create osmose table
-        db.tryExec(OsmoseTable.CREATE_IF_NOT_EXISTS)
-        db.tryExec(OsmoseTable.CREATE_SPATIAL_INDEX_IF_NOT_EXISTS)
+        db.exec(OsmoseTable.CREATE_IF_NOT_EXISTS)
+        db.exec(OsmoseTable.CREATE_SPATIAL_INDEX_IF_NOT_EXISTS)
         // create osm quests element id index if not existing
-        db.tryExec(OsmQuestTable.CREATE_ELEMENT_ID_INDEX_IF_NOT_EXISTS)
+        db.exec(OsmQuestTable.CREATE_ELEMENT_ID_INDEX_IF_NOT_EXISTS)
     }
 }
 

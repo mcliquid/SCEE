@@ -14,14 +14,8 @@ fun Database.initialize(configurator: DatabaseConfigurator) {
         val oldVersion = rawQuery("PRAGMA user_version") { it.getInt("user_version") }.single()
         val newVersion = supportedVersion
         check(oldVersion <= newVersion) { "Database was upgraded concurrently; downgrade refused" }
-        if (oldVersion < newVersion) {
-            if (oldVersion == 0) {
-                configurator.onCreate(this)
-            } else {
-                configurator.onUpgrade(this, oldVersion)
-            }
-            exec("PRAGMA user_version = $newVersion")
-        }
+        configurator.migrate(this, oldVersion)
+        if (oldVersion != newVersion) exec("PRAGMA user_version = $newVersion")
     }
 }
 

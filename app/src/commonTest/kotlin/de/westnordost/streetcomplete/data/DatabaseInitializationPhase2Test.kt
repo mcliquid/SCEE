@@ -21,6 +21,7 @@ class DatabaseInitializationPhase2Test : StreetCompleteDatabaseTestCase() {
         // Recreate the v22 schema only inside this isolated test database.
         db.exec("DROP TABLE ${WaterwayCrossingQuestTable.NAME}")
         db.exec("DROP TABLE ${NoteCreationAttemptsTable.NAME}")
+        db.exec("DROP TABLE ${SchemaTracks.TABLE}")
         db.exec("PRAGMA user_version = 22")
         val f = WaterwayCrossingTestData()
         NodeDao(db).putAll(f.data.nodes.toList())
@@ -42,7 +43,7 @@ class DatabaseInitializationPhase2Test : StreetCompleteDatabaseTestCase() {
         require(StreetCompleteDatabaseConfigurator.version == LAST_KNOWN_DB_VERSION.toInt()) {
             "update database import/export"
         }
-        assertEquals(24, db.rawQuery("PRAGMA user_version") { it.getInt("user_version") }.single())
+        assertEquals(25, db.rawQuery("PRAGMA user_version") { it.getInt("user_version") }.single())
         assertEquals(before, snapshotExistingTables())
         assertEquals(pending, edits.get(pending.id))
         assertEquals(1, edits.getUnsyncedCount())
@@ -60,13 +61,15 @@ class DatabaseInitializationPhase2Test : StreetCompleteDatabaseTestCase() {
 
     @Test fun `unsupported newer database is refused without changing data or version`() {
         val before = snapshotExistingTables()
-        db.exec("PRAGMA user_version = 25")
+        db.exec("PRAGMA user_version = 26")
         kotlin.test.assertFailsWith<IllegalStateException> { db.initialize(StreetCompleteDatabaseConfigurator) }
-        assertEquals(25, db.rawQuery("PRAGMA user_version") { it.getInt("user_version") }.single())
+        assertEquals(26, db.rawQuery("PRAGMA user_version") { it.getInt("user_version") }.single())
         assertEquals(before, snapshotExistingTables())
     }
 
     @Test fun `schema 23 software refuses existing schema 24 journal`() {
+        db.exec("DROP TABLE ${SchemaTracks.TABLE}")
+        db.exec("PRAGMA user_version = 24")
         db.insert(NoteCreationAttemptsTable.NAME, listOf("edit_id" to 77, "text" to "keep me"))
         val oldSoftware = object : DatabaseConfigurator by StreetCompleteDatabaseConfigurator {
             override val version = 23
@@ -77,7 +80,7 @@ class DatabaseInitializationPhase2Test : StreetCompleteDatabaseTestCase() {
     }
 
     private fun snapshotExistingTables(): Map<String, List<String>> = db.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name != '${WaterwayCrossingQuestTable.NAME}' AND name != '${NoteCreationAttemptsTable.NAME}'"
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%' AND name != '${WaterwayCrossingQuestTable.NAME}' AND name != '${NoteCreationAttemptsTable.NAME}' AND name != '${SchemaTracks.TABLE}'"
     ) { it.getString("name") }.associateWith { table ->
         val columns = db.tableInfo(table).joinToString(" || '|' || ") { "quote(\"${it.name}\")" }
         db.rawQuery("SELECT $columns AS snapshot FROM \"$table\" ORDER BY snapshot") { it.getString("snapshot") }

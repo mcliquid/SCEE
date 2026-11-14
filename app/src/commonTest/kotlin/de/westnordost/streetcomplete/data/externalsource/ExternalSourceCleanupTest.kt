@@ -15,9 +15,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class ExternalSourceCleanupTest : StreetCompleteDatabaseTestCase() {
+    private lateinit var database: Database
     private lateinit var dao: ExternalSourceDao
 
     override fun onDatabaseInitialized(database: Database) {
+        this.database = database
         dao = ExternalSourceDao(database)
     }
 
@@ -59,7 +61,7 @@ class ExternalSourceCleanupTest : StreetCompleteDatabaseTestCase() {
         val synced = edit(id = 3, timestamp = 100, isSynced = true)
         val db = mock<ElementEditsDao> { every { getAll() } returns listOf(unsynced, synced) }
         var kept: Collection<Long>? = null
-        val ctrl = ElementEditsControllerImpl(db, mock(), mock()) { kept = it }
+        val ctrl = ElementEditsControllerImpl(db, mock(), mock(), database, dao) { kept = it }
         assertEquals(0, ctrl.deleteSyncedOlderThan(50))
         assertEquals(listOf(unsynced.id, synced.id), kept?.toList())
 
@@ -77,7 +79,7 @@ class ExternalSourceCleanupTest : StreetCompleteDatabaseTestCase() {
     @Test fun `an empty edit table drops every external source link`() {
         val db = mock<ElementEditsDao> { every { getAll() } returns emptyList() }
         var kept: Collection<Long>? = null
-        val ctrl = ElementEditsControllerImpl(db, mock(), mock()) { kept = it }
+        val ctrl = ElementEditsControllerImpl(db, mock(), mock(), database, dao) { kept = it }
         assertEquals(0, ctrl.deleteSyncedOlderThan(50))
         assertEquals(emptyList(), kept?.toList())
         dao.addElementEdit(ExternalSourceQuestKey("orphan", "osmose"), 4)

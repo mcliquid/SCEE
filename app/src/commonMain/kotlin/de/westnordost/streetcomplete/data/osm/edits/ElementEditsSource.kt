@@ -1,5 +1,6 @@
 package de.westnordost.streetcomplete.data.osm.edits
 
+import de.westnordost.streetcomplete.data.quest.ExternalSourceQuestKey
 import de.westnordost.streetcomplete.data.quest.QuestKey
 
 interface ElementEditsSource {
@@ -31,6 +32,8 @@ interface ElementEditsSource {
     fun getUnsyncedCount(): Int
 
     fun getIdProvider(id: Long): ElementIdProvider
+
+    fun getExternalSourceQuestKey(id: Long): ExternalSourceQuestKey?
 
     fun getOldestUnsynced(): ElementEdit?
 

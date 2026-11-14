@@ -1,5 +1,7 @@
 package de.westnordost.streetcomplete.data.osm.edits
 
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import de.westnordost.streetcomplete.data.DatabaseImpl
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataUpdates
 import de.westnordost.streetcomplete.testutils.edit
 import dev.mokkery.answering.calls
@@ -25,7 +27,7 @@ class ElementEditsCacheConcurrencyTest {
             check(release.await(5, TimeUnit.SECONDS))
             true
         }
-        val controller = ElementEditsControllerImpl(db, mock(), mock())
+        val controller = ElementEditsControllerImpl(db, mock(), mock(), DatabaseImpl(BundledSQLiteDriver().open(":memory:")), mock())
         controller.getAll() // initialize the actual cache before the writer starts
         val lock = controller.javaClass.getDeclaredField("lock").apply { isAccessible = true }.get(controller) as ReentrantLock
         val workers = Executors.newFixedThreadPool(2)

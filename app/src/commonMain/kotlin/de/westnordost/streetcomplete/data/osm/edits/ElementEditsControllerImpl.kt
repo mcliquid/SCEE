@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.data.osm.edits
 
-import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
+import de.westnordost.streetcomplete.data.Database
+import de.westnordost.streetcomplete.data.externalsource.ExternalSourceDao
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryDelete
@@ -9,14 +10,13 @@ import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTag
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.ElementKey
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataUpdates
+import de.westnordost.streetcomplete.data.quest.ExternalSourceQuestKey
 import de.westnordost.streetcomplete.data.quest.QuestKey
 import de.westnordost.streetcomplete.util.Listeners
 import de.westnordost.streetcomplete.util.ktx.nowAsEpochMilliseconds
 import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.util.logs.Perf
 import de.westnordost.streetcomplete.util.logs.currentPerfTrace
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import kotlinx.atomicfu.locks.ReentrantLock
 import kotlinx.atomicfu.locks.withLock
 
@@ -24,10 +24,11 @@ class ElementEditsControllerImpl(
     private val editsDB: ElementEditsDao,
     private val editElementsDB: EditElementsDao,
     private val elementIdProviderDB: ElementIdProviderDao,
+    private val database: Database,
+    private val externalSourceDB: ExternalSourceDao,
     private val cleanExternalSourceEdits: ((Collection<Long>) -> Unit)? = null,
-) : ElementEditsController, KoinComponent {
+) : ElementEditsController {
 
-    private val externalSourceQuestController: ExternalSourceQuestController by inject()
     private val listeners = Listeners<ElementEditsSource.Listener>()
 
     private val lock = ReentrantLock()
@@ -43,6 +44,8 @@ class ElementEditsControllerImpl(
     //  on rebuildLocalChanges idProviders of all edits are queried, so the cache saves many db queries
     //    each query is fast, but for many unsynced edits this is a clear improvement
     private val emptyIdProviderCache = HashSet<Long>()
+    private val deletedExternalSourceKeys = hashMapOf<Long, ExternalSourceQuestKey>()
+    private val deletedIdProviders = hashMapOf<Long, List<ElementKey>>()
 
     /* ----------------------- Unsynced edits and syncing them -------------------------------- */
 
@@ -80,11 +83,16 @@ class ElementEditsControllerImpl(
     override fun getOldestUnsynced(): ElementEdit? =
         getAllUnsynced().minByOrNull { it.createdTimestamp }
 
-    override fun getIdProvider(id: Long): ElementIdProvider = synchronized(emptyIdProviderCache) {
-        if (emptyIdProviderCache.contains(id)) return ElementIdProvider(emptyList())
-        val p = elementIdProviderDB.get(id)
-        if (p.isEmpty()) emptyIdProviderCache.add(id)
-        return p
+    override fun getIdProvider(id: Long): ElementIdProvider = lock.withLock {
+        deletedIdProviders[id]?.let { return ElementIdProvider(it) }
+        if (id in emptyIdProviderCache) return ElementIdProvider(emptyList())
+        val provider = elementIdProviderDB.get(id)
+        if (provider.isEmpty()) emptyIdProviderCache.add(id)
+        provider
+    }
+
+    override fun getExternalSourceQuestKey(id: Long): ExternalSourceQuestKey? = lock.withLock {
+        deletedExternalSourceKeys[id] ?: externalSourceDB.getKeyForElementEdit(id)
     }
 
     /** Delete old synced (aka uploaded) edits older than the given timestamp. Used to clear
@@ -93,24 +101,30 @@ class ElementEditsControllerImpl(
         var deletedCount = 0
         var deleteEdits: List<ElementEdit> = listOf()
         lock.withLock {
-            val allEdits = editsDB.getAll()
-            deleteEdits = allEdits.filter { it.createdTimestamp < timestamp && it.isSynced }
-            if (deleteEdits.isNotEmpty()) {
+            editCache // Initialize from committed state before writing.
+            var providers = emptyMap<Long, ElementIdProvider>()
+            var sourceKeys = emptyMap<Long, ExternalSourceQuestKey>()
+            database.transaction {
+                val allEdits = editsDB.getAll()
+                deleteEdits = allEdits.filter { it.createdTimestamp < timestamp && it.isSynced }
                 val ids = deleteEdits.map { it.id }
-                editCache.keys.removeAll(ids)
-                deletedCount = editsDB.deleteAll(ids)
-                editElementsDB.deleteAll(ids)
+                providers = ids.associateWith { elementIdProviderDB.get(it) }
+                sourceKeys = externalSourceKeys(deleteEdits)
+                if (ids.isNotEmpty()) {
+                    deletedCount = editsDB.deleteAll(ids)
+                    editElementsDB.deleteAll(ids)
+                    elementIdProviderDB.deleteAll(ids)
+                }
+                val kept = elementEditIdsKeptAfterCleanup(allEdits, deleteEdits)
+                cleanExternalSourceEdits?.invoke(kept)
+                    ?: externalSourceDB.deleteAllExceptForElementEdits(kept)
             }
-            // Orphans must go even when every remaining edit is still inside the undo window.
-            val kept = elementEditIdsKeptAfterCleanup(allEdits, deleteEdits)
-            cleanExternalSourceEdits?.invoke(kept)
-                ?: externalSourceQuestController.cleanElementEdits(kept)
+            editCache.keys.removeAll(providers.keys)
+            emptyIdProviderCache.removeAll(providers.keys)
+            deletedIdProviders.putAll(providers.mapValues { it.value.getAll() })
+            deletedExternalSourceKeys.putAll(sourceKeys)
         }
-        if (deleteEdits.isEmpty()) return 0
-        onDeletedEdits(deleteEdits)
-        /* must be deleted after the callback because the callback might want to get the id provider
-           for that edit */
-        elementIdProviderDB.deleteAll(deleteEdits.map { it.id })
+        if (deleteEdits.isNotEmpty()) notifyDeleted(deleteEdits)
         return deletedCount
     }
 
@@ -139,29 +153,29 @@ class ElementEditsControllerImpl(
         val editIdsToUpdate = HashSet<Long>()
         val syncedEdit by lazy { edit.copy(isSynced = true) }
         lock.withLock {
-            elementUpdates.idUpdates.flatMapTo(editIdsToUpdate) {
-                editElementsDB.getAllByElement(it.elementType, it.oldElementId)
+            editCache
+            val updatedEdits = mutableListOf<ElementEdit>()
+            database.transaction {
+                elementUpdates.idUpdates.flatMapTo(editIdsToUpdate) {
+                    editElementsDB.getAllByElement(it.elementType, it.oldElementId)
+                }
+                for (id in editIdsToUpdate) {
+                    val oldEdit = editsDB.get(id) ?: continue
+                    val updatedEdit = oldEdit.copy(action = oldEdit.action.idsUpdatesApplied(idUpdatesMap))
+                    editsDB.put(updatedEdit)
+                    editElementsDB.delete(id)
+                    editElementsDB.put(id, updatedEdit.action.elementKeys)
+                    updatedEdits.add(updatedEdit)
+                }
+                syncSuccess = editsDB.markSynced(edit.id)
+                elementIdProviderDB.updateIds(elementUpdates.idUpdates)
             }
-            for (id in editIdsToUpdate) {
-                val oldEdit = editsDB.get(id) ?: continue
-                val updatedEdit = oldEdit.copy(action = oldEdit.action.idsUpdatesApplied(idUpdatesMap))
-                editsDB.put(updatedEdit)
-                editCache[updatedEdit.id] = updatedEdit
-                // must clear first because the element ids associated with this id are different now
-                editElementsDB.delete(id)
-                editElementsDB.put(id, updatedEdit.action.elementKeys)
-            }
-            if (editIdsToUpdate.isNotEmpty())
-                synchronized(emptyIdProviderCache) { emptyIdProviderCache.removeAll(editIdsToUpdate) }
-            syncSuccess = editsDB.markSynced(edit.id)
-
-            if (syncSuccess)
-                editCache[edit.id] = syncedEdit
+            updatedEdits.forEach { editCache[it.id] = it }
+            emptyIdProviderCache.removeAll(editIdsToUpdate)
+            emptyIdProviderCache.remove(edit.id)
+            if (syncSuccess) editCache[edit.id] = syncedEdit
         }
-
-        if (syncSuccess) onSyncedEdit(syncedEdit, editIdsToUpdate) // forward which ids were updated, because history controller needs to reload those edits
-        elementIdProviderDB.updateIds(elementUpdates.idUpdates)
-        synchronized(emptyIdProviderCache) { emptyIdProviderCache.remove(edit.id) }
+        if (syncSuccess) onSyncedEdit(syncedEdit, editIdsToUpdate)
     }
 
     override fun markSyncFailed(edit: ElementEdit) {
@@ -171,66 +185,96 @@ class ElementEditsControllerImpl(
     /* ----------------------- Undoable edits and undoing them -------------------------------- */
 
     override fun undo(edit: ElementEdit): Boolean {
-        if (edit.isSynced) {
-            // already uploaded
-            val action = edit.action
-            if (action !is IsActionRevertable) return false
-            // first create the revert action, as ElementIdProvider will be deleted when deleting the edit
-            val reverted = action.createReverted(getIdProvider(edit.id))
-            Log.d(TAG, "Add revert ${edit.type.name} for ${edit.action.elementKeys.joinToString()}")
-            // need to delete the original edit from history because this should not be undoable anymore
-            delete(edit)
-            // ... and add a new revert to the queue
-            add(ElementEdit(0, edit.type, edit.originalGeometry, edit.source, nowAsEpochMilliseconds(), false, reverted, edit.isNearUserLocation))
-        } else {
-            // not uploaded yet
-            Log.d(TAG, "Undo ${edit.type.name} for ${edit.action.elementKeys.joinToString()}")
-            delete(edit)
+        var removed = emptyList<ElementEdit>()
+        var revert: ElementEdit? = null
+        lock.withLock {
+            editCache
+            if (edit.isSynced) {
+                val action = edit.action
+                if (action !is IsActionRevertable) return false
+                revert = ElementEdit(0, edit.type, edit.originalGeometry, edit.source,
+                    nowAsEpochMilliseconds(), false, action.createReverted(getIdProvider(edit.id)), edit.isNearUserLocation)
+            }
+            removed = getEditsBasedOnElementsCreatedByEdit(edit)
+            val providers = removed.associate { it.id to elementIdProviderDB.get(it.id) }
+            val sourceKeys = externalSourceKeys(removed)
+            database.transaction {
+                persistDelete(removed)
+                revert?.let { persistAdd(it) }
+            }
+            publishDeleted(removed, providers)
+            deletedExternalSourceKeys.putAll(sourceKeys)
+            revert?.let { editCache[it.id] = it }
         }
+        notifyDeleted(removed)
+        revert?.let { onAddedEdit(it, null) }
         return true
     }
 
     /* ------------------------------------ add/sync/delete ------------------------------------- */
 
+    private fun persistAdd(edit: ElementEdit) {
+        editsDB.put(edit)
+        editElementsDB.put(edit.id, edit.action.elementKeys)
+        val count = edit.action.newElementsCount
+        elementIdProviderDB.assign(edit.id, count.nodes, count.ways, count.relations)
+    }
+
     private fun add(edit: ElementEdit, key: QuestKey? = null) {
         val start = Perf.mark()
         lock.withLock {
-            editsDB.put(edit)
-            editElementsDB.put(edit.id, edit.action.elementKeys)
-            val createdElementsCount = edit.action.newElementsCount
-            elementIdProviderDB.assign(
-                edit.id,
-                createdElementsCount.nodes,
-                createdElementsCount.ways,
-                createdElementsCount.relations
-            )
+            editCache
+            database.transaction {
+                persistAdd(edit)
+                if (key is ExternalSourceQuestKey) externalSourceDB.addElementEdit(key, edit.id)
+            }
             editCache[edit.id] = edit
         }
-        if (currentPerfTrace()?.event == "answer") {
-            currentPerfTrace()?.addMs("persist", Perf.ms(start))
-        }
+        if (currentPerfTrace()?.event == "answer") currentPerfTrace()?.addMs("persist", Perf.ms(start))
         onAddedEdit(edit, key)
     }
 
-    private fun delete(edit: ElementEdit) {
-        var edits = listOf<ElementEdit>()
-        var ids: List<Long> = listOf()
-        lock.withLock {
-            edits = getEditsBasedOnElementsCreatedByEdit(edit)
-
-            ids = edits.map { it.id }
-
-            editsDB.deleteAll(ids)
-            editElementsDB.deleteAll(ids)
-            editCache.keys.removeAll(ids)
-        }
-
-        onDeletedEdits(edits)
-
-        /* must be deleted after the callback because the callback might want to get the id provider
-           for that edit */
-        synchronized(emptyIdProviderCache) { ids.forEach { emptyIdProviderCache.remove(it) } }
+    private fun persistDelete(edits: List<ElementEdit>) {
+        val ids = edits.map { it.id }
+        editsDB.deleteAll(ids)
+        editElementsDB.deleteAll(ids)
         elementIdProviderDB.deleteAll(ids)
+        ids.forEach { externalSourceDB.deleteElementEdit(it) }
+    }
+
+    private fun externalSourceKeys(edits: List<ElementEdit>): Map<Long, ExternalSourceQuestKey> =
+        edits.mapNotNull { edit -> externalSourceDB.getKeyForElementEdit(edit.id)?.let { edit.id to it } }.toMap()
+
+    private fun publishDeleted(edits: List<ElementEdit>, providers: Map<Long, ElementIdProvider>) {
+        val ids = edits.map { it.id }
+        editCache.keys.removeAll(ids)
+        emptyIdProviderCache.removeAll(ids.toSet())
+        deletedIdProviders.putAll(providers.mapValues { it.value.getAll() })
+    }
+
+    private fun delete(edit: ElementEdit) {
+        val edits = lock.withLock {
+            val removed = getEditsBasedOnElementsCreatedByEdit(edit)
+            val providers = removed.associate { it.id to elementIdProviderDB.get(it.id) }
+            val sourceKeys = externalSourceKeys(removed)
+            database.transaction { persistDelete(removed) }
+            publishDeleted(removed, providers)
+            deletedExternalSourceKeys.putAll(sourceKeys)
+            removed
+        }
+        notifyDeleted(edits)
+    }
+
+    private fun notifyDeleted(edits: List<ElementEdit>) {
+        try {
+            // Listeners still need the committed deletion's old IDs to remove local geometry.
+            onDeletedEdits(edits)
+        } finally {
+            lock.withLock { edits.forEach {
+                deletedIdProviders.remove(it.id)
+                deletedExternalSourceKeys.remove(it.id)
+            } }
+        }
     }
 
     private fun getEditsBasedOnElementsCreatedByEdit(edit: ElementEdit): List<ElementEdit> {

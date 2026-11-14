@@ -25,7 +25,7 @@ class ExternalSourceQuestController(
     private val countryBoundaries: Lazy<CountryBoundaries>,
     private val questTypeRegistry: QuestTypeRegistry,
     private val externalSourceDao: ExternalSourceDao,
-    elementEditsController: ElementEditsController,
+    private val elementEditsController: ElementEditsController,
     private val visibleEditTypeSource: VisibleEditTypeSource,
 ) : ElementEditsSource.Listener {
 
@@ -100,7 +100,6 @@ class ExternalSourceQuestController(
     override fun onAddedEdit(edit: ElementEdit, key: QuestKey?) {
         if (key is ExternalSourceQuestKey) {
             getQuestType(key)?.onAddedEdit(edit, key.id)
-            externalSourceDao.addElementEdit(key, edit.id)
             questListeners.forEach { it.onUpdated(deletedQuestKeys = listOf(key)) }
         }
     }
@@ -128,8 +127,7 @@ class ExternalSourceQuestController(
     override fun onDeletedEdits(edits: List<ElementEdit>) {
         val restoredQuests = edits.mapNotNull { edit ->
             if (edit.isSynced) return@mapNotNull null // synced edits are deleted after 12 hours, and we don't want this to restore anything
-            val key = externalSourceDao.getKeyForElementEdit(edit.id)
-            externalSourceDao.deleteElementEdit(edit.id)
+            val key = elementEditsController.getExternalSourceQuestKey(edit.id)
             val type = questTypeNamesBySource[key?.source]?.let { questTypeRegistry.getByName(it) } as? ExternalSourceQuestType
             type?.onDeletedEdit(edit, key?.id)
             if (key == null) null

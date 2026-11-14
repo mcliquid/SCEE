@@ -30,7 +30,11 @@ class ExternalSourceDao(private val db: Database) {
         db.delete(NAME_EDITS, where = "$EDIT_ID = $elementEditId") > 0
 
     fun deleteAllExceptForElementEdits(elementEditIds: Collection<Long>) =
-        db.delete(NAME_EDITS, where = "$EDIT_ID not in (${elementEditIds.joinToString(",")})") > 0
+        if (elementEditIds.isEmpty()) {
+            db.delete(NAME_EDITS) > 0
+        } else {
+            db.delete(NAME_EDITS, where = "$EDIT_ID not in (${elementEditIds.joinToString(",")})") > 0
+        }
 }
 
 @Mockable

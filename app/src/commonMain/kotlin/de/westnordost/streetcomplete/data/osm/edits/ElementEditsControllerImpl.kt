@@ -1,7 +1,6 @@
 package de.westnordost.streetcomplete.data.osm.edits
 
 import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestController
-import de.westnordost.streetcomplete.data.externalsource.ExternalSourceQuestType
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryDelete
@@ -100,8 +99,9 @@ class ElementEditsControllerImpl(
             editCache.keys.removeAll(ids)
             deletedCount = editsDB.deleteAll(ids)
             editElementsDB.deleteAll(ids)
-            val keep = allEdits.filter { it.type is ExternalSourceQuestType && (it.isSynced || it.createdTimestamp >= timestamp) }
-            externalSourceQuestController.cleanElementEdits(keep.map { it.id })
+            externalSourceQuestController.cleanElementEdits(
+                elementEditIdsKeptAfterCleanup(allEdits, deleteEdits)
+            )
         }
         onDeletedEdits(deleteEdits)
         /* must be deleted after the callback because the callback might want to get the id provider
@@ -271,6 +271,15 @@ class ElementEditsControllerImpl(
     companion object {
         private const val TAG = "ElementEditsController"
     }
+}
+
+/** Ids of edits that still exist after [deletedEdits] are removed. Orphan links are everything else. */
+internal fun elementEditIdsKeptAfterCleanup(
+    allEdits: List<ElementEdit>,
+    deletedEdits: Collection<ElementEdit>,
+): List<Long> {
+    val deletedIds = deletedEdits.map { it.id }.toSet()
+    return allEdits.map { it.id }.filter { it !in deletedIds }
 }
 
 // list from josm

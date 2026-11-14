@@ -72,10 +72,11 @@ internal fun isSidepathRoadMetadataAssociationComplete(
     geometry: ElementGeometry,
     mapData: MapDataWithGeometry,
 ): Boolean {
-    if (tags["is_sidepath:of"].isNullOrEmpty()) return false
+    val associatedHighway = tags["is_sidepath:of"]?.takeIf { it.isNotEmpty() } ?: return false
     if (!tags["is_sidepath:of:name"].isNullOrEmpty()) return true
     if (!tags["is_sidepath:of:ref"].isNullOrEmpty()) return true
     val candidates = findCandidateRoads(geometry, mapData)
+        .filter { it.highway == associatedHighway }
     return candidates.none { candidate ->
         sidepathRoadMetadataAnswerProducesChanges(
             tags,
@@ -104,7 +105,12 @@ internal fun isSidepathRoadMetadataCompletionEligible(
     if (tags["is_sidepath"] != "yes") return false
     if (isSidepathRoadMetadataAssociationComplete(tags, geometry, mapData)) return false
     if (!hasNearbyAlignedRoad(geometry, mapData)) return false
-    return findCandidateRoads(geometry, mapData).any { candidate ->
+    val associatedHighway = tags["is_sidepath:of"]
+    val candidates = findCandidateRoads(geometry, mapData).let { roads ->
+        if (associatedHighway.isNullOrEmpty()) roads
+        else roads.filter { it.highway == associatedHighway }
+    }
+    return candidates.any { candidate ->
         sidepathRoadMetadataAnswerProducesChanges(
             tags,
             candidate.name,

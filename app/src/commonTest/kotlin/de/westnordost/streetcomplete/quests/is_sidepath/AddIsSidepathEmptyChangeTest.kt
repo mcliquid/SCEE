@@ -99,17 +99,43 @@ class AddIsSidepathEmptyChangeTest {
         assertTrue(updateElementTagsActionOrNull(element, StringMapChanges(changes)) != null)
     }
 
-    @Test fun `a no-op does not make an incomplete sidepath quest disappear`() {
+    @Test fun `named road of another class does not block unnamed association closure`() {
         val path = sidepath(alreadyTagged)
-        val named = road(1, mapOf("highway" to "residential", "name" to "Ring"))
-        val mapData = createMapData(mapOf(path.first to path.second, named.first to named.second))
+        val namedOtherClass = road(1, mapOf("highway" to "residential", "name" to "Ring"))
+        val mapData = createMapData(mapOf(path.first to path.second, namedOtherClass.first to namedOtherClass.second))
+        assertEquals(0, questType.getApplicableElements(mapData).count())
+    }
+
+    @Test fun `associating unnamed secondary closes when residential has a name`() {
+        val pathStart = p(0.0, 0.0)
+        val pathEnd = pathStart.translate(40.0, 0.0)
+        val path = way(2, listOf(3, 4), mapOf("highway" to "cycleway"))
+        val pathGeom = ElementPolylinesGeometry(listOf(listOf(pathStart, pathEnd)), pathStart)
+        val secStart = pathStart.translate(5.0, 90.0)
+        val secEnd = secStart.translate(40.0, 0.0)
+        val secondary = way(1, listOf(10, 11), mapOf("highway" to "secondary"))
+        val secGeom = ElementPolylinesGeometry(listOf(listOf(secStart, secEnd)), secStart)
+        val resStart = pathStart.translate(6.0, 270.0)
+        val resEnd = resStart.translate(40.0, 0.0)
+        val residential = way(3, listOf(20, 21), mapOf("highway" to "residential", "name" to "Foo"))
+        val resGeom = ElementPolylinesGeometry(listOf(listOf(resStart, resEnd)), resStart)
+        val mapData = createMapData(
+            mapOf(
+                path to pathGeom,
+                secondary to secGeom,
+                residential to resGeom,
+            ),
+        )
         assertEquals(1, questType.getApplicableElements(mapData).count())
         val changes = questType.answerAppliedTo(
-            IsSidepathAnswer.Yes(null, "unclassified", null),
-            path.first.tags,
+            IsSidepathAnswer.Yes(ofName = null, ofHighway = "secondary", ofRef = null),
+            path.tags,
         )
-        assertTrue(changes.isEmpty())
-        assertEquals(1, questType.getApplicableElements(mapData).count())
+        val updated = path.tags.toMutableMap()
+        changes.filterIsInstance<StringMapEntryAdd>().forEach { updated[it.key] = it.value }
+        val answeredPath = way(2, listOf(3, 4), updated)
+        val afterAnswer = createMapData(mapOf(answeredPath to pathGeom, secondary to secGeom, residential to resGeom))
+        assertEquals(0, questType.getApplicableElements(afterAnswer).count())
     }
 
     @Test fun `already complete unnamed association is not applicable without an edit`() {

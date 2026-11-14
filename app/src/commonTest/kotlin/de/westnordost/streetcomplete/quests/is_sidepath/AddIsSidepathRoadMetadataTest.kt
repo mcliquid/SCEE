@@ -580,6 +580,7 @@ class AddIsSidepathRoadMetadataTest {
                         "is_sidepath" to "yes",
                         "is_sidepath:of" to "primary",
                     ),
+                    roadHighway = "primary",
                     roadName = "Hauptstraße",
                 ),
             ),

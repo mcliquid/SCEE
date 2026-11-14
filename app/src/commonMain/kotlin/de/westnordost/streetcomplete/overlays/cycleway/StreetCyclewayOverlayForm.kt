@@ -15,6 +15,7 @@ import androidx.compose.ui.draw.scale
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.overlays.Edit
@@ -127,7 +128,7 @@ fun StreetCyclewayOverlayForm(
             bicycleInPedestrianStreet?.applyTo(tags)
         }
 
-        on(Edit(UpdateElementTagsAction(element, tags.create())))
+        updateElementTagsActionOrNull(element, tags.create())?.let { on(Edit(it)) }
         // "No / can't tell": do not ask the same again. After the edit, so it can not get in the way
         if (hideSidepathQuest) runCatching { questsHiddenController.hideSidepathUsageQuest(element) }
     }

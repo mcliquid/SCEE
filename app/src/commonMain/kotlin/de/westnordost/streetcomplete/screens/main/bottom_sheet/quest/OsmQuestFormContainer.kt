@@ -249,13 +249,17 @@ fun <T> OsmQuestFormContainer(
                     is ShopType -> {
                         val builder = StringMapChangesBuilder(element.tags)
                         answer.feature.applyReplacePlaceTo(builder)
-                        onEdit(UpdateElementTagsAction(element, builder.create()), false, isOtherEdit)
+                        updateElementTagsActionOrNull(element, builder.create())?.let {
+                            onEdit(it, false, isOtherEdit)
+                        }
                     }
                     ShopTypeAnswer.IsShopVacant -> {
                         val vacantShop = featureDictionary.getPlaceAsDisused(element, country = countryInfo.countryOrSubdivisionCode)
                         val builder = StringMapChangesBuilder(element.tags)
                         vacantShop.applyReplacePlaceTo(builder)
-                        onEdit(UpdateElementTagsAction(element, builder.create()), false, isOtherEdit)
+                        updateElementTagsActionOrNull(element, builder.create())?.let {
+                            onEdit(it, false, isOtherEdit)
+                        }
                     }
                     ShopTypeAnswer.LeaveNote -> {
                         showForm(QuestFormState.LeaveNote)
@@ -298,14 +302,16 @@ fun <T> OsmQuestFormContainer(
             tags = element.tags,
             countryInfo = countryInfo
         ) {
-            onEdit(UpdateElementTagsAction(element, it.create()), false, true)
+            updateElementTagsActionOrNull(element, it.create())?.let { onEdit(it, false, true) }
         }
     }
     if (showConstructionDialog) {
         ConstructionDialog(
             onDismissRequest = { showConstructionDialog = false },
             element = element,
-            onEdit = { onEdit(UpdateElementTagsAction(element, it), false, true) }
+            onEdit = { changes ->
+                updateElementTagsActionOrNull(element, changes)?.let { onEdit(it, false, true) }
+            }
         )
     }
 }

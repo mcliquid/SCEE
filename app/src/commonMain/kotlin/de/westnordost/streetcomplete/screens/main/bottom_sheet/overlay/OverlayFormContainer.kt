@@ -14,6 +14,7 @@ import de.westnordost.streetcomplete.data.osm.edits.ElementEditAction
 import de.westnordost.streetcomplete.data.osm.edits.move.MoveNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitWayAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
@@ -179,14 +180,20 @@ fun OverlayFormContainer(
             tags = element!!.tags,
             countryInfo = countryInfo
         ) {
-            onEdit(UpdateElementTagsAction(element, it.create()), false, true)
+            updateElementTagsActionOrNull(element, it.create())?.let { action ->
+                onEdit(action, false, true)
+            }
         }
     }
     if (showConstructionDialog) {
         ConstructionDialog(
             onDismissRequest = { showConstructionDialog = false },
             element = element!!,
-            onEdit = { onEdit(UpdateElementTagsAction(element, it), false, true) }
+            onEdit = { changes ->
+                updateElementTagsActionOrNull(element, changes)?.let { action ->
+                    onEdit(action, false, true)
+                }
+            }
         )
     }
 }

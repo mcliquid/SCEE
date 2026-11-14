@@ -19,6 +19,7 @@ import de.westnordost.streetcomplete.data.osm.edits.create.createNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.delete.DeletePoiNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
@@ -187,7 +188,7 @@ fun AddressOverlayForm(
         // add/change address of existing element
         if (element != null) {
             applyChanges(tagChanges)
-            on(Edit(UpdateElementTagsAction(element, tagChanges.create())))
+            updateElementTagsActionOrNull(element, tagChanges.create())?.let { on(Edit(it)) }
         }
         // add address to vertex or new vertex on way
         else if (positionOnWay != null) {
@@ -272,7 +273,9 @@ fun AddressOverlayForm(
     if (confirmRemoveAddress) {
         AreYouSureDialog(
             onDismissRequest = { confirmRemoveAddress = false },
-            onConfirmed = { on(Edit(createRemoveAddressElementEditAction(element!!))) }
+            onConfirmed = {
+                createRemoveAddressElementEditAction(element!!)?.let { on(Edit(it)) }
+            }
         )
     }
 }
@@ -286,7 +289,7 @@ private var lastStreetName: String? = null
 
 private var lastWasPlaceName: Boolean = false
 
-private fun createRemoveAddressElementEditAction(element: Element): ElementEditAction {
+private fun createRemoveAddressElementEditAction(element: Element): ElementEditAction? {
     if (element is Node && element.tags.all { isAddressTag(it.key, it.value) }) {
         return DeletePoiNodeAction(element)
     }
@@ -301,7 +304,7 @@ private fun createRemoveAddressElementEditAction(element: Element): ElementEditA
     // If not, the housenumber quest will pop up again (when the user exits the address overlay and
     // for other users) if the building is a building for which the housenumber quest is asked.
 
-    return UpdateElementTagsAction(element, tagChanges.create())
+    return updateElementTagsActionOrNull(element, tagChanges.create())
 }
 
 private fun isAddressTag(key: String, value: String): Boolean =

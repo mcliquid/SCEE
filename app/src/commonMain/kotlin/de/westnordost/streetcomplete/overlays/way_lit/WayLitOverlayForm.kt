@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
-import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.overlays.Edit
 import de.westnordost.streetcomplete.data.overlays.OverlayAction
@@ -56,7 +56,7 @@ fun WayLitOverlayForm(
         onClickOk = { selectedItem ->
             val tagChanges = StringMapChangesBuilder(element.tags)
             selectedItem.applyTo(tagChanges)
-            on(Edit(UpdateElementTagsAction(element, tagChanges.create())))
+            updateElementTagsActionOrNull(element, tagChanges.create())?.let { on(Edit(it)) }
         },
         prefs = preferences,
         favoriteKey = "WayLitOverlayForm",
@@ -65,7 +65,7 @@ fun WayLitOverlayForm(
                 AnswerItem(stringResource(Res.string.quest_generic_answer_is_actually_steps)) {
                     val tagChanges = StringMapChangesBuilder(element.tags)
                     tagChanges.changeToSteps()
-                    on(Edit(UpdateElementTagsAction(element, tagChanges.create())))
+                    updateElementTagsActionOrNull(element, tagChanges.create())?.let { on(Edit(it)) }
                 }
             } else {
                 null

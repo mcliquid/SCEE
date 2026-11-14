@@ -29,6 +29,7 @@ import de.westnordost.osmfeatures.FeatureDictionary
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.overlays.Edit
 import de.westnordost.streetcomplete.data.overlays.OverlayAction
@@ -99,7 +100,7 @@ import org.koin.compose.koinInject
             AnswerItem(stringResource(Res.string.quest_generic_answer_is_actually_steps)) {
                 val changes = StringMapChangesBuilder(element.tags)
                 changes.changeToSteps()
-                on(Edit(UpdateElementTagsAction(element, changes.create())))
+                updateElementTagsActionOrNull(element, changes.create())?.let { on(Edit(it)) }
             }
         } else null,
     )
@@ -112,7 +113,7 @@ import org.koin.compose.koinInject
             draft.toAnswer()?.let { answer ->
                 val changes = StringMapChangesBuilder(element.tags)
                 answer.applyTo(changes)
-                on(Edit(UpdateElementTagsAction(element, changes.create())))
+                updateElementTagsActionOrNull(element, changes.create())?.let { on(Edit(it)) }
             }
         },
         otherAnswers = { otherAnswers() },

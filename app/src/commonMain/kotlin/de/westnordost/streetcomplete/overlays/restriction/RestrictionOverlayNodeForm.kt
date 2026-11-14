@@ -21,6 +21,7 @@ import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.edits.create.createNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -157,7 +158,7 @@ fun RestrictionOverlayNodeForm(
                 val tagChanges = StringMapChangesBuilder(element.tags)
                 type.applyTo(tagChanges, direction)
                 if (!tagChanges.hasChanges) return@OverlayForm
-                on(Edit(UpdateElementTagsAction(element, tagChanges.create())))
+                updateElementTagsActionOrNull(element, tagChanges.create())?.let { on(Edit(it)) }
             } else if (positionOnWay != null) {
                 val action = createNodeAction(positionOnWay, mapDataWithEditsSource) {
                     type.applyTo(it, direction)

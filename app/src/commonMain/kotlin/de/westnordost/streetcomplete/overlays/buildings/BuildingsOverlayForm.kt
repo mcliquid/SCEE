@@ -9,6 +9,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.overlays.Edit
 import de.westnordost.streetcomplete.data.overlays.OverlayAction
@@ -66,7 +67,7 @@ fun BuildingsOverlayForm(
         onClickOk = { selectedItem ->
             val tagChanges = StringMapChangesBuilder(element.tags)
             selectedItem.applyTo(tagChanges)
-            on(Edit(UpdateElementTagsAction(element, tagChanges.create())))
+            updateElementTagsActionOrNull(element, tagChanges.create())?.let { on(Edit(it)) }
         },
         prefs = preferences,
         favoriteKey = "BuildingsOverlayForm",

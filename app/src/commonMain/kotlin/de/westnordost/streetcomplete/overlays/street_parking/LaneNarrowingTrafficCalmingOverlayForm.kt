@@ -15,6 +15,7 @@ import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.edits.create.createNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.BoundingBox
@@ -103,7 +104,7 @@ fun LaneNarrowingTrafficCalmingForm(
             if (element != null) {
                 val tagChanges = StringMapChangesBuilder(element.tags)
                 selectedItem.applyTo(tagChanges)
-                on(Edit(UpdateElementTagsAction(element, tagChanges.create())))
+                updateElementTagsActionOrNull(element, tagChanges.create())?.let { on(Edit(it)) }
             } else if (positionOnWay != null) {
                 val action = createNodeAction(positionOnWay, mapDataWithEditsSource) { selectedItem.applyTo(it) }
                 if (action != null) {
@@ -132,7 +133,7 @@ fun LaneNarrowingTrafficCalmingForm(
                 if (element == null) return@AreYouSureDialog
                 val tagChanges = StringMapChangesBuilder(element.tags)
                 (null as LaneNarrowingTrafficCalming?).applyTo(tagChanges)
-                on(Edit(UpdateElementTagsAction(element, tagChanges.create())))
+                updateElementTagsActionOrNull(element, tagChanges.create())?.let { on(Edit(it)) }
             }
         )
     }

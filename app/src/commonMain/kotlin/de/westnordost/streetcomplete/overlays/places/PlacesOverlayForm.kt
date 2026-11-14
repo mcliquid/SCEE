@@ -14,6 +14,7 @@ import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.edits.create.CreateNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.overlays.Edit
@@ -146,7 +147,7 @@ import kotlin.time.Duration.Companion.milliseconds
         }
 
         val edit = if (element != null) {
-            UpdateElementTagsAction(element, tagChanges.create())
+            updateElementTagsActionOrNull(element, tagChanges.create()) ?: return
         } else {
             CreateNodeAction(geometry.center, tagChanges)
         }

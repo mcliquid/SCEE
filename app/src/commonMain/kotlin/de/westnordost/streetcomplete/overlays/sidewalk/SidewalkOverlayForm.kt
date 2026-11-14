@@ -8,7 +8,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
-import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.overlays.Edit
@@ -56,7 +56,7 @@ fun SidewalkOverlayForm(
             preferences.setLastPicked(favKey, listOf(sidewalks))
             val tagChanges = StringMapChangesBuilder(element.tags)
             sidewalks.applyTo(tagChanges)
-            on(Edit(UpdateElementTagsAction(element, tagChanges.create())))
+            updateElementTagsActionOrNull(element, tagChanges.create())?.let { on(Edit(it)) }
         },
         contentPadding = PaddingValues.Zero,
     ) {

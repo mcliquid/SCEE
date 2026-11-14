@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.overlays.Edit
@@ -57,7 +58,7 @@ import org.koin.compose.koinInject
             preferences.setLastPicked(favKey, listOf(parking))
             val tagChanges = StringMapChangesBuilder(element.tags)
             parking.applyTo(tagChanges)
-            on(Edit(UpdateElementTagsAction(element, tagChanges.create())))
+            updateElementTagsActionOrNull(element, tagChanges.create())?.let { on(Edit(it)) }
         },
         contentPadding = PaddingValues.Zero,
     ) {

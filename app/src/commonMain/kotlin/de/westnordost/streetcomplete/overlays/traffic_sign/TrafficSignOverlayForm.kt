@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.overlays.Action
@@ -70,7 +71,7 @@ private fun TrafficSignOverlayFormContent(
         val changes = StringMapChangesBuilder(way.tags)
         state.tagging.applyConfirmed(changes, state.confirmed)
         state.rememberPicked(preferences)
-        on(Edit(UpdateElementTagsAction(way, changes.create())))
+        updateElementTagsActionOrNull(way, changes.create())?.let { on(Edit(it)) }
     }
 
     OverlayForm(

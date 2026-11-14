@@ -19,6 +19,7 @@ import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpressio
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.overlays.Edit
 import de.westnordost.streetcomplete.data.overlays.OverlayAction
@@ -91,7 +92,7 @@ import org.koin.compose.koinInject
             result.add(AnswerItem(stringResource(Res.string.quest_generic_answer_is_actually_steps)) {
                 val tagChanges = StringMapChangesBuilder(element.tags)
                 tagChanges.changeToSteps()
-                on(Edit(UpdateElementTagsAction(element, tagChanges.create())))
+                updateElementTagsActionOrNull(element, tagChanges.create())?.let { on(Edit(it)) }
             })
         }
 
@@ -110,7 +111,7 @@ import org.koin.compose.koinInject
                 onClickOk = { selectedItem ->
                     val changesBuilder = StringMapChangesBuilder(element.tags)
                     SingleSurface(selectedItem).applyTo(changesBuilder)
-                    on(Edit(UpdateElementTagsAction(element, changesBuilder.create())))
+                    updateElementTagsActionOrNull(element, changesBuilder.create())?.let { on(Edit(it)) }
                 },
                 prefs = preferences,
                 favoriteKey = "SurfaceOverlayForm.Single",
@@ -135,7 +136,7 @@ import org.koin.compose.koinInject
                 onClickOk = { (footway, cycleway) ->
                     val changesBuilder = StringMapChangesBuilder(element.tags)
                     SegregatedSurface(footway = footway, cycleway = cycleway).applyTo(changesBuilder)
-                    on(Edit(UpdateElementTagsAction(element, changesBuilder.create())))
+                    updateElementTagsActionOrNull(element, changesBuilder.create())?.let { on(Edit(it)) }
                 },
                 labels = labels,
                 prefs = preferences,

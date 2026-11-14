@@ -22,6 +22,7 @@ import de.westnordost.streetcomplete.data.osm.edits.move.MoveNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitWayAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
@@ -203,13 +204,13 @@ fun ExternalSourceQuestFormContainer(
                     is ShopType -> {
                         val builder = StringMapChangesBuilder(element.tags)
                         answer.feature.applyReplacePlaceTo(builder)
-                        onEdit(UpdateElementTagsAction(element, builder.create()))
+                        updateElementTagsActionOrNull(element, builder.create())?.let(onEdit)
                     }
                     ShopTypeAnswer.IsShopVacant -> {
                         val vacantShop = featureDictionary.getPlaceAsDisused(element, country = countryInfo.countryOrSubdivisionCode)
                         val builder = StringMapChangesBuilder(element.tags)
                         vacantShop.applyReplacePlaceTo(builder)
-                        onEdit(UpdateElementTagsAction(element, builder.create()))
+                        updateElementTagsActionOrNull(element, builder.create())?.let(onEdit)
                     }
                     ShopTypeAnswer.LeaveNote -> {
                         state = QuestFormState2.LeaveNote
@@ -247,14 +248,14 @@ fun ExternalSourceQuestFormContainer(
             tags = element!!.tags,
             countryInfo = countryInfo
         ) {
-            onEdit(UpdateElementTagsAction(element, it.create()))
+            updateElementTagsActionOrNull(element, it.create())?.let(onEdit)
         }
     }
     if (showConstructionDialog) {
         ConstructionDialog(
             onDismissRequest = { showConstructionDialog = false },
             element = element!!,
-            onEdit = { onEdit(UpdateElementTagsAction(element, it)) }
+            onEdit = { changes -> updateElementTagsActionOrNull(element, changes)?.let(onEdit) }
         )
     }
 }

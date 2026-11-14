@@ -36,6 +36,7 @@ import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.edits.create.CreateRelationAction
 import de.westnordost.streetcomplete.data.osm.edits.delete.DeleteRelationAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.createChanges
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -249,7 +250,7 @@ fun RestrictionOverlayWayForm(
             when (val restriction = currentRestriction) {
                 is WeightRestriction -> {
                     val changes = restriction.way.tags.createChanges(way.tags)
-                    on(Edit(UpdateElementTagsAction(restriction.way, changes.create())))
+                    updateElementTagsActionOrNull(restriction.way, changes.create())?.let { on(Edit(it)) }
                 }
                 is TurnRestriction -> {
                     val rel = restriction.relation
@@ -258,14 +259,10 @@ fun RestrictionOverlayWayForm(
                     } else {
                         val oldRelation = (selectedRestriction as? TurnRestriction)?.relation
                             ?: return@OverlayForm
-                        on(
-                            Edit(
-                                UpdateElementTagsAction(
-                                    oldRelation,
-                                    rel.tags.createChanges(oldRelation.tags).create()
-                                )
-                            )
-                        )
+                        updateElementTagsActionOrNull(
+                            oldRelation,
+                            rel.tags.createChanges(oldRelation.tags).create(),
+                        )?.let { on(Edit(it)) }
                     }
                 }
                 null -> Unit
@@ -635,7 +632,7 @@ fun RestrictionOverlayWayForm(
                                 .forEach { changes.remove(it) }
                             showDeleteDialog = false
                             if (changes.hasChanges) {
-                                on(Edit(UpdateElementTagsAction(restriction.way, changes.create())))
+                                updateElementTagsActionOrNull(restriction.way, changes.create())?.let { on(Edit(it)) }
                             }
                         }) {
                             Text(stringResource(Res.string.quest_generic_confirmation_yes))

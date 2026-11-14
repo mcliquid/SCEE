@@ -49,7 +49,11 @@ class AddSeating : OsmFilterQuestType<Seating>() {
 
     override fun applyAnswerTo(answer: Seating, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         if (answer == Seating.TAKEAWAY_ONLY) tags["takeaway"] = "only"
-        tags["outdoor_seating"] = answer.hasOutdoorSeating.toYesNo()
-        tags["indoor_seating"] = answer.hasIndoorSeating.toYesNo()
+        if (!answer.hasOutdoorSeating || tags["outdoor_seating"] == null || tags["outdoor_seating"] == "no") {
+            tags["outdoor_seating"] = answer.hasOutdoorSeating.toYesNo()
+        }
+        if (!answer.hasIndoorSeating || tags["indoor_seating"] == null || tags["indoor_seating"] == "no") {
+            tags["indoor_seating"] = answer.hasIndoorSeating.toYesNo()
+        }
     }
 }

@@ -106,6 +106,7 @@ class AddBarrierOpening(
     override fun applyAnswerTo(answer: BarrierOpeningAnswer, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
         when (answer) {
             is BarrierWidth -> {
+                tags.remove("source:maxwidth_physical")
                 val key = "maxwidth:physical"
                 tags[key] = answer.widthAnswer.width.toOsmValue()
                 if (answer.widthAnswer.isARMeasurement) {

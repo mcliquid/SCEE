@@ -47,6 +47,7 @@ class QuestTypesRegistryTest {
             )
 
             val names = registry.map { it.name }
+            de.westnordost.streetcomplete.quests.contract.assertContractCoverage(names.toSet())
             val duplicates = names
                 .groupBy { it }
                 .filter { it.value.size > 1 }

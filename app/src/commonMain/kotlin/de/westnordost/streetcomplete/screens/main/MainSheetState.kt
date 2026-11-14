@@ -164,13 +164,14 @@ class MainSheetState internal constructor(
                 if (items.isEmpty()) close()
                 return@collect
             }
-            val edit = items.find { it.edit.key == key }?.edit
+            val retained = retainedEditHistoryKey(items.map { it.edit }, key)
+            val edit = items.find { it.edit.key == retained }?.edit
             if (edit != null) {
                 shownEdit = ShownEdit(edit, editHistoryViewModel.getEditGeometry(edit))
             } else {
-                // the edit was undone or is synced: select the newest remaining edit, if any
-                val newest = items.lastOrNull()?.edit?.key
-                if (newest != null) selection = MainSheetSelection.EditHistory(newest) else close()
+                // Do not select another edit: an open undo dialog must not follow the sidebar.
+                shownEdit = null
+                if (items.isEmpty()) close()
             }
         }
     }
@@ -178,3 +179,9 @@ class MainSheetState internal constructor(
 
 /** An edit selected in the edit history sidebar, with its geometry to show on the map */
 data class ShownEdit(val edit: Edit, val geometry: ElementGeometry)
+
+/** Keeps [selected] only while that edit is still in [edits]. Never substitutes a different edit. */
+internal fun retainedEditHistoryKey(edits: List<Edit>, selected: EditKey?): EditKey? {
+    if (selected == null) return null
+    return selected.takeIf { key -> edits.any { it.key == key } }
+}

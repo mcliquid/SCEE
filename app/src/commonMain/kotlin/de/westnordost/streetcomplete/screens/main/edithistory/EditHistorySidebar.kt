@@ -81,8 +81,11 @@ fun EditHistorySidebar(
 
     var resolveNoteId by remember { mutableStateOf<Long?>(null) }
     var showUndoDialog by remember { mutableStateOf(false) }
+    var undoTargetId by remember { mutableStateOf<String?>(null) }
     var editElement by rememberSerializable { mutableStateOf<Element?>(null) }
     var undoUnavailableMessage by remember { mutableStateOf<StringResource?>(null) }
+    val edits = editItems.map { it.edit }
+    val dialogEdit = resolveUndoDialogEdit(edits, undoTargetId)
 
     // scrolling to selected item
     val selectedIndex = remember(selectedEdit) {
@@ -120,7 +123,9 @@ fun EditHistorySidebar(
                 if (confirmed) {
                     if (!onUndoEdit(edit) && !routeProtectedNote(edit)) undoUnavailableMessage = Res.string.toast_undo_unavailable
                 } else {
+                    val id = undoDialogTargetId(edit)
                     editElement = getEditElement(edit)
+                    undoTargetId = id
                     showUndoDialog = true
                 }
             } catch (e: CancellationException) { throw e }
@@ -175,15 +180,34 @@ fun EditHistorySidebar(
         }
     }
 
-    if (showUndoDialog && selectedEdit != null) {
+    LaunchedEffect(showUndoDialog, edits) {
+        if (showUndoDialog && dialogEdit == null) {
+            showUndoDialog = false
+            undoTargetId = null
+            editElement = null
+        }
+    }
+
+    if (showUndoDialog && dialogEdit != null) {
         UndoDialog(
-            edit = selectedEdit,
+            edit = dialogEdit,
             element = editElement,
             onDismissRequest = {
                 showUndoDialog = false
+                undoTargetId = null
                 editElement = null
             },
-            onConfirmed = { onClickUndoEdit(selectedEdit, confirmed = true) }
+            onConfirmed = {
+                val target = editToUndo(edits, undoTargetId, isUploading)
+                val stillThere = resolveUndoDialogEdit(edits, undoTargetId) != null
+                showUndoDialog = false
+                undoTargetId = null
+                editElement = null
+                when {
+                    target != null -> onClickUndoEdit(target, confirmed = true)
+                    stillThere -> undoUnavailableMessage = Res.string.toast_undo_unavailable
+                }
+            }
         )
     }
 
@@ -237,3 +261,18 @@ private fun DateTimeHeader(
 /** LazyColumn item key; [Edit.key] alone is not unique for repeated quest-hide events. */
 internal fun editHistoryLazyColumnKey(edit: Edit): String =
     "${Json.encodeToString(edit.key)}#${edit.createdTimestamp}"
+
+/** Identity captured when the undo dialog opens. Later selection changes do not retarget it. */
+internal fun undoDialogTargetId(edit: Edit): String = editHistoryLazyColumnKey(edit)
+
+internal fun resolveUndoDialogEdit(edits: List<Edit>, targetId: String?): Edit? {
+    if (targetId == null) return null
+    return edits.find { undoDialogTargetId(it) == targetId }
+}
+
+/** The edit the open dialog may undo, or null when that edit is gone or undo is no longer allowed. */
+internal fun editToUndo(edits: List<Edit>, targetId: String?, isUploading: Boolean): Edit? {
+    val edit = resolveUndoDialogEdit(edits, targetId) ?: return null
+    if (!isEditUndoEnabled(edit, isUploading)) return null
+    return edit
+}

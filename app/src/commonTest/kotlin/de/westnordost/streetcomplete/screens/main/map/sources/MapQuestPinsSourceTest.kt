@@ -59,12 +59,47 @@ class MapQuestPinsSourceTest {
         assertEquals(setOf(keyInside), pinsByQuest.keys)
     }
 
-    @Test fun `questPinKeysToEvictOnReload keeps multi-pin quest when a pin remains in bbox`() {
+    @Test fun `multi-pin quest inside the bbox is removed when the reload omits it`() {
         val multiKey: QuestKey = OsmQuestKey(ElementType.WAY, 10, QUEST_TYPE.name, "")
-        val pinsByQuest: Map<QuestKey, List<Pin>> = mapOf(
+        val other = OsmQuestKey(ElementType.NODE, 3, QUEST_TYPE.name, "")
+        val keptPin = pinAt(p(0.2, 0.2))
+        val pinsByQuest: MutableMap<QuestKey, List<Pin>> = mutableMapOf(
+            multiKey to listOf(pinAt(p(0.1, 0.5)), pinAt(p(0.9, 0.5))),
+            other to listOf(keptPin),
+        )
+        val kept = osmQuest(elementType = ElementType.NODE, elementId = 3, geometry = ElementPointGeometry(p(0.2, 0.2)))
+        mergeQuestPinReload(pinsByQuest, viewBbox, listOf(kept)) { listOf(keptPin) }
+        assertEquals(setOf<QuestKey>(other), pinsByQuest.keys)
+        assertEquals(listOf(keptPin), pinsByQuest[other])
+    }
+
+    @Test fun `empty reload drops a multi-pin quest whose pins are all in view`() {
+        val multiKey: QuestKey = OsmQuestKey(ElementType.WAY, 11, QUEST_TYPE.name, "")
+        val pinsByQuest: MutableMap<QuestKey, List<Pin>> = mutableMapOf(
             multiKey to listOf(pinAt(p(0.1, 0.5)), pinAt(p(0.9, 0.5))),
         )
-        assertTrue(questPinKeysToEvictOnReload(pinsByQuest, viewBbox).isEmpty())
+        mergeQuestPinReload(pinsByQuest, viewBbox, emptyList()) { emptyList() }
+        assertTrue(pinsByQuest.isEmpty())
+    }
+
+    @Test fun `multi-pin quest crossing the bbox is kept when getAll omits it`() {
+        val multiKey: QuestKey = OsmQuestKey(ElementType.WAY, 12, QUEST_TYPE.name, "")
+        val pins = listOf(pinAt(p(0.5, 0.5)), pinAt(p(2.0, 2.0)))
+        val pinsByQuest: MutableMap<QuestKey, List<Pin>> = mutableMapOf(multiKey to pins)
+        mergeQuestPinReload(pinsByQuest, viewBbox, emptyList()) { emptyList() }
+        assertEquals(pins, pinsByQuest[multiKey])
+    }
+
+    @Test fun `a returning quest replaces its pins without duplicating them`() {
+        val multiKey: QuestKey = OsmQuestKey(ElementType.WAY, 13, QUEST_TYPE.name, "")
+        val quest = osmQuest(elementType = ElementType.WAY, elementId = 13, geometry = ElementPointGeometry(p(0.4, 0.4)))
+        val first = listOf(pinAt(p(0.4, 0.4)), pinAt(p(0.6, 0.6)))
+        val second = listOf(pinAt(p(0.3, 0.3)))
+        val pinsByQuest: MutableMap<QuestKey, List<Pin>> = mutableMapOf(multiKey to first)
+        mergeQuestPinReload(pinsByQuest, viewBbox, listOf(quest)) { first }
+        mergeQuestPinReload(pinsByQuest, viewBbox, listOf(quest)) { second }
+        assertEquals(second, pinsByQuest[quest.key])
+        assertEquals(1, pinsByQuest.size)
     }
 
     private fun pinAt(position: LatLon) = Pin(position, QUEST_TYPE.icon, emptyList(), 0, null, null)

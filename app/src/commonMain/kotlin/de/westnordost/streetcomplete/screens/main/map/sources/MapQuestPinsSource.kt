@@ -242,23 +242,26 @@ class MapQuestPinsSource(
     }
 }
 
-/** Keys dropped on reload before merging [quests] (#5802: keep multi-pin quests with a pin still in view). */
-internal fun questPinKeysToEvictOnReload(
-    pinsByQuest: Map<QuestKey, List<Pin>>,
-    bbox: BoundingBox,
-): Set<QuestKey> = pinsByQuest.entries.filter { (_, pins) ->
-    pins.size == 1 || pins.none { it.position in bbox }
-}.map { it.key }.toSet()
-
 internal fun mergeQuestPinReload(
     pinsByQuest: MutableMap<QuestKey, List<Pin>>,
     bbox: BoundingBox,
     quests: Collection<Quest>,
     toPins: (Quest) -> List<Pin>,
 ) {
-    questPinKeysToEvictOnReload(pinsByQuest, bbox).forEach { pinsByQuest.remove(it) }
+    val incoming = quests.mapTo(HashSet()) { it.key }
+    val stale = pinsByQuest.filter { (key, pins) ->
+        key !in incoming && !keepMultiPinCrossingBbox(pins, bbox)
+    }.keys.toList()
+    stale.forEach { pinsByQuest.remove(it) }
     quests.forEach { pinsByQuest[it.key] = toPins(it) }
 }
+
+/**
+ * shortcut: a multi-pin quest with pins on both sides of the bbox is kept when getAll omits it,
+ * because lookup is by anchor. Drop that once pins, not the anchor, decide visibility.
+ */
+internal fun keepMultiPinCrossingBbox(pins: List<Pin>, bbox: BoundingBox): Boolean =
+    pins.size > 1 && pins.any { it.position in bbox } && pins.any { it.position !in bbox }
 
 private const val MARKER_QUEST_GROUP = "quest_group"
 

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "master"
+      - "SCEE-mc"
   workflow_dispatch:
 
 jobs:
@@ -26,5 +27,8 @@ jobs:
           chmod +x third_party/osmfeatures/publish-to-maven-local.sh
           ./third_party/osmfeatures/publish-to-maven-local.sh
 
+      - name: Install xvfb for desktop Compose tests
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
       - name: Run unit tests with Gradle
-        run: ./gradlew :app:testAndroidHostTest
+        run: xvfb-run -a ./gradlew :app:testAndroidHostTest :app:desktopTest

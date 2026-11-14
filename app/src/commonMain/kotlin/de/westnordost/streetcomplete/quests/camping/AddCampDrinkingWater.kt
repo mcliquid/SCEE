@@ -10,6 +10,7 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.OUTDOORS
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.osm.updateWithCheckDate
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.quest.YesNoQuestForm
 import de.westnordost.streetcomplete.util.ktx.toYesNo
@@ -45,6 +46,6 @@ class AddCampDrinkingWater : OsmFilterQuestType<Boolean>() {
     }
 
     override fun applyAnswerTo(answer: Boolean, tags: Tags, geometry: ElementGeometry, timestampEdited: Long) {
-        tags["drinking_water"] = answer.toYesNo()
+        tags.updateWithCheckDate("drinking_water", answer.toYesNo())
     }
 }

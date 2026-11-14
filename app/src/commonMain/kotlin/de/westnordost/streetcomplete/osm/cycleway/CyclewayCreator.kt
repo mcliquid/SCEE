@@ -4,8 +4,10 @@ import de.westnordost.streetcomplete.osm.Sides
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.osm.cycleway.Cycleway.*
 import de.westnordost.streetcomplete.osm.expandSides
+import de.westnordost.streetcomplete.osm.getLastCheckDateKeys
 import de.westnordost.streetcomplete.osm.hasCheckDateForKey
 import de.westnordost.streetcomplete.osm.mergeSides
+import de.westnordost.streetcomplete.osm.removeCheckDatesForKey
 import de.westnordost.streetcomplete.osm.oneway.Direction
 import de.westnordost.streetcomplete.osm.oneway.Direction.*
 import de.westnordost.streetcomplete.osm.oneway.isNotOnewayForCyclists
@@ -31,6 +33,18 @@ fun Sides<CyclewayAndDirection>.applyTo(tags: Tags, isLeftHandTraffic: Boolean) 
     tags.expandSides("cycleway", "lane", false)
     tags.expandSides("cycleway", "oneway", false)
     tags.expandSides("cycleway", "segregated", false)
+    tags.expandSides("cycleway", "surface", false)
+    tags.expandSides("cycleway", "smoothness", false)
+    for (suffix in listOf("surface", "smoothness")) {
+        for (key in getLastCheckDateKeys("cycleway:both:$suffix")) {
+            val value = tags[key] ?: continue
+            for (side in listOf("left", "right")) {
+                val sideKey = key.replace(":both:", ":$side:")
+                if (!tags.containsKey(sideKey)) tags[sideKey] = value
+            }
+            tags.remove(key)
+        }
+    }
     tags.expandSides("sidewalk", "bicycle", false)
     tags.expandSides("sidewalk", "bicycle:signed", false)
     tags.expandSides("sidewalk", "oneway:bicycle", false)
@@ -43,6 +57,8 @@ fun Sides<CyclewayAndDirection>.applyTo(tags: Tags, isLeftHandTraffic: Boolean) 
     tags.mergeSides("cycleway", "lane")
     tags.mergeSides("cycleway", "oneway")
     tags.mergeSides("cycleway", "segregated")
+    tags.mergeSides("cycleway", "surface")
+    tags.mergeSides("cycleway", "smoothness")
     tags.mergeSides("sidewalk", "bicycle")
     tags.mergeSides("sidewalk", "bicycle:signed")
     tags.mergeSides("sidewalk", "oneway:bicycle")
@@ -204,6 +220,13 @@ private fun CyclewayAndDirection.applyTo(tags: Tags, isRight: Boolean, isLeftHan
                 tags["$cyclewayKey:oneway"] = direction.onewayValue
             }
         }
+    }
+
+    if (!cycleway.isLane && cycleway != TRACK && cycleway != SIDEWALK_EXPLICIT) {
+        tags.remove("$cyclewayKey:surface")
+        tags.remove("$cyclewayKey:smoothness")
+        tags.removeCheckDatesForKey("$cyclewayKey:surface")
+        tags.removeCheckDatesForKey("$cyclewayKey:smoothness")
     }
 
     // clear previous cycleway:lane value

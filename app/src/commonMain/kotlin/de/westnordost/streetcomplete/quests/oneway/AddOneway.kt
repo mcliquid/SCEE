@@ -34,6 +34,7 @@ class AddOneway : OsmElementQuestType<OnewayAnswer> {
           and width <= 4 and (!lanes or lanes <= 1)
           and !oneway and area != yes and junction != roundabout
           and !oneway:conditional
+          and cycleway !~ "opposite.*"
           and (access !~ private|no or (foot and foot !~ private|no))
     """.toElementFilterExpression() }
 

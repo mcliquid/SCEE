@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.osm.fee
 
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.osm.removeCheckDatesForKey
 import de.westnordost.streetcomplete.osm.opening_hours.toOpeningHours
 import de.westnordost.streetcomplete.osm.time_restriction.TimeRestriction
 import de.westnordost.streetcomplete.osm.updateWithCheckDate
@@ -53,6 +54,10 @@ fun Fee.applyTo(tags: Tags) {
         is Fee.No -> {
             tags.updateWithCheckDate("fee", "no")
             tags.remove("fee:conditional")
+            tags.remove("charge")
+            tags.remove("charge:conditional")
+            tags.removeCheckDatesForKey("charge")
+            tags.removeCheckDatesForKey("charge:conditional")
         }
     }
 }

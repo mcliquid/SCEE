@@ -10,6 +10,7 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.LIFESAVER
 import de.westnordost.streetcomplete.osm.Tags
+import de.westnordost.streetcomplete.osm.updateWithCheckDate
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.util.countryboundaries.NoCountriesExcept
 
@@ -58,7 +59,7 @@ class AddFireHydrantDiameter : OsmFilterQuestType<FireHydrantDiameterAnswer>() {
                 tags["fire_hydrant:diameter"] = answer.toOsmValue()
             }
             is FireHydrantDiameterAnswer.NoSign -> {
-                tags["fire_hydrant:diameter:signed"] = "no"
+                tags.updateWithCheckDate("fire_hydrant:diameter:signed", "no")
             }
         }
     }

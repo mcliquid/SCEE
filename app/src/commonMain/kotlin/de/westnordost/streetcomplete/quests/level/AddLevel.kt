@@ -140,7 +140,7 @@ class AddLevel : OsmElementQuestType<String> {
             .mapNotNull { mapData.getGeometry(it.type, it.id) as? ElementPolygonsGeometry }
         if (geometries.isEmpty()) return emptyList()
 
-        val doctors = mapData.filter { it.isDoctorWithoutLevel() }
+        val doctors = mapData.filter(nodesWithoutLevelFilter).filter { it.isDoctorWithoutLevel() }
         val result = mutableListOf<Element>()
         doctors.forEach docs@{ doc ->
             geometries.forEach { geometry ->

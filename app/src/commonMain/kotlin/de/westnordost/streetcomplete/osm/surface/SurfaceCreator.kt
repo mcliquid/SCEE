@@ -41,7 +41,14 @@ fun Surface.applyTo(tags: Tags, prefix: String? = null, updateCheckDate: Boolean
         tags.removeCheckDatesForKey("tracktype")
     }
 
-    if (hasChanged) {
+    val isRefinement = when (previousOsmValue) {
+        "paved" -> osmValue in PAVED_SURFACES
+        "unpaved" -> osmValue in UNPAVED_SURFACES
+        "ground" -> osmValue in NATURAL_SURFACES
+        in INVALID_SURFACES -> !hasChangedSurfaceCategory
+        else -> false
+    }
+    if (hasChanged && !isRefinement) {
         // need to remove keys associated with (old) surface
         getKeysAssociatedWithSurface(pre).forEach { tags.remove(it) }
     }

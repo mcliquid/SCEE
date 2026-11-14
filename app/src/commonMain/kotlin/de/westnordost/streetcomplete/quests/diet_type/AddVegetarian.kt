@@ -48,7 +48,7 @@ class AddVegetarian : OsmFilterQuestType<DietAvailabilityAnswer>() {
         when (answer) {
             is DietAvailability -> {
                 tags.updateWithCheckDate("diet:vegetarian", answer.osmValue)
-                if (answer.osmValue == "no") {
+                if (answer.osmValue == "no" && tags["diet:vegan"] != "no") {
                     tags.remove("diet:vegan")
                 }
             }

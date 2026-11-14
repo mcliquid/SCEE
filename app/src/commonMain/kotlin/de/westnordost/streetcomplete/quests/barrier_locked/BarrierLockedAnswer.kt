@@ -14,12 +14,12 @@ data class LockedAtHours(val timeRestriction: TimeRestriction?) : BarrierLockedA
 fun BarrierLockedAnswer.applyTo(tags: Tags) {
     when (this) {
         is Locked -> {
+            if (tags["locked"] != "yes") tags.remove("locked:conditional")
             tags.updateWithCheckDate("locked", "yes")
-            tags.remove("locked:conditional")
         }
         is NotLocked -> {
+            if (tags["locked"] != "no") tags.remove("locked:conditional")
             tags.updateWithCheckDate("locked", "no")
-            tags.remove("locked:conditional")
         }
         is LockedAtHours -> {
             when (timeRestriction?.mode) {

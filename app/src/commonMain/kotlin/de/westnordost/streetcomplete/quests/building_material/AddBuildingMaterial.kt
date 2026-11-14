@@ -26,7 +26,10 @@ class AddBuildingMaterial : OsmFilterQuestType<BuildingMaterial>() {
           ((building and building !~ no|construction|roof|carport)
           or (building:part and building:part !~ no|construction|roof|carport))
           and !building:material
-          and indoor != no
+          and (!indoor or indoor = no)
+          and location != underground
+          and building != ruins and building:part != ruins
+          and ruins != yes
           and wall != no
     """
     override val changesetComment = "Specify building material"

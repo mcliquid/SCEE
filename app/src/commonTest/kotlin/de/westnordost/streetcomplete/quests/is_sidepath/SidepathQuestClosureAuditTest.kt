@@ -89,7 +89,7 @@ class SidepathQuestClosureAuditTest {
         assertTrue(changes.contains(StringMapEntryModify("is_sidepath:of", "residential", "unclassified")))
     }
 
-    @Test fun `matching selection is submittable even when fill-only would not change tags`() {
+    @Test fun `a matching road is recognised even when the fill writer changes nothing`() {
         assertTrue(
             sidepathAssociationTagsMatchSelection(
                 mapOf("is_sidepath:of" to "unclassified"),

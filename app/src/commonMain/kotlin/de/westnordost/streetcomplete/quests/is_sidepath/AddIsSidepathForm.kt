@@ -86,13 +86,10 @@ fun AddIsSidepathForm(
                     null
                 },
                 roadSelectionProducesChanges = if (completingExistingSidepath) {
+                    // A road whose tags already match produces no edit. Enabling OK for that
+                    // match closed the quest without a change, or threw on an empty action.
                     { ofName, ofHighway, ofRef ->
                         sidepathRoadMetadataAnswerProducesChanges(
-                            element.tags,
-                            ofName,
-                            ofHighway,
-                            ofRef,
-                        ) || sidepathAssociationTagsMatchSelection(
                             element.tags,
                             ofName,
                             ofHighway,

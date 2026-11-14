@@ -20,6 +20,7 @@ import de.westnordost.streetcomplete.data.osm.edits.move.MoveNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.split_way.SplitWayAction
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChangesBuilder
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.updateElementTagsActionOrNull
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
@@ -145,7 +146,12 @@ fun <T> OsmQuestFormContainer(
                 val changesBuilder = StringMapChangesBuilder(element.tags)
                 questType.applyAnswerTo(action.value, changesBuilder, geometry, element.timestampEdited)
                 val changes = changesBuilder.create()
-                onEdit(UpdateElementTagsAction(element, changes), false, false)
+                val tagsAction = updateElementTagsActionOrNull(element, changes)
+                if (tagsAction == null) {
+                    onDismiss()
+                    return
+                }
+                onEdit(tagsAction, false, false)
             }
         }
     }

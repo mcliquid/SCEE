@@ -52,3 +52,7 @@ data class UpdateElementTagsAction(
     override fun createReverted(idProvider: ElementIdProvider) =
         RevertUpdateElementTagsAction(originalElement, changes.reversed())
 }
+
+/** Null when [changes] would not modify OSM. Callers must not treat that as a solved quest. */
+fun updateElementTagsActionOrNull(element: Element, changes: StringMapChanges): UpdateElementTagsAction? =
+    if (changes.isEmpty()) null else UpdateElementTagsAction(element, changes)

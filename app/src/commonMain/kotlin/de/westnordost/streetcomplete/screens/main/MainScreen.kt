@@ -956,7 +956,9 @@ fun MainScreen(
                         },
                         onHideQuest = { key, tempHide -> mainBottomSheetViewModel.hideQuest(key, tempHide) },
                         isSurvey = mainBottomSheetViewModel::isSurvey,
-                        onSubmitEdit = { type, geometry, action, hasExtra, key -> mainBottomSheetViewModel.submitEdit(type, geometry, action, hasExtra, key) },
+                        onSubmitEdit = { type, geometry, action, hasExtra, key, onResult ->
+                            mainBottomSheetViewModel.submitEdit(type, geometry, action, hasExtra, key, onResult)
+                        },
                         onCommentNote = { note, text, images, close -> mainBottomSheetViewModel.commentNote(note, text, images, close) },
                         onCreateNote = { pos, text, images, tracks, isGpx -> mainBottomSheetViewModel.createNote(pos, text, images, tracks, isGpx) },
                         shownBottomSheet = shownBottomSheet,

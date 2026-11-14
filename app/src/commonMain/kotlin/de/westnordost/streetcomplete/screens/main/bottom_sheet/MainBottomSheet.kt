@@ -31,6 +31,7 @@ import de.westnordost.streetcomplete.quests.note_comments.AddNoteCommentForm
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.quest_create_note
 import de.westnordost.streetcomplete.resources.toast_gpx_note_not_saved
+import de.westnordost.streetcomplete.resources.toast_quest_edit_not_saved
 import de.westnordost.streetcomplete.ui.common.ToastPopup
 import de.westnordost.streetcomplete.screens.main.ShownBottomSheet
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.note.CreateNoteForm
@@ -72,6 +73,7 @@ fun MainBottomSheet(
         ElementEditAction,
         hasExtra: Boolean,
         key: QuestKey?,
+        onResult: (Boolean) -> Unit,
     ) -> Unit,
     onCommentNote: (Note, String?, List<String>, close: Boolean) -> Unit,
     onCreateNote: (LatLon, String, List<String>, List<Trackpoint>?, isGpx: Boolean) -> Deferred<Boolean>,
@@ -90,8 +92,31 @@ fun MainBottomSheet(
     val koinCrossingType = remember(questTypes) { questTypes.filterIsInstance<AddWaterwayCrossing>().single() }
     var confirmEdit by remember { mutableStateOf<PendingEdit?>(null) }
     var gpxNoteSaveFailed by remember { mutableStateOf(false) }
+    var questEditSaveFailed by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val editSubmission = remember(shownBottomSheet) { EditSubmission() }
+
+    fun submitEditAfterLocalSave(
+        type: ElementEditType,
+        geometry: ElementGeometry,
+        action: ElementEditAction,
+        hasExtra: Boolean,
+        key: QuestKey?,
+        icon: DrawableResource,
+        position: LatLon,
+    ) {
+        editSubmission.run {
+            onSubmitEdit(type, geometry, action, hasExtra, key) { success ->
+                if (success) {
+                    onSolved(icon, position)
+                    onDismiss()
+                } else {
+                    editSubmission.release()
+                    questEditSaveFailed = true
+                }
+            }
+        }
+    }
 
     fun createNote(
         position: LatLon,
@@ -117,17 +142,6 @@ fun MainBottomSheet(
                 gpxNoteSaveFailed = true
             }
         }
-    }
-
-    fun submitEdit(
-        type: ElementEditType,
-        geometry: ElementGeometry,
-        action: ElementEditAction,
-        hasExtra: Boolean,
-        key: QuestKey?,
-    ) {
-        // Claim only the final save, so cancelling a survey confirmation keeps the form usable.
-        editSubmission.run { onSubmitEdit(type, geometry, action, hasExtra, key) }
     }
 
     when (shownBottomSheet) {
@@ -176,15 +190,15 @@ fun MainBottomSheet(
                 onEdit = { action, isTagEdit, isEditInContextOf ->
                     val hasExtra = isEditInContextOf && !isTagEdit
                     if (SuppressSurveyConfirmation || isSurvey(shownBottomSheet.quest.geometry)) {
-                        submitEdit(
+                        submitEditAfterLocalSave(
                             if (isTagEdit) tagEdit else shownBottomSheet.quest.type,
                             shownBottomSheet.quest.geometry,
                             action,
                             hasExtra,
                             shownBottomSheet.quest.key,
+                            shownBottomSheet.quest.type.icon,
+                            shownBottomSheet.quest.position,
                         )
-                        onSolved(shownBottomSheet.quest.type.icon, shownBottomSheet.quest.position)
-                        onDismiss()
                     } else {
                         confirmEdit = PendingEdit(
                             if (isTagEdit) tagEdit else shownBottomSheet.quest.type,
@@ -192,6 +206,8 @@ fun MainBottomSheet(
                             action,
                             hasExtra,
                             shownBottomSheet.quest.key,
+                            shownBottomSheet.quest.type.icon,
+                            shownBottomSheet.quest.position,
                         )
                     }
                 },
@@ -231,15 +247,15 @@ fun MainBottomSheet(
                 onDismiss = onDismissByUser,
                 onEdit = { action ->
                     if (SuppressSurveyConfirmation || isSurvey(shownBottomSheet.quest.geometry)) {
-                        submitEdit(
+                        submitEditAfterLocalSave(
                             shownBottomSheet.quest.type,
                             shownBottomSheet.quest.geometry,
                             action,
                             false,
                             shownBottomSheet.quest.key,
+                            shownBottomSheet.quest.type.icon,
+                            shownBottomSheet.quest.position,
                         )
-                        onSolved(shownBottomSheet.quest.type.icon, shownBottomSheet.quest.position)
-                        onDismiss()
                     } else {
                         confirmEdit = PendingEdit(
                             shownBottomSheet.quest.type,
@@ -247,6 +263,8 @@ fun MainBottomSheet(
                             action,
                             false,
                             shownBottomSheet.quest.key,
+                            shownBottomSheet.quest.type.icon,
+                            shownBottomSheet.quest.position,
                         )
                     }
                 },
@@ -286,15 +304,15 @@ fun MainBottomSheet(
                     val hasExtra = isEditInContextOf && !isTagEdit
 
                     if (SuppressSurveyConfirmation || isSurvey(geometry)) {
-                        submitEdit(
+                        submitEditAfterLocalSave(
                             if (isTagEdit) tagEdit else shownBottomSheet.overlay,
                             geometry,
                             action,
                             hasExtra,
                             null,
+                            shownBottomSheet.overlay.icon,
+                            geometry.center,
                         )
-                        onSolved(shownBottomSheet.overlay.icon, geometry.center)
-                        onDismiss()
                     } else {
                         confirmEdit = PendingEdit(
                             if (isTagEdit) tagEdit else shownBottomSheet.overlay,
@@ -302,6 +320,8 @@ fun MainBottomSheet(
                             action,
                             hasExtra,
                             null,
+                            shownBottomSheet.overlay.icon,
+                            geometry.center,
                         )
                     }
                 },
@@ -339,15 +359,15 @@ fun MainBottomSheet(
                 feature = shownBottomSheet.feature,
                 position = mapPosition,
                 onAdd = {
-                    submitEdit(
+                    submitEditAfterLocalSave(
                         addNodeEdit,
                         ElementPointGeometry(it.position),
                         CreateNodeAction(it.position, it.tags),
                         false,
                         null,
+                        addNodeEdit.icon,
+                        it.position,
                     )
-                    onSolved(addNodeEdit.icon, it.position)
-                    onDismiss()
                 },
                 onDismiss = onDismissByUser,
                 onSetMapMarkers = { onSetMapMarkers(it) },
@@ -370,9 +390,15 @@ fun MainBottomSheet(
                         mapPosition = mapPosition,
                         onCrossingEdit = { action, position ->
                             val editType = koinCrossingType
-                            submitEdit(editType, ElementPointGeometry(position), action, false, null)
-                            onSolved(editType.icon, position)
-                            onDismiss()
+                            submitEditAfterLocalSave(
+                                editType,
+                                ElementPointGeometry(position),
+                                action,
+                                false,
+                                null,
+                                editType.icon,
+                                position,
+                            )
                         },
                     )
                 }
@@ -387,16 +413,18 @@ fun MainBottomSheet(
                             element.tags.forEach { changeBuilder[it.key] = it.value }
                         }
                         if (action != null) {
-                            submitEdit(
+                            submitEditAfterLocalSave(
                                 addNodeEdit,
                                 ElementPointGeometry(element.position),
                                 action,
                                 false,
                                 null,
+                                addNodeEdit.icon,
+                                element.position,
                             )
-                            onSolved(addNodeEdit.icon, element.position)
+                        } else {
+                            onDismiss()
                         }
-                        onDismiss()
                     },
                     onDismiss = onDismissByUser,
                     onSetMapMarkers = { onSetMapMarkers(it) },
@@ -413,14 +441,16 @@ fun MainBottomSheet(
                 confirmEdit = null
             },
             onConfirmed = {
-                submitEdit(
+                confirmEdit = null
+                submitEditAfterLocalSave(
                     pendingEdit.elementEditType,
                     pendingEdit.geometry,
                     pendingEdit.elementEditAction,
                     pendingEdit.hasExtra,
                     pendingEdit.key,
+                    pendingEdit.solvedIcon,
+                    pendingEdit.solvedPosition,
                 )
-                onDismiss()
             },
             onToggleDontShowAgain = { SuppressSurveyConfirmation = it }
         )
@@ -432,6 +462,13 @@ fun MainBottomSheet(
             text = stringResource(Res.string.toast_gpx_note_not_saved),
         )
     }
+
+    if (questEditSaveFailed) {
+        ToastPopup(
+            onDismissRequest = { questEditSaveFailed = false },
+            text = stringResource(Res.string.toast_quest_edit_not_saved),
+        )
+    }
 }
 
 private data class PendingEdit(
@@ -440,6 +477,8 @@ private data class PendingEdit(
     val elementEditAction: ElementEditAction,
     val hasExtra: Boolean = false,
     val key: QuestKey? = null,
+    val solvedIcon: DrawableResource,
+    val solvedPosition: LatLon,
 )
 
 private var SuppressSurveyConfirmation = false

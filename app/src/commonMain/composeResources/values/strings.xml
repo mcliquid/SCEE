@@ -242,6 +242,7 @@
     <string name="toast_undo_upload_in_progress">This edit is being uploaded. Try undo again after the upload finishes.</string>
     <string name="toast_undo_unavailable">This edit is already synced and cannot be undone</string>
     <string name="toast_gpx_note_not_saved">The GPX note could not be saved</string>
+    <string name="toast_quest_edit_not_saved">Your answer could not be saved locally. Try again.</string>
 
 
     <!-- AR Measure screen -->

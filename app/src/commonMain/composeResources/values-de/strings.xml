@@ -780,6 +780,7 @@ Wenn es eine Busspur gibt, hinterlasse bitte stattdessen einen Hinweis.</string>
     <string name="toast_undo_upload_in_progress">Diese Änderung wird gerade hochgeladen. Versuche nach dem Upload erneut, sie rückgängig zu machen.</string>
     <string name="toast_undo_unavailable">Diese Bearbeitung wurde bereits synchronisiert und kann nicht rückgängig gemacht werden</string>
     <string name="toast_gpx_note_not_saved">Die GPX-Notiz konnte nicht gespeichert werden</string>
+    <string name="toast_quest_edit_not_saved">Deine Antwort konnte lokal nicht gespeichert werden. Versuche es erneut.</string>
     <string name="quest_cycleway_value_separate">separat auf Karte eingezeichnet</string>
     <string name="created_note_action_title">Hinweis erstellt</string>
     <string name="commented_note_action_title">Hinweis kommentiert</string>

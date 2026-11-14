@@ -38,8 +38,10 @@ import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenController
 import de.westnordost.streetcomplete.osm.level.levelsIntersect
 import de.westnordost.streetcomplete.osm.level.parseLevelsOrNull
 import de.westnordost.streetcomplete.resources.*
+import de.westnordost.streetcomplete.screens.main.bottom_sheet.QuestSaveInFlightRegistry
 import de.westnordost.streetcomplete.screens.main.map.getIcon
 import de.westnordost.streetcomplete.screens.main.map.getTitle
+import de.westnordost.streetcomplete.util.logs.Log
 import de.westnordost.streetcomplete.ui.common.quest.Marker
 import de.westnordost.streetcomplete.util.ktx.async
 import de.westnordost.streetcomplete.util.ktx.launch
@@ -76,6 +78,7 @@ abstract class MainBottomSheetViewModel : ViewModel() {
         elementEditAction: ElementEditAction,
         hasExtra: Boolean = false,
         key: QuestKey? = null,
+        onResult: (Boolean) -> Unit = {},
     )
 
     /** When same-element chaining finds a successor after a successful answer, emits its selection. */
@@ -136,6 +139,7 @@ class MainBottomSheetViewModelImpl(
         _chainedQuestSelection.asSharedFlow()
 
     private val pendingChainedQuestOpen = PendingChainedQuestOpen()
+    private val questSaveInFlight = QuestSaveInFlightRegistry()
 
     override fun cancelPendingChainedQuestOpen() {
         pendingChainedQuestOpen.cancel()
@@ -143,6 +147,7 @@ class MainBottomSheetViewModelImpl(
 
     private fun getQuestBottomSheet(selection: MainSheetSelection.Quest): ShownBottomSheet? {
         val key = selection.key
+        if (questSaveInFlight.isInFlight(key)) return null
         val trace = currentPerfTrace()
         return when (key) {
             is OsmQuestKey -> {
@@ -257,7 +262,12 @@ class MainBottomSheetViewModelImpl(
         elementEditAction: ElementEditAction,
         hasExtra: Boolean,
         key: QuestKey?,
+        onResult: (Boolean) -> Unit,
     ) {
+        if (key != null && !questSaveInFlight.tryClaim(key)) {
+            onResult(false)
+            return
+        }
         val saveId = pendingChainedQuestOpen.beginSave()
         launch(Dispatchers.IO) {
             val trace = PerfTrace("answer", Perf.nextId(), Perf.mark())
@@ -270,7 +280,8 @@ class MainBottomSheetViewModelImpl(
                 }
                 trace.set("pipeline", "visible-quests")
                 true
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                Log.e(TAG, "Local quest edit save failed", e)
                 false
             } finally {
                 trace.finish()
@@ -306,8 +317,16 @@ class MainBottomSheetViewModelImpl(
                 }
             } finally {
                 pendingChainedQuestOpen.complete(saveId)
+                questSaveInFlight.release(key)
+                withContext(Dispatchers.Main) {
+                    onResult(saved)
+                }
             }
         }
+    }
+
+    private companion object {
+        private const val TAG = "MainBottomSheetViewModel"
     }
 
     override fun commentNote(

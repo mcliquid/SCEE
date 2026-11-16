@@ -3,6 +3,7 @@ Alhambra
 Allgäuer Brauhaus
 Alpirsbacher Klosterbräu
 Amstel
+Andes Origen
 Arany Ászok
 Arany Fácán
 Asahi
@@ -21,6 +22,7 @@ Birra Moretti
 Bitburger
 Borsodi
 Bosch
+Brahma
 Brains
 Brauhaus Faust
 BrewDog
@@ -66,6 +68,8 @@ Hoepfner
 Hofbräu München
 Häffner-Bräu
 Härle
+Imperial
+Isenbec
 Jever
 Jupiler
 Kaiser
@@ -100,6 +104,7 @@ Pilsner Urquell
 Pinkus
 Puntigamer
 Pécsi
+Quilmes
 Radeberger
 Radegast
 Riegele

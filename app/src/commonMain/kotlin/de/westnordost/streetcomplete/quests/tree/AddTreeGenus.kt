@@ -4,8 +4,12 @@ import de.westnordost.streetcomplete.util.platform.platformFileFromUri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
+import androidx.compose.material.Divider
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,7 +27,8 @@ import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.resources.*
-import de.westnordost.streetcomplete.ui.common.dialogs.InfoDialog
+import de.westnordost.streetcomplete.ui.common.RadioGroup
+import de.westnordost.streetcomplete.ui.common.dialogs.AlertDialog
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.copyTo
@@ -88,11 +93,34 @@ class AddTreeGenus : OsmFilterQuestType<TreeAnswer>() {
                 treeFile.copyTo(file)
             }
         }
-        InfoDialog(
+        var selectedMode by remember { mutableStateOf(treeGenusUiMode(prefs)) }
+        AlertDialog(
             onDismissRequest = onDismissRequest,
             title = { Text(stringResource(Res.string.pref_trees_title)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(Res.string.pref_quest_tree_genus_ui_mode))
+                    RadioGroup(
+                        options = TreeGenusUiMode.entries,
+                        selectedOption = selectedMode,
+                        onSelectionChange = { selectedMode = it },
+                        itemContent = { mode ->
+                            Column {
+                                Text(when (mode) {
+                                    TreeGenusUiMode.Visual -> stringResource(Res.string.quest_settings_tree_genus_visual)
+                                    TreeGenusUiMode.ExpertText -> stringResource(Res.string.quest_settings_tree_genus_expert_text)
+                                })
+                                Text(
+                                    when (mode) {
+                                        TreeGenusUiMode.Visual -> stringResource(Res.string.quest_settings_tree_genus_visual_description)
+                                        TreeGenusUiMode.ExpertText -> stringResource(Res.string.quest_settings_tree_genus_expert_text_description)
+                                    },
+                                    style = MaterialTheme.typography.caption,
+                                )
+                            }
+                        },
+                    )
+                    Divider(Modifier.padding(vertical = 4.dp))
                     Text(stringResource(Res.string.tree_custom_quest_import_export_message))
                     Button({ import() }, Modifier.fillMaxWidth()) {
                         Text(stringResource(Res.string.tree_custom_quest_import))
@@ -105,7 +133,14 @@ class AddTreeGenus : OsmFilterQuestType<TreeAnswer>() {
                         Text(stringResource(Res.string.element_selection_button))
                     }
                 }
-            }
+            },
+            buttonRow = {
+                TextButton(onDismissRequest) { Text(stringResource(Res.string.cancel)) }
+                TextButton({
+                    setTreeGenusUiMode(prefs, selectedMode)
+                    onDismissRequest()
+                }) { Text(stringResource(Res.string.ok)) }
+            },
         )
         if (showElementSelection)
             super.QuestSettings(onDismissRequest)

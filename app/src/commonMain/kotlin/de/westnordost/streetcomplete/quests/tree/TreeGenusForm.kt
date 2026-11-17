@@ -42,11 +42,13 @@ import org.koin.compose.koinInject
 @Composable
 fun TreeGenusForm(on: (QuestAction<TreeAnswer>) -> Unit, countryInfo: CountryInfo) {
     val hasVisualCatalog = hasVisualTreeCatalog(countryInfo.countryCode)
-    var advanced by rememberSaveable { mutableStateOf(false) }
-    if (hasVisualCatalog && !advanced) {
-        TreeGenusVisualForm(on, onAdvanced = { advanced = true })
+    val prefs: Preferences = koinInject()
+    val expertTextByDefault = treeGenusUiMode(prefs) == TreeGenusUiMode.ExpertText
+    var useVisual by rememberSaveable { mutableStateOf(hasVisualCatalog && !expertTextByDefault) }
+    if (hasVisualCatalog && useVisual) {
+        TreeGenusVisualForm(on, onAdvanced = { useVisual = false })
     } else {
-        TreeGenusTextForm(on, onVisual = if (hasVisualCatalog) ({ advanced = false }) else null)
+        TreeGenusTextForm(on, onVisual = if (hasVisualCatalog) ({ useVisual = true }) else null)
     }
 }
 @Composable

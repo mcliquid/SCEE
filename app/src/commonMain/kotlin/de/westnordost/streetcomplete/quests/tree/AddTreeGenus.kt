@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.Divider
 import androidx.compose.material.MaterialTheme
@@ -28,7 +30,7 @@ import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.RadioGroup
-import de.westnordost.streetcomplete.ui.common.dialogs.AlertDialog
+import de.westnordost.streetcomplete.ui.common.dialogs.ScrollableAlertDialog
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.copyTo
@@ -94,11 +96,17 @@ class AddTreeGenus : OsmFilterQuestType<TreeAnswer>() {
             }
         }
         var selectedMode by remember { mutableStateOf(treeGenusUiMode(prefs)) }
-        AlertDialog(
+        val scrollState = rememberScrollState()
+        ScrollableAlertDialog(
             onDismissRequest = onDismissRequest,
             title = { Text(stringResource(Res.string.pref_trees_title)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            content = {
+                Column(
+                    Modifier
+                        .padding(horizontal = 12.dp)
+                        .verticalScroll(scrollState),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     Text(stringResource(Res.string.pref_quest_tree_genus_ui_mode))
                     RadioGroup(
                         options = TreeGenusUiMode.entries,

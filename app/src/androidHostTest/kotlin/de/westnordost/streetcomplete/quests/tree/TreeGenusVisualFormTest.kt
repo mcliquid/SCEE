@@ -112,7 +112,7 @@ class TreeGenusVisualFormTest {
     @After fun closeKoin() { testKoin.close() }
 
     private fun show(orchard: Boolean = false, content: (@Composable () -> Unit)? = null,
-        actualForm: Boolean = false, restoration: StateRestorationTester? = null) {
+        actualForm: Boolean = false, restoration: StateRestorationTester? = null, countryCode: String = "DE") {
 
         Prefs.preferences = preferences
 
@@ -136,7 +136,7 @@ class TreeGenusVisualFormTest {
                         else if (orchard) AddOrchardProduceForm({}, CountryInfo("DE", listOf(IncompleteCountryInfo(
                             orchardProduces = listOf("apple", "pear", "cherry", "plum", "walnut", "chestnut")
                         ))))
-                        else if (actualForm) TreeGenusForm({ actions += it }, CountryInfo("DE", emptyList()))
+                        else if (actualForm) TreeGenusForm({ actions += it }, CountryInfo(countryCode, emptyList()))
                         else TreeGenusVisualForm(on = { actions += it }, onAdvanced = { advanced = true })
 
                     }
@@ -305,6 +305,44 @@ class TreeGenusVisualFormTest {
         compose.onNodeWithText("Select one:").assertDoesNotExist()
         compose.onNodeWithText("Choice").performScrollTo().performClick()
         assertEquals(listOf("Choice"), answers)
+    }
+
+    @Test fun `default form opens visual grid in catalog countries`() {
+        show(actualForm = true)
+        compose.onNodeWithText("Maple").performScrollTo()
+        compose.onAllNodes(hasSetTextAction()).assertCountEquals(0)
+    }
+
+    @Test fun `visual preference in france still opens text form without clearing pref`() {
+        preferences.putBoolean(PREF_TREE_GENUS_EXPERT_TEXT, false)
+        show(actualForm = true, countryCode = "FR")
+        compose.onAllNodes(hasSetTextAction()).assertCountEquals(1)
+        compose.onNodeWithText("Maple").assertDoesNotExist()
+        assertEquals(TreeGenusUiMode.Visual, treeGenusUiMode(preferences))
+    }
+
+    @Test fun `expert setting opens text form without scrolling through images`() {
+        preferences.putBoolean(PREF_TREE_GENUS_EXPERT_TEXT, true)
+        show(actualForm = true)
+        compose.onAllNodes(hasSetTextAction()).assertCountEquals(1)
+        compose.onNodeWithText("Maple").assertDoesNotExist()
+    }
+
+    @Test fun `expert text form offers switch back to visual grid`() {
+        preferences.putBoolean(PREF_TREE_GENUS_EXPERT_TEXT, true)
+        show(actualForm = true)
+        compose.onNodeWithText("Uh…").performScrollTo().performClick()
+        compose.onNodeWithText("Choose using photos").performClick()
+        compose.onNodeWithText("Maple").performScrollTo()
+        assertTrue(actions.isEmpty())
+    }
+
+    @Test fun `expert text form keeps stump answer`() {
+        preferences.putBoolean(PREF_TREE_GENUS_EXPERT_TEXT, true)
+        show(actualForm = true)
+        compose.onNodeWithText("Uh…").performScrollTo().performClick()
+        compose.onNodeWithText("It’s just a tree stump").performClick()
+        assertEquals(NotTreeButStump, (actions.single() as Answer).value)
     }
 
     @Test fun `actual advanced entry survives restoration and returns to visual grid`() {

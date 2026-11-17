@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.quests.tree
 
 import de.westnordost.streetcomplete.quests.answerAppliedTo
+import de.westnordost.streetcomplete.quests.questPrefix
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.quest_tree_disabled_msg
@@ -96,5 +97,39 @@ class AddTreeGenusTest {
         for (code in listOf("DE", "AT", "CH")) assertTrue(hasVisualTreeCatalog(code))
         for (code in listOf(null, "", "FR", "US")) assertFalse(hasVisualTreeCatalog(code))
         assertEquals(Res.string.quest_tree_disabled_msg, quest.defaultDisabledMessage)
+    }
+
+    @Test fun `ui mode pref defaults to visual selection`() {
+        val prefs = inMemoryPrefs()
+        assertEquals(TreeGenusUiMode.Visual, treeGenusUiMode(prefs))
+    }
+
+    @Test fun `ui mode pref round-trips through setter`() {
+        val prefs = inMemoryPrefs()
+        setTreeGenusUiMode(prefs, TreeGenusUiMode.ExpertText)
+        assertEquals(TreeGenusUiMode.ExpertText, treeGenusUiMode(prefs))
+        setTreeGenusUiMode(prefs, TreeGenusUiMode.Visual)
+        assertEquals(TreeGenusUiMode.Visual, treeGenusUiMode(prefs))
+    }
+
+    @Test fun `countries without visual catalog keep saved visual preference`() {
+        val prefs = inMemoryPrefs()
+        setTreeGenusUiMode(prefs, TreeGenusUiMode.Visual)
+        assertFalse(hasVisualTreeCatalog("FR"))
+        assertEquals(TreeGenusUiMode.Visual, treeGenusUiMode(prefs))
+    }
+
+    @Test fun `ui mode preference does not change tag mapping`() {
+        val prefs = inMemoryPrefs()
+        val original = mapOf("natural" to "tree")
+        for (expert in listOf(false, true)) {
+            setTreeGenusExpertTextUi(prefs, expert = expert)
+            val tags = original.toMutableMap()
+            quest.answerAppliedTo(Tree("Betula", false, null), original).forEach { it.applyTo(tags) }
+            assertEquals(original + ("genus" to "Betula"), tags, "expert=$expert")
+            val stump = original.toMutableMap()
+            quest.answerAppliedTo(NotTreeButStump, original).forEach { it.applyTo(stump) }
+            assertEquals(original + ("natural" to "tree_stump"), stump, "expert=$expert")
+        }
     }
 }

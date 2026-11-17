@@ -236,6 +236,11 @@
     <string name="element_selection_button">Elementauswahl</string>
     <string name="level_filter_enable">Level-Filter aktivieren</string>
     <string name="quest_settings_level_title">Diese Aufgabe anzeigen für:</string>
+    <string name="pref_quest_tree_genus_ui_mode">Wie soll die Baumgattungs-/Artaufgabe beantwortet werden?</string>
+    <string name="quest_settings_tree_genus_visual">Bildbasierte Auswahl</string>
+    <string name="quest_settings_tree_genus_visual_description">Baumgattung anhand von Bildern bestimmen (Standard)</string>
+    <string name="quest_settings_tree_genus_expert_text">Experteneingabe als Text</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Gattung oder Art direkt über die Textsuche auswählen</string>
     <string name="advanced_resurvey_message_date">Anstatt Wiederholungsintervalle zu verwenden, wird über den Schlüssel neu vermessen, wenn das Prüfdatum älter ist als:</string>
     <string name="quest_destination_all_lanes_button">Alle
 \nSpuren</string>

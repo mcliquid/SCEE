@@ -23,32 +23,58 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout PR branch (pins to update)
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.head_ref }}
-          fetch-depth: 1
+          path: pr
+
+      - name: Checkout trusted pin script from base branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          sparse-checkout: .github/scripts/pin-traffic-signs-sha256.mjs
+          sparse-checkout-cone-mode: false
+          path: trusted
 
       - uses: actions/setup-node@v6
         with:
           node-version: "22"
 
       - name: Pin tarball SHA-256 for trafficSignsVersion
-        run: node .github/scripts/pin-traffic-signs-sha256.mjs
-
-      - name: Reject unexpected file changes
+        env:
+          GRADLE_PATH: pr/app/build.gradle.kts
         run: |
           set -euo pipefail
-          changed="$(git diff --name-only)"
-          if [ -n "$changed" ] && [ "$changed" != "app/build.gradle.kts" ]; then
-            echo "Script changed unexpected files:"
-            printf '%s\n' "$changed"
-            exit 1
-          fi
+          cp pr/app/build.gradle.kts "${RUNNER_TEMP}/build.gradle.before"
+          node trusted/.github/scripts/pin-traffic-signs-sha256.mjs
+          node --input-type=module -e "
+            import fs from 'node:fs';
+            import { assertOnlySha256PinChange } from './trusted/.github/scripts/pin-traffic-signs-sha256.mjs';
+            assertOnlySha256PinChange(
+              fs.readFileSync('${RUNNER_TEMP}/build.gradle.before', 'utf8'),
+              fs.readFileSync('pr/app/build.gradle.kts', 'utf8'),
+            );
+          "
 
       - name: Commit pin if needed
-        uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          branch: ${{ github.head_ref }}
-          commit_message: "chore(deps): sync trafficSignsSha256 with npm tarball"
-          commit_user_name: github-actions[bot]
-          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
+        working-directory: pr
+        env:
+          PIN_BRANCH: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- app/build.gradle.kts; then
+            echo "No trafficSignsSha256 change needed"
+            exit 0
+          fi
+          other_changes="$(git status --porcelain --untracked-files=no | grep -v 'app/build.gradle.kts' || true)"
+          if [ -n "$other_changes" ]; then
+            echo "Unexpected working tree changes:"
+            git status --porcelain
+            exit 1
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- app/build.gradle.kts
+          git commit -m "chore(deps): sync trafficSignsSha256 with npm tarball"
+          git push origin "HEAD:${PIN_BRANCH}"

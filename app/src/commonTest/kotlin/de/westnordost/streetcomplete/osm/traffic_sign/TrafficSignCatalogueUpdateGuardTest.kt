@@ -7,6 +7,11 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.security.MessageDigest
 import kotlin.test.Test
 import kotlin.test.assertNull
 import kotlin.test.assertEquals
@@ -25,6 +30,26 @@ class TrafficSignCatalogueUpdateGuardTest {
     /* ------------------------------------- everything agrees on the version ------------------------------------- */
 
     private val versionFile = TrafficSignTestData.readText("$RESOURCES_DIR/files/traffic_signs/VERSION").lines()
+
+    @Test fun `trafficSignsSha256 matches the npm tarball for trafficSignsVersion`() {
+        val gradle = TrafficSignTestData.readText("build.gradle.kts")
+        val version = Regex("""val trafficSignsVersion = "([^"]+)"""").find(gradle)!!.groupValues[1]
+        val pinnedSha = Regex("""val trafficSignsSha256 = "([^"]+)"""").find(gradle)!!.groupValues[1]
+        val url =
+            "https://registry.npmjs.org/@osm-traffic-signs/converter/-/converter-$version.tgz"
+        val client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()
+        val tarball = client.send(
+            HttpRequest.newBuilder(URI(url)).GET().build(),
+            HttpResponse.BodyHandlers.ofByteArray(),
+        ).body()
+        val actualSha = MessageDigest.getInstance("SHA-256").digest(tarball)
+            .joinToString("") { "%02x".format(it) }
+        assertEquals(
+            actualSha,
+            pinnedSha,
+            "trafficSignsSha256 must match the npm tarball for @osm-traffic-signs/converter@$version",
+        )
+    }
 
     @Test fun `the version of the catalogue, the version file, the build pin, the parity reference and the tooling agree`() {
         val version = catalogue.version

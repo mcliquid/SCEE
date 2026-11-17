@@ -12,6 +12,11 @@
   "prHourlyLimit": 2,
   "automerge": false,
   "dependencyDashboard": true,
+  "gitIgnoredAuthors": [
+    "github-actions[bot]",
+    "41898282+github-actions[bot]@users.noreply.github.com"
+  ],
+  "rebaseWhen": "conflicted",
   "labels": ["dependencies"],
   "customManagers": [
     {

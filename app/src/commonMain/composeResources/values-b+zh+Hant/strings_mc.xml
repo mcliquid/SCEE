@@ -284,7 +284,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">取決於時間 / 其他限制</string>
     <string name="quest_bicycleInPedestrianStreet_hint">請在現場查看標誌。只有對明確確認的規則才回答是或否。缺少允許單車通行的標誌，並不自動代表禁止騎單車。</string>
     <string name="traffic_sign_overlay_title">交通標誌</string>
-    <string name="traffic_sign_overlay_germany_only">交通標誌圖層僅在德國可用。</string>
     <string name="traffic_sign_overlay_catalogue_missing">無法載入交通標誌目錄。</string>
     <string name="traffic_sign_overlay_loading">正在載入交通標誌…</string>
     <string name="traffic_sign_overlay_direction_forward">路段方向</string>
@@ -412,4 +411,25 @@
     <string name="parking_lot_add_info">新增或確認：</string>
     <string name="street_parking_create_parking">停車</string>
     <string name="street_parking_create_traffic_calming">交通寧靜化</string>
+    <string name="pref_quest_tree_genus_ui_mode">應如何回答樹木屬/種的任務？</string>
+    <string name="quest_settings_tree_genus_expert_text">以文字為基礎的進階選擇</string>
+    <string name="quest_settings_tree_genus_expert_text_description">透過文字搜尋直接選擇屬或種</string>
+    <string name="quest_settings_tree_genus_visual">以圖片為基礎的選擇</string>
+    <string name="quest_settings_tree_genus_visual_description">根據照片辨識樹木的屬（預設）</string>
+    <string name="traffic_sign_overlay_readonly_country">此國家尚無完整的交通標誌編輯器。此路段的交通標誌標籤僅依原樣顯示。</string>
+    <string name="traffic_sign_overlay_readonly_border">根據應用程式已知的國界，此路段位於多個國家（%1$s）。交通標誌只能在完全位於一個受支援國家內的路段上編輯。要編輯它們，請在國界處拆分此路段。</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">無法可靠地確定此路段完全位於一個國家內，例如因為它靠近國界。因此無法在此編輯其交通標誌。</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">現有的交通標誌標籤</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">沒有交通標誌標籤。</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">通用（不帶方向的鍵）</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">方向（依標籤所示）</string>
+    <string name="traffic_sign_overlay_readonly_node">此點的交通標誌依方向加了標籤（traffic_sign:forward 或 traffic_sign:backward）。在此僅依原樣顯示。</string>
+    <string name="traffic_sign_overlay_readonly_node_country">此點所在的國家沒有交通標誌目錄。其交通標誌標籤僅依原樣顯示。</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">無法可靠地確定此點位於哪個國家，例如因為它靠近國界。因此無法在此編輯其交通標誌。</string>
+    <string name="traffic_sign_overlay_node_hint">只變更此點的 traffic_sign。其方向和所有其他標籤維持不變，也不會向道路轉移任何內容。</string>
+    <string name="traffic_sign_overlay_create_node_hint">將在十字準線的位置建立一個僅帶有 traffic_sign 的新點。不會新增其他標籤，也不會向道路轉移任何內容。請先檢查附近是否已經繪製了此標誌。</string>
+    <string name="traffic_sign_overlay_create_node_country">十字準線所在位置的國家沒有交通標誌目錄。無法在此新增交通標誌。</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">無法可靠地確定十字準線位置位於哪個國家，例如因為它靠近國界。因此無法在此新增交通標誌。</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">將 traffic_sign=%1$s 取代為 traffic_sign=%2$s？</string>
+    <string name="traffic_sign_overlay_signs_only">對於此國家，只記錄交通標誌。不會從中推導出其他標籤。</string>
 </resources>

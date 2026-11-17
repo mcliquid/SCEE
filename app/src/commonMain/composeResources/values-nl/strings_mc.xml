@@ -279,7 +279,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Afhankelijk van tijd / andere beperking</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Controleer de borden ter plaatse. Antwoord alleen ja of nee bij een uitdrukkelijk vastgestelde regel. Een ontbrekend bord dat fietsen toestaat betekent niet automatisch dat fietsen verboden is.</string>
     <string name="traffic_sign_overlay_title">Verkeersborden</string>
-    <string name="traffic_sign_overlay_germany_only">De verkeersbordenlaag is alleen beschikbaar in Duitsland.</string>
     <string name="traffic_sign_overlay_catalogue_missing">De verkeersbordencatalogus kon niet worden geladen.</string>
     <string name="traffic_sign_overlay_loading">Verkeersborden laden…</string>
     <string name="traffic_sign_overlay_direction_forward">Richting van de weg</string>
@@ -406,4 +405,25 @@
     <string name="parking_lot_add_info">Toevoegen of bevestigen:</string>
     <string name="street_parking_create_parking">Parkeren</string>
     <string name="street_parking_create_traffic_calming">Verkeersremmer</string>
+    <string name="pref_quest_tree_genus_ui_mode">Hoe moet de vraag over het geslacht/de soort van de boom worden beantwoord?</string>
+    <string name="quest_settings_tree_genus_expert_text">Expertselectie via tekst</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Geslacht of soort direct kiezen via zoeken in tekst</string>
+    <string name="quest_settings_tree_genus_visual">Selectie op basis van afbeeldingen</string>
+    <string name="quest_settings_tree_genus_visual_description">Het geslacht van de boom herkennen aan de hand van foto’s (standaard)</string>
+    <string name="traffic_sign_overlay_readonly_country">Er is nog geen volledige verkeersborden-editor voor dit land. De verkeersbordtags van deze weg worden alleen weergegeven zoals ze zijn.</string>
+    <string name="traffic_sign_overlay_readonly_border">Volgens de landsgrenzen die de app kent, ligt deze weg in meerdere landen (%1$s). Verkeersborden kunnen alleen worden bewerkt op wegen die volledig in één ondersteund land liggen. Splits de weg bij de grens om ze te bewerken.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Het kan niet betrouwbaar worden vastgesteld dat deze weg volledig in één land ligt, bijvoorbeeld omdat hij dicht bij een grens loopt. Daarom kunnen de verkeersborden hier niet worden bewerkt.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Bestaande verkeersbordtags</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Er zijn geen verkeersbordtags.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Algemeen (sleutel zonder richting)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Richting, zoals getagd</string>
+    <string name="traffic_sign_overlay_readonly_node">De verkeersborden van dit punt zijn per richting getagd (traffic_sign:forward of traffic_sign:backward). Ze worden hier alleen weergegeven zoals ze zijn.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Er is geen verkeersbordencatalogus voor het land van dit punt. De verkeersbordtags worden alleen weergegeven zoals ze zijn.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Het kan niet betrouwbaar worden vastgesteld in welk land dit punt ligt, bijvoorbeeld omdat het dicht bij een grens ligt. Daarom kunnen de verkeersborden hier niet worden bewerkt.</string>
+    <string name="traffic_sign_overlay_node_hint">Alleen traffic_sign van dit punt wordt gewijzigd. De richting en alle andere tags blijven zoals ze zijn en er wordt niets naar de weg overgedragen.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Er wordt precies op de positie van het trekkruis een nieuw punt met alleen traffic_sign aangemaakt. Er worden geen andere tags toegevoegd en er wordt niets naar de weg overgedragen. Controleer eerst of dit bord niet al in de buurt is ingetekend.</string>
+    <string name="traffic_sign_overlay_create_node_country">Er is geen verkeersbordencatalogus voor het land op de positie van het trekkruis. Hier kan geen verkeersbord worden toegevoegd.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Het kan niet betrouwbaar worden vastgesteld in welk land de positie van het trekkruis ligt, bijvoorbeeld omdat ze dicht bij een grens ligt. Daarom kan hier geen verkeersbord worden toegevoegd.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">traffic_sign=%1$s vervangen door traffic_sign=%2$s?</string>
+    <string name="traffic_sign_overlay_signs_only">Voor dit land worden alleen de verkeersborden vastgelegd. Er worden geen andere tags van afgeleid.</string>
 </resources>

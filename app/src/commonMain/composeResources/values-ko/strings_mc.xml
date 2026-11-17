@@ -284,7 +284,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">시간 / 다른 제한에 따라 다름</string>
     <string name="quest_bicycleInPedestrianStreet_hint">현장의 표지판을 확인하세요. 명확히 확인된 규정에 대해서만 예 또는 아니요로 답하세요. 자전거 통행을 허용하는 표지판이 없다고 해서 자동으로 자전거 통행이 금지된 것은 아닙니다.</string>
     <string name="traffic_sign_overlay_title">교통 표지판</string>
-    <string name="traffic_sign_overlay_germany_only">교통 표지판 오버레이는 독일에서만 사용할 수 있습니다.</string>
     <string name="traffic_sign_overlay_catalogue_missing">교통 표지판 목록을 불러올 수 없습니다.</string>
     <string name="traffic_sign_overlay_loading">교통 표지판 불러오는 중…</string>
     <string name="traffic_sign_overlay_direction_forward">way의 방향</string>
@@ -412,4 +411,25 @@
     <string name="parking_lot_add_info">추가 또는 확인:</string>
     <string name="street_parking_create_parking">주차</string>
     <string name="street_parking_create_traffic_calming">교통 정온화</string>
+    <string name="pref_quest_tree_genus_ui_mode">나무의 속/종 질문에 어떻게 답할까요?</string>
+    <string name="quest_settings_tree_genus_expert_text">텍스트 기반 전문가 선택</string>
+    <string name="quest_settings_tree_genus_expert_text_description">텍스트 검색으로 속 또는 종을 직접 선택</string>
+    <string name="quest_settings_tree_genus_visual">이미지 기반 선택</string>
+    <string name="quest_settings_tree_genus_visual_description">사진으로 나무의 속 식별(기본값)</string>
+    <string name="traffic_sign_overlay_readonly_country">이 국가에는 아직 완전한 교통 표지판 편집기가 없습니다. 이 way의 교통 표지판 태그는 그대로 표시만 됩니다.</string>
+    <string name="traffic_sign_overlay_readonly_border">앱이 알고 있는 국경에 따르면 이 way는 여러 나라(%1$s)에 걸쳐 있습니다. 교통 표지판은 하나의 지원되는 나라 안에 완전히 있는 way에서만 편집할 수 있습니다. 편집하려면 국경에서 way를 분할하세요.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">이 way가 완전히 한 나라 안에 있는지 확실하게 판단할 수 없습니다(예: 국경 근처를 지나기 때문). 따라서 이 way의 교통 표지판은 여기서 편집할 수 없습니다.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">기존 교통 표지판 태그</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">교통 표지판 태그가 없습니다.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">일반(방향 없는 키)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">방향(태그된 대로)</string>
+    <string name="traffic_sign_overlay_readonly_node">이 지점의 교통 표지판은 방향별로 태그되어 있습니다(traffic_sign:forward 또는 traffic_sign:backward). 여기서는 그대로 표시만 됩니다.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">이 지점의 국가에는 교통 표지판 카탈로그가 없습니다. 교통 표지판 태그는 그대로 표시만 됩니다.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">이 지점이 어느 나라에 있는지 확실하게 판단할 수 없습니다(예: 국경에 가깝기 때문). 따라서 이 지점의 교통 표지판은 여기서 편집할 수 없습니다.</string>
+    <string name="traffic_sign_overlay_node_hint">이 지점의 traffic_sign만 변경됩니다. 방향과 다른 모든 태그는 그대로 유지되며, 도로로 옮겨지는 것은 없습니다.</string>
+    <string name="traffic_sign_overlay_create_node_hint">십자선 위치에 traffic_sign만 있는 새 지점이 만들어집니다. 다른 태그는 추가되지 않으며 도로로 옮겨지는 것도 없습니다. 이 표지판이 근처에 이미 지도화되어 있지 않은지 먼저 확인하세요.</string>
+    <string name="traffic_sign_overlay_create_node_country">십자선 위치의 국가에는 교통 표지판 카탈로그가 없습니다. 여기에는 교통 표지판을 추가할 수 없습니다.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">십자선 위치가 어느 나라에 있는지 확실하게 판단할 수 없습니다(예: 국경에 가깝기 때문). 따라서 여기에는 교통 표지판을 추가할 수 없습니다.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">traffic_sign=%1$s을(를) traffic_sign=%2$s(으)로 바꿀까요?</string>
+    <string name="traffic_sign_overlay_signs_only">이 국가에서는 교통 표지판만 기록됩니다. 이로부터 다른 태그는 도출되지 않습니다.</string>
 </resources>

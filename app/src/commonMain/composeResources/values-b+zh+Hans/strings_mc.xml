@@ -284,7 +284,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">取决于时间 / 其他限制</string>
     <string name="quest_bicycleInPedestrianStreet_hint">请在现场查看标志。只有对明确确认的规则才回答是或否。缺少允许自行车通行的标志，并不自动意味着禁止骑自行车。</string>
     <string name="traffic_sign_overlay_title">交通标志</string>
-    <string name="traffic_sign_overlay_germany_only">交通标志图层仅在德国可用。</string>
     <string name="traffic_sign_overlay_catalogue_missing">无法加载交通标志目录。</string>
     <string name="traffic_sign_overlay_loading">正在加载交通标志…</string>
     <string name="traffic_sign_overlay_direction_forward">路段方向</string>
@@ -412,4 +411,25 @@
     <string name="parking_lot_add_info">添加或确认：</string>
     <string name="street_parking_create_parking">停车</string>
     <string name="street_parking_create_traffic_calming">交通稳静化</string>
+    <string name="pref_quest_tree_genus_ui_mode">应如何回答树木属/种的任务？</string>
+    <string name="quest_settings_tree_genus_expert_text">基于文字的进阶选择</string>
+    <string name="quest_settings_tree_genus_expert_text_description">通过文字搜索直接选择属或种</string>
+    <string name="quest_settings_tree_genus_visual">基于图片的选择</string>
+    <string name="quest_settings_tree_genus_visual_description">根据照片识别树木的属（默认）</string>
+    <string name="traffic_sign_overlay_readonly_country">此国家尚无完整的交通标志编辑器。此路段的交通标志标签仅按原样显示。</string>
+    <string name="traffic_sign_overlay_readonly_border">根据应用已知的国界，此路段位于多个国家（%1$s）。交通标志只能在完全位于一个受支持国家内的路段上编辑。要编辑它们，请在国界处拆分此路段。</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">无法可靠地确定此路段完全位于一个国家内，例如因为它靠近国界。因此无法在此编辑其交通标志。</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">现有的交通标志标签</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">没有交通标志标签。</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">通用（不带方向的键）</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">方向（按标签所示）</string>
+    <string name="traffic_sign_overlay_readonly_node">此点的交通标志按方向打了标签（traffic_sign:forward 或 traffic_sign:backward）。在此仅按原样显示。</string>
+    <string name="traffic_sign_overlay_readonly_node_country">此点所在的国家没有交通标志目录。其交通标志标签仅按原样显示。</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">无法可靠地确定此点位于哪个国家，例如因为它靠近国界。因此无法在此编辑其交通标志。</string>
+    <string name="traffic_sign_overlay_node_hint">只更改此点的 traffic_sign。其方向和所有其他标签保持不变，也不会向道路转移任何内容。</string>
+    <string name="traffic_sign_overlay_create_node_hint">将在十字准线的位置创建一个仅带有 traffic_sign 的新点。不会添加其他标签，也不会向道路转移任何内容。请先检查附近是否已经绘制了此标志。</string>
+    <string name="traffic_sign_overlay_create_node_country">十字准线所在位置的国家没有交通标志目录。无法在此添加交通标志。</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">无法可靠地确定十字准线位置位于哪个国家，例如因为它靠近国界。因此无法在此添加交通标志。</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">将 traffic_sign=%1$s 替换为 traffic_sign=%2$s？</string>
+    <string name="traffic_sign_overlay_signs_only">对于此国家，只记录交通标志。不会从中推导出其他标签。</string>
 </resources>

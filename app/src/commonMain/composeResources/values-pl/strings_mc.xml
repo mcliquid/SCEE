@@ -282,7 +282,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Zależy od czasu / innego ograniczenia</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Sprawdź oznakowanie na miejscu. Odpowiadaj tak lub nie tylko wtedy, gdy zasada jest wyraźnie potwierdzona. Brak znaku zezwalającego na ruch rowerów nie oznacza automatycznie, że jazda rowerem jest zakazana.</string>
     <string name="traffic_sign_overlay_title">Znaki drogowe</string>
-    <string name="traffic_sign_overlay_germany_only">Nakładka ze znakami drogowymi jest dostępna tylko w Niemczech.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Nie udało się wczytać katalogu znaków drogowych.</string>
     <string name="traffic_sign_overlay_loading">Wczytywanie znaków drogowych…</string>
     <string name="traffic_sign_overlay_direction_forward">Kierunek drogi</string>
@@ -409,4 +408,25 @@
     <string name="parking_lot_nothing_to_add">Nie ma tu nic więcej do dodania. Użyj menu, aby edytować tagi lub zostawić uwagę.</string>
     <string name="parking_lot_add_info">Dodaj lub potwierdź:</string>
     <string name="street_parking_create_traffic_calming">Uspokojenie ruchu</string>
+    <string name="pref_quest_tree_genus_ui_mode">Jak odpowiadać na zadanie dotyczące rodzaju/gatunku drzewa?</string>
+    <string name="quest_settings_tree_genus_expert_text">Zaawansowany wybór tekstowy</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Wybierz rodzaj lub gatunek bezpośrednio przez wyszukiwanie tekstu</string>
+    <string name="quest_settings_tree_genus_visual">Wybór na podstawie obrazów</string>
+    <string name="quest_settings_tree_genus_visual_description">Rozpoznaj rodzaj drzewa na podstawie zdjęć (domyślnie)</string>
+    <string name="traffic_sign_overlay_readonly_country">Dla tego kraju nie ma jeszcze pełnego edytora znaków drogowych. Tagi znaków tej drogi są tylko wyświetlane w niezmienionej postaci.</string>
+    <string name="traffic_sign_overlay_readonly_border">Według granic państw znanych aplikacji ta droga leży w kilku krajach (%1$s). Znaki drogowe można edytować tylko na drogach leżących w całości w jednym obsługiwanym kraju. Aby je edytować, podziel drogę na granicy.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Nie można wiarygodnie ustalić, że ta droga leży w całości w jednym kraju, na przykład dlatego, że biegnie blisko granicy. Dlatego jej znaków drogowych nie można tu edytować.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Istniejące tagi znaków drogowych</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Brak tagów znaków drogowych.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Ogólne (klucz bez kierunku)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Kierunek, jak otagowano</string>
+    <string name="traffic_sign_overlay_readonly_node">Znaki drogowe tego punktu są otagowane według kierunku (traffic_sign:forward lub traffic_sign:backward). Są tu tylko wyświetlane w niezmienionej postaci.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Dla kraju tego punktu nie ma katalogu znaków drogowych. Jego tagi znaków są tylko wyświetlane w niezmienionej postaci.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Nie można wiarygodnie ustalić, w którym kraju leży ten punkt, na przykład dlatego, że jest blisko granicy. Dlatego jego znaków drogowych nie można tu edytować.</string>
+    <string name="traffic_sign_overlay_node_hint">Zmieniany jest tylko traffic_sign tego punktu. Jego kierunek i wszystkie inne tagi pozostają bez zmian, a na drogę nic nie jest przenoszone.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Dokładnie w miejscu celownika tworzony jest nowy punkt tylko z traffic_sign. Nie są dodawane żadne inne tagi i nic nie jest przenoszone na drogę. Najpierw sprawdź, czy ten znak nie jest już naniesiony w pobliżu.</string>
+    <string name="traffic_sign_overlay_create_node_country">Dla kraju w miejscu celownika nie ma katalogu znaków drogowych. Nie można tu dodać żadnego znaku.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Nie można wiarygodnie ustalić, w którym kraju leży miejsce celownika, na przykład dlatego, że jest blisko granicy. Dlatego nie można tu dodać żadnego znaku.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Zastąpić traffic_sign=%1$s przez traffic_sign=%2$s?</string>
+    <string name="traffic_sign_overlay_signs_only">Dla tego kraju zapisywane są tylko znaki drogowe. Nie wyprowadza się z nich żadnych innych tagów.</string>
 </resources>

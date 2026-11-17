@@ -282,7 +282,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">時間帯などの条件による</string>
     <string name="quest_bicycleInPedestrianStreet_hint">現地の標識を確認してください。明確に確認できたルールについてのみ「はい」または「いいえ」と答えてください。自転車通行を許可する標識がないからといって、自動的に自転車通行禁止とは限りません。</string>
     <string name="traffic_sign_overlay_title">交通標識</string>
-    <string name="traffic_sign_overlay_germany_only">交通標識のオーバーレイはドイツでのみ利用できます。</string>
     <string name="traffic_sign_overlay_catalogue_missing">交通標識のカタログを読み込めませんでした。</string>
     <string name="traffic_sign_overlay_loading">交通標識を読み込み中…</string>
     <string name="traffic_sign_overlay_direction_forward">ウェイの向き</string>
@@ -410,4 +409,25 @@
     <string name="parking_lot_add_info">追加または確認:</string>
     <string name="street_parking_create_parking">駐車場</string>
     <string name="street_parking_create_traffic_calming">交通静穏化施設</string>
+    <string name="pref_quest_tree_genus_ui_mode">樹木の属・種のクエストにどのように回答しますか？</string>
+    <string name="quest_settings_tree_genus_expert_text">テキストによる上級者向け選択</string>
+    <string name="quest_settings_tree_genus_expert_text_description">テキスト検索で属または種を直接選ぶ</string>
+    <string name="quest_settings_tree_genus_visual">画像による選択</string>
+    <string name="quest_settings_tree_genus_visual_description">写真から樹木の属を判別する（デフォルト）</string>
+    <string name="traffic_sign_overlay_readonly_country">この国向けの完全な交通標識エディタはまだありません。このウェイの交通標識タグは、そのまま表示されるだけです。</string>
+    <string name="traffic_sign_overlay_readonly_border">アプリが把握している国境によると、このウェイは複数の国（%1$s）にまたがっています。交通標識は、完全に1つの対応国内にあるウェイでのみ編集できます。編集するには、国境でウェイを分割してください。</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">このウェイが完全に1つの国内にあるかどうかを確実には判定できません（たとえば国境の近くを通っているため）。そのため、このウェイの交通標識はここでは編集できません。</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">既存の交通標識タグ</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">交通標識のタグはありません。</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">一般（方向のないキー）</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">方向（タグ付けされたとおり）</string>
+    <string name="traffic_sign_overlay_readonly_node">このポイントの交通標識は方向ごとにタグ付けされています（traffic_sign:forward または traffic_sign:backward）。ここではそのまま表示されるだけです。</string>
+    <string name="traffic_sign_overlay_readonly_node_country">このポイントの国には交通標識カタログがありません。交通標識タグは、そのまま表示されるだけです。</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">このポイントがどの国にあるかを確実には判定できません（たとえば国境に近いため）。そのため、このポイントの交通標識はここでは編集できません。</string>
+    <string name="traffic_sign_overlay_node_hint">このポイントの traffic_sign だけが変更されます。方向とその他のタグはそのままで、道路には何も転記されません。</string>
+    <string name="traffic_sign_overlay_create_node_hint">十字カーソルの位置に、traffic_sign だけを持つ新しいポイントを作成します。他のタグは追加されず、道路には何も転記されません。この標識が近くに既に地図化されていないか、先に確認してください。</string>
+    <string name="traffic_sign_overlay_create_node_country">十字カーソルの位置にある国には交通標識カタログがありません。ここには交通標識を追加できません。</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">十字カーソルの位置がどの国にあるかを確実には判定できません（たとえば国境に近いため）。そのため、ここには交通標識を追加できません。</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">traffic_sign=%1$s を traffic_sign=%2$s に置き換えますか？</string>
+    <string name="traffic_sign_overlay_signs_only">この国では交通標識のみが記録されます。そこから他のタグは導出されません。</string>
 </resources>

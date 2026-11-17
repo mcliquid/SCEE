@@ -273,7 +273,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Beror på tid / annan begränsning</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Kontrollera skyltningen på plats. Svara bara ja eller nej för en uttryckligen bekräftad regel. En saknad skylt som tillåter cykling betyder inte automatiskt att cykling är förbjuden.</string>
     <string name="traffic_sign_overlay_title">Vägmärken</string>
-    <string name="traffic_sign_overlay_germany_only">Vägmärkesöverlägget finns bara i Tyskland.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Vägmärkeskatalogen kunde inte läsas in.</string>
     <string name="traffic_sign_overlay_loading">Läser in vägmärken…</string>
     <string name="traffic_sign_overlay_direction_forward">Vägens riktning</string>
@@ -401,4 +400,25 @@
     <string name="parking_lot_add_info">Lägg till eller bekräfta:</string>
     <string name="street_parking_create_parking">Parkering</string>
     <string name="street_parking_create_traffic_calming">Trafiklugnande åtgärd</string>
+    <string name="pref_quest_tree_genus_ui_mode">Hur ska uppdraget om trädets släkte/art besvaras?</string>
+    <string name="quest_settings_tree_genus_expert_text">Expertval via text</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Välj släkte eller art direkt via textsökning</string>
+    <string name="quest_settings_tree_genus_visual">Bildbaserat val</string>
+    <string name="quest_settings_tree_genus_visual_description">Bestäm trädets släkte utifrån foton (standard)</string>
+    <string name="traffic_sign_overlay_readonly_country">Det finns ännu ingen fullständig vägmärkeseditor för det här landet. Vägens vägmärkestaggar visas bara som de är.</string>
+    <string name="traffic_sign_overlay_readonly_border">Enligt de landgränser som appen känner till ligger den här vägen i flera länder (%1$s). Vägmärken kan bara redigeras på vägar som ligger helt i ett enda stött land. Dela vägen vid gränsen för att redigera dem.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Det går inte att avgöra med säkerhet att den här vägen ligger helt i ett land, till exempel för att den går nära en gräns. Därför kan dess vägmärken inte redigeras här.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Befintliga vägmärkestaggar</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Det finns inga vägmärkestaggar.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Allmänt (nyckel utan riktning)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Riktning, som taggad</string>
+    <string name="traffic_sign_overlay_readonly_node">Vägmärkena för den här punkten är taggade per riktning (traffic_sign:forward eller traffic_sign:backward). De visas här bara som de är.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Det finns ingen vägmärkeskatalog för den här punktens land. Dess vägmärkestaggar visas bara som de är.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Det går inte att avgöra med säkerhet i vilket land den här punkten ligger, till exempel för att den är nära en gräns. Därför kan dess vägmärken inte redigeras här.</string>
+    <string name="traffic_sign_overlay_node_hint">Bara traffic_sign för den här punkten ändras. Dess riktning och alla andra taggar förblir som de är, och inget överförs till vägen.</string>
+    <string name="traffic_sign_overlay_create_node_hint">En ny punkt med bara traffic_sign skapas exakt vid hårkorsets position. Inga andra taggar läggs till och inget överförs till vägen. Kontrollera först att märket inte redan är kartlagt i närheten.</string>
+    <string name="traffic_sign_overlay_create_node_country">Det finns ingen vägmärkeskatalog för landet vid hårkorsets position. Inget vägmärke kan läggas till här.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Det går inte att avgöra med säkerhet i vilket land hårkorsets position ligger, till exempel för att den är nära en gräns. Därför kan inget vägmärke läggas till här.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Ersätta traffic_sign=%1$s med traffic_sign=%2$s?</string>
+    <string name="traffic_sign_overlay_signs_only">För det här landet registreras bara vägmärkena. Inga andra taggar härleds från dem.</string>
 </resources>

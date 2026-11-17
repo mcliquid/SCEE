@@ -274,7 +274,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Ovisi o vremenu / drugom ograničenju</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Provjeri signalizaciju na terenu. Odgovori s da ili ne samo za izričito potvrđeno pravilo. Nedostatak znaka koji dopušta bicikle ne znači automatski da je vožnja biciklom zabranjena.</string>
     <string name="traffic_sign_overlay_title">Prometni znakovi</string>
-    <string name="traffic_sign_overlay_germany_only">Sloj prometnih znakova dostupan je samo u Njemačkoj.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Katalog prometnih znakova nije bilo moguće učitati.</string>
     <string name="traffic_sign_overlay_loading">Učitavanje prometnih znakova…</string>
     <string name="traffic_sign_overlay_direction_forward">Smjer linije</string>
@@ -402,4 +401,25 @@
     <string name="parking_lot_add_info">Dodaj ili potvrdi:</string>
     <string name="street_parking_create_parking">Parkiralište</string>
     <string name="street_parking_create_traffic_calming">Smirivanje prometa</string>
+    <string name="pref_quest_tree_genus_ui_mode">Kako treba odgovoriti na zadatak o rodu/vrsti stabla?</string>
+    <string name="quest_settings_tree_genus_expert_text">Stručni odabir putem teksta</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Odaberi rod ili vrstu izravno putem pretrage teksta</string>
+    <string name="quest_settings_tree_genus_visual">Odabir na temelju slika</string>
+    <string name="quest_settings_tree_genus_visual_description">Prepoznaj rod stabla prema fotografijama (zadano)</string>
+    <string name="traffic_sign_overlay_readonly_country">Za ovu državu još ne postoji potpuni uređivač prometnih znakova. Oznake znakova ove linije samo se prikazuju kakve jesu.</string>
+    <string name="traffic_sign_overlay_readonly_border">Prema granicama država koje aplikacija poznaje, ova linija leži u više država (%1$s). Prometni znakovi mogu se uređivati samo na linijama koje u cijelosti leže u jednoj podržanoj državi. Za uređivanje podijeli liniju na granici.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Ne može se pouzdano utvrditi da ova linija u cijelosti leži u jednoj državi, na primjer jer prolazi blizu granice. Zato se njezini prometni znakovi ovdje ne mogu uređivati.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Postojeće oznake prometnih znakova</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Nema oznaka prometnih znakova.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Općenito (ključ bez smjera)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Smjer, kako je označen</string>
+    <string name="traffic_sign_overlay_readonly_node">Prometni znakovi ove točke označeni su po smjeru (traffic_sign:forward ili traffic_sign:backward). Ovdje se samo prikazuju kakvi jesu.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Za državu ove točke ne postoji katalog prometnih znakova. Njezine oznake znakova samo se prikazuju kakve jesu.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Ne može se pouzdano utvrditi u kojoj državi leži ova točka, na primjer jer je blizu granice. Zato se njezini prometni znakovi ovdje ne mogu uređivati.</string>
+    <string name="traffic_sign_overlay_node_hint">Mijenja se samo traffic_sign ove točke. Njezin smjer i sve ostale oznake ostaju kakve jesu, a ništa se ne prenosi na cestu.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Točno na položaju nišana stvara se nova točka samo s traffic_sign. Ne dodaju se druge oznake i ništa se ne prenosi na cestu. Prvo provjeri da ovaj znak već nije ucrtan u blizini.</string>
+    <string name="traffic_sign_overlay_create_node_country">Za državu na položaju nišana ne postoji katalog prometnih znakova. Ovdje se ne može dodati prometni znak.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Ne može se pouzdano utvrditi u kojoj državi leži položaj nišana, na primjer jer je blizu granice. Zato se ovdje ne može dodati prometni znak.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Zamijeniti traffic_sign=%1$s s traffic_sign=%2$s?</string>
+    <string name="traffic_sign_overlay_signs_only">Za ovu državu bilježe se samo prometni znakovi. Iz njih se ne izvode druge oznake.</string>
 </resources>

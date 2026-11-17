@@ -284,7 +284,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Zamana / başka bir kısıtlamaya bağlı</string>
     <string name="quest_bicycleInPedestrianStreet_hint">İşaretleri yerinde kontrol et. Yalnızca açıkça doğrulanmış bir kural için evet veya hayır de. Bisiklete izin veren bir işaretin olmaması, bisiklet sürmenin otomatik olarak yasak olduğu anlamına gelmez.</string>
     <string name="traffic_sign_overlay_title">Trafik işaretleri</string>
-    <string name="traffic_sign_overlay_germany_only">Trafik işareti katmanı yalnızca Almanya'da kullanılabilir.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Trafik işareti kataloğu yüklenemedi.</string>
     <string name="traffic_sign_overlay_loading">Trafik işaretleri yükleniyor…</string>
     <string name="traffic_sign_overlay_direction_forward">Yolun yönü</string>
@@ -412,4 +411,25 @@
     <string name="parking_lot_add_info">Ekle veya onayla:</string>
     <string name="street_parking_create_parking">Otopark</string>
     <string name="street_parking_create_traffic_calming">Trafik yavaşlatma</string>
+    <string name="pref_quest_tree_genus_ui_mode">Ağaç cinsi/türü sorusu nasıl yanıtlansın?</string>
+    <string name="quest_settings_tree_genus_expert_text">Metne dayalı uzman seçimi</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Cinsi veya türü doğrudan metin aramasıyla seç</string>
+    <string name="quest_settings_tree_genus_visual">Görsel tabanlı seçim</string>
+    <string name="quest_settings_tree_genus_visual_description">Ağacın cinsini fotoğraflardan belirle (varsayılan)</string>
+    <string name="traffic_sign_overlay_readonly_country">Bu ülke için henüz tam bir trafik işareti düzenleyicisi yok. Bu yolun trafik işareti etiketleri yalnızca olduğu gibi gösterilir.</string>
+    <string name="traffic_sign_overlay_readonly_border">Uygulamanın bildiği ülke sınırlarına göre bu yol birden fazla ülkede yer alıyor (%1$s). Trafik işaretleri yalnızca tamamen desteklenen tek bir ülkede bulunan yollarda düzenlenebilir. Düzenlemek için yolu sınırda böl.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Bu yolun tamamen tek bir ülkede olduğu güvenilir şekilde belirlenemiyor, örneğin sınıra yakın geçtiği için. Bu yüzden trafik işaretleri burada düzenlenemez.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Mevcut trafik işareti etiketleri</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Trafik işareti etiketi yok.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Genel (yönsüz anahtar)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Yön, etiketlendiği gibi</string>
+    <string name="traffic_sign_overlay_readonly_node">Bu noktanın trafik işaretleri yöne göre etiketlenmiş (traffic_sign:forward veya traffic_sign:backward). Burada yalnızca olduğu gibi gösterilir.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Bu noktanın ülkesi için trafik işareti kataloğu yok. Trafik işareti etiketleri yalnızca olduğu gibi gösterilir.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Bu noktanın hangi ülkede olduğu güvenilir şekilde belirlenemiyor, örneğin sınıra yakın olduğu için. Bu yüzden trafik işaretleri burada düzenlenemez.</string>
+    <string name="traffic_sign_overlay_node_hint">Yalnızca bu noktanın traffic_sign etiketi değişir. Yönü ve diğer tüm etiketler olduğu gibi kalır, yola hiçbir şey aktarılmaz.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Artı işaretinin tam konumunda yalnızca traffic_sign içeren yeni bir nokta oluşturulur. Başka etiket eklenmez ve yola hiçbir şey aktarılmaz. Önce bu işaretin yakında zaten haritalanmadığını kontrol et.</string>
+    <string name="traffic_sign_overlay_create_node_country">Artı işaretinin konumundaki ülke için trafik işareti kataloğu yok. Buraya trafik işareti eklenemez.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Artı işaretinin konumunun hangi ülkede olduğu güvenilir şekilde belirlenemiyor, örneğin sınıra yakın olduğu için. Bu yüzden buraya trafik işareti eklenemez.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">traffic_sign=%1$s, traffic_sign=%2$s ile değiştirilsin mi?</string>
+    <string name="traffic_sign_overlay_signs_only">Bu ülke için yalnızca trafik işaretleri kaydedilir. Bunlardan başka etiket türetilmez.</string>
 </resources>

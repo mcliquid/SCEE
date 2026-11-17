@@ -271,7 +271,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Dépend de l’heure / d’une autre restriction</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Vérifiez la signalisation sur place. Ne répondez par oui ou non que pour une règle explicitement confirmée. L’absence de panneau d’autorisation pour les vélos ne signifie pas automatiquement que le vélo est interdit.</string>
     <string name="traffic_sign_overlay_title">Panneaux de signalisation</string>
-    <string name="traffic_sign_overlay_germany_only">La couche des panneaux de signalisation n’est disponible qu’en Allemagne.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Le catalogue des panneaux de signalisation n’a pas pu être chargé.</string>
     <string name="traffic_sign_overlay_loading">Chargement des panneaux de signalisation…</string>
     <string name="traffic_sign_overlay_direction_forward">Sens du way</string>
@@ -396,4 +395,25 @@
     <string name="parking_lot_add_info">Ajouter ou confirmer :</string>
     <string name="street_parking_create_parking">Stationnement</string>
     <string name="street_parking_create_traffic_calming">Ralentisseur</string>
+    <string name="pref_quest_tree_genus_ui_mode">Comment répondre à la quête du genre/de l’espèce de l’arbre ?</string>
+    <string name="quest_settings_tree_genus_expert_text">Sélection experte par texte</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Choisir directement le genre ou l’espèce via la recherche de texte</string>
+    <string name="quest_settings_tree_genus_visual">Sélection par images</string>
+    <string name="quest_settings_tree_genus_visual_description">Identifier le genre de l’arbre à partir de photos (par défaut)</string>
+    <string name="traffic_sign_overlay_readonly_country">Il n’existe pas encore d’éditeur complet de panneaux de signalisation pour ce pays. Les tags de panneaux de ce way sont uniquement affichés tels quels.</string>
+    <string name="traffic_sign_overlay_readonly_border">D’après les frontières des pays connues de l’appli, ce way se trouve dans plusieurs pays (%1$s). Les panneaux ne peuvent être modifiés que sur des ways entièrement situés dans un seul pays pris en charge. Pour les modifier, scinde le way à la frontière.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Il est impossible de déterminer de façon fiable que ce way se trouve entièrement dans un seul pays, par exemple parce qu’il passe près d’une frontière. Ses panneaux ne peuvent donc pas être modifiés ici.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Tags de panneaux existants</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Il n’y a aucun tag de panneau.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Général (clé sans direction)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Direction, telle que taguée</string>
+    <string name="traffic_sign_overlay_readonly_node">Les panneaux de ce point sont taggés par direction (traffic_sign:forward ou traffic_sign:backward). Ils sont uniquement affichés ici, tels quels.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Il n’existe pas de catalogue de panneaux pour le pays de ce point. Ses tags de panneaux sont uniquement affichés tels quels.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Il est impossible de déterminer de façon fiable dans quel pays se trouve ce point, par exemple parce qu’il est proche d’une frontière. Ses panneaux ne peuvent donc pas être modifiés ici.</string>
+    <string name="traffic_sign_overlay_node_hint">Seul traffic_sign de ce point est modifié. Sa direction et tous les autres tags restent inchangés, et rien n’est reporté sur la route.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Un nouveau point avec uniquement traffic_sign est créé exactement à la position du réticule. Aucun autre tag n’est ajouté et rien n’est reporté sur la route. Vérifie d’abord que ce panneau n’est pas déjà cartographié à proximité.</string>
+    <string name="traffic_sign_overlay_create_node_country">Il n’existe pas de catalogue de panneaux pour le pays situé à la position du réticule. Aucun panneau ne peut être ajouté ici.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Il est impossible de déterminer de façon fiable dans quel pays se trouve la position du réticule, par exemple parce qu’elle est proche d’une frontière. Aucun panneau ne peut donc être ajouté ici.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Remplacer traffic_sign=%1$s par traffic_sign=%2$s ?</string>
+    <string name="traffic_sign_overlay_signs_only">Pour ce pays, seuls les panneaux sont enregistrés. Aucun autre tag n’en est déduit.</string>
 </resources>

@@ -284,7 +284,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Depende do horário / de outra restrição</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Verifique a sinalização no local. Responda sim ou não apenas para uma regra confirmada explicitamente. A falta de um sinal de permissão para bicicletas não significa automaticamente que andar de bicicleta é proibido.</string>
     <string name="traffic_sign_overlay_title">Sinais de trânsito</string>
-    <string name="traffic_sign_overlay_germany_only">A camada de sinais de trânsito só está disponível na Alemanha.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Não foi possível carregar o catálogo de sinais de trânsito.</string>
     <string name="traffic_sign_overlay_loading">A carregar sinais de trânsito…</string>
     <string name="traffic_sign_overlay_direction_forward">Sentido da via</string>
@@ -412,4 +411,25 @@
     <string name="parking_lot_add_info">Adicionar ou confirmar:</string>
     <string name="street_parking_create_parking">Estacionamento</string>
     <string name="street_parking_create_traffic_calming">Redutor de velocidade</string>
+    <string name="pref_quest_tree_genus_ui_mode">Como deve ser respondida a missão do género/espécie da árvore?</string>
+    <string name="quest_settings_tree_genus_expert_text">Seleção avançada por texto</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Escolher diretamente o género ou a espécie através da pesquisa de texto</string>
+    <string name="quest_settings_tree_genus_visual">Seleção baseada em imagens</string>
+    <string name="quest_settings_tree_genus_visual_description">Identificar o género da árvore a partir de fotografias (predefinição)</string>
+    <string name="traffic_sign_overlay_readonly_country">Ainda não existe um editor completo de sinais de trânsito para este país. As etiquetas de sinais desta via são apenas mostradas tal como estão.</string>
+    <string name="traffic_sign_overlay_readonly_border">De acordo com as fronteiras de países conhecidas pela aplicação, esta via situa-se em vários países (%1$s). Os sinais de trânsito só podem ser editados em vias totalmente situadas num único país suportado. Para os editar, divida a via na fronteira.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Não é possível determinar com fiabilidade que esta via se situa totalmente num só país, por exemplo porque passa perto de uma fronteira. Por isso, os seus sinais de trânsito não podem ser editados aqui.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Etiquetas de sinais de trânsito existentes</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Não há etiquetas de sinais de trânsito.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Geral (chave sem direção)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Direção, tal como etiquetada</string>
+    <string name="traffic_sign_overlay_readonly_node">Os sinais de trânsito deste ponto estão etiquetados por direção (traffic_sign:forward ou traffic_sign:backward). Aqui são apenas mostrados tal como estão.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Não existe catálogo de sinais de trânsito para o país deste ponto. As suas etiquetas de sinais são apenas mostradas tal como estão.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Não é possível determinar com fiabilidade em que país se situa este ponto, por exemplo porque está perto de uma fronteira. Por isso, os seus sinais de trânsito não podem ser editados aqui.</string>
+    <string name="traffic_sign_overlay_node_hint">Apenas o traffic_sign deste ponto é alterado. A sua direção e todas as outras etiquetas ficam como estão, e nada é transferido para a estrada.</string>
+    <string name="traffic_sign_overlay_create_node_hint">É criado um novo ponto apenas com traffic_sign exatamente na posição da mira. Não é adicionada nenhuma outra etiqueta e nada é transferido para a estrada. Verifique primeiro que este sinal não está já mapeado nas proximidades.</string>
+    <string name="traffic_sign_overlay_create_node_country">Não existe catálogo de sinais de trânsito para o país na posição da mira. Não é possível adicionar aqui nenhum sinal.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Não é possível determinar com fiabilidade em que país se situa a posição da mira, por exemplo porque está perto de uma fronteira. Por isso, não é possível adicionar aqui nenhum sinal.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Substituir traffic_sign=%1$s por traffic_sign=%2$s?</string>
+    <string name="traffic_sign_overlay_signs_only">Para este país, apenas os sinais de trânsito são registados. Não são deduzidas outras etiquetas a partir deles.</string>
 </resources>

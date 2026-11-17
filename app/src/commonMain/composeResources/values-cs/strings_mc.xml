@@ -276,7 +276,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Závisí na čase / jiném omezení</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Zkontroluj značení na místě. Odpověz ano nebo ne jen u výslovně potvrzeného pravidla. Chybějící značka povolující jízdu na kole automaticky neznamená, že je jízda na kole zakázána.</string>
     <string name="traffic_sign_overlay_title">Dopravní značky</string>
-    <string name="traffic_sign_overlay_germany_only">Vrstva dopravních značek je dostupná jen v Německu.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Katalog dopravních značek se nepodařilo načíst.</string>
     <string name="traffic_sign_overlay_loading">Načítají se dopravní značky…</string>
     <string name="traffic_sign_overlay_direction_forward">Směr cesty</string>
@@ -404,4 +403,25 @@
     <string name="parking_lot_add_info">Přidej nebo potvrď:</string>
     <string name="street_parking_create_parking">Parkování</string>
     <string name="street_parking_create_traffic_calming">Zklidnění dopravy</string>
+    <string name="pref_quest_tree_genus_ui_mode">Jak se má odpovídat na úkol o rodu/druhu stromu?</string>
+    <string name="quest_settings_tree_genus_expert_text">Expertní výběr textem</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Vybrat rod nebo druh přímo pomocí textového vyhledávání</string>
+    <string name="quest_settings_tree_genus_visual">Výběr podle obrázků</string>
+    <string name="quest_settings_tree_genus_visual_description">Určit rod stromu podle fotek (výchozí)</string>
+    <string name="traffic_sign_overlay_readonly_country">Pro tuto zemi zatím neexistuje úplný editor dopravních značek. Tagy značek této cesty se pouze zobrazují tak, jak jsou.</string>
+    <string name="traffic_sign_overlay_readonly_border">Podle hranic zemí, které aplikace zná, leží tato cesta ve více zemích (%1$s). Dopravní značky lze upravovat jen u cest, které leží celé v jedné podporované zemi. Chceš-li je upravit, rozděl cestu na hranici.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Nelze spolehlivě určit, že tato cesta leží celá v jedné zemi, například proto, že vede blízko hranice. Její dopravní značky proto nelze zde upravit.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Stávající tagy dopravních značek</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Nejsou žádné tagy dopravních značek.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Obecné (klíč bez směru)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Směr, jak je otagován</string>
+    <string name="traffic_sign_overlay_readonly_node">Dopravní značky tohoto bodu jsou otagovány podle směru (traffic_sign:forward nebo traffic_sign:backward). Zde se pouze zobrazují tak, jak jsou.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Pro zemi tohoto bodu neexistuje katalog dopravních značek. Jeho tagy značek se pouze zobrazují tak, jak jsou.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Nelze spolehlivě určit, ve které zemi tento bod leží, například proto, že je blízko hranice. Jeho dopravní značky proto nelze zde upravit.</string>
+    <string name="traffic_sign_overlay_node_hint">Mění se pouze traffic_sign tohoto bodu. Jeho směr a všechny ostatní tagy zůstávají, jak jsou, a nic se nepřenáší na silnici.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Přesně v pozici zaměřovacího kříže se vytvoří nový bod pouze s traffic_sign. Nepřidají se žádné další tagy a nic se nepřenáší na silnici. Nejdřív zkontroluj, že tato značka není poblíž už zmapována.</string>
+    <string name="traffic_sign_overlay_create_node_country">Pro zemi v pozici zaměřovacího kříže neexistuje katalog dopravních značek. Zde nelze přidat žádnou dopravní značku.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Nelze spolehlivě určit, ve které zemi leží pozice zaměřovacího kříže, například proto, že je blízko hranice. Zde proto nelze přidat žádnou dopravní značku.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Nahradit traffic_sign=%1$s hodnotou traffic_sign=%2$s?</string>
+    <string name="traffic_sign_overlay_signs_only">Pro tuto zemi se zaznamenávají pouze dopravní značky. Žádné další tagy se z nich neodvozují.</string>
 </resources>

@@ -270,7 +270,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Afhænger af tid / anden begrænsning</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Tjek skiltningen på stedet. Svar kun ja eller nej for en udtrykkeligt bekræftet regel. Et manglende skilt, der tillader cykling, betyder ikke automatisk, at cykling er forbudt.</string>
     <string name="traffic_sign_overlay_title">Færdselstavler</string>
-    <string name="traffic_sign_overlay_germany_only">Færdselstavle-overlayet er kun tilgængeligt i Tyskland.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Færdselstavlekataloget kunne ikke indlæses.</string>
     <string name="traffic_sign_overlay_loading">Indlæser færdselstavler…</string>
     <string name="traffic_sign_overlay_direction_forward">Vejens retning</string>
@@ -398,4 +397,25 @@
     <string name="parking_lot_add_info">Tilføj eller bekræft:</string>
     <string name="street_parking_create_parking">Parkering</string>
     <string name="street_parking_create_traffic_calming">Trafiksanering</string>
+    <string name="pref_quest_tree_genus_ui_mode">Hvordan skal opgaven om træets slægt/art besvares?</string>
+    <string name="quest_settings_tree_genus_expert_text">Ekspertvalg via tekst</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Vælg slægt eller art direkte via tekstsøgning</string>
+    <string name="quest_settings_tree_genus_visual">Billedbaseret valg</string>
+    <string name="quest_settings_tree_genus_visual_description">Bestem træets slægt ud fra fotos (standard)</string>
+    <string name="traffic_sign_overlay_readonly_country">Der findes endnu ingen fuldstændig færdselstavle-editor for dette land. Vejens tavle-tags vises kun, som de er.</string>
+    <string name="traffic_sign_overlay_readonly_border">Ifølge de landegrænser, appen kender, ligger denne vej i flere lande (%1$s). Færdselstavler kan kun redigeres på veje, der ligger helt i ét understøttet land. Del vejen ved grænsen for at redigere dem.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Det kan ikke afgøres sikkert, at denne vej ligger helt i ét land, for eksempel fordi den går tæt på en grænse. Derfor kan dens færdselstavler ikke redigeres her.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Eksisterende tavle-tags</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Der er ingen tavle-tags.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Generelt (nøgle uden retning)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Retning, som tagget</string>
+    <string name="traffic_sign_overlay_readonly_node">Færdselstavlerne for dette punkt er tagget pr. retning (traffic_sign:forward eller traffic_sign:backward). De vises her kun, som de er.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Der findes ingen tavlekatalog for dette punkts land. Dets tavle-tags vises kun, som de er.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Det kan ikke afgøres sikkert, i hvilket land dette punkt ligger, for eksempel fordi det er tæt på en grænse. Derfor kan dets færdselstavler ikke redigeres her.</string>
+    <string name="traffic_sign_overlay_node_hint">Kun traffic_sign for dette punkt ændres. Dets retning og alle andre tags forbliver, som de er, og intet overføres til vejen.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Et nyt punkt med kun traffic_sign oprettes præcis ved trådkorsets position. Der tilføjes ingen andre tags, og intet overføres til vejen. Tjek først, at tavlen ikke allerede er kortlagt i nærheden.</string>
+    <string name="traffic_sign_overlay_create_node_country">Der findes ingen tavlekatalog for landet ved trådkorsets position. Der kan ikke tilføjes en færdselstavle her.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Det kan ikke afgøres sikkert, i hvilket land trådkorsets position ligger, for eksempel fordi den er tæt på en grænse. Derfor kan der ikke tilføjes en færdselstavle her.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Erstat traffic_sign=%1$s med traffic_sign=%2$s?</string>
+    <string name="traffic_sign_overlay_signs_only">For dette land registreres kun færdselstavlerne. Der udledes ingen andre tags af dem.</string>
 </resources>

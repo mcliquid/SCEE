@@ -284,7 +284,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Dipende dall’orario / da un’altra restrizione</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Controlla la segnaletica sul posto. Rispondi sì o no solo per una regola confermata esplicitamente. L’assenza di un cartello di consenso per le biciclette non significa automaticamente che sia vietato andare in bicicletta.</string>
     <string name="traffic_sign_overlay_title">Segnali stradali</string>
-    <string name="traffic_sign_overlay_germany_only">Il livello dei segnali stradali è disponibile solo in Germania.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Non è stato possibile caricare il catalogo dei segnali stradali.</string>
     <string name="traffic_sign_overlay_loading">Caricamento dei segnali stradali…</string>
     <string name="traffic_sign_overlay_direction_forward">Verso della way</string>
@@ -412,4 +411,25 @@
     <string name="parking_lot_add_info">Aggiungi o conferma:</string>
     <string name="street_parking_create_parking">Parcheggio</string>
     <string name="street_parking_create_traffic_calming">Rallentatore del traffico</string>
+    <string name="pref_quest_tree_genus_ui_mode">Come si deve rispondere alla missione sul genere/specie dell’albero?</string>
+    <string name="quest_settings_tree_genus_expert_text">Selezione esperta tramite testo</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Scegli direttamente il genere o la specie con la ricerca testuale</string>
+    <string name="quest_settings_tree_genus_visual">Selezione basata sulle immagini</string>
+    <string name="quest_settings_tree_genus_visual_description">Riconosci il genere dell’albero dalle foto (predefinito)</string>
+    <string name="traffic_sign_overlay_readonly_country">Per questo paese non esiste ancora un editor completo dei segnali stradali. I tag dei segnali di questa way vengono solo mostrati così come sono.</string>
+    <string name="traffic_sign_overlay_readonly_border">In base ai confini dei paesi noti all’app, questa way si trova in più paesi (%1$s). I segnali stradali possono essere modificati solo su way che si trovano interamente in un unico paese supportato. Per modificarli, dividi la way al confine.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Non si può stabilire con certezza che questa way si trovi interamente in un solo paese, per esempio perché passa vicino a un confine. Per questo i suoi segnali stradali non possono essere modificati qui.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Tag dei segnali stradali esistenti</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Non ci sono tag di segnali stradali.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Generale (chiave senza direzione)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Direzione, come taggata</string>
+    <string name="traffic_sign_overlay_readonly_node">I segnali stradali di questo punto sono taggati per direzione (traffic_sign:forward o traffic_sign:backward). Qui vengono solo mostrati così come sono.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Non esiste un catalogo dei segnali stradali per il paese di questo punto. I suoi tag dei segnali vengono solo mostrati così come sono.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Non si può stabilire con certezza in quale paese si trovi questo punto, per esempio perché è vicino a un confine. Per questo i suoi segnali stradali non possono essere modificati qui.</string>
+    <string name="traffic_sign_overlay_node_hint">Viene modificato solo traffic_sign di questo punto. La sua direzione e tutti gli altri tag restano invariati e nulla viene trasferito alla strada.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Viene creato un nuovo punto con il solo traffic_sign esattamente nella posizione del mirino. Non viene aggiunto nessun altro tag e nulla viene trasferito alla strada. Controlla prima che questo segnale non sia già mappato nelle vicinanze.</string>
+    <string name="traffic_sign_overlay_create_node_country">Non esiste un catalogo dei segnali stradali per il paese nella posizione del mirino. Qui non si può aggiungere nessun segnale.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Non si può stabilire con certezza in quale paese si trovi la posizione del mirino, per esempio perché è vicina a un confine. Per questo qui non si può aggiungere nessun segnale.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Sostituire traffic_sign=%1$s con traffic_sign=%2$s?</string>
+    <string name="traffic_sign_overlay_signs_only">Per questo paese vengono registrati solo i segnali stradali. Da essi non viene derivato nessun altro tag.</string>
 </resources>

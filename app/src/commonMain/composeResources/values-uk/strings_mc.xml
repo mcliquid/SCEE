@@ -274,7 +274,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Залежить від часу / іншого обмеження</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Перевірте знаки на місці. Відповідайте «так» або «ні» лише за явно підтвердженого правила. Відсутність знака, що дозволяє рух велосипедів, не означає автоматично, що їздити на велосипеді заборонено.</string>
     <string name="traffic_sign_overlay_title">Дорожні знаки</string>
-    <string name="traffic_sign_overlay_germany_only">Шар дорожніх знаків доступний лише в Німеччині.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Не вдалося завантажити каталог дорожніх знаків.</string>
     <string name="traffic_sign_overlay_loading">Завантаження дорожніх знаків…</string>
     <string name="traffic_sign_overlay_direction_forward">Напрямок лінії</string>
@@ -402,4 +401,25 @@
     <string name="parking_lot_add_info">Додайте або підтвердьте:</string>
     <string name="street_parking_create_parking">Паркування</string>
     <string name="street_parking_create_traffic_calming">Заспокоєння руху</string>
+    <string name="pref_quest_tree_genus_ui_mode">Як відповідати на квест про рід/вид дерева?</string>
+    <string name="quest_settings_tree_genus_expert_text">Експертний вибір за текстом</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Вибирати рід або вид безпосередньо через текстовий пошук</string>
+    <string name="quest_settings_tree_genus_visual">Вибір за зображеннями</string>
+    <string name="quest_settings_tree_genus_visual_description">Визначати рід дерева за фото (типово)</string>
+    <string name="traffic_sign_overlay_readonly_country">Повного редактора дорожніх знаків для цієї країни ще немає. Теги знаків цієї лінії лише показуються як є.</string>
+    <string name="traffic_sign_overlay_readonly_border">За відомими застосунку кордонами країн ця лінія лежить у кількох країнах (%1$s). Дорожні знаки можна редагувати лише в ліній, що повністю лежать в одній підтримуваній країні. Щоб їх змінити, розділіть лінію на кордоні.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Не можна надійно визначити, що ця лінія повністю лежить в одній країні, наприклад тому, що вона проходить поруч із кордоном. Тому її дорожні знаки тут змінити не можна.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Наявні теги дорожніх знаків</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Тегів дорожніх знаків немає.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Загальне (ключ без напрямку)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Напрямок, як указано в тегах</string>
+    <string name="traffic_sign_overlay_readonly_node">Дорожні знаки цієї точки позначено тегами за напрямками (traffic_sign:forward або traffic_sign:backward). Тут вони лише показуються як є.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Для країни цієї точки немає каталогу дорожніх знаків. Її теги знаків лише показуються як є.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Не можна надійно визначити, в якій країні лежить ця точка, наприклад тому, що вона поруч із кордоном. Тому її дорожні знаки тут змінити не можна.</string>
+    <string name="traffic_sign_overlay_node_hint">Змінюється лише traffic_sign цієї точки. Її напрямок і всі інші теги залишаються як є, і нічого не переноситься на дорогу.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Нова точка лише з traffic_sign створюється точно в позиції перехрестя. Інші теги не додаються, і нічого не переноситься на дорогу. Спочатку перевірте, що цей знак ще не нанесено на мапу поблизу.</string>
+    <string name="traffic_sign_overlay_create_node_country">Для країни в позиції перехрестя немає каталогу дорожніх знаків. Додати тут дорожній знак не можна.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Не можна надійно визначити, в якій країні розташована позиція перехрестя, наприклад тому, що вона поруч із кордоном. Тому додати тут дорожній знак не можна.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Замінити traffic_sign=%1$s на traffic_sign=%2$s?</string>
+    <string name="traffic_sign_overlay_signs_only">Для цієї країни записуються лише дорожні знаки. Жодні інші теги з них не виводяться.</string>
 </resources>

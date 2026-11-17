@@ -276,7 +276,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Riippuu ajasta / muusta rajoituksesta</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Tarkista merkit paikan päällä. Vastaa kyllä tai ei vain nimenomaisesti varmistettuun sääntöön. Pyöräilyn sallivan merkin puuttuminen ei automaattisesti tarkoita, että pyöräily on kielletty.</string>
     <string name="traffic_sign_overlay_title">Liikennemerkit</string>
-    <string name="traffic_sign_overlay_germany_only">Liikennemerkkitaso on käytettävissä vain Saksassa.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Liikennemerkkiluetteloa ei voitu ladata.</string>
     <string name="traffic_sign_overlay_loading">Ladataan liikennemerkkejä…</string>
     <string name="traffic_sign_overlay_direction_forward">Tien suunta</string>
@@ -404,4 +403,25 @@
     <string name="parking_lot_add_info">Lisää tai vahvista:</string>
     <string name="street_parking_create_parking">Pysäköinti</string>
     <string name="street_parking_create_traffic_calming">Liikenteen rauhoitus</string>
+    <string name="pref_quest_tree_genus_ui_mode">Miten puun suvun/lajin tehtävään vastataan?</string>
+    <string name="quest_settings_tree_genus_expert_text">Asiantuntijavalinta tekstillä</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Valitse suku tai laji suoraan tekstihaulla</string>
+    <string name="quest_settings_tree_genus_visual">Kuvapohjainen valinta</string>
+    <string name="quest_settings_tree_genus_visual_description">Tunnista puun suku valokuvista (oletus)</string>
+    <string name="traffic_sign_overlay_readonly_country">Tälle maalle ei ole vielä täydellistä liikennemerkkieditoria. Tämän tien liikennemerkkitunnisteet vain näytetään sellaisinaan.</string>
+    <string name="traffic_sign_overlay_readonly_border">Sovelluksen tuntemien maanrajojen mukaan tämä tie sijaitsee useassa maassa (%1$s). Liikennemerkkejä voi muokata vain teillä, jotka sijaitsevat kokonaan yhdessä tuetussa maassa. Jaa tie rajalta muokataksesi niitä.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Ei voida luotettavasti todeta, että tämä tie sijaitsee kokonaan yhdessä maassa, esimerkiksi koska se kulkee lähellä rajaa. Siksi sen liikennemerkkejä ei voi muokata täällä.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Olemassa olevat liikennemerkkitunnisteet</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Liikennemerkkitunnisteita ei ole.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Yleinen (avain ilman suuntaa)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Suunta sellaisena kuin se on merkitty</string>
+    <string name="traffic_sign_overlay_readonly_node">Tämän pisteen liikennemerkit on merkitty suunnittain (traffic_sign:forward tai traffic_sign:backward). Ne vain näytetään täällä sellaisinaan.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Tämän pisteen maalle ei ole liikennemerkkiluetteloa. Sen liikennemerkkitunnisteet vain näytetään sellaisinaan.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Ei voida luotettavasti todeta, missä maassa tämä piste sijaitsee, esimerkiksi koska se on lähellä rajaa. Siksi sen liikennemerkkejä ei voi muokata täällä.</string>
+    <string name="traffic_sign_overlay_node_hint">Vain tämän pisteen traffic_sign muuttuu. Sen suunta ja kaikki muut tunnisteet pysyvät ennallaan, eikä mitään siirretä tielle.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Tähtäimen kohtaan luodaan uusi piste, jossa on vain traffic_sign. Muita tunnisteita ei lisätä, eikä mitään siirretä tielle. Tarkista ensin, ettei tätä merkkiä ole jo kartoitettu lähistöllä.</string>
+    <string name="traffic_sign_overlay_create_node_country">Tähtäimen kohdan maalle ei ole liikennemerkkiluetteloa. Liikennemerkkiä ei voi lisätä tähän.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Ei voida luotettavasti todeta, missä maassa tähtäimen kohta sijaitsee, esimerkiksi koska se on lähellä rajaa. Siksi liikennemerkkiä ei voi lisätä tähän.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Korvataanko traffic_sign=%1$s arvolla traffic_sign=%2$s?</string>
+    <string name="traffic_sign_overlay_signs_only">Tälle maalle tallennetaan vain liikennemerkit. Niistä ei johdeta muita tunnisteita.</string>
 </resources>

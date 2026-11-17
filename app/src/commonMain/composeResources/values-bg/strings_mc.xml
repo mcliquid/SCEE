@@ -284,7 +284,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Зависи от времето / друго ограничение</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Проверете знаците на място. Отговаряйте с да или не само при изрично потвърдено правило. Липсата на знак, разрешаващ велосипедите, не означава автоматично, че колоезденето е забранено.</string>
     <string name="traffic_sign_overlay_title">Пътни знаци</string>
-    <string name="traffic_sign_overlay_germany_only">Слоят с пътни знаци е наличен само в Германия.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Каталогът с пътни знаци не можа да бъде зареден.</string>
     <string name="traffic_sign_overlay_loading">Зареждане на пътни знаци…</string>
     <string name="traffic_sign_overlay_direction_forward">Посока на линията</string>
@@ -412,4 +411,25 @@
     <string name="parking_lot_add_info">Добавете или потвърдете:</string>
     <string name="street_parking_create_parking">Паркиране</string>
     <string name="street_parking_create_traffic_calming">Успокояване на движението</string>
+    <string name="pref_quest_tree_genus_ui_mode">Как да се отговаря на задачата за рода/вида на дървото?</string>
+    <string name="quest_settings_tree_genus_expert_text">Експертен избор чрез текст</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Избор на род или вид директно чрез текстово търсене</string>
+    <string name="quest_settings_tree_genus_visual">Избор по изображения</string>
+    <string name="quest_settings_tree_genus_visual_description">Определяне на рода на дървото по снимки (по подразбиране)</string>
+    <string name="traffic_sign_overlay_readonly_country">За тази държава още няма пълен редактор за пътни знаци. Таговете за знаци на тази линия се показват само както са.</string>
+    <string name="traffic_sign_overlay_readonly_border">Според границите на държавите, познати на приложението, тази линия е в няколко държави (%1$s). Пътните знаци могат да се редактират само на линии, които са изцяло в една поддържана държава. За да ги редактирате, разделете линията на границата.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Не може да се определи надеждно, че тази линия е изцяло в една държава, например защото минава близо до граница. Затова пътните ѝ знаци не могат да се редактират тук.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Съществуващи тагове за пътни знаци</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Няма тагове за пътни знаци.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Общо (ключ без посока)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Посока, както е тагната</string>
+    <string name="traffic_sign_overlay_readonly_node">Пътните знаци на тази точка са тагнати по посоки (traffic_sign:forward или traffic_sign:backward). Тук се показват само както са.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Няма каталог с пътни знаци за държавата на тази точка. Таговете ѝ за знаци се показват само както са.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Не може да се определи надеждно в коя държава е тази точка, например защото е близо до граница. Затова пътните ѝ знаци не могат да се редактират тук.</string>
+    <string name="traffic_sign_overlay_node_hint">Променя се само traffic_sign на тази точка. Посоката ѝ и всички други тагове остават както са, а нищо не се пренася върху пътя.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Точно на позицията на кръстчето се създава нова точка само с traffic_sign. Не се добавят други тагове и нищо не се пренася върху пътя. Първо проверете дали този знак не е вече картографиран наблизо.</string>
+    <string name="traffic_sign_overlay_create_node_country">Няма каталог с пътни знаци за държавата на позицията на кръстчето. Тук не може да се добави пътен знак.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Не може да се определи надеждно в коя държава е позицията на кръстчето, например защото е близо до граница. Затова тук не може да се добави пътен знак.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Да се замени ли traffic_sign=%1$s с traffic_sign=%2$s?</string>
+    <string name="traffic_sign_overlay_signs_only">За тази държава се записват само пътните знаци. От тях не се извеждат други тагове.</string>
 </resources>

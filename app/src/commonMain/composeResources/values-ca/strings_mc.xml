@@ -284,7 +284,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Depèn de l’hora / d’una altra restricció</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Comprova la senyalització in situ. Respon sí o no només per a una norma confirmada explícitament. L’absència d’una senyal que permeti les bicicletes no vol dir automàticament que estigui prohibit anar en bicicleta.</string>
     <string name="traffic_sign_overlay_title">Senyals de trànsit</string>
-    <string name="traffic_sign_overlay_germany_only">La capa de senyals de trànsit només està disponible a Alemanya.</string>
     <string name="traffic_sign_overlay_catalogue_missing">No s’ha pogut carregar el catàleg de senyals de trànsit.</string>
     <string name="traffic_sign_overlay_loading">Carregant senyals de trànsit…</string>
     <string name="traffic_sign_overlay_direction_forward">Sentit de la via</string>
@@ -411,4 +410,25 @@
     <string name="parking_lot_add_info">Afegeix o confirma:</string>
     <string name="street_parking_create_parking">Aparcament</string>
     <string name="street_parking_create_traffic_calming">Calmat de trànsit</string>
+    <string name="pref_quest_tree_genus_ui_mode">Com s’ha de respondre la missió del gènere/espècie de l’arbre?</string>
+    <string name="quest_settings_tree_genus_expert_text">Selecció experta mitjançant text</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Tria directament el gènere o l’espècie amb la cerca de text</string>
+    <string name="quest_settings_tree_genus_visual">Selecció basada en imatges</string>
+    <string name="quest_settings_tree_genus_visual_description">Identifica el gènere de l’arbre a partir de fotos (per defecte)</string>
+    <string name="traffic_sign_overlay_readonly_country">Encara no hi ha un editor complet de senyals de trànsit per a aquest país. Les etiquetes de senyals d’aquesta via només es mostren tal com són.</string>
+    <string name="traffic_sign_overlay_readonly_border">Segons les fronteres de països que coneix l’aplicació, aquesta via és en diversos països (%1$s). Les senyals de trànsit només es poden editar en vies que són totalment en un sol país compatible. Per editar-les, divideix la via a la frontera.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">No es pot determinar amb fiabilitat que aquesta via sigui totalment en un sol país, per exemple perquè passa a prop d’una frontera. Per això les seves senyals de trànsit no es poden editar aquí.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Etiquetes de senyals de trànsit existents</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">No hi ha etiquetes de senyals de trànsit.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">General (clau sense sentit)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Sentit, tal com està etiquetat</string>
+    <string name="traffic_sign_overlay_readonly_node">Les senyals de trànsit d’aquest punt estan etiquetades per sentit (traffic_sign:forward o traffic_sign:backward). Aquí només es mostren tal com són.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">No hi ha catàleg de senyals de trànsit per al país d’aquest punt. Les seves etiquetes de senyals només es mostren tal com són.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">No es pot determinar amb fiabilitat en quin país és aquest punt, per exemple perquè és a prop d’una frontera. Per això les seves senyals de trànsit no es poden editar aquí.</string>
+    <string name="traffic_sign_overlay_node_hint">Només es canvia el traffic_sign d’aquest punt. El seu sentit i totes les altres etiquetes es queden com són, i no es trasllada res a la carretera.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Es crea un punt nou amb només traffic_sign exactament a la posició de la creu. No s’afegeix cap altra etiqueta i no es trasllada res a la carretera. Comprova abans que aquesta senyal no estigui ja cartografiada a prop.</string>
+    <string name="traffic_sign_overlay_create_node_country">No hi ha catàleg de senyals de trànsit per al país a la posició de la creu. Aquí no es pot afegir cap senyal de trànsit.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">No es pot determinar amb fiabilitat en quin país és la posició de la creu, per exemple perquè és a prop d’una frontera. Per això aquí no es pot afegir cap senyal de trànsit.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Vols substituir traffic_sign=%1$s per traffic_sign=%2$s?</string>
+    <string name="traffic_sign_overlay_signs_only">Per a aquest país només s’enregistren les senyals de trànsit. No se’n dedueix cap altra etiqueta.</string>
 </resources>

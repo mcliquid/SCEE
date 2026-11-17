@@ -276,7 +276,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Εξαρτάται από την ώρα / άλλον περιορισμό</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Έλεγξε τις πινακίδες επιτόπου. Απάντησε ναι ή όχι μόνο για κανόνα που έχει επιβεβαιωθεί ρητά. Η απουσία πινακίδας που επιτρέπει τα ποδήλατα δεν σημαίνει αυτόματα ότι η ποδηλασία απαγορεύεται.</string>
     <string name="traffic_sign_overlay_title">Πινακίδες κυκλοφορίας</string>
-    <string name="traffic_sign_overlay_germany_only">Το επίπεδο πινακίδων κυκλοφορίας είναι διαθέσιμο μόνο στη Γερμανία.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Ο κατάλογος πινακίδων κυκλοφορίας δεν μπόρεσε να φορτωθεί.</string>
     <string name="traffic_sign_overlay_loading">Φόρτωση πινακίδων κυκλοφορίας…</string>
     <string name="traffic_sign_overlay_direction_forward">Κατεύθυνση της γραμμής</string>
@@ -404,4 +403,25 @@
     <string name="parking_lot_add_info">Πρόσθεσε ή επιβεβαίωσε:</string>
     <string name="street_parking_create_parking">Στάθμευση</string>
     <string name="street_parking_create_traffic_calming">Μείωση κυκλοφορίας</string>
+    <string name="pref_quest_tree_genus_ui_mode">Πώς πρέπει να απαντηθεί η αποστολή για το γένος/είδος του δέντρου;</string>
+    <string name="quest_settings_tree_genus_expert_text">Εξειδικευμένη επιλογή μέσω κειμένου</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Επιλογή γένους ή είδους απευθείας μέσω αναζήτησης κειμένου</string>
+    <string name="quest_settings_tree_genus_visual">Επιλογή βάσει εικόνων</string>
+    <string name="quest_settings_tree_genus_visual_description">Αναγνώριση του γένους του δέντρου από φωτογραφίες (προεπιλογή)</string>
+    <string name="traffic_sign_overlay_readonly_country">Για αυτή τη χώρα δεν υπάρχει ακόμη πλήρης επεξεργαστής πινακίδων κυκλοφορίας. Οι ετικέτες πινακίδων αυτής της γραμμής εμφανίζονται μόνο όπως είναι.</string>
+    <string name="traffic_sign_overlay_readonly_border">Σύμφωνα με τα σύνορα χωρών που γνωρίζει η εφαρμογή, αυτή η γραμμή βρίσκεται σε περισσότερες χώρες (%1$s). Οι πινακίδες κυκλοφορίας μπορούν να επεξεργαστούν μόνο σε γραμμές που βρίσκονται εξ ολοκλήρου σε μία υποστηριζόμενη χώρα. Για να τις επεξεργαστείς, χώρισε τη γραμμή στα σύνορα.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Δεν μπορεί να διαπιστωθεί αξιόπιστα ότι αυτή η γραμμή βρίσκεται εξ ολοκλήρου σε μία χώρα, για παράδειγμα επειδή περνά κοντά σε σύνορα. Γι' αυτό οι πινακίδες της δεν μπορούν να επεξεργαστούν εδώ.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Υπάρχουσες ετικέτες πινακίδων κυκλοφορίας</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Δεν υπάρχουν ετικέτες πινακίδων κυκλοφορίας.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Γενικό (κλειδί χωρίς κατεύθυνση)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Κατεύθυνση, όπως έχει επισημανθεί</string>
+    <string name="traffic_sign_overlay_readonly_node">Οι πινακίδες αυτού του σημείου είναι επισημασμένες ανά κατεύθυνση (traffic_sign:forward ή traffic_sign:backward). Εδώ εμφανίζονται μόνο όπως είναι.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Δεν υπάρχει κατάλογος πινακίδων για τη χώρα αυτού του σημείου. Οι ετικέτες πινακίδων του εμφανίζονται μόνο όπως είναι.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Δεν μπορεί να διαπιστωθεί αξιόπιστα σε ποια χώρα βρίσκεται αυτό το σημείο, για παράδειγμα επειδή είναι κοντά σε σύνορα. Γι' αυτό οι πινακίδες του δεν μπορούν να επεξεργαστούν εδώ.</string>
+    <string name="traffic_sign_overlay_node_hint">Αλλάζει μόνο το traffic_sign αυτού του σημείου. Η κατεύθυνσή του και όλες οι άλλες ετικέτες παραμένουν ως έχουν και τίποτα δεν μεταφέρεται στον δρόμο.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Δημιουργείται ένα νέο σημείο μόνο με traffic_sign ακριβώς στη θέση του σταυρονήματος. Δεν προστίθεται καμία άλλη ετικέτα και τίποτα δεν μεταφέρεται στον δρόμο. Έλεγξε πρώτα ότι αυτή η πινακίδα δεν έχει ήδη χαρτογραφηθεί κοντά.</string>
+    <string name="traffic_sign_overlay_create_node_country">Δεν υπάρχει κατάλογος πινακίδων για τη χώρα στη θέση του σταυρονήματος. Δεν μπορεί να προστεθεί εδώ καμία πινακίδα.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Δεν μπορεί να διαπιστωθεί αξιόπιστα σε ποια χώρα βρίσκεται η θέση του σταυρονήματος, για παράδειγμα επειδή είναι κοντά σε σύνορα. Γι' αυτό δεν μπορεί να προστεθεί εδώ καμία πινακίδα.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Αντικατάσταση του traffic_sign=%1$s με traffic_sign=%2$s;</string>
+    <string name="traffic_sign_overlay_signs_only">Για αυτή τη χώρα καταγράφονται μόνο οι πινακίδες κυκλοφορίας. Δεν προκύπτουν από αυτές άλλες ετικέτες.</string>
 </resources>

@@ -282,7 +282,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Avhenger av tid / annen begrensning</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Sjekk skiltingen på stedet. Svar bare ja eller nei for en uttrykkelig bekreftet regel. Et manglende skilt som tillater sykling, betyr ikke automatisk at sykling er forbudt.</string>
     <string name="traffic_sign_overlay_title">Trafikkskilt</string>
-    <string name="traffic_sign_overlay_germany_only">Trafikkskilt-overlegget er bare tilgjengelig i Tyskland.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Trafikkskiltkatalogen kunne ikke lastes.</string>
     <string name="traffic_sign_overlay_loading">Laster trafikkskilt…</string>
     <string name="traffic_sign_overlay_direction_forward">Veiens retning</string>
@@ -410,4 +409,25 @@
     <string name="parking_lot_add_info">Legg til eller bekreft:</string>
     <string name="street_parking_create_parking">Parkering</string>
     <string name="street_parking_create_traffic_calming">Fartsdempende tiltak</string>
+    <string name="pref_quest_tree_genus_ui_mode">Hvordan skal oppdraget om treets slekt/art besvares?</string>
+    <string name="quest_settings_tree_genus_expert_text">Ekspertvalg via tekst</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Velg slekt eller art direkte via tekstsøk</string>
+    <string name="quest_settings_tree_genus_visual">Bildebasert valg</string>
+    <string name="quest_settings_tree_genus_visual_description">Bestem treets slekt ut fra bilder (standard)</string>
+    <string name="traffic_sign_overlay_readonly_country">Det finnes ennå ingen fullstendig trafikkskilt-editor for dette landet. Veiens skilt-tagger vises bare som de er.</string>
+    <string name="traffic_sign_overlay_readonly_border">Ifølge landegrensene appen kjenner, ligger denne veien i flere land (%1$s). Trafikkskilt kan bare redigeres på veier som ligger helt i ett støttet land. Del veien ved grensen for å redigere dem.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Det kan ikke fastslås sikkert at denne veien ligger helt i ett land, for eksempel fordi den går nær en grense. Derfor kan trafikkskiltene ikke redigeres her.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Eksisterende skilt-tagger</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Det finnes ingen skilt-tagger.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Generelt (nøkkel uten retning)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Retning, slik den er tagget</string>
+    <string name="traffic_sign_overlay_readonly_node">Trafikkskiltene for dette punktet er tagget per retning (traffic_sign:forward eller traffic_sign:backward). De vises her bare som de er.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Det finnes ingen skiltkatalog for dette punktets land. Skilt-taggene vises bare som de er.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Det kan ikke fastslås sikkert i hvilket land dette punktet ligger, for eksempel fordi det er nær en grense. Derfor kan trafikkskiltene ikke redigeres her.</string>
+    <string name="traffic_sign_overlay_node_hint">Bare traffic_sign for dette punktet endres. Retningen og alle andre tagger forblir som de er, og ingenting overføres til veien.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Et nytt punkt med bare traffic_sign opprettes nøyaktig ved trådkorsets posisjon. Ingen andre tagger legges til, og ingenting overføres til veien. Sjekk først at skiltet ikke allerede er kartlagt i nærheten.</string>
+    <string name="traffic_sign_overlay_create_node_country">Det finnes ingen skiltkatalog for landet ved trådkorsets posisjon. Trafikkskilt kan ikke legges til her.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Det kan ikke fastslås sikkert i hvilket land trådkorsets posisjon ligger, for eksempel fordi den er nær en grense. Derfor kan trafikkskilt ikke legges til her.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Erstatte traffic_sign=%1$s med traffic_sign=%2$s?</string>
+    <string name="traffic_sign_overlay_signs_only">For dette landet registreres bare trafikkskiltene. Ingen andre tagger utledes av dem.</string>
 </resources>

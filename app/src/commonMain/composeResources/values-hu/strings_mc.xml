@@ -282,7 +282,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Időtől / más korlátozástól függ</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Ellenőrizd a táblákat a helyszínen. Csak kifejezetten megerősített szabálynál válaszolj igennel vagy nemmel. A kerékpározást engedélyező tábla hiánya nem jelenti automatikusan, hogy a kerékpározás tilos.</string>
     <string name="traffic_sign_overlay_title">Közlekedési táblák</string>
-    <string name="traffic_sign_overlay_germany_only">A közlekedésitábla-réteg csak Németországban érhető el.</string>
     <string name="traffic_sign_overlay_catalogue_missing">A közlekedésitábla-katalógust nem sikerült betölteni.</string>
     <string name="traffic_sign_overlay_loading">Közlekedési táblák betöltése…</string>
     <string name="traffic_sign_overlay_direction_forward">A vonal iránya</string>
@@ -410,4 +409,25 @@
     <string name="parking_lot_add_info">Hozzáadás vagy megerősítés:</string>
     <string name="street_parking_create_parking">Parkolás</string>
     <string name="street_parking_create_traffic_calming">Forgalomcsillapítás</string>
+    <string name="pref_quest_tree_genus_ui_mode">Hogyan kell megválaszolni a fa nemzetségére/fajára vonatkozó küldetést?</string>
+    <string name="quest_settings_tree_genus_expert_text">Szöveges szakértői kiválasztás</string>
+    <string name="quest_settings_tree_genus_expert_text_description">A nemzetség vagy faj közvetlen kiválasztása szöveges kereséssel</string>
+    <string name="quest_settings_tree_genus_visual">Képalapú kiválasztás</string>
+    <string name="quest_settings_tree_genus_visual_description">A fa nemzetségének azonosítása fényképek alapján (alapértelmezett)</string>
+    <string name="traffic_sign_overlay_readonly_country">Ehhez az országhoz még nincs teljes közlekedésitábla-szerkesztő. Az út közlekedésitábla-címkéi csak úgy jelennek meg, ahogy vannak.</string>
+    <string name="traffic_sign_overlay_readonly_border">Az alkalmazás által ismert országhatárok szerint ez a vonal több országban fekszik (%1$s). A közlekedési táblák csak olyan vonalakon szerkeszthetők, amelyek teljesen egyetlen támogatott országban vannak. A szerkesztéshez oszd fel a vonalat a határnál.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Nem állapítható meg megbízhatóan, hogy ez a vonal teljesen egyetlen országban fekszik, például mert határ közelében halad. Ezért a közlekedési táblái itt nem szerkeszthetők.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Meglévő közlekedésitábla-címkék</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Nincsenek közlekedésitábla-címkék.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">Általános (irány nélküli kulcs)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Irány, ahogy címkézve van</string>
+    <string name="traffic_sign_overlay_readonly_node">Ennek a pontnak a közlekedési táblái irányonként vannak címkézve (traffic_sign:forward vagy traffic_sign:backward). Itt csak úgy jelennek meg, ahogy vannak.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Ennek a pontnak az országához nincs közlekedésitábla-katalógus. A tábláinak címkéi csak úgy jelennek meg, ahogy vannak.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Nem állapítható meg megbízhatóan, hogy ez a pont melyik országban fekszik, például mert határ közelében van. Ezért a közlekedési táblái itt nem szerkeszthetők.</string>
+    <string name="traffic_sign_overlay_node_hint">Csak ennek a pontnak a traffic_sign címkéje módosul. Az iránya és az összes többi címke változatlan marad, és semmi nem kerül át az útra.</string>
+    <string name="traffic_sign_overlay_create_node_hint">A célkereszt pozíciójában egy új pont jön létre, amely csak traffic_sign címkét tartalmaz. Más címke nem kerül hozzáadásra, és semmi nem kerül át az útra. Előbb ellenőrizd, hogy ez a tábla nincs-e már feltérképezve a közelben.</string>
+    <string name="traffic_sign_overlay_create_node_country">A célkereszt pozíciójában lévő országhoz nincs közlekedésitábla-katalógus. Itt nem adható hozzá közlekedési tábla.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Nem állapítható meg megbízhatóan, hogy a célkereszt pozíciója melyik országban van, például mert határ közelében van. Ezért itt nem adható hozzá közlekedési tábla.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Lecseréled a traffic_sign=%1$s értéket traffic_sign=%2$s értékre?</string>
+    <string name="traffic_sign_overlay_signs_only">Ennél az országnál csak a közlekedési táblák kerülnek rögzítésre. Más címkék nem származtathatók belőlük.</string>
 </resources>

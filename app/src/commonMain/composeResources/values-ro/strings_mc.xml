@@ -282,7 +282,6 @@
     <string name="quest_bicycleInPedestrianStreet_conditional">Depinde de timp / altă restricție</string>
     <string name="quest_bicycleInPedestrianStreet_hint">Verifică indicatoarele la fața locului. Răspunde da sau nu doar pentru o regulă confirmată explicit. Lipsa unui indicator care permite bicicletele nu înseamnă automat că ciclismul este interzis.</string>
     <string name="traffic_sign_overlay_title">Indicatoare rutiere</string>
-    <string name="traffic_sign_overlay_germany_only">Stratul cu indicatoare rutiere este disponibil doar în Germania.</string>
     <string name="traffic_sign_overlay_catalogue_missing">Catalogul de indicatoare rutiere nu a putut fi încărcat.</string>
     <string name="traffic_sign_overlay_loading">Se încarcă indicatoarele rutiere…</string>
     <string name="traffic_sign_overlay_direction_forward">Direcția căii</string>
@@ -410,4 +409,25 @@
     <string name="parking_lot_add_info">Adaugă sau confirmă:</string>
     <string name="street_parking_create_parking">Parcare</string>
     <string name="street_parking_create_traffic_calming">Calmarea traficului</string>
+    <string name="pref_quest_tree_genus_ui_mode">Cum trebuie răspuns la misiunea despre genul/specia copacului?</string>
+    <string name="quest_settings_tree_genus_expert_text">Selecție avansată prin text</string>
+    <string name="quest_settings_tree_genus_expert_text_description">Alege direct genul sau specia prin căutare de text</string>
+    <string name="quest_settings_tree_genus_visual">Selecție bazată pe imagini</string>
+    <string name="quest_settings_tree_genus_visual_description">Identifică genul copacului din fotografii (implicit)</string>
+    <string name="traffic_sign_overlay_readonly_country">Pentru această țară nu există încă un editor complet de indicatoare rutiere. Etichetele de indicatoare ale acestei căi sunt doar afișate așa cum sunt.</string>
+    <string name="traffic_sign_overlay_readonly_border">Conform granițelor țărilor cunoscute de aplicație, această cale se află în mai multe țări (%1$s). Indicatoarele rutiere pot fi editate doar pe căi aflate complet într-o singură țară acceptată. Pentru a le edita, împarte calea la graniță.</string>
+    <string name="traffic_sign_overlay_readonly_uncertain">Nu se poate stabili sigur că această cale se află complet într-o singură țară, de exemplu pentru că trece aproape de o graniță. De aceea indicatoarele ei rutiere nu pot fi editate aici.</string>
+    <string name="traffic_sign_overlay_readonly_tags_title">Etichete de indicatoare rutiere existente</string>
+    <string name="traffic_sign_overlay_readonly_no_tags">Nu există etichete de indicatoare rutiere.</string>
+    <string name="traffic_sign_overlay_readonly_no_direction">General (cheie fără direcție)</string>
+    <string name="traffic_sign_overlay_readonly_direction_tag">Direcție, așa cum este etichetată</string>
+    <string name="traffic_sign_overlay_readonly_node">Indicatoarele rutiere ale acestui punct sunt etichetate pe direcții (traffic_sign:forward sau traffic_sign:backward). Aici sunt doar afișate așa cum sunt.</string>
+    <string name="traffic_sign_overlay_readonly_node_country">Nu există catalog de indicatoare rutiere pentru țara acestui punct. Etichetele lui de indicatoare sunt doar afișate așa cum sunt.</string>
+    <string name="traffic_sign_overlay_readonly_node_uncertain">Nu se poate stabili sigur în ce țară se află acest punct, de exemplu pentru că este aproape de o graniță. De aceea indicatoarele lui rutiere nu pot fi editate aici.</string>
+    <string name="traffic_sign_overlay_node_hint">Se modifică doar traffic_sign al acestui punct. Direcția lui și toate celelalte etichete rămân cum sunt, iar nimic nu se transferă pe drum.</string>
+    <string name="traffic_sign_overlay_create_node_hint">Se creează un punct nou doar cu traffic_sign exact la poziția reticulului. Nu se adaugă alte etichete și nimic nu se transferă pe drum. Verifică mai întâi că acest indicator nu este deja cartografiat în apropiere.</string>
+    <string name="traffic_sign_overlay_create_node_country">Nu există catalog de indicatoare rutiere pentru țara de la poziția reticulului. Aici nu se poate adăuga niciun indicator rutier.</string>
+    <string name="traffic_sign_overlay_create_node_uncertain">Nu se poate stabili sigur în ce țară se află poziția reticulului, de exemplu pentru că este aproape de o graniță. De aceea aici nu se poate adăuga niciun indicator rutier.</string>
+    <string name="traffic_sign_overlay_node_confirm_replace">Înlocuiești traffic_sign=%1$s cu traffic_sign=%2$s?</string>
+    <string name="traffic_sign_overlay_signs_only">Pentru această țară se înregistrează doar indicatoarele rutiere. Din ele nu se derivă alte etichete.</string>
 </resources>

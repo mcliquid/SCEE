@@ -444,6 +444,9 @@ tasks.register<DownloadAndConvertPresetIconsTask>("downloadAndConvertPresetIcons
     targetDir = projectDir.resolve("src/commonMain/composeResources/drawable")
     iconSize = 34
     transformName = { "preset_" + it.replace('-', '_') }
+    val idEditorRevisionLock = layout.projectDirectory.file("preset-icon-update/id-editor-commit.lock")
+    idEditorRevisionLockFile.set(idEditorRevisionLock)
+    revisionLockState.set(providers.fileContents(idEditorRevisionLock).asText.orElse(""))
 }
 
 tasks.register<UpdateAppTranslationsTask>("updateTranslations") {

@@ -1,229 +1,47 @@
-import com.beust.klaxon.JsonObject
-import com.beust.klaxon.Parser
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
-import org.w3c.dom.Attr
-import org.w3c.dom.Document
-import org.w3c.dom.Element
-import org.xml.sax.SAXException
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import java.net.URI
-import javax.xml.parsers.DocumentBuilderFactory
-import javax.xml.transform.OutputKeys
-import javax.xml.transform.TransformerFactory
-import javax.xml.transform.dom.DOMSource
-import javax.xml.transform.stream.StreamResult
-import kotlin.math.max
 
 /** Download the SVG preset icons referred to by the iD presets and convert them to Android
  *  drawables. */
 open class DownloadAndConvertPresetIconsTask : DefaultTask() {
-    @get:OutputDirectory lateinit var targetDir: File
+    @get:OutputDirectory lateinit var targetDir: java.io.File
     @get:Input lateinit var version: String
     @get:Input var iconSize: Int = 14
     @get:Input var transformName: (String) -> String = { it }
 
+    /** Current lock file contents (empty when the file does not exist yet) — invalidates the task when the lock changes. */
+    @get:Input
+    val revisionLockState: Property<String> = project.objects.property(String::class.java).convention("")
+
+    @get:OutputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    val idEditorRevisionLockFile: RegularFileProperty = project.objects.fileProperty()
+
     @TaskAction fun run() {
-        val icons = getIconNames(version)
-
-        val prefix = transformName("").lowercase()
-        for (file in targetDir.listFiles { _, s -> s.startsWith(prefix) }!!) {
-            file.delete()
-        }
-
-        for (icon in icons) {
-            val urls = getDownloadUrls(icon) ?: continue
-
-            val fileName = transformName(icon).lowercase()
-            val targetFile = targetDir.resolve("$fileName.xml")
-            targetFile.parentFile.mkdirs()
-
-            var message: String = ""
-            var iconWasFound = false
-            for (url in urls) {
-                try {
-                    URI(url).toURL().openStream().use { input ->
-                        val factory = DocumentBuilderFactory.newInstance()
-                        factory.isIgnoringComments = true
-                        factory.isExpandEntityReferences = false
-                        factory.isXIncludeAware = false
-                        val svg = factory.newDocumentBuilder().parse(input)
-
-                        val drawable = createAndroidDrawable(svg)
-                        writeXml(drawable, targetFile)
-                    }
-                    iconWasFound = true
-                    break
-                } catch (e: SAXException) {
-                    message += "$icon ($url) produces exception \n"
-                } catch (e: IOException) {
-                    message += "$icon not found in $url\n"
-                } catch (e: IllegalArgumentException) {
-                    message += "$icon not supported: ${e.message}\n"
-                }
-            }
-            if (!iconWasFound) {
-                print(message)
-            }
-        }
-    }
-
-    private fun createAndroidDrawable(svg: Document): Document {
-        val drawable = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument()
-
-        var root: Element? = null
-        for (i in 0..svg.childNodes.length) {
-            val node = svg.childNodes.item(i)
-            if (node is Element) {
-                root = node
-                break
-            }
-        }
-
-        require(root != null) { "No root node found" }
-        require(root.tagName == "svg") { "Root must be <svg>" }
-
-        var width = root.getAttribute("width")
-        var height = root.getAttribute("height")
-
-        val viewBox = root.getAttribute("viewBox")
-        if (viewBox.isNotEmpty()) {
-            val rect = viewBox.split(' ')
-
-            require(rect.size == 4) { "Expected viewBox to have 4 values" }
-            require(rect[0] == "0") { "unsupported viewBox x" }
-            require(rect[1] == "0") { "unsupported viewBox y" }
-            val viewBoxWidth = rect[2]
-            val viewBoxHeight = rect[3]
-
-            val x = root.getAttribute("x")
-            require(x == "" || x == "0" || x == "0px") { "x must be 0" }
-            val y = root.getAttribute("y")
-            require(y == "" || y == "0" || y == "0px") { "y must be 0" }
-
-            require(width == "" || viewBoxWidth == width) { "expect viewBox width and width to be identical" }
-            require(height == "" || viewBoxHeight == height) { "expect viewBox height and height to be identical" }
-
-            width = viewBoxWidth
-            height = viewBoxHeight
-        } else {
-            require(width.isNotEmpty()) { "missing width or viewBox" }
-            require(height.isNotEmpty()) { "missing height or viewBox" }
-        }
-
-        val vector = drawable.createElement("vector")
-        vector.setAttribute("xmlns:android", "http://schemas.android.com/apk/res/android")
-        val widthF = width.toFloat()
-        val heightF = height.toFloat()
-        val size = max(widthF, heightF)
-        val iconWidth = iconSize * widthF / size
-        val iconHeight = iconSize * heightF / size
-        vector.setAttribute("android:width", "${iconWidth}dp")
-        vector.setAttribute("android:height", "${iconHeight}dp")
-        vector.setAttribute("android:viewportWidth", width)
-        vector.setAttribute("android:viewportHeight", height)
-        drawable.appendChild(vector)
-
-        for (i in 0 until root.childNodes.length) {
-            val element = root.childNodes.item(i) as? Element ?: continue
-            // defs are okay (as long as they are not used, which is by attribute in paths etc.)
-            if (element.tagName == "defs") continue
-            require(element.tagName == "path") { "Only paths are supported" }
-            for (a in 0 until element.attributes.length) {
-                val attr = element.attributes.item(a) as Attr
-                require(attr.name in supportedPathAttributes) { "path attribute '${attr.name}' not supported" }
-            }
-            val d = element.getAttribute("d")
-            require(d != "") { "no path defined" }
-
-            val path = drawable.createElement("path")
-            path.setAttribute("android:fillColor", "#000")
-            path.setAttribute("android:pathData", makePathCompatible(d))
-            vector.appendChild(path)
-        }
-
-        return drawable
-    }
-
-    private val supportedPathAttributes = setOf(
-        "d",
-        "id",
-        "fill" // is ignored (all icons are monochrome)
-    )
-
-    private fun makePathCompatible(path: String): String {
-        val scientificNotation = Regex("\\d*\\.\\d+e-\\d+")
-        // likely only used for very small numbers, just round to 0
-        var result = scientificNotation.replace(path, "0")
-
-        val zeroBeforeDot = Regex("(?<before>[- ,a-zA-Z])\\.")
-        result = zeroBeforeDot.replace(result, "\${before}0.")
-
-        val spaceAfterDecimal = Regex("(\\d+\\.\\d+)\\.")
-        var i = 0
-        var previousPath: String
-        do {
-            if (i++ > 3) throw IllegalStateException()
-            previousPath = result
-            result = spaceAfterDecimal.replace(previousPath, "\$1 0.")
-        } while (result != previousPath)
-        return result
-    }
-
-    private fun writeXml(xml: Document, targetFile: File) {
-        FileOutputStream(targetFile).use { output ->
-            val transformer = TransformerFactory.newInstance().newTransformer()
-            transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes")
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes")
-            val source = DOMSource(xml)
-            val result = StreamResult(output)
-            transformer.transform(source, result)
-        }
-    }
-
-    private fun getIconNames(version: String): Set<String> {
-        val presetsUrl = URI("https://raw.githubusercontent.com/openstreetmap/id-tagging-schema/$version/dist/presets.json").toURL()
-        val presetsJson = Parser.default().parse(presetsUrl.openStream()) as JsonObject
-        val icons = HashSet<String>()
-        for (value in presetsJson.values) {
-            val preset = value as? JsonObject ?: continue
-            val icon = preset["icon"] as? String ?: continue
-            icons.add(icon)
-        }
-        return icons
-    }
-
-    private fun getDownloadUrls(icon: String): List<String>? {
-        val prefix = icon.substringBefore('-', "")
-        val file = icon.substringAfter('-')
-        return when (prefix) {
-            "iD" -> listOf("https://raw.githubusercontent.com/openstreetmap/iD/develop/svg/iD-sprite/presets/$file.svg")
-            "maki" -> listOf("https://raw.githubusercontent.com/mapbox/maki/main/icons/$file.svg")
-            "temaki" -> listOf("https://raw.githubusercontent.com/ideditor/temaki/main/icons/$file.svg")
-            // Font awesome is special...
-            "fas" -> listOf(
-                "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/solid/$file.svg",
-                "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/solid/$file.svg"
-            )
-            "far" -> listOf(
-                "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/regular/$file.svg",
-                "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/regular/$file.svg",
-            )
-            "fab" -> listOf(
-                "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/6.x/svgs/brands/$file.svg",
-                "https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/brands/$file.svg",
-            )
-            "roentgen" -> listOf(
-                "https://raw.githubusercontent.com/enzet/Roentgen/main/icons/$file.svg"
-            )
-            "pinhead" -> listOf(
-                "https://pinhead.ink/latest/$file.svg"
-            )
-            else -> null
-        }
+        val revisionLock = idEditorRevisionLockFile.orNull?.asFile
+        val result = updatePresetIcons(
+            PresetIconUpdateConfig(
+                versionTag = version,
+                targetDir = targetDir,
+                iconSize = iconSize,
+                nameTransform = transformName,
+                idEditorRevisionLockFile = revisionLock,
+            ),
+            fetchText = { url -> URI(url).toURL().openStream().bufferedReader().readText() },
+            fetchBytes = { url -> URI(url).toURL().openStream().readBytes() },
+            log = { message -> println(message) },
+        )
+        logger.lifecycle(
+            "Converted ${result.iconCount} preset icons (iD commit ${result.idEditorCommitSha}, " +
+                "${result.idEditorResolutionLabel}, schema $version)"
+        )
     }
 }

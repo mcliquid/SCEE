@@ -1,0 +1,5 @@
+# Written by downloadAndConvertPresetIcons / resolveIdEditorIconCatalog. Safe to commit for reproducibility.
+presetsVersionTag=v7.3.0
+idEditorCommitSha=e42f8d4fa79e86d42b07a23316a6fcb75d9460a9
+lockSchemaVersion=7.3.0
+resolutionLabel=iD develop tip (e42f8d4fa79e86d42b07a23316a6fcb75d9460a9)

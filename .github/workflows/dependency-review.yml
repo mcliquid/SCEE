@@ -67,7 +67,7 @@ jobs:
           echo "Timed out waiting for the Gradle dependency graph submission." >&2
           exit 1
 
-      - uses: actions/dependency-review-action@v4.9.0
+      - uses: actions/dependency-review-action@v5.0.0
         with:
           fail-on-severity: high
           # Only report licenses; do not fail on them (no restrictive allow/deny list).

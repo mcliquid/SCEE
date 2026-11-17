@@ -1,0 +1,54 @@
+# Renovate bumps trafficSignsVersion from npm; the pin must be the tarball SHA-256 (hex), not registry dist.integrity (sha512).
+name: Sync traffic sign tarball SHA-256
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [SCEE-mc]
+    paths: [app/build.gradle.kts]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: renovate-traffic-signs-sha256-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pin-sha256:
+    if: >-
+      startsWith(github.head_ref, 'renovate/') &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == 'renovate[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 1
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Pin tarball SHA-256 for trafficSignsVersion
+        run: node .github/scripts/pin-traffic-signs-sha256.mjs
+
+      - name: Reject unexpected file changes
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only)"
+          if [ -n "$changed" ] && [ "$changed" != "app/build.gradle.kts" ]; then
+            echo "Script changed unexpected files:"
+            printf '%s\n' "$changed"
+            exit 1
+          fi
+
+      - name: Commit pin if needed
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          branch: ${{ github.head_ref }}
+          commit_message: "chore(deps): sync trafficSignsSha256 with npm tarball"
+          commit_user_name: github-actions[bot]
+          commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com

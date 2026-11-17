@@ -13,6 +13,35 @@
   "automerge": false,
   "dependencyDashboard": true,
   "labels": ["dependencies"],
+  "customManagers": [
+    {
+      "description": "iD presets pin (openstreetmap/id-tagging-schema)",
+      "customType": "regex",
+      "managerFilePatterns": ["/^app\\/build\\.gradle\\.kts$/"],
+      "matchStrings": ["val presetsVersion = \"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "openstreetmap/id-tagging-schema",
+      "datasourceTemplate": "github-releases",
+      "versioningTemplate": "semver-coerced"
+    },
+    {
+      "description": "Name Suggestion Index pin (tags without leading v)",
+      "customType": "regex",
+      "managerFilePatterns": ["/^app\\/build\\.gradle\\.kts$/"],
+      "matchStrings": ["val nsiVersion = \"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "osmlab/name-suggestion-index",
+      "datasourceTemplate": "github-tags",
+      "versioningTemplate": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$"
+    },
+    {
+      "description": "Traffic sign converter npm pin (version; SHA-256 via renovate-traffic-signs-sha256 workflow)",
+      "customType": "regex",
+      "managerFilePatterns": ["/^app\\/build\\.gradle\\.kts$/"],
+      "matchStrings": ["val trafficSignsVersion = \"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "@osm-traffic-signs/converter",
+      "datasourceTemplate": "npm",
+      "versioningTemplate": "semver"
+    }
+  ],
   "packageRules": [
     {
       "description": "Group Kotlin ecosystem updates",
@@ -25,10 +54,21 @@
       "enabled": false
     },
     {
-  "description": "False positive: ABI list in androidApp ndk.abiFilters",
-  "matchManagers": ["gradle"],
-  "matchPackageNames": ["armeabi-v7a:arm64-v8a"],
-  "enabled": false
-   }
+      "description": "False positive: ABI list in androidApp ndk.abiFilters",
+      "matchManagers": ["gradle"],
+      "matchPackageNames": ["armeabi-v7a:arm64-v8a"],
+      "enabled": false
+    },
+    {
+      "description": "External data pins: pinned versions, separate PRs",
+      "matchManagers": ["custom.regex"],
+      "matchPackageNames": [
+        "openstreetmap/id-tagging-schema",
+        "osmlab/name-suggestion-index",
+        "@osm-traffic-signs/converter"
+      ],
+      "rangeStrategy": "replace",
+      "groupName": null
+    }
   ]
 }

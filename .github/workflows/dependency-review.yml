@@ -65,7 +65,7 @@ jobs:
             "${{ github.event.pull_request.head.sha }}" \
             "${{ github.event.pull_request.base.sha }}"
 
-      - uses: actions/dependency-review-action@v5.0.0
+      - uses: actions/dependency-review-action@v5.0.1
         with:
           fail-on-severity: high
           # Only report licenses; do not fail on them (no restrictive allow/deny list).

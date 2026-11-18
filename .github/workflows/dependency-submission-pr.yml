@@ -1,5 +1,9 @@
 name: Dependency submission (PR)
 
+# Stable title marker for dependency-review.yml: it binds this run to github.event.workflow_run.id
+# (workflow_run runs are not indexed by PR head_sha in the Actions API).
+run-name: dependency-submission-pr • source-run-${{ github.event.workflow_run.id }}
+
 # Submits the dependency graph that "Dependency submission" generated for a pull request.
 # Runs from the default branch with a write token but NEVER checks out or executes PR code.
 # Works for same-repo (Renovate) and fork PRs. PR content is treated as untrusted:

@@ -3,9 +3,9 @@ name: Dependency review
 # Checks dependency changes in PRs (incl. Renovate) against the GitHub Advisory Database.
 # Runs on EVERY PR against SCEE-mc so the check name is stable (usable as required check).
 # - Actions/other manifest changes are reviewed immediately.
-# - If the PR touches Gradle dependency inputs, the review first waits for the Gradle dependency
-#   graph of the PR head commit (dependency-submission.yml -> dependency-submission-pr.yml) and
-#   FAILS if that submission fails or does not arrive in time, so a missing snapshot is never a pass.
+# - If the PR touches Gradle dependency inputs, the review waits for dependency-submission.yml
+#   on the PR head, then for dependency-submission-pr.yml whose run-name embeds that submission
+#   run id (source-run-<id>). Compare API is checked only as a supplementary signal.
 # Base commits always have a snapshot (dependency-submission.yml runs on every push to SCEE-mc).
 # The regex below must stay in sync with the paths of dependency-submission.yml (pull_request).
 
@@ -46,26 +46,24 @@ jobs:
             echo "needs_snapshot=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - uses: actions/checkout@v7
+        if: steps.gradle.outputs.needs_snapshot == 'true'
+        with:
+          sparse-checkout: |
+            .github/scripts
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
       - name: Wait for the Gradle dependency graph of the PR head
         if: steps.gradle.outputs.needs_snapshot == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
-          for _ in $(seq 1 60); do
-            result=$(gh api "repos/${REPO}/actions/workflows/dependency-submission-pr.yml/runs?head_sha=${HEAD_SHA}&per_page=1" \
-              --jq '.workflow_runs[0] | if . == null then "none" else "\(.status) \(.conclusion)" end')
-            echo "dependency-submission-pr.yml for ${HEAD_SHA}: ${result}"
-            case "${result}" in
-              "completed success") exit 0 ;;
-              "completed "*) echo "Dependency graph submission did not succeed; refusing to pass the review." >&2; exit 1 ;;
-            esac
-            sleep 20
-          done
-          echo "Timed out waiting for the Gradle dependency graph submission." >&2
-          exit 1
+          bash .github/scripts/wait-for-pr-dependency-snapshot.sh \
+            "${{ github.repository }}" \
+            "${{ github.event.pull_request.head.sha }}" \
+            "${{ github.event.pull_request.base.sha }}"
 
       - uses: actions/dependency-review-action@v5.0.0
         with:

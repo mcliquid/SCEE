@@ -4,12 +4,19 @@ on:
   pull_request:
     branches:
       - "SCEE-mc"
+    paths:
+      - ".github/workflows/**"
+      - ".github/scripts/dependency-snapshot-wait-lib.sh"
+      - ".github/scripts/wait-for-pr-dependency-snapshot.sh"
+      - ".github/scripts/wait-for-pr-dependency-snapshot.test.sh"
   push:
     branches:
       - "SCEE-mc"
     paths:
       - ".github/workflows/**"
-      - ".github/scripts/**"
+      - ".github/scripts/dependency-snapshot-wait-lib.sh"
+      - ".github/scripts/wait-for-pr-dependency-snapshot.sh"
+      - ".github/scripts/wait-for-pr-dependency-snapshot.test.sh"
   workflow_dispatch:
 
 permissions:
@@ -44,3 +51,8 @@ jobs:
       - name: Lint workflows
         run: |
           "${RUNNER_TEMP}/actionlint" -color
+
+      - name: Dependency snapshot wait script tests
+        run: |
+          set -euo pipefail
+          bash .github/scripts/wait-for-pr-dependency-snapshot.test.sh

@@ -37,9 +37,9 @@ jobs:
           sparse-checkout-cone-mode: false
           path: trusted
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
-          node-version: "22"
+          node-version: "26"
 
       - name: Pin tarball SHA-256 for trafficSignsVersion
         env:

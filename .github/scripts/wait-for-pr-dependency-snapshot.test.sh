@@ -29,6 +29,19 @@ pass "parent/child title binding"
 child_run_display_title_matches_parent "dependency-submission-pr • source-run-44146864545" 44146864545 || fail "marker match"
 child_run_display_title_matches_parent "dependency-submission-pr • source-run-999" 44146864545 && fail "wrong parent id must not match"
 
+# --- unit: child JSON records (no TSV) ---
+pass "child json fields"
+ci_child='{"id":44254056027,"conclusion":null,"status":"in_progress","display_title":"dependency-submission-pr • source-run-44253419081"}'
+parsed=()
+while IFS= read -r line; do
+  line="${line%$'\r'}"
+  parsed+=("${line}")
+done < <(child_workflow_run_fields "${ci_child}")
+[[ "${parsed[0]}" == "44254056027" ]] || fail "child id"
+[[ "${parsed[1]}" == "" ]] || fail "empty conclusion"
+[[ "${parsed[2]}" == "in_progress" ]] || fail "status"
+child_run_display_title_matches_parent "${parsed[3]}" 44253419081 || fail "parent marker in title"
+
 # --- unit: job conclusions ---
 pass "job conclusions"
 jobs_ok='{"jobs":[{"name":"Verify dependency graph artifact","conclusion":"success"},{"name":"Submit dependency graph (PR)","conclusion":"success"}]}'
@@ -46,7 +59,25 @@ MOCK_CHILD_ID="2002"
 MOCK_SUBMISSION_STATE="in_progress"
 MOCK_CHILD_ROWS=""
 MOCK_CHILD_JOBS=""
+MOCK_CHILD_DYNAMIC="false"
+MOCK_CHILD_LIST_CALLS=0
+MOCK_CHILD_LIST_CALLS_FILE="${ROOT}/.mock-child-list-calls.$$"
 MOCK_COMPARE_HEADERS=$'HTTP/2.0 200 OK\nX-Github-Dependency-Graph-Snapshot-Warnings:\n'
+
+mock_child_list_calls_bump() {
+  local n
+  n=$(<"${MOCK_CHILD_LIST_CALLS_FILE}")
+  n=$((n + 1))
+  printf '%s' "${n}" >"${MOCK_CHILD_LIST_CALLS_FILE}"
+  MOCK_CHILD_LIST_CALLS="${n}"
+  printf '%s' "${n}"
+}
+
+mock_child_list_calls_reset() {
+  printf '0' >"${MOCK_CHILD_LIST_CALLS_FILE}"
+  MOCK_CHILD_LIST_CALLS=0
+}
+mock_child_list_calls_reset
 
 gh_api_mock() {
   local url="" status conclusion conclusion_json include_headers=false
@@ -74,7 +105,29 @@ gh_api_mock() {
       fi
       ;;
     *dependency-submission-pr.yml/runs*)
-      if [[ -z "${MOCK_CHILD_ROWS}" ]]; then
+      if [[ "${MOCK_CHILD_DYNAMIC}" == "true" ]]; then
+        MOCK_CHILD_LIST_CALLS=$(mock_child_list_calls_bump)
+        marker=$(submission_pr_source_run_marker "${MOCK_PARENT_ID}")
+        case "${MOCK_CHILD_DYNAMIC_MODE}" in
+          queued_then_success)
+            if [[ "${MOCK_CHILD_LIST_CALLS}" -lt 2 ]]; then
+              printf '{"workflow_runs":[{"id":5001,"conclusion":null,"status":"queued","display_title":"dependency-submission-pr • %s"}]}' "${marker}"
+            else
+              printf '{"workflow_runs":[{"id":5001,"conclusion":"success","status":"completed","display_title":"dependency-submission-pr • %s"}]}' "${marker}"
+            fi
+            ;;
+          in_progress_then_success)
+            if [[ "${MOCK_CHILD_LIST_CALLS}" -lt 2 ]]; then
+              printf '{"workflow_runs":[{"id":44254056027,"conclusion":null,"status":"in_progress","display_title":"dependency-submission-pr • %s"}]}' "${marker}"
+            else
+              printf '{"workflow_runs":[{"id":44254056027,"conclusion":"success","status":"completed","display_title":"dependency-submission-pr • %s"}]}' "${marker}"
+            fi
+            ;;
+          *)
+            fail "unknown MOCK_CHILD_DYNAMIC_MODE: ${MOCK_CHILD_DYNAMIC_MODE}"
+            ;;
+        esac
+      elif [[ -z "${MOCK_CHILD_ROWS}" ]]; then
         printf '%s' '{"workflow_runs":[]}'
       else
         printf '{"workflow_runs":[%s]}' "${MOCK_CHILD_ROWS}"
@@ -141,6 +194,29 @@ if wait_for_pr_dependency_snapshot "${MOCK_REPO}" "${MOCK_HEAD}" "${MOCK_BASE}" 
   fail "unrelated child run must not satisfy wait"
 fi
 
+# regression: CI run 44253419101 (in_progress, empty conclusion) must keep polling
+pass "regression in_progress empty conclusion (CI)"
+MOCK_CHILD_DYNAMIC="true"
+MOCK_CHILD_DYNAMIC_MODE="in_progress_then_success"
+mock_child_list_calls_reset
+MOCK_SUBMISSION_STATE="completed success"
+MOCK_PARENT_ID="44253419081"
+MOCK_CHILD_JOBS='{"jobs":[{"name":"Verify dependency graph artifact","conclusion":"success"},{"name":"Submit dependency graph (PR)","conclusion":"success"}]}'
+wait_for_pr_dependency_snapshot "${MOCK_REPO}" "${MOCK_HEAD}" "${MOCK_BASE}" 2 0 5 0 1 0 || fail "CI regression path should succeed"
+[[ "$(<"${MOCK_CHILD_LIST_CALLS_FILE}")" -ge 2 ]] || fail "should poll child at least twice"
+MOCK_CHILD_DYNAMIC="false"
+MOCK_PARENT_ID="1001"
+
+# queued child keeps polling until success
+pass "integration queued then success"
+MOCK_CHILD_DYNAMIC="true"
+MOCK_CHILD_DYNAMIC_MODE="queued_then_success"
+mock_child_list_calls_reset
+MOCK_SUBMISSION_STATE="completed success"
+MOCK_CHILD_JOBS='{"jobs":[{"name":"Verify dependency graph artifact","conclusion":"success"},{"name":"Submit dependency graph (PR)","conclusion":"success"}]}'
+wait_for_pr_dependency_snapshot "${MOCK_REPO}" "${MOCK_HEAD}" "${MOCK_BASE}" 2 0 4 0 1 0 || fail "queued should resolve to success"
+MOCK_CHILD_DYNAMIC="false"
+
 # child failed for correct parent
 pass "integration child failure"
 MOCK_SUBMISSION_STATE="completed success"
@@ -159,4 +235,5 @@ if wait_for_pr_dependency_snapshot "${MOCK_REPO}" "${MOCK_HEAD}" "${MOCK_BASE}" 
   fail "compare readiness without submission must not complete wait"
 fi
 
+rm -f "${MOCK_CHILD_LIST_CALLS_FILE}"
 echo "wait-for-pr-dependency-snapshot.test.sh: all passed"

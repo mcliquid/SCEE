@@ -4,23 +4,76 @@ set -euo pipefail
 
 SUBMISSION_PR_SOURCE_RUN_MARKER_PREFIX="${SUBMISSION_PR_SOURCE_RUN_MARKER_PREFIX:-source-run-}"
 
+_dgw_pick_python() {
+  local probe out python3_path
+  if [[ -n "${DGW_PYTHON:-}" ]]; then
+    printf '%s' "${DGW_PYTHON}"
+    return
+  fi
+  probe='{"ok":1}'
+  if command -v python3 >/dev/null 2>&1; then
+    python3_path="$(command -v python3)"
+    case "${python3_path}" in
+      *WindowsApps* | *windowsapps*) ;;
+      *)
+        out=$(printf '%s' "${probe}" | python3 -c 'import json,sys; print(json.load(sys.stdin)["ok"])' 2>/dev/null || true)
+        if [[ "${out}" == "1" ]]; then
+          printf 'python3'
+          return
+        fi
+        ;;
+    esac
+  fi
+  if command -v py >/dev/null 2>&1; then
+    out=$(printf '%s' "${probe}" | py -3 -c 'import json,sys; print(json.load(sys.stdin)["ok"])' 2>/dev/null || true)
+    if [[ "${out}" == "1" ]]; then
+      printf 'py -3'
+      return
+    fi
+  fi
+  printf 'python3'
+}
+
+_dgw_python() {
+  local runner
+  runner="$(_dgw_pick_python)"
+  if [[ "${runner}" == "py -3" ]]; then
+    py -3 "$@"
+  else
+    python3 "$@"
+  fi
+}
+
 submission_pr_source_run_marker() {
   printf '%s%s' "${SUBMISSION_PR_SOURCE_RUN_MARKER_PREFIX}" "${1:?parent workflow run id}"
 }
 
 # Returns 0 when the child workflow run display title is bound to the parent submission run id.
 child_run_display_title_matches_parent() {
-  local display_title="${1:?display_title}"
+  local display_title="${1-}"
   local parent_run_id="${2:?parent run id}"
   local marker
+  [[ -n "${display_title}" ]] || return 1
   marker=$(submission_pr_source_run_marker "${parent_run_id}")
   [[ "${display_title}" == *"${marker}"* ]]
+}
+
+# Parse one child workflow run JSON object (from list_submission_pr_children_for_parent).
+child_workflow_run_fields() {
+  local child_json="${1:?child json}"
+  printf '%s' "${child_json}" | _dgw_python -c '
+import json, sys
+run = json.load(sys.stdin)
+for key in ("id", "conclusion", "status", "display_title"):
+    value = run.get(key)
+    print("" if value is None else str(value))
+'
 }
 
 # Returns 0 when both required jobs completed successfully (not skipped).
 pr_submission_child_jobs_ok() {
   local jobs_json="${1:?jobs api json}"
-  python3 -c '
+  _dgw_python -c '
 import json, sys
 required = {"Verify dependency graph artifact", "Submit dependency graph (PR)"}
 data = json.loads(sys.argv[1])
@@ -88,7 +141,7 @@ latest_submission_run_state_for_head() {
   local head_sha="${2:?head sha}"
   local json
   json=$(gh_api "repos/${repo}/actions/workflows/dependency-submission.yml/runs?head_sha=${head_sha}&event=pull_request&per_page=1")
-  python3 -c '
+  _dgw_python -c '
 import json, sys
 data = json.load(sys.stdin)
 runs = data.get("workflow_runs") or []
@@ -111,7 +164,7 @@ latest_submission_run_for_head() {
   local head_sha="${2:?head sha}"
   local json
   json=$(gh_api "repos/${repo}/actions/workflows/dependency-submission.yml/runs?head_sha=${head_sha}&event=pull_request&per_page=1")
-  python3 -c '
+  _dgw_python -c '
 import json, sys
 data = json.load(sys.stdin)
 runs = data.get("workflow_runs") or []
@@ -121,10 +174,10 @@ print(json.dumps(runs[0] if runs else None))
 
 workflow_run_id_from_json() {
   local run_json="${1:?run json}"
-  python3 -c 'import json,sys; d=json.loads(sys.argv[1]); print(d.get("id") or "")' "${run_json}"
+  _dgw_python -c 'import json,sys; d=json.loads(sys.argv[1]); print(d.get("id") or "")' "${run_json}"
 }
 
-# stdout: id conclusion status display_title (tab-separated) for matching child runs, newest first.
+# stdout: one JSON object per matching child run (newest API order).
 list_submission_pr_children_for_parent() {
   local repo="${1:?repository}"
   local parent_run_id="${2:?parent run id}"
@@ -133,7 +186,7 @@ list_submission_pr_children_for_parent() {
   per_page=30
   for page in 1 2 3; do
     runs=$(gh_api "repos/${repo}/actions/workflows/dependency-submission-pr.yml/runs?event=workflow_run&per_page=${per_page}&page=${page}" || true)
-    rows=$(MARKER="${marker}" python3 -c '
+    MARKER="${marker}" _dgw_python -c '
 import json, os, sys
 marker = os.environ["MARKER"]
 data = json.loads(sys.stdin.read())
@@ -141,18 +194,15 @@ for run in data.get("workflow_runs") or []:
     title = run.get("display_title") or ""
     if marker not in title:
         continue
-    fields = [
-        str(run.get("id") or ""),
-        run.get("conclusion") or "",
-        run.get("status") or "",
-        title,
-    ]
-    print("\t".join(fields))
-' <<<"${runs}")
-    if [[ -n "${rows}" ]]; then
-      printf '%s\n' "${rows}"
-    fi
-    count=$(python3 -c 'import json,sys; print(len(json.load(sys.stdin).get("workflow_runs") or []))' <<<"${runs}")
+    payload = {
+        "id": run.get("id"),
+        "conclusion": run.get("conclusion"),
+        "status": run.get("status"),
+        "display_title": title,
+    }
+    print(json.dumps(payload, ensure_ascii=False))
+' <<<"${runs}"
+    count=$(_dgw_python -c 'import json,sys; print(len(json.load(sys.stdin).get("workflow_runs") or []))' <<<"${runs}")
     if [[ "${count}" -lt "${per_page}" ]]; then
       break
     fi
@@ -217,11 +267,26 @@ wait_for_pr_dependency_snapshot() {
 
   echo "Phase 2: dependency-submission-pr.yml for source-run-${parent_run_id}"
   for attempt in $(seq 1 "${child_max_attempts}"); do
-    local found=false
-    while IFS=$'\t' read -r child_id child_conclusion child_status child_title; do
+    local found=false child_json child_id child_conclusion child_status child_title
+    local -a child_fields
+    while IFS= read -r child_json || [[ -n "${child_json}" ]]; do
+      [[ -z "${child_json}" ]] && continue
+      child_fields=()
+      while IFS= read -r line; do
+        line="${line%$'\r'}"
+        child_fields+=("${line}")
+      done < <(child_workflow_run_fields "${child_json}")
+      if [[ "${#child_fields[@]}" -ne 4 ]]; then
+        echo "  skip: malformed child run payload" >&2
+        continue
+      fi
+      child_id="${child_fields[0]}"
+      child_conclusion="${child_fields[1]}"
+      child_status="${child_fields[2]}"
+      child_title="${child_fields[3]}"
       [[ -z "${child_id}" ]] && continue
       found=true
-      echo "  attempt ${attempt}/${child_max_attempts}: child ${child_id} ${child_status} ${child_conclusion} (${child_title})"
+      echo "  attempt ${attempt}/${child_max_attempts}: child ${child_id} ${child_status} ${child_conclusion:-∅} (${child_title})"
       if ! child_run_display_title_matches_parent "${child_title}" "${parent_run_id}"; then
         echo "  skip: display_title does not match parent run id" >&2
         continue
@@ -231,6 +296,9 @@ wait_for_pr_dependency_snapshot() {
           continue 2
           ;;
       esac
+      if [[ "${child_status}" == "completed" && -z "${child_conclusion}" ]]; then
+        continue 2
+      fi
       case "${child_conclusion}" in
         failure | cancelled | timed_out | action_required)
           echo "dependency-submission-pr failed for source-run-${parent_run_id} (run ${child_id})." >&2

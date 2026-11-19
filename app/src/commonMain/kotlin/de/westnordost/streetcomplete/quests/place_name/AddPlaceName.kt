@@ -69,6 +69,7 @@ class AddPlaceName(
             )
             or ~fixme|FIXME ~ name|name\?|Name|Name\?
         )
+        and access !~ private|no
         and name:signed != no
     """).toElementFilterExpression() }
 

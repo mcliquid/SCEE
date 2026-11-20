@@ -4,7 +4,7 @@
 kotlin = "2.4.21"
 agp = "9.5.1"
 compose = "1.12.2"
-buildkonfig = "0.24.0"
+buildkonfig = "0.24.1"
 # Keep compatible with Kotlin: https://mokkery.dev/docs/Setup/#compatibility
 mokkery = "3.6.0"
 # A development build of Nucleus 3.0, as it fixes some issues with maplibre-compose. Update to 3.0

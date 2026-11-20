@@ -7,6 +7,7 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.osm.osmquests.OsmFilterQuestType
 import de.westnordost.streetcomplete.data.osm.osmquests.QuestAction
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.*
+import de.westnordost.streetcomplete.osm.FILTER_BICYCLE_ACCESSIBLE
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.quests.oneway.AddOnewayForm
 import de.westnordost.streetcomplete.quests.oneway.OnewayAnswer
@@ -34,7 +35,7 @@ class AddCyclewayDirection : OsmFilterQuestType<OnewayAnswer>() {
           and !bicycle:backward
           and area != yes
           and junction != roundabout
-          and access !~ private|no
+          and ($FILTER_BICYCLE_ACCESSIBLE)
     """
 
     override val changesetComment = "Specify in which direction cyclists may ride this path"
@@ -43,8 +44,12 @@ class AddCyclewayDirection : OsmFilterQuestType<OnewayAnswer>() {
     override val title = Res.string.quest_cycleway_direction_title
     override val achievements = listOf(BICYCLIST)
     override val hint = Res.string.quest_arrow_tutorial
-    override val defaultDisabledMessage = Res.string.default_disabled_msg_sign_at_next_intersection
+    override val hasMarkersAtEnds = true
+    // SCEE-mc: same default-off semantics as the former AddOnewayBicycle (EE offset quest).
+    override val defaultDisabledMessage = Res.string.default_disabled_msg_ee
+    override val isCountryRestrictionOverridable = true
 
+    // Upstream limits where direction is legally ambiguous without signage; DE is explicitly included (enabled).
     override val enabledInCountries = NoCountriesExcept(
         "DE", // StVO § 2(4): left-hand cycle paths without signs 237, 240 or 241 require the supplementary sign "Radverkehr frei".
         // https://www.gesetze-im-internet.de/stvo_2013/__2.html#:~:text=Linke%20Radwege%20ohne%20die%20Zeichen%20237%2C%20240%20oder%20241,durch%20das%20allein%20stehende%20Zusatzzeichen%20%E2%80%9ERadverkehr%20frei%E2%80%9C%20angezeigt%20ist.

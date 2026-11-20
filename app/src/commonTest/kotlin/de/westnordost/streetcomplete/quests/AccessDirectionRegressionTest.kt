@@ -29,11 +29,12 @@ import kotlin.test.assertTrue
 
 class AccessDirectionRegressionTest {
 
-    @Test fun `cycleway direction excludes no access even with vehicle exception`() {
+    @Test fun `cycleway direction respects bicycle access with vehicle exception`() {
         val quest = AddCyclewayDirection()
-        val denied = way(tags = mapOf("highway" to "cycleway", "footway" to "sidepath", "access" to "no", "vehicle" to "yes"))
-        assertFalse(quest.isApplicableTo(denied))
-        val allowed = way(tags = mapOf("highway" to "cycleway", "footway" to "sidepath", "bicycle" to "yes"))
+        val allowed = way(tags = mapOf(
+            "highway" to "cycleway", "footway" to "sidepath",
+            "access" to "no", "vehicle" to "yes", "bicycle" to "yes",
+        ))
         assertNotEquals(false, quest.isApplicableTo(allowed))
         assertEquals(false, quest.isApplicableTo(way(tags = allowed.tags + ("bicycle" to "no"))))
     }

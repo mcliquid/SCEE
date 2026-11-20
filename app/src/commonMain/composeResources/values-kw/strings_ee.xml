@@ -309,7 +309,6 @@
     <string name="quest_lampMount_transitShelter">Skovva karyans</string>
     <string name="quest_postOffice_title">Pyth eghen a wonis postyans yw hemma?</string>
     <string name="quest_postOffice_bureau">Sodhva bost (sodhogel) gonis leun</string>
-    <string name="quest_onewayBicycle_title">Yw an hyns ma unfordh rag diwrosow? Yn py tu?</string>
     <string name="quest_toilets_disposal_title">Pyth eghen a dhisposyans privedhyow yw devnydhys omma?</string>
     <string name="quest_toilets_disposal_flush">An skoll yw floshys gans dowr</string>
     <string name="quest_toilets_disposal_pit">An skoll yw kuntellys yn dyppa</string>

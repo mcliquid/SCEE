@@ -605,7 +605,6 @@
     <string name="quest_lampMount_angledMast">Szögletes karos pózna</string>
     <string name="quest_lampMount_ceiling">Mennyezet</string>
     <string name="quest_postOffice_postPartner_hint">A post_partner címkét még akkor is gyakran használják a postai ügyfélszolgálati pult pontos helyének megjelölésére, ha a posta már fel van véve amenity=post_office címkével.</string>
-    <string name="quest_onewayBicycle_title">Ez az út egyirányú kerékpárosoknak? Melyik irányba?</string>
     <string name="quest_toilets_disposal_title">Milyen szennyvízelvezetése van a WC-nek?</string>
     <string name="quest_toilets_disposal_flush">Vízöblítés</string>
     <string name="quest_toilets_disposal_pit">Emésztőgödör</string>

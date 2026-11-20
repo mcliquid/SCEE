@@ -4,12 +4,16 @@ import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
 import de.westnordost.streetcomplete.quests.answerAppliedTo
 import de.westnordost.streetcomplete.quests.oneway.OnewayAnswer
+import de.westnordost.streetcomplete.resources.Res
+import de.westnordost.streetcomplete.resources.default_disabled_msg_ee
 import de.westnordost.streetcomplete.testutils.mockPrefs3
 import de.westnordost.streetcomplete.testutils.way
+import de.westnordost.streetcomplete.util.countryboundaries.NoCountriesExcept
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class AddCyclewayDirectionTest {
@@ -43,14 +47,28 @@ class AddCyclewayDirectionTest {
         assertFalse(quest.isApplicableTo(w))
     }
 
-    @Test fun `not applicable with private access`() {
+    @Test fun `not applicable when bicycle access is private`() {
         val w = way(tags = mapOf(
             "highway" to "path",
-            "bicycle" to "yes",
+            "bicycle" to "private",
             "footway" to "sidewalk",
-            "access" to "private",
+            "access" to "yes",
         ))
         assertFalse(quest.isApplicableTo(w))
+    }
+
+    @Test fun `enabled geographically in Germany`() {
+        val countries = quest.enabledInCountries
+        assertIs<NoCountriesExcept>(countries)
+        assertTrue("DE" in countries.exceptions)
+    }
+
+    @Test fun `default visibility off with SCEE disabled message`() {
+        assertEquals(Res.string.default_disabled_msg_ee, quest.defaultDisabledMessage)
+    }
+
+    @Test fun `supports custom element selection like former AddOnewayBicycle`() {
+        assertTrue(quest.hasQuestSettings)
     }
 
     @Test fun `not applicable with existing oneway bicycle`() {

@@ -692,6 +692,7 @@ Erfolge</string>
     <string name="quest_oneway2_title">Ist dies eine Einbahnstraße? In welche Richtung?</string>
     <string name="quest_oneway2_dir">Einbahn­straße in diese Richtung</string>
     <string name="quest_oneway2_no_oneway">Keine Einbahn­straße</string>
+    <string name="quest_cycleway_direction_title">Ist das Radfahren hier in beide Richtungen erlaubt? Falls nicht, in welche Richtung?</string>
     <string name="quest_steps_incline_title">Welche Richtung führt hier nach oben?</string>
     <string name="quest_steps_incline_up">Hier nach oben</string>
     <string name="quest_step_count_title">Wie viele Stufen gibt es hier?</string>

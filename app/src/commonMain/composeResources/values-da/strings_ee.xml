@@ -635,7 +635,6 @@
     <string name="quest_lampMount_title">Hvordan er denne lampe monteret?</string>
     <string name="quest_disused">Er ikke i brug</string>
     <string name="quest_bench_armrest_title">Har denne bænk nogen armlæn?</string>
-    <string name="quest_onewayBicycle_title">Er denne sti ensrettet for cykler? I hvilken retning?</string>
     <string name="quest_material_pebbledash">Stenpuds</string>
     <string name="quest_postOffice_postPartner_hint">Selv når det kortlægges som amenity=post_office, bruges post_partner ofte til at angive den nøjagtige placering af en posttjenestes skranke.</string>
     <string name="quest_toilets_disposal_title">Hvilken type toiletbortskaffelse bruges her?</string>

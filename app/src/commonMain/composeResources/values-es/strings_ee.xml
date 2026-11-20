@@ -613,7 +613,6 @@
     <string name="quest_postOffice_postAnnex">Oficina de correos de gestión privada (servicios limitados)</string>
     <string name="quest_postOffice_postPartner">Mostrador de servicio postal con servicios limitados (por ejemplo, dentro de una tienda)</string>
     <string name="quest_postOffice_postPartner_hint">Incluso cuando se asigna el valor amenity=post_office, post_partner se usa comúnmente para indicar la ubicación exacta de una oficina de correos.</string>
-    <string name="quest_onewayBicycle_title">¿Es este camino de sentido único para bicicletas? ¿En qué dirección?</string>
     <string name="quest_toilets_disposal_title">¿Qué tipo de sistema de eliminación de desechos sanitarios se utiliza aquí?</string>
     <string name="quest_toilets_disposal_flush">Los desechos se enjuagan con agua</string>
     <string name="quest_toilets_disposal_pit">Los residuos se recogen en una fosa</string>

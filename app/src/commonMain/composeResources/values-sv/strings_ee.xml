@@ -484,7 +484,6 @@
     <string name="quest_crossing_marking_value_ladder_paired">Stege i par</string>
     <string name="quest_crossing_marking_value_zebra_dots">Zebra + punkter</string>
     <string name="quest_crossing_marking_value_pictograms">Piktogram</string>
-    <string name="quest_onewayBicycle_title">Är denna väg enkelriktad för cyklister? I vilken riktning?</string>
     <string name="quest_toilets_disposal_flush">Avfallet sköljs bort med vatten</string>
     <string name="quest_toilets_disposal_pit">Avfallet samlas i en grop</string>
     <string name="quest_toilets_disposal_chemical">Avfallet samlas i en kemikalietank</string>

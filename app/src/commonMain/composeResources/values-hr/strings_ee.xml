@@ -545,7 +545,6 @@
     <string name="quest_postOffice_postAnnex">Privatni poštanski ured (ograničene usluge)</string>
     <string name="quest_postOffice_postPartner">Šalter poštanskih usluga s ograničenim uslugama (npr. unutar trgovine)</string>
     <string name="quest_postOffice_postPartner_hint">Čak i kada se mapira kao amenity=post_office, post_partner se obično koristi za označavanje točne lokacije šaltera poštanskih usluga.</string>
-    <string name="quest_onewayBicycle_title">Je li ova staza jednosmjerna za bicikle? U kojem smjeru?</string>
     <string name="quest_toilets_disposal_title">Kakva se vrsta toaleta ovdje koristi?</string>
     <string name="quest_toilets_disposal_flush">Otpad se ispire vodom</string>
     <string name="quest_toilets_disposal_pit">Otpad se sakuplja u jami</string>

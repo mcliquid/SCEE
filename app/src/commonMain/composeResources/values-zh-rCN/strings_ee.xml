@@ -629,7 +629,6 @@
     <string name="quest_disused">它已废弃</string>
     <string name="action_all_quests">显示所有任务</string>
     <string name="quest_bench_armrest_title">这张长椅有扶手吗？</string>
-    <string name="quest_onewayBicycle_title">这条自行车道是单行道吗？朝哪个方向？</string>
     <string name="quest_material_pebbledash">卵石灰浆</string>
     <string name="quest_toilets_disposal_title">这里使用的是哪种厕所排污系统？</string>
     <string name="quest_toilets_disposal_flush">排泄物用水冲走</string>

@@ -86,9 +86,22 @@ private val ParsedSmoothness?.severity: Int get() = when (this) {
 internal fun getSmoothnessStyle(element: Element): OverlayStyle {
     val state = parseSmoothnessOverlayState(element.tags)
     val smoothness = if (state.isSegregated) {
-        val parts = listOf(state.footway.smoothness, state.cycleway.smoothness)
-        // as long as no part is known, the common smoothness of the whole way is shown
-        if (parts.all { it == null }) state.whole.smoothness else parts.maxBy { it.severity }
+        val footExplicit = state.footway.smoothness
+        val cycleExplicit = state.cycleway.smoothness
+        if (footExplicit == null && cycleExplicit == null) {
+            // no part tags yet: the common smoothness of the whole way applies to both
+            state.whole.smoothness
+        } else {
+            val common = state.whole.smoothness
+            val foot = footExplicit ?: common
+            val cycle = cycleExplicit ?: common
+            when {
+                foot != null && cycle != null -> listOf(foot, cycle).maxBy { it.severity }
+                footExplicit is ParsedSmoothness.Invalid || cycleExplicit is ParsedSmoothness.Invalid ->
+                    listOfNotNull(footExplicit, cycleExplicit).maxBy { it.severity }
+                else -> null
+            }
+        }
     } else {
         state.whole.smoothness
     }

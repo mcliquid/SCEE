@@ -72,14 +72,55 @@ class SmoothnessOverlayStyleTest {
         ))
     }
 
-    @Test fun `segregated way with one known part shows that part`() {
-        assertEquals(OverlayColor.Sky, strokeColor("highway" to "path", "segregated" to "yes", "cycleway:smoothness" to "good"))
+    @Test fun `segregated way with only one part tag and no common smoothness is red`() {
+        assertEquals(OverlayColor.Red, strokeColor(
+            "highway" to "path", "segregated" to "yes",
+            "footway:smoothness" to "good",
+        ))
+        assertEquals(OverlayColor.Red, strokeColor(
+            "highway" to "path", "segregated" to "yes",
+            "cycleway:smoothness" to "good",
+        ))
+    }
+
+    @Test fun `segregated way with one part tag uses common smoothness for the other`() {
+        assertEquals(OverlayColor.Sky, strokeColor(
+            "highway" to "path", "segregated" to "yes",
+            "smoothness" to "good", "footway:smoothness" to "good",
+        ))
+        assertEquals(OverlayColor.Lime, strokeColor(
+            "highway" to "path", "segregated" to "yes",
+            "smoothness" to "bad", "cycleway:smoothness" to "good",
+        ))
     }
 
     @Test fun `segregated way with invalid part is red`() {
         assertEquals(OverlayColor.Red, strokeColor(
             "highway" to "path", "segregated" to "yes",
             "footway:smoothness" to "nice", "cycleway:smoothness" to "good",
+        ))
+    }
+
+    @Test fun `segregated way with invalid part and missing other without common is red`() {
+        val style = assertIs<OverlayStyle.Polyline>(style(
+            "highway" to "path", "segregated" to "yes",
+            "footway:smoothness" to "nice",
+        ))
+        assertEquals(OverlayColor.Red, style.stroke?.color)
+        assertEquals("nice", style.label)
+    }
+
+    @Test fun `segregated way with invalid common and one valid part is red`() {
+        assertEquals(OverlayColor.Red, strokeColor(
+            "highway" to "path", "segregated" to "yes",
+            "smoothness" to "nice", "footway:smoothness" to "good",
+        ))
+    }
+
+    @Test fun `segregated way with impassable part is black`() {
+        assertEquals(OverlayColor.Black, strokeColor(
+            "highway" to "path", "segregated" to "yes",
+            "smoothness" to "good", "footway:smoothness" to "impassable",
         ))
     }
 

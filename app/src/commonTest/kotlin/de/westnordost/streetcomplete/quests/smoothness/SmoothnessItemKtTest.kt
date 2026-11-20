@@ -108,6 +108,31 @@ class SmoothnessItemKtTest {
         for (surface in listOf("metal_grid", "rock", "laterite")) assertTrue(hasSmoothnessProfile(surface))
     }
 
+    /** Independent of which photos exist: a choice without photo is a valid placeholder case and
+     *  must not carry a similar-surface marker, and unknown surfaces never show photos. */
+    @Test fun `choices without photo fall back to the placeholder`() {
+        val surfaces = listOf(null, "unknown", "stepping_stones", "clay", "paved", "unpaved") +
+            listOf("concrete:lanes", "metal_grid", "rock", "laterite", "wood", "metal", "woodchips")
+        for (surface in surfaces) {
+            for (value in Smoothness.entries) {
+                val choice = smoothnessChoice(value, surface)
+                assertEquals(value, choice.value)
+                if (choice.photo == null) continue
+                assertTrue(choice.photo.similarSurface != surface, "$surface $value marks itself as similar")
+            }
+        }
+        for (surface in listOf(null, "unknown", "stepping_stones", "clay")) {
+            assertTrue(smoothnessChoices(surface).all { it.photo == null }, "$surface")
+        }
+    }
+
+    @Test fun `pebblestone keeps its gravel photos marked as similar surface`() {
+        for (value in listOf(INTERMEDIATE, BAD, VERY_BAD)) {
+            val photo = assertNotNull(smoothnessChoice(value, "pebblestone").photo, "pebblestone $value")
+            assertEquals("gravel", photo.similarSurface, "pebblestone $value")
+        }
+    }
+
     @Test fun `surfaces without upstream photos use their own photos`() {
         val own = mapOf(
             "unhewn_cobblestone" to listOf(BAD, VERY_BAD),

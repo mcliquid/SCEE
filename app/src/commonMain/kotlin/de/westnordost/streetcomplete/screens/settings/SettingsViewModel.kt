@@ -41,7 +41,7 @@ abstract class SettingsViewModel : ViewModel() {
     abstract val autosync: StateFlow<Autosync>
     abstract val theme: StateFlow<Theme>
     abstract val keepScreenOn: StateFlow<Boolean>
-    abstract val showZoomButtons: StateFlow<Boolean>
+    abstract val showZoomButtons: StateFlow<Boolean?>
     abstract val selectedLocale: StateFlow<Locale?>
     abstract val expertMode: StateFlow<Boolean>
     abstract val prefs: Preferences
@@ -56,7 +56,7 @@ abstract class SettingsViewModel : ViewModel() {
     abstract fun setAutosync(value: Autosync)
     abstract fun setTheme(value: Theme)
     abstract fun setKeepScreenOn(value: Boolean)
-    abstract fun setShowZoomButtons(value: Boolean)
+    abstract fun setShowZoomButtons(value: Boolean?)
 }
 
 data class QuestTypeCount(val total: Int, val enabled: Int)
@@ -152,7 +152,7 @@ class SettingsViewModelImpl(
     override fun setAutosync(value: Autosync) { prefs.autosync = value }
     override fun setTheme(value: Theme) { prefs.theme = value }
     override fun setKeepScreenOn(value: Boolean) { prefs.keepScreenOn = value }
-    override fun setShowZoomButtons(value: Boolean) { prefs.showZoomButtons = value }
+    override fun setShowZoomButtons(value: Boolean?) { prefs.showZoomButtons = value }
 
     override fun setExpertMode(value: Boolean) {
         prefs.expertMode = value

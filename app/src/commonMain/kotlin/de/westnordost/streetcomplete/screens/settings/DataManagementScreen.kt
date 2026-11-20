@@ -45,6 +45,7 @@ import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeTable
 import de.westnordost.streetcomplete.quests.amenity_cover.AddAmenityCover
 import de.westnordost.streetcomplete.quests.custom.CustomQuest
 import de.westnordost.streetcomplete.quests.charging_station_access.AddChargingStationMotorcar
+import de.westnordost.streetcomplete.quests.cycleway.AddCyclewayDirection
 import de.westnordost.streetcomplete.quests.general_access.AddGeneralAccess
 import de.westnordost.streetcomplete.quests.osmose.OsmoseDao
 import de.westnordost.streetcomplete.resources.Res
@@ -351,6 +352,7 @@ val renamedQuests = mapOf(
     "AddTowerAccess" to AddGeneralAccess::class.simpleName!!,
     // DB v22 / SC #7083: car capacity quest replaced by motorcar availability
     "AddChargingStationCapacity" to AddChargingStationMotorcar::class.simpleName!!,
+    "AddOnewayBicycle" to AddCyclewayDirection::class.simpleName!!,
 )
 fun String.renameUpdatedQuests() =
     renamedQuests.entries.fold(this) { acc, (old, new) -> acc.replace(old, new) }

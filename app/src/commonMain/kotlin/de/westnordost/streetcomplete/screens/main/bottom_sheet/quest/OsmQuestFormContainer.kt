@@ -88,6 +88,7 @@ fun <T> OsmQuestFormContainer(
     onEdit: (action: ElementEditAction, isTagEdit: Boolean, isEditInContextOf: Boolean) -> Unit,
     onLeaveNote: (noteText: String, noteImagePaths: List<String>, isGpx: Boolean) -> Unit,
     onHideQuest: (tempHide: Boolean) -> Unit,
+    onDisableQuest: () -> Unit,
     questType: OsmElementQuestType<T>,
     element: Element,
     geometry: ElementGeometry,
@@ -290,6 +291,7 @@ fun <T> OsmQuestFormContainer(
             onDismissRequest = { confirmCantSay = false },
             onLeaveNote = { showForm(QuestFormState.LeaveNote) },
             onHideQuest = { onHideQuest(false) },
+            onDisableQuest = onDisableQuest,
             onCreateCustomQuest = {
                 customQuestList.addEntry(element, it)
                 onHideQuest(true)

@@ -74,6 +74,7 @@ fun ExternalSourceQuestFormContainer(
     onEdit: (action: ElementEditAction) -> Unit,
     onLeaveNote: (noteText: String, noteImagePaths: List<String>, isGpx: Boolean) -> Unit,
     onHideQuest: (tempHide: Boolean) -> Unit,
+    onDisableQuest: () -> Unit,
     quest: ExternalSourceQuest,
     mapPosition: LatLon?,
     mapRotation: Float,
@@ -239,6 +240,7 @@ fun ExternalSourceQuestFormContainer(
             onDismissRequest = { confirmCantSay = false },
             onLeaveNote = { state = QuestFormState2.LeaveNote },
             onHideQuest = { onHideQuest(false) },
+            onDisableQuest = onDisableQuest,
             onCreateCustomQuest = null
         )
     }

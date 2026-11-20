@@ -14,7 +14,7 @@ import de.westnordost.streetcomplete.quests.ferry.AddFerryAccessBicycle
 import de.westnordost.streetcomplete.quests.ferry.FerryBicycleAccess
 import de.westnordost.streetcomplete.quests.oneway.AddOneway
 import de.westnordost.streetcomplete.quests.oneway.AddOnewayAerialway
-import de.westnordost.streetcomplete.quests.oneway.AddOnewayBicycle
+import de.westnordost.streetcomplete.quests.cycleway.AddCyclewayDirection
 import de.westnordost.streetcomplete.quests.oneway.OnewayAnswer
 import de.westnordost.streetcomplete.quests.parking_access.AddBikeParkingAccess
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
@@ -29,11 +29,12 @@ import kotlin.test.assertTrue
 
 class AccessDirectionRegressionTest {
 
-    @Test fun `vehicle exception makes bicycle direction quest applicable without overriding bicycle prohibition`() {
-        val quest = AddOnewayBicycle()
-        val allowed = way(tags = mapOf("highway" to "cycleway", "access" to "no", "vehicle" to "yes"))
+    @Test fun `cycleway direction excludes no access even with vehicle exception`() {
+        val quest = AddCyclewayDirection()
+        val denied = way(tags = mapOf("highway" to "cycleway", "footway" to "sidepath", "access" to "no", "vehicle" to "yes"))
+        assertFalse(quest.isApplicableTo(denied))
+        val allowed = way(tags = mapOf("highway" to "cycleway", "footway" to "sidepath", "bicycle" to "yes"))
         assertNotEquals(false, quest.isApplicableTo(allowed))
-        assertEquals(listOf(allowed), quest.getApplicableElements(TestMapDataWithGeometry(listOf(allowed))).toList())
         assertEquals(false, quest.isApplicableTo(way(tags = allowed.tags + ("bicycle" to "no"))))
     }
 
@@ -74,8 +75,12 @@ class AccessDirectionRegressionTest {
         for (key in listOf("access:conditional", "vehicle:conditional", "bicycle:conditional")) {
             for (value in listOf("no @ (Su)", "yes @ (Mo-Fr 08:00-18:00)")) {
                 val conditional = mapOf(key to value)
-                for (highway in listOf("cycleway", "path", "footway")) {
-                    assertSelected(AddOnewayBicycle(), mapOf("highway" to highway, "bicycle" to "yes") + conditional)
+                for (tags in listOf(
+                    mapOf("highway" to "cycleway", "footway" to "sidepath", "bicycle" to "yes"),
+                    mapOf("highway" to "path", "footway" to "sidewalk", "bicycle" to "yes"),
+                    mapOf("highway" to "footway", "is_sidepath" to "yes", "bicycle" to "yes"),
+                )) {
+                    assertSelected(AddCyclewayDirection(), tags + conditional)
                 }
                 assertSelected(AddOneway(), mapOf("highway" to "residential", "width" to "3") + conditional)
                 assertSelected(AddCycleway { CountryInfo(null, emptyList()) }, mapOf("highway" to "primary") + conditional)
@@ -94,18 +99,22 @@ class AccessDirectionRegressionTest {
     }
 
     @Test fun `conditional permission does not bypass explicit bicycle prohibition`() {
-        for (quest in listOf(AddOnewayBicycle(), AddCycleway { CountryInfo(null, emptyList()) })) {
-            val highway = if (quest is AddOnewayBicycle) "cycleway" else "primary"
-            val element = way(1, listOf(1, 2), mapOf("highway" to highway, "bicycle" to "no", "bicycle:conditional" to "yes @ (Su)"))
+        for (quest in listOf(AddCyclewayDirection(), AddCycleway { CountryInfo(null, emptyList()) })) {
+            val tags = if (quest is AddCyclewayDirection) {
+                mapOf("highway" to "cycleway", "footway" to "sidepath", "bicycle" to "no", "bicycle:conditional" to "yes @ (Su)")
+            } else {
+                mapOf("highway" to "primary", "bicycle" to "no", "bicycle:conditional" to "yes @ (Su)")
+            }
+            val element = way(1, listOf(1, 2), tags)
             assertEquals(false, quest.isApplicableTo(element))
             assertTrue(quest.getApplicableElements(mapDataFor(element)).none())
         }
     }
 
     @Test fun `access schedules do not bypass conditional direction guards`() {
-        for (quest in listOf(AddOnewayBicycle(), AddCycleway { CountryInfo(null, emptyList()) }, AddOneway())) {
+        for (quest in listOf(AddCyclewayDirection(), AddCycleway { CountryInfo(null, emptyList()) }, AddOneway())) {
             val base = when (quest) {
-                is AddOnewayBicycle -> mapOf("highway" to "cycleway")
+                is AddCyclewayDirection -> mapOf("highway" to "cycleway", "footway" to "sidepath")
                 is AddCycleway -> mapOf("highway" to "primary")
                 else -> mapOf("highway" to "residential", "width" to "3")
             }
@@ -121,7 +130,7 @@ class AccessDirectionRegressionTest {
     }
 
     @Test fun `bicycle direction quest excludes conditional direction and directional access`() {
-        assertExcluded(AddOnewayBicycle(), mapOf("highway" to "cycleway"), listOf(
+        assertExcluded(AddCyclewayDirection(), mapOf("highway" to "cycleway", "footway" to "sidepath"), listOf(
             "oneway:conditional", "oneway:bicycle:conditional", "bicycle:forward", "bicycle:backward",
         ))
     }
@@ -166,16 +175,11 @@ class AccessDirectionRegressionTest {
         assertFalse(quest.isApplicableTo(way(tags = source + ("aerialway:bicycle:signed" to "no"))))
     }
 
-    @Test fun `bicycle direction answers retain mode specific key and existing access`() {
-        for (highway in listOf("cycleway", "path", "footway")) {
-            for (answer in OnewayAnswer.entries) {
-                val original = mapOf("highway" to highway, "bicycle" to "yes", "access" to "private",
-                    "bicycle:conditional" to "no @ (Su)", "oneway:bicycle:conditional" to "no @ (Su)")
-                val changes = AddOnewayBicycle().answerAppliedTo(answer, original)
-                val key = if (highway == "cycleway") "oneway" else "oneway:bicycle"
-                assertEquals(setOf(key), changes.map { it.key }.toSet())
-            }
-        }
+    @Test fun `cycleway direction answers use oneway or oneway bicycle per tagging rules`() {
+        val exclusive = mapOf("highway" to "cycleway", "footway" to "sidepath")
+        assertEquals(setOf("oneway"), AddCyclewayDirection().answerAppliedTo(OnewayAnswer.FORWARD, exclusive).map { it.key }.toSet())
+        val shared = mapOf("highway" to "path", "footway" to "sidewalk", "bicycle" to "yes", "foot" to "designated")
+        assertEquals(setOf("oneway:bicycle"), AddCyclewayDirection().answerAppliedTo(OnewayAnswer.BACKWARD, shared).map { it.key }.toSet())
     }
 
     @Test fun `ferry answer preserves inherited and conditional access`() {
@@ -198,6 +202,6 @@ class AccessDirectionRegressionTest {
         assertNotEquals(false, cycleway.isApplicableTo(way(tags = mapOf("highway" to "residential", "maxspeed" to "30", "oneway" to "yes"))))
         assertEquals(false, cycleway.isApplicableTo(way(tags = mapOf("highway" to "residential", "maxspeed" to "30"))))
         assertEquals(false, cycleway.isApplicableTo(way(tags = mapOf("highway" to "trunk", "bicycle" to "yes"))))
-        assertEquals(false, AddOnewayBicycle().isApplicableTo(way(tags = mapOf("highway" to "path", "bicycle" to "permissive"))))
+        assertEquals(false, AddCyclewayDirection().isApplicableTo(way(tags = mapOf("highway" to "path", "bicycle" to "permissive"))))
     }
 }

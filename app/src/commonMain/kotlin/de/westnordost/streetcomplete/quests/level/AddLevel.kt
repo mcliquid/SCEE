@@ -19,6 +19,7 @@ import de.westnordost.streetcomplete.quests.questPrefix
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.util.math.contains
 import de.westnordost.streetcomplete.util.math.isInMultipolygon
+import org.jetbrains.compose.resources.StringResource
 
 class AddLevel : OsmElementQuestType<String> {
 
@@ -56,6 +57,7 @@ class AddLevel : OsmElementQuestType<String> {
     override val icon = Res.drawable.quest_level
     override val title = Res.string.quest_level_title2
     override val achievements = listOf(CITIZEN)
+    override val hint = Res.string.quest_level_hint
 
     override fun getApplicableElements(mapData: MapDataWithGeometry): Iterable<Element> {
         if (prefs.getBoolean(questPrefix(prefs) + PREF_MORE_LEVELS, false))

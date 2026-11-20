@@ -41,7 +41,12 @@ class Preferences(val prefs: SettingsWithSnapshot) {
 
     var keepScreenOn: Boolean by prefs.boolean(KEEP_SCREEN_ON, false)
 
-    var showZoomButtons: Boolean by prefs.boolean(SHOW_ZOOM_BUTTONS, false)
+    var showZoomButtons: Boolean?
+        set(value) {
+            if (value == null) prefs.remove(SHOW_ZOOM_BUTTONS)
+            else prefs.putBoolean(SHOW_ZOOM_BUTTONS, value)
+        }
+        get() = prefs.getBooleanOrNull(SHOW_ZOOM_BUTTONS)
 
     var resurveyIntervals: ResurveyIntervals
         set(value) { prefs.putString(RESURVEY_INTERVALS, value.name) }
@@ -106,8 +111,8 @@ class Preferences(val prefs: SettingsWithSnapshot) {
     fun onKeepScreenOnChanged(callback: (Boolean) -> Unit): SettingsListener =
         prefs.addBooleanListener(KEEP_SCREEN_ON, false, callback)
 
-    fun onShowZoomButtonsChanged(callback: (Boolean) -> Unit): SettingsListener =
-        prefs.addBooleanListener(SHOW_ZOOM_BUTTONS, false, callback)
+    fun onShowZoomButtonsChanged(callback: (Boolean?) -> Unit): SettingsListener =
+        prefs.addBooleanOrNullListener(SHOW_ZOOM_BUTTONS, callback)
 
     // login and user
     var userId: Long by prefs.long(OSM_USER_ID, -1)

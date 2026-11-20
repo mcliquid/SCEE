@@ -99,7 +99,10 @@ class AgriculturalAccessFormTest {
                         }, element = element, geometry = pGeom(), countryInfo = CountryInfo(null, emptyList()))
                         if (cantSay) CantSayDialog(
                             onDismissRequest = { cantSay = false },
-                            onLeaveNote = { notes++ }, onHideQuest = { hidden++ }, onCreateCustomQuest = null,
+                            onLeaveNote = { notes++ },
+                            onHideQuest = { hidden++ },
+                            onDisableQuest = {},
+                            onCreateCustomQuest = null,
                         )
                     }
                 }

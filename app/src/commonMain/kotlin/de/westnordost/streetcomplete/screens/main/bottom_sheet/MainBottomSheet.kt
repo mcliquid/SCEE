@@ -26,18 +26,18 @@ import de.westnordost.streetcomplete.data.quest.ExternalSourceQuestKey
 import de.westnordost.streetcomplete.data.quest.OsmNoteQuestKey
 import de.westnordost.streetcomplete.data.quest.OsmQuestKey
 import de.westnordost.streetcomplete.data.quest.QuestKey
+import de.westnordost.streetcomplete.data.quest.QuestType
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.quests.note_comments.AddNoteCommentForm
-import de.westnordost.streetcomplete.resources.Res
-import de.westnordost.streetcomplete.resources.quest_create_note
-import de.westnordost.streetcomplete.resources.toast_gpx_note_not_saved
-import de.westnordost.streetcomplete.resources.toast_quest_edit_not_saved
+import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.ToastPopup
 import de.westnordost.streetcomplete.screens.main.ShownBottomSheet
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.note.CreateNoteForm
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.overlay.OverlayFormContainer
 import de.westnordost.streetcomplete.screens.main.bottom_sheet.quest.OsmQuestFormContainer
+import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmationDialog
 import de.westnordost.streetcomplete.ui.common.dialogs.SurveyConfirmationDialog
+import androidx.compose.material.Text
 import de.westnordost.streetcomplete.ui.common.quest.LocalMapMarkersCallback
 import de.westnordost.streetcomplete.ui.common.quest.LocalMapMetersPerDp
 import de.westnordost.streetcomplete.ui.common.quest.MapClick
@@ -66,6 +66,7 @@ fun MainBottomSheet(
     onCancelPendingChainedQuestOpen: () -> Unit,
     onSolved: (icon: DrawableResource, position: LatLon) -> Unit,
     onHideQuest: (QuestKey, tempHide: Boolean) -> Unit,
+    onDisableQuest: (QuestType) -> Unit,
     isSurvey: (ElementGeometry) -> Boolean,
     onSubmitEdit: (
         ElementEditType,
@@ -91,6 +92,7 @@ fun MainBottomSheet(
     val questTypes: QuestTypeRegistry = koinInject()
     val koinCrossingType = remember(questTypes) { questTypes.filterIsInstance<AddWaterwayCrossing>().single() }
     var confirmEdit by remember { mutableStateOf<PendingEdit?>(null) }
+    var questTypeToDisable by remember { mutableStateOf<QuestType?>(null) }
     var gpxNoteSaveFailed by remember { mutableStateOf(false) }
     var questEditSaveFailed by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -229,6 +231,7 @@ fun MainBottomSheet(
                     onHideQuest(shownBottomSheet.quest.key, tempHide)
                     onDismiss()
                 },
+                onDisableQuest = { questTypeToDisable = shownBottomSheet.quest.type },
                 questType = shownBottomSheet.quest.type,
                 element = shownBottomSheet.element,
                 geometry = shownBottomSheet.quest.geometry,
@@ -287,6 +290,7 @@ fun MainBottomSheet(
                     onHideQuest(key, tempHide)
                     onDismiss()
                 },
+                onDisableQuest = { questTypeToDisable = shownBottomSheet.quest.type },
                 quest = shownBottomSheet.quest,
                 mapPosition = mapPosition,
                 mapRotation = mapRotation,
@@ -440,7 +444,8 @@ fun MainBottomSheet(
                 onCancelPendingChainedQuestOpen()
                 confirmEdit = null
             },
-            onConfirmed = {
+            onConfirmed = { dontShowAgain ->
+                SuppressSurveyConfirmation = dontShowAgain
                 confirmEdit = null
                 submitEditAfterLocalSave(
                     pendingEdit.elementEditType,
@@ -452,7 +457,19 @@ fun MainBottomSheet(
                     pendingEdit.solvedPosition,
                 )
             },
-            onToggleDontShowAgain = { SuppressSurveyConfirmation = it }
+        )
+    }
+
+    questTypeToDisable?.let { questType ->
+        ConfirmationDialog(
+            onDismissRequest = { questTypeToDisable = null },
+            onConfirmed = {
+                onDisableQuest(questType)
+                onDismiss()
+                questTypeToDisable = null
+            },
+            title = { Text(stringResource(Res.string.quest_disable_confirmation_title)) },
+            confirmButtonText = stringResource(Res.string.quest_generic_confirmation_yes)
         )
     }
 

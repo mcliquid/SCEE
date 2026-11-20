@@ -102,6 +102,7 @@ import de.westnordost.streetcomplete.quests.custom.CustomQuest
 import de.westnordost.streetcomplete.quests.custom.CustomQuestList
 import de.westnordost.streetcomplete.quests.destination.AddDestination
 import de.westnordost.streetcomplete.quests.cycleway.AddCycleway
+import de.westnordost.streetcomplete.quests.cycleway.AddCyclewayDirection
 import de.westnordost.streetcomplete.quests.sidepath_usage.AddSidepathUsage
 import de.westnordost.streetcomplete.quests.defibrillator.AddDefibrillatorLocation
 import de.westnordost.streetcomplete.quests.diet_type.AddGlutenFree
@@ -165,7 +166,6 @@ import de.westnordost.streetcomplete.quests.motorcycle_parking_cover.AddMotorcyc
 import de.westnordost.streetcomplete.quests.note_comments.OsmNoteQuestType
 import de.westnordost.streetcomplete.quests.oneway.AddOneway
 import de.westnordost.streetcomplete.quests.oneway.AddOnewayAerialway
-import de.westnordost.streetcomplete.quests.oneway.AddOnewayBicycle
 import de.westnordost.streetcomplete.quests.opening_hours.AddOpeningHours
 import de.westnordost.streetcomplete.quests.opening_hours_signed.CheckOpeningHoursSigned
 import de.westnordost.streetcomplete.quests.orchard_produce.AddOrchardProduce
@@ -500,7 +500,7 @@ fun getQuestTypeList(
     72 to AddBikeParkingFee(),
     73 to AddBikeRentalCapacity(), // less ambiguous than bike parking
     74 to AddBikeParkingCapacity(), // used by cycle map layer on osm.org, OsmAnd
-    203 to AddBikeParkingCargoCapacity(),
+    203 to AddCyclewayDirection(),
 
     202 to AddLockable(),
 
@@ -551,6 +551,7 @@ fun getQuestTypeList(
     95 to AddMaxPhysicalHeight(arSupportChecker), // same as above, best if it appears right after (if enabled)
     96 to AddRoadName(),
     97 to AddOneway(),
+    EE_QUEST_OFFSET + 214 to AddBikeParkingCargoCapacity(), // fork quest; was ordinal 203 before upstream #7268
     EE_QUEST_OFFSET + 213 to CheckAgriculturalAccess(), // Germany only; keep this serialization ID stable
     // 98 to AddSuspectedOneway(), - removed in https://github.com/streetcomplete/StreetComplete/pull/5725
 
@@ -732,7 +733,6 @@ fun getQuestTypeList(
     EE_QUEST_OFFSET + 54 to AddLampType(),
     EE_QUEST_OFFSET + 55 to AddPostOfficeType(),
     EE_QUEST_OFFSET + 57 to AddLampMount(),
-    EE_QUEST_OFFSET + 58 to AddOnewayBicycle(),
     EE_QUEST_OFFSET + 69 to AddCyclewayPartSmoothness(),
     EE_QUEST_OFFSET + 201 to AddIsSidepath(),
     EE_QUEST_OFFSET + 210 to AddCyclewaySeparation(),

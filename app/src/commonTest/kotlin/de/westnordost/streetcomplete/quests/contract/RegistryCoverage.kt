@@ -164,7 +164,7 @@ private val questsWithoutContract = setOf(
     "AddMotorcycleParkingSurface",
     "AddOneway",
     "AddOnewayAerialway",
-    "AddOnewayBicycle",
+    "AddCyclewayDirection",
     "AddOpeningHours",
     "AddOrchardProduce",
     "AddOrchardType",

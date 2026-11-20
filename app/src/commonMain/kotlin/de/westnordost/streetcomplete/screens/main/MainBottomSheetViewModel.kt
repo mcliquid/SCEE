@@ -31,10 +31,12 @@ import de.westnordost.streetcomplete.data.quest.ExternalSourceQuestKey
 import de.westnordost.streetcomplete.data.quest.OsmNoteQuestKey
 import de.westnordost.streetcomplete.data.quest.OsmQuestKey
 import de.westnordost.streetcomplete.data.quest.QuestKey
+import de.westnordost.streetcomplete.data.quest.QuestType
 import de.westnordost.streetcomplete.data.quest.QuestTypeRegistry
 import de.westnordost.streetcomplete.data.quest.VisibleQuestsSource
 import de.westnordost.streetcomplete.data.visiblequests.QuestTypeOrderSource
 import de.westnordost.streetcomplete.data.visiblequests.QuestsHiddenController
+import de.westnordost.streetcomplete.data.visiblequests.VisibleEditTypeController
 import de.westnordost.streetcomplete.osm.level.levelsIntersect
 import de.westnordost.streetcomplete.osm.level.parseLevelsOrNull
 import de.westnordost.streetcomplete.resources.*
@@ -69,6 +71,8 @@ abstract class MainBottomSheetViewModel : ViewModel() {
     abstract suspend fun getNearbyQuests(sheet: ShownBottomSheet): NearbyQuests
 
     abstract fun hideQuest(questKey: QuestKey, tempHide: Boolean = false)
+
+    abstract fun disableQuest(quest: QuestType)
 
     abstract fun isSurvey(geometry: ElementGeometry): Boolean
 
@@ -111,6 +115,7 @@ class MainBottomSheetViewModelImpl(
     private val elementEditsController: ElementEditsController,
     private val noteEditsController: NoteEditsController,
     private val hiddenQuestsController: QuestsHiddenController,
+    private val visibleEditTypeController: VisibleEditTypeController,
     private val surveyChecker: SurveyChecker,
     private val visibleQuestsSource: VisibleQuestsSource,
     private val overlayRegistry: OverlayRegistry,
@@ -242,6 +247,12 @@ class MainBottomSheetViewModelImpl(
         launch(Dispatchers.IO) {
             if (tempHide) hiddenQuestsController.tempHide(questKey)
             else hiddenQuestsController.hide(questKey)
+        }
+    }
+
+    override fun disableQuest(quest: QuestType) {
+        launch(Dispatchers.IO) {
+            visibleEditTypeController.setVisibility(quest, false)
         }
     }
 

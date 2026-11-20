@@ -13,7 +13,7 @@ import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.
 import de.westnordost.streetcomplete.osm.ALL_ROADS
 import de.westnordost.streetcomplete.osm.oneway.interpretOneway
 import de.westnordost.streetcomplete.quests.oneway.AddOneway
-import de.westnordost.streetcomplete.quests.oneway.AddOnewayBicycle
+import de.westnordost.streetcomplete.quests.cycleway.AddCyclewayDirection
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.oneway_overlay_title
 import de.westnordost.streetcomplete.resources.quest_bicycleway_oneway
@@ -28,7 +28,7 @@ class OnewayOverlay : Overlay {
     override val changesetComment = "Specify oneway restrictions"
     override val wikiLink: String = "Key:oneway"
     override val achievements = listOf(BICYCLIST)
-    override val hidesQuestTypes = setOf(AddOneway::class.simpleName!!, AddOnewayBicycle::class.simpleName!!)
+    override val hidesQuestTypes = setOf(AddOneway::class.simpleName!!, AddCyclewayDirection::class.simpleName!!)
     // the arrows of the background map are not bicycle-aware and do not reflect local edits
     override val hiddenLabels = setOf(MapLabel.ONEWAY_ARROWS)
 

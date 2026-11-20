@@ -1,6 +1,7 @@
 package de.westnordost.streetcomplete.quests.bike_parking_capacity
 
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import de.westnordost.streetcomplete.ApplicationConstants
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.DatabaseImpl
 import de.westnordost.streetcomplete.data.StreetCompleteDatabaseConfigurator
@@ -159,7 +160,10 @@ class AddBikeParkingCargoCapacityTest {
                     )
                 }
             )
-            assertEquals(203, registry.getOrdinalOf(registry.first { it is AddBikeParkingCargoCapacity }))
+            assertEquals(
+                ApplicationConstants.EE_QUEST_OFFSET + 214,
+                registry.getOrdinalOf(registry.first { it is AddBikeParkingCargoCapacity })
+            )
             assertEquals(1, registry.count { it is AddBikeParkingCargoCapacity })
         } finally {
             connection.close()

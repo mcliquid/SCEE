@@ -260,6 +260,10 @@ private val NAME_PLACES = mapOf(
     "landuse" to arrayOf(
         "cemetery", "allotments"
     ),
+    "man_made" to arrayOf(
+        // name only
+        "wastewater_plant", "water_works",
+    ),
     "military" to arrayOf(
         "airfield", "barracks", "training_area", "base",
     ),

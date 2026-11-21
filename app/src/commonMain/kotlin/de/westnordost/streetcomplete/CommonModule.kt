@@ -674,9 +674,9 @@ val commonModule = module {
 
     viewModel<MainBottomSheetViewModel> {
         MainBottomSheetViewModelImpl(
-            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
+            get(), get(), get(), get(), get(), get(), get(), get(), get(), get(), get(),
             get(named("FeatureDictionaryLazy")),
-            get(), get(), get(), get(), get(),
+            get(), get(), get(), get(),
         )
     }
 

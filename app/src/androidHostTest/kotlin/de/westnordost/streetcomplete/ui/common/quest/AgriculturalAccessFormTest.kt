@@ -125,7 +125,8 @@ class AgriculturalAccessFormTest {
             }
         }
         compose.onNodeWithContentDescription(
-            catalogues.get("DE")!!.signs.single { it.osmValuePart == "250" }.descriptiveName
+            catalogues.get("DE")!!.signs.single { it.osmValuePart == "250" }.descriptiveName,
+            useUnmergedTree = true,
         ).assertExists()
     }
 

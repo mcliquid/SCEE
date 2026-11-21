@@ -124,9 +124,12 @@ class AgriculturalAccessFormTest {
                 }
             }
         }
-        compose.onNodeWithContentDescription(
-            catalogues.get("DE")!!.signs.single { it.osmValuePart == "250" }.descriptiveName
-        ).assertExists()
+        val sign250Name = catalogues.get("DE")!!.signs.single { it.osmValuePart == "250" }.descriptiveName
+        compose.waitUntil(10_000) {
+            compose.onAllNodesWithContentDescription(sign250Name, useUnmergedTree = true)
+                .fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithContentDescription(sign250Name, useUnmergedTree = true).assertExists()
     }
 
     @Test

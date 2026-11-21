@@ -11,7 +11,8 @@ import kotlin.test.*
 abstract class BundledAssetsContract {
     // Hashes of the LF-normalized content as stored in git; a Windows checkout may contain CRLF.
     private val hashes = mapOf(
-        "brewery/brewerySuggestions.txt" to "6f1b420f919b0ac186e9709abeb08f04ec9473edbbccdb3eee959531bd90e6de",
+        // SHA-256 of LF content (CR stripped); updated when brewerySuggestions.txt changes (e.g. #19).
+        "brewery/brewerySuggestions.txt" to "23479c39d6b872a304cf4f405b1de4edbafaa2dfb6062bc5d3ab6ba10813db98",
         "cuisine/cuisineSuggestions.txt" to "4bad07ff52f04c2611274fb99a2f35880edaf8685b45351cc4b2f09f61a678df",
         "tag_editor/keySuggestionsForFeature.json" to "4859073c5e0d82f3360b905a872a1230d421ce4c9ad48e737c47aa84b9f4b0fb",
         "tag_editor/valueSuggestionsByKey.json" to "14eaf09e22ef4c7d4042a4510e60e89e86289a28f6c834f63f7cfb4e48847ff8",

@@ -3,6 +3,10 @@
 # Intended for GitHub Actions ubuntu runners with Temurin JDK on PATH.
 set -euo pipefail
 
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=ci-diagnostics-lib.sh
+source "${ROOT}/ci-diagnostics-lib.sh"
+
 DIAG_DIR="${CI_DIAG_DIR:-build/ci-diagnostics/${CI_DIAG_SUITE:-suite}}"
 FIRST_DUMP_SEC="${CI_TEST_FIRST_DUMP_SEC:-600}"
 DUMP_INTERVAL_SEC="${CI_TEST_DUMP_INTERVAL_SEC:-300}"
@@ -12,14 +16,19 @@ mkdir -p "$DIAG_DIR"
 
 dump_test_jvms() {
   local elapsed_s=$1
-  local ts
-  ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  local out="${DIAG_DIR}/thread-dump-${ts}-elapsed-${elapsed_s}s.txt"
+  local ts_log ts_file
+  ts_log="$(ci_diag_log_timestamp_utc)"
+  ts_file="$(ci_diag_file_timestamp_utc)"
+  local out="${DIAG_DIR}/thread-dump-${ts_file}-elapsed-${elapsed_s}s.txt"
+  if ! ci_diag_artifact_path_is_valid "${out}"; then
+    echo "CI diagnostics: internal error: artifact path is not valid: ${out}" >&2
+    exit 2
+  fi
   {
-    echo "::group::CI thread dump suite=${CI_DIAG_SUITE:-unknown} elapsed_s=${elapsed_s} timestamp_utc=${ts}"
-    echo "CI diagnostics: timestamp_utc=${ts} elapsed_s=${elapsed_s} suite=${CI_DIAG_SUITE:-unknown}"
+    echo "::group::CI thread dump suite=${CI_DIAG_SUITE:-unknown} elapsed_s=${elapsed_s} timestamp_utc=${ts_log}"
+    echo "CI diagnostics: timestamp_utc=${ts_log} elapsed_s=${elapsed_s} suite=${CI_DIAG_SUITE:-unknown}"
     echo "CI diagnostics: saving full dump to ${out}"
-    echo "=== jps -l ($(date -u +%Y-%m-%dT%H:%M:%SZ)) ==="
+    echo "=== jps -l ($(ci_diag_log_timestamp_utc)) ==="
     jps -l 2>&1 || true
     echo
     while read -r pid rest; do
@@ -33,7 +42,7 @@ dump_test_jvms() {
         echo "CI diagnostics: skip pid=${pid} (not running) main_class=${rest}"
         continue
       fi
-      echo "=== process pid=${pid} timestamp_utc=${ts} main_class=${rest} ==="
+      echo "=== process pid=${pid} timestamp_utc=${ts_log} main_class=${rest} ==="
       if command -v jcmd >/dev/null 2>&1; then
         jcmd "$pid" Thread.print 2>&1 || true
       elif command -v jstack >/dev/null 2>&1; then
@@ -84,10 +93,11 @@ gradle_pid=$!
 watchdog "$gradle_pid" &
 watchdog_pid=$!
 
-gradle_exit=0
-if ! wait "$gradle_pid"; then
-  gradle_exit=$?
-fi
+set +e
+wait "$gradle_pid"
+gradle_exit=$?
+set -e
+echo "CI diagnostics: gradle exit code=${gradle_exit}"
 
 if kill -TERM "$watchdog_pid" 2>/dev/null; then
   wait "$watchdog_pid" 2>/dev/null || true

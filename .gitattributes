@@ -6,4 +6,11 @@ third_party/osmfeatures/**/*.patch text eol=lf
 
 # Bundled test fixtures must match the LF bytes assumed in BundledAssetsContract.
 app/src/commonMain/composeResources/files/m4-fixtures/** text eol=lf
+app/src/commonMain/composeResources/files/brewery/** text eol=lf
+app/src/commonMain/composeResources/files/cuisine/** text eol=lf
+app/src/commonMain/composeResources/files/tag_editor/** text eol=lf
+app/src/commonMain/composeResources/files/tree/** text eol=lf
+.github/scripts/ci-test-with-diagnostics.sh text eol=lf
+.github/scripts/ci-diagnostics-lib.sh text eol=lf
+.github/scripts/ci-test-with-diagnostics.test.sh text eol=lf
 tools/traffic-sign-parity/reference.jsonl text eol=lf

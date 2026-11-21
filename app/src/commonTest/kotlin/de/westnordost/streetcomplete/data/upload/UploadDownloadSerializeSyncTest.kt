@@ -372,7 +372,7 @@ private class SerializeSyncHarness {
             overlap.enterDownload("mapData")
             try {
                 downloadMutationEntered.complete(Unit)
-                runBlocking { releaseDownload.await() }
+                releaseDownload.await()
                 MutableMapData()
             } finally {
                 overlap.exitDownload("mapData")
@@ -405,7 +405,7 @@ private class SerializeSyncHarness {
             try {
                 if (edit.id == 1L) {
                     firstElementEntered.complete(Unit)
-                    runBlocking { releaseFirstElement.await() }
+                    releaseFirstElement.await()
                 } else {
                     secondElementEntered.complete(Unit)
                 }
@@ -439,7 +439,7 @@ private class SerializeSyncHarness {
             overlap.enterDownload("external")
             try {
                 externalDownloadEntered.complete(Unit)
-                runBlocking { releaseExternal.await() }
+                releaseExternal.await()
             } finally {
                 overlap.exitDownload("external")
             }

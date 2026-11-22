@@ -66,25 +66,32 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x gradlew
-          # CodeQL hooks the compiler via LD_PRELOAD. Kotlin 2.4+ removed
-          # out-of-process; in-process runs kotlinc inside the Gradle JVM (see
-          # kotlinlang.org/docs/compiler-execution-strategy.html).
-          ./gradlew \
-            "-Dorg.gradle.jvmargs=-Xmx3584m -XX:+UseG1GC -Dfile.encoding=UTF-8" \
-            "-Dkotlin.daemon.jvmargs=-Xmx1536m -XX:+UseG1GC" \
-            "-Dorg.gradle.parallel=false" \
-            :buildSrc:compileKotlin \
-            :app:compileAndroidMain \
-            :app:compileKotlinDesktop \
-            :androidApp:compileDebugKotlin \
-            :desktopApp:compileKotlin \
-            --rerun-tasks \
-            --no-build-cache \
-            --no-parallel \
-            --no-configuration-cache \
-            --no-daemon \
-            -Pkotlin.compiler.execution.strategy=in-process \
+          # Kotlin 2.4+: use daemon strategy (out-of-process removed). Keep Gradle
+          # JVM small; give the Kotlin daemon its own heap. Run compile tasks
+          # sequentially so :app peaks alone (in-process OOM at 3584m on CI).
+          GRADLE=(
+            ./gradlew
+            "-Dorg.gradle.jvmargs=-Xmx1536m -XX:+UseG1GC -Dfile.encoding=UTF-8"
+            "-Dkotlin.daemon.jvmargs=-Xmx4608m -XX:+UseG1GC"
+            "-Dorg.gradle.parallel=false"
+            --rerun-tasks
+            --no-build-cache
+            --no-parallel
+            --no-configuration-cache
+            --no-daemon
+            -Pkotlin.compiler.execution.strategy=daemon
             --console=plain
+          )
+          stop_gradle() { ./gradlew --stop >/dev/null 2>&1 || true; }
+          stop_gradle
+          "${GRADLE[@]}" :buildSrc:compileKotlin
+          stop_gradle
+          "${GRADLE[@]}" :app:compileAndroidMain
+          stop_gradle
+          "${GRADLE[@]}" :app:compileKotlinDesktop
+          stop_gradle
+          "${GRADLE[@]}" :androidApp:compileDebugKotlin :desktopApp:compileKotlin
+          stop_gradle
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v4

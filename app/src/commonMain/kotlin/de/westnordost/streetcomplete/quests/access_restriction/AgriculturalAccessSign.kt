@@ -15,6 +15,8 @@ enum class AgriculturalAccessSign {
     NO_MOTOR_VEHICLES_WITH_EXCEPTION,
     /** DE:250 + bicycle allowed + agricultural/forestry exception → `vehicle=*` + `bicycle=yes` */
     NO_VEHICLES_BICYCLES_ALLOWED_WITH_EXCEPTION,
+    /** DE:240 + agricultural/forestry exception → `foot`/`bicycle`=designated, `segregated=no`, `access` unchanged */
+    SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION,
 }
 
 val AgriculturalAccessSign.title: StringResource get() = when (this) {
@@ -24,10 +26,12 @@ val AgriculturalAccessSign.title: StringResource get() = when (this) {
         Res.string.quest_accessRestriction_no_motor_vehicles
     AgriculturalAccessSign.NO_VEHICLES_BICYCLES_ALLOWED_WITH_EXCEPTION ->
         Res.string.quest_accessRestriction_no_vehicles_bicycles
+    AgriculturalAccessSign.SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION ->
+        Res.string.quest_accessRestriction_shared_foot_cycle
 }
 
 internal const val agriculturalAccessExcludedHighways =
-    "path|footway|cycleway|bridleway|steps|pedestrian|motorway|motorway_link|construction|proposed|raceway|corridor|bus_guideway|escape|elevator|platform|rest_area|services"
+    "footway|cycleway|bridleway|steps|pedestrian|motorway|motorway_link|construction|proposed|raceway|corridor|bus_guideway|escape|elevator|platform|rest_area|services"
 
 private val excludedHighways = agriculturalAccessExcludedHighways.split('|').toSet()
 
@@ -39,6 +43,25 @@ internal fun isAgriculturalAccessRoad(tags: Map<String, String>): Boolean =
         && "barrier" !in tags
 
 private val bicycleAlreadyAllowed = setOf("yes", "designated", "official")
+private val footCycleRestrictive = setOf("no", "private", "destination", "agricultural", "forestry",
+    "agricultural;forestry", "forestry;agricultural", "permissive", "use_sidepath", "dismount", "unknown")
+
+/** OSM `traffic_sign` matches DE:240 plus the plate implied by [accessValue], with or without `DE:` on plates. */
+internal fun trafficSignMatchesDe240Exception(trafficSign: String, accessValue: String): Boolean {
+    val plate = additionalTrafficSignId(accessValue) ?: return false
+    return trafficSign.contains("240") && (trafficSign.contains(plate) || trafficSign.contains("DE:$plate"))
+}
+
+/**
+ * DE:240 + exception is fully captured. Modes alone are not enough — [CheckAgriculturalAccess] may
+ * still need to record `traffic_sign=*` when missing (see quest hint: existing traffic_sign preserved).
+ */
+internal fun isDe240AgriculturalAccessComplete(tags: Map<String, String>): Boolean {
+    val access = tags["access"].orEmpty()
+    val trafficSign = tags["traffic_sign"] ?: return false
+    return trafficSignMatchesDe240Exception(trafficSign, access)
+        && tags["foot"] == "designated" && tags["bicycle"] == "designated" && tags["segregated"] == "no"
+}
 
 /** Keep conflicting or conditional restrictions for a separate, explicit survey. */
 fun AgriculturalAccessSign.canApplyTo(tags: Map<String, String>): Boolean =
@@ -50,6 +73,10 @@ fun AgriculturalAccessSign.canApplyTo(tags: Map<String, String>): Boolean =
         }
         && (this != AgriculturalAccessSign.NO_VEHICLES_BICYCLES_ALLOWED_WITH_EXCEPTION
             || tags["bicycle"] == null || tags["bicycle"] in bicycleAlreadyAllowed)
+        && (this != AgriculturalAccessSign.SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION
+            || (!isDe240AgriculturalAccessComplete(tags)
+                && tags["foot"] !in footCycleRestrictive && tags["bicycle"] !in footCycleRestrictive
+                && tags["segregated"] != "yes"))
 
 /**
  * Replace overly broad `access=agricultural|forestry` with the more specific tagging implied by
@@ -70,7 +97,17 @@ fun AgriculturalAccessSign.canApplyTo(tags: Map<String, String>): Boolean =
 fun AgriculturalAccessSign.applyTo(tags: Tags) {
     if (!canApplyTo(tags)) return
     val exception = tags["access"] ?: return
-    val additionalSign = additionalTrafficSignId(exception) ?: return
+    if (additionalTrafficSignId(exception) == null) return
+
+    if (this == AgriculturalAccessSign.SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION) {
+        if (tags["foot"] != "designated") tags["foot"] = "designated"
+        if (tags["bicycle"] != "designated") tags["bicycle"] = "designated"
+        if (tags["segregated"] != "no") tags["segregated"] = "no"
+        if (!hasExistingTrafficSign(tags)) {
+            tags["traffic_sign"] = trafficSignTagValue(exception)!!
+        }
+        return
+    }
 
     tags.remove("access")
     when (this) {
@@ -114,6 +151,8 @@ fun AgriculturalAccessSign.trafficSignTagValue(accessValue: String): String? {
         AgriculturalAccessSign.NO_VEHICLES_BICYCLES_ALLOWED_WITH_EXCEPTION ->
             // Related signs on one post are comma-separated; see Key:traffic_sign.
             "DE:250,$additionalSign,1022-10"
+        AgriculturalAccessSign.SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION ->
+            "DE:240,$additionalSign"
     }
 }
 

@@ -5,6 +5,7 @@ import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryDe
 import de.westnordost.streetcomplete.quests.access_restriction.AgriculturalAccessSign.NO_MOTOR_VEHICLES_WITH_EXCEPTION
 import de.westnordost.streetcomplete.quests.access_restriction.AgriculturalAccessSign.NO_VEHICLES_BICYCLES_ALLOWED_WITH_EXCEPTION
 import de.westnordost.streetcomplete.quests.access_restriction.AgriculturalAccessSign.NO_VEHICLES_WITH_EXCEPTION
+import de.westnordost.streetcomplete.quests.access_restriction.AgriculturalAccessSign.SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION
 import de.westnordost.streetcomplete.quests.answerAppliedTo
 import de.westnordost.streetcomplete.quests.contract.assertQuestContract
 import de.westnordost.streetcomplete.testutils.way
@@ -81,8 +82,12 @@ class CheckAgriculturalAccessTest {
         assertIsApplicable("highway" to "track", "access" to "agricultural", "agricultural" to "yes")
     }
 
-    @Test fun `not applicable to path-like highways where agricultural access can be legitimate`() {
-        assertIsNotApplicable("highway" to "path", "access" to "agricultural")
+    @Test fun `applicable to path with broad agricultural access`() {
+        assertIsApplicable("highway" to "path", "access" to "agricultural")
+        assertIsApplicable("highway" to "path", "access" to "forestry;agricultural")
+    }
+
+    @Test fun `not applicable to footway and cycleway where other sign families apply`() {
         assertIsNotApplicable("highway" to "footway", "access" to "agricultural")
         assertIsNotApplicable("highway" to "cycleway", "access" to "forestry")
         assertIsNotApplicable("highway" to "bridleway", "access" to "agricultural")
@@ -93,11 +98,20 @@ class CheckAgriculturalAccessTest {
             "access" to "agricultural",
             "bicycle" to "designated",
         )
+        assertIsApplicable(
+            "highway" to "path",
+            "access" to "agricultural",
+            "foot" to "designated",
+            "bicycle" to "designated",
+            "segregated" to "no",
+        )
         assertIsNotApplicable(
             "highway" to "path",
             "access" to "agricultural",
             "foot" to "designated",
             "bicycle" to "designated",
+            "segregated" to "no",
+            "traffic_sign" to "DE:240,1026-36",
         )
         assertIsNotApplicable(
             "highway" to "footway",
@@ -165,7 +179,186 @@ class CheckAgriculturalAccessTest {
 
     // endregion
 
+    // region completion filter (DE:240)
+
+    @Test fun `only access agricultural remains applicable without mode or sign tags`() {
+        assertIsApplicable("highway" to "track", "access" to "agricultural")
+        assertIsApplicable("highway" to "path", "access" to "forestry")
+    }
+
+    @Test fun `designated modes without traffic_sign stay applicable for sign survey`() {
+        val tags = mapOf(
+            "highway" to "track",
+            "access" to "agricultural",
+            "foot" to "designated",
+            "bicycle" to "designated",
+            "segregated" to "no",
+        )
+        assertTrue(questType.isApplicableTo(way(nodes = listOf(1, 2, 3), tags = tags)))
+        assertTrue(SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION.canApplyTo(tags))
+        assertEquals(
+            setOf(StringMapEntryAdd("traffic_sign", "DE:240,1026-36")),
+            questType.answerAppliedTo(SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION, tags),
+        )
+    }
+
+    @Test fun `fully tagged DE 240 way is excluded from filter`() {
+        for ((access, sign) in listOf(
+            "agricultural" to "DE:240,1026-36",
+            "forestry" to "DE:240,1026-37",
+            "agricultural;forestry" to "DE:240,1026-38",
+            "agricultural" to "DE:240,DE:1026-36",
+        )) {
+            assertIsNotApplicable(
+                "highway" to "track",
+                "access" to access,
+                "foot" to "designated",
+                "bicycle" to "designated",
+                "segregated" to "no",
+                "traffic_sign" to sign,
+            )
+            assertFalse(SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION.canApplyTo(mapOf(
+                "highway" to "track", "access" to access, "foot" to "designated",
+                "bicycle" to "designated", "segregated" to "no", "traffic_sign" to sign,
+            )))
+        }
+    }
+
+    @Test fun `modes matching DE 240 with wrong or road sign traffic_sign remain applicable`() {
+        assertIsApplicable(
+            "highway" to "track",
+            "access" to "agricultural",
+            "foot" to "designated",
+            "bicycle" to "designated",
+            "segregated" to "no",
+            "traffic_sign" to "DE:260,1026-36",
+        )
+        assertIsApplicable(
+            "highway" to "path",
+            "access" to "forestry",
+            "foot" to "designated",
+            "bicycle" to "designated",
+            "segregated" to "no",
+            "traffic_sign" to "DE:240,1026-36",
+        )
+    }
+
+    @Test fun `conflicting mode tags block DE 240 answer but other answers may still apply`() {
+        val tags = mapOf("highway" to "path", "access" to "agricultural", "bicycle" to "no")
+        assertFalse(SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION.canApplyTo(tags))
+        assertTrue(NO_MOTOR_VEHICLES_WITH_EXCEPTION.canApplyTo(tags))
+    }
+
+    @Test fun `trafficSignMatchesDe240Exception accepts common OSM spellings`() {
+        assertTrue(trafficSignMatchesDe240Exception("DE:240,1026-36", "agricultural"))
+        assertTrue(trafficSignMatchesDe240Exception("DE:240,DE:1026-36", "agricultural"))
+        assertFalse(trafficSignMatchesDe240Exception("DE:240,1026-37", "agricultural"))
+        assertFalse(trafficSignMatchesDe240Exception("DE:260,1026-36", "agricultural"))
+    }
+
+  /** DE:240 in WAY_RULES sets the same mode tags; the quest additionally keeps access=* and records 1026 plates (not in WAY_RULES). */
+    @Test fun `DE 240 quest tagging aligns with traffic sign path rule without vehicle keys`() {
+        val questTags = mapOf("highway" to "path", "access" to "agricultural")
+        val after = questTags.toMutableMap()
+        questType.answerAppliedTo(SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION, questTags).forEach { it.applyTo(after) }
+        assertEquals(
+            mapOf(
+                "highway" to "path",
+                "access" to "agricultural",
+                "foot" to "designated",
+                "bicycle" to "designated",
+                "segregated" to "no",
+                "traffic_sign" to "DE:240,1026-36",
+            ),
+            after,
+        )
+        assertNull(after["vehicle"])
+        assertNull(after["motor_vehicle"])
+    }
+
+    // endregion
+
     // region tag diffs
+
+    @Test fun `DE 240 with agricultural exception on track`() {
+        assertEquals(
+            setOf(
+                StringMapEntryAdd("foot", "designated"),
+                StringMapEntryAdd("bicycle", "designated"),
+                StringMapEntryAdd("segregated", "no"),
+                StringMapEntryAdd("traffic_sign", "DE:240,1026-36"),
+            ),
+            questType.answerAppliedTo(
+                SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION,
+                mapOf("highway" to "track", "access" to "agricultural"),
+            )
+        )
+    }
+
+    @Test fun `DE 240 with agricultural exception on path`() {
+        assertEquals(
+            setOf(
+                StringMapEntryAdd("foot", "designated"),
+                StringMapEntryAdd("bicycle", "designated"),
+                StringMapEntryAdd("segregated", "no"),
+                StringMapEntryAdd("traffic_sign", "DE:240,1026-36"),
+            ),
+            questType.answerAppliedTo(
+                SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION,
+                mapOf("highway" to "path", "access" to "agricultural"),
+            )
+        )
+    }
+
+    @Test fun `DE 240 with combined land and forestry exception`() {
+        assertEquals(
+            setOf(
+                StringMapEntryAdd("foot", "designated"),
+                StringMapEntryAdd("bicycle", "designated"),
+                StringMapEntryAdd("segregated", "no"),
+                StringMapEntryAdd("traffic_sign", "DE:240,1026-38"),
+            ),
+            questType.answerAppliedTo(
+                SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION,
+                mapOf("highway" to "path", "access" to "agricultural;forestry"),
+            )
+        )
+    }
+
+    /** OSM way 332188656 (fixture, no live API): shared track with agricultural exception. */
+    @Test fun `DE 240 fixture way 332188656 keeps access and unrelated tags`() {
+        val complete = mapOf(
+            "highway" to "track",
+            "access" to "agricultural",
+            "foot" to "designated",
+            "bicycle" to "designated",
+            "segregated" to "no",
+            "traffic_sign" to "DE:240,1026-36",
+            "surface" to "asphalt",
+            "tracktype" to "grade1",
+            "width" to "2",
+        )
+        assertIsNotApplicable(
+            "highway" to "track",
+            "access" to "agricultural",
+            "foot" to "designated",
+            "bicycle" to "designated",
+            "segregated" to "no",
+            "traffic_sign" to "DE:240,1026-36",
+        )
+        val before = mapOf(
+            "highway" to "track",
+            "access" to "agricultural",
+            "surface" to "asphalt",
+            "tracktype" to "grade1",
+            "width" to "2",
+        )
+        assertIsApplicable(*before.map { it.toPair() }.toTypedArray())
+        val after = before.toMutableMap()
+        questType.answerAppliedTo(SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION, before).forEach { it.applyTo(after) }
+        assertEquals(complete - "traffic_sign" + mapOf("traffic_sign" to "DE:240,1026-36"), after)
+        assertFalse(questType.isApplicableTo(way(nodes = listOf(1, 2, 3), tags = after)))
+    }
 
     @Test fun `DE 250 with agricultural exception`() {
         assertEquals(
@@ -382,6 +575,22 @@ class CheckAgriculturalAccessTest {
         }
     }
 
+    @Test fun `DE 240 never overwrites conflicting foot or bicycle restrictions`() {
+        for (foot in listOf("no", "private", "agricultural", "use_sidepath")) {
+            val tags = mapOf("highway" to "path", "access" to "agricultural", "foot" to foot)
+            assertFalse(SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION.canApplyTo(tags))
+            assertEquals(emptySet(), questType.answerAppliedTo(SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION, tags))
+        }
+        for (bicycle in listOf("no", "private", "forestry", "dismount")) {
+            val tags = mapOf("highway" to "path", "access" to "forestry", "bicycle" to bicycle)
+            assertFalse(SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION.canApplyTo(tags))
+            assertEquals(emptySet(), questType.answerAppliedTo(SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION, tags))
+        }
+        assertFalse(SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION.canApplyTo(
+            mapOf("highway" to "track", "access" to "agricultural", "segregated" to "yes"),
+        ))
+    }
+
     @Test fun `preserves more-specific access tags if they are already present`() {
         assertEquals(
             setOf(
@@ -498,25 +707,44 @@ class CheckAgriculturalAccessTest {
         assertTrue(hasExistingTrafficSign(mapOf("traffic_sign:backward" to "DE:250")))
     }
 
-    @Test fun `all twelve sign and exception combinations close quest without losing tags`() {
+    @Test fun `all sign and exception combinations close quest without losing tags`() {
         for ((access, plate) in listOf("agricultural" to "1026-36", "forestry" to "1026-37",
             "agricultural;forestry" to "1026-38", "forestry;agricultural" to "1026-38")) {
             for (answer in AgriculturalAccessSign.entries) {
                 val before = mapOf("highway" to "track", "access" to access,
                     "foot" to "no", "horse" to "private", "motorcycle" to "no",
                     "surface" to "gravel", "name" to "Waldweg", "note" to "keep")
+                val answerBefore = if (answer == SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION) before - "foot" else before
+                val preserveKeys = if (answer == SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION) {
+                    answerBefore.keys
+                } else {
+                    answerBefore.keys - "access"
+                }
                 val after = assertQuestContract(
-                    questType, answer, before,
+                    questType, answer, answerBefore,
                     { questType.isApplicableTo(way(nodes = listOf(1, 2, 3), tags = it)) },
-                    before.keys - "access",
+                    preserveKeys,
                 )
-                val motorOnly = answer == NO_MOTOR_VEHICLES_WITH_EXCEPTION
-                val bicycles = answer == NO_VEHICLES_BICYCLES_ALLOWED_WITH_EXCEPTION
-                assertEquals((before - "access") + mapOf(
-                    (if (motorOnly) "motor_vehicle" else "vehicle") to access,
-                    "traffic_sign" to "DE:${if (motorOnly) "260" else "250"},$plate${if (bicycles) ",1022-10" else ""}",
-                    "source:ref" to "survey reference",
-                ) + (if (bicycles) mapOf("bicycle" to "yes") else emptyMap()), after)
+                when (answer) {
+                    SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION -> assertEquals(answerBefore + mapOf(
+                        "foot" to "designated", "bicycle" to "designated", "segregated" to "no",
+                        "traffic_sign" to "DE:240,$plate",
+                        "source:ref" to "survey reference",
+                    ), after)
+                    NO_MOTOR_VEHICLES_WITH_EXCEPTION -> assertEquals((answerBefore - "access") + mapOf(
+                        "motor_vehicle" to access, "traffic_sign" to "DE:260,$plate",
+                        "source:ref" to "survey reference",
+                    ), after)
+                    NO_VEHICLES_BICYCLES_ALLOWED_WITH_EXCEPTION -> assertEquals((answerBefore - "access") + mapOf(
+                        "vehicle" to access, "bicycle" to "yes",
+                        "traffic_sign" to "DE:250,$plate,1022-10",
+                        "source:ref" to "survey reference",
+                    ), after)
+                    NO_VEHICLES_WITH_EXCEPTION -> assertEquals((answerBefore - "access") + mapOf(
+                        "vehicle" to access, "traffic_sign" to "DE:250,$plate",
+                        "source:ref" to "survey reference",
+                    ), after)
+                }
             }
         }
     }
@@ -608,11 +836,26 @@ class CheckAgriculturalAccessTest {
             for (answer in AgriculturalAccessSign.entries) {
                 val specific = mapOf("foot" to "no", "horse" to "private", "motorcar" to "destination",
                     "motorcycle" to "no", "hgv" to "no", "bicycle" to "designated")
-                val before = mapOf("highway" to "track", "access" to exception) + specific
-                val after = before.toMutableMap()
-                questType.answerAppliedTo(answer, before).forEach { it.applyTo(after) }
-                assertTrue(specific.all { (key, value) -> after[key] == value })
-                assertNull(after["access"])
+                val answerBefore = if (answer == SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION) {
+                    mapOf("highway" to "track", "access" to exception) + (specific - "foot")
+                } else {
+                    mapOf("highway" to "track", "access" to exception) + specific
+                }
+                val after = answerBefore.toMutableMap()
+                questType.answerAppliedTo(answer, answerBefore).forEach { it.applyTo(after) }
+                when (answer) {
+                    SHARED_FOOT_AND_CYCLE_WITH_EXCEPTION -> {
+                        assertEquals(exception, after["access"])
+                        assertTrue(specific.filterKeys { it != "foot" }.all { (key, value) -> after[key] == value })
+                        assertEquals("designated", after["foot"])
+                        assertEquals("designated", after["bicycle"])
+                        assertEquals("no", after["segregated"])
+                    }
+                    else -> {
+                        assertTrue(specific.all { (key, value) -> after[key] == value })
+                        assertNull(after["access"])
+                    }
+                }
                 assertTrue(after.getValue("traffic_sign").contains("1026-38"))
             }
         }

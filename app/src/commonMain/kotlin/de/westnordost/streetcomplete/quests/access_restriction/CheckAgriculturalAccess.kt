@@ -37,9 +37,10 @@ class CheckAgriculturalAccess : OsmFilterQuestType<AgriculturalAccessSign>() {
         Existing traffic_sign=* does not hide the quest: the access correction can still be
         useful. applyTo never overwrites traffic_sign.
 
-        Distinguishing legitimate vs mistaken access=agricultural on path/cycleway would
-        mean parsing designated-mode combinations and different sign families (DE:237/239/240
-        etc.). That is left out of this MVP.
+        path with access=agricultural may use DE:240 + exception; footway/cycleway remain excluded.
+
+        DE:240 completion (unlike DE:250/260) keeps access=*; hide only when modes, access and a
+        matching DE:240+1026 plate are already tagged. Modes without traffic_sign stay eligible.
      */
     override val elementFilter = """
         ways with
@@ -53,6 +54,9 @@ class CheckAgriculturalAccess : OsmFilterQuestType<AgriculturalAccessSign>() {
           and !barrier
           and !vehicle and !motor_vehicle
           and !~"(access|vehicle|motor_vehicle|bicycle):.*"
+          and !(access = agricultural and foot ~ designated and bicycle ~ designated and segregated = no and traffic_sign ~ "DE:240,1026-36|DE:240,DE:1026-36")
+          and !(access = forestry and foot ~ designated and bicycle ~ designated and segregated = no and traffic_sign ~ "DE:240,1026-37|DE:240,DE:1026-37")
+          and !(access ~ agricultural;forestry|forestry;agricultural and foot ~ designated and bicycle ~ designated and segregated = no and traffic_sign ~ "DE:240,1026-38|DE:240,DE:1026-38")
     """
     override val changesetComment = "Specify more precise agricultural and forestry access restrictions"
     override val wikiLink = "Key:access"

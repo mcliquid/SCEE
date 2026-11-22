@@ -1619,5 +1619,6 @@ Ansonsten kannst du auch eine andere Tastatur im App Store herunterladen. Auf An
     <string name="quest_accessRestriction_no_vehicles">Keine Fahrzeuge, mit dieser Ausnahme</string>
     <string name="quest_accessRestriction_no_motor_vehicles">Keine Kraftfahrzeuge, mit dieser Ausnahme</string>
     <string name="quest_accessRestriction_no_vehicles_bicycles">Keine Fahrzeuge, Radverkehr frei, mit dieser Ausnahme</string>
+    <string name="quest_accessRestriction_shared_foot_cycle">Gemeinsamer Geh- und Radweg, mit dieser Ausnahme</string>
     <string name="quest_accessRestriction_other">Keines dieser Schilder</string>
 </resources>

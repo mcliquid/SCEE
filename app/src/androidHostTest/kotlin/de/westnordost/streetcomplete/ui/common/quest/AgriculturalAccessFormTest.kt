@@ -171,7 +171,11 @@ class AgriculturalAccessFormTest {
         val strings = (0 until nodes.length).map { nodes.item(it) }
             .filter { it.attributes.getNamedItem("name").nodeValue.startsWith("quest_accessRestriction_") }
             .associate { it.attributes.getNamedItem("name").nodeValue to it.textContent }
-        assertEquals(6, strings.size)
+        assertEquals(7, strings.size)
+        assertEquals(
+            "Gemeinsamer Geh- und Radweg, mit dieser Ausnahme",
+            strings["quest_accessRestriction_shared_foot_cycle"],
+        )
         assertEquals("Keine Fahrzeuge, mit dieser Ausnahme", strings["quest_accessRestriction_no_vehicles"])
         assertEquals("Keine Kraftfahrzeuge, mit dieser Ausnahme", strings["quest_accessRestriction_no_motor_vehicles"])
         assertEquals("Keine Fahrzeuge, Radverkehr frei, mit dieser Ausnahme", strings["quest_accessRestriction_no_vehicles_bicycles"])

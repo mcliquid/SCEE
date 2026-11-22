@@ -2000,5 +2000,6 @@
     <string name="quest_accessRestriction_no_vehicles">No vehicles, with this exception</string>
     <string name="quest_accessRestriction_no_motor_vehicles">No motor vehicles, with this exception</string>
     <string name="quest_accessRestriction_no_vehicles_bicycles">No vehicles, bicycles allowed, with this exception</string>
+    <string name="quest_accessRestriction_shared_foot_cycle">Shared foot and cycle path, with this exception</string>
     <string name="quest_accessRestriction_other">None of these signs</string>
 </resources>

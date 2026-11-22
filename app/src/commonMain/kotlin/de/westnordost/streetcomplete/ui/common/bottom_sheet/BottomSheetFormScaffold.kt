@@ -44,6 +44,11 @@ import de.westnordost.streetcomplete.ui.common.BackIcon
 import de.westnordost.streetcomplete.ui.common.CloseFormIcon
 import de.westnordost.streetcomplete.ui.common.speech_bubble.SpeechBubble
 import de.westnordost.streetcomplete.ui.showsPersistentQuestFormCloseButton
+import de.westnordost.streetcomplete.ui.common.quest.LocalQuestFormKeyboardScope
+import de.westnordost.streetcomplete.ui.common.quest.LocalQuestFormKeyboardShortcutsEnabled
+import de.westnordost.streetcomplete.ui.common.quest.QuestFormKeyboardScope
+import de.westnordost.streetcomplete.ui.common.quest.questFormKeyboardShortcuts
+import androidx.compose.runtime.CompositionLocalProvider
 import de.westnordost.streetcomplete.ui.supportsQuestFormEscapeDismiss
 import org.jetbrains.compose.resources.stringResource
 import de.westnordost.streetcomplete.ui.common.speech_bubble.SpeechBubbleArrowDirection
@@ -99,17 +104,26 @@ fun BottomSheetFormScaffold(
     }
     val closeButtonLabel = stringResource(Res.string.cancel)
     val escapeDismissEnabled = keyboardDismissEnabled && LocalQuestFormEscapeDismiss.current
+    val keyboardShortcutsEnabled = LocalQuestFormKeyboardShortcutsEnabled.current
+    val keyboardScope = remember { QuestFormKeyboardScope() }
     val escapeFocusRequester = remember { FocusRequester() }
-    LaunchedEffect(escapeDismissEnabled) {
-        if (escapeDismissEnabled) escapeFocusRequester.requestFocus()
+    LaunchedEffect(escapeDismissEnabled, keyboardShortcutsEnabled) {
+        if (escapeDismissEnabled || keyboardShortcutsEnabled) escapeFocusRequester.requestFocus()
     }
 
     // Keep the sheet's drag bounds above the keyboard, including when collapsed.
-    Box(modifier = modifier
-        .imePadding()
-        .sizeIn(maxWidth = Dimensions.getMaxQuestFormWidth(windowInfo))
-        .questFormEscapeDismiss(escapeDismissEnabled, escapeFocusRequester, onDismissRequest)
-    ) {
+    CompositionLocalProvider(LocalQuestFormKeyboardScope provides keyboardScope) {
+        Box(modifier = modifier
+            .imePadding()
+            .sizeIn(maxWidth = Dimensions.getMaxQuestFormWidth(windowInfo))
+            .questFormKeyboardShortcuts(
+                enabled = keyboardShortcutsEnabled,
+                scope = keyboardScope,
+                escapeEnabled = escapeDismissEnabled,
+                escapeFocusRequester = escapeFocusRequester,
+                onEscapeDismiss = onDismissRequest,
+            )
+        ) {
         BottomSheet(
             initialState = initialState,
             peekHeight = peekHeight,
@@ -239,6 +253,7 @@ fun BottomSheetFormScaffold(
                     .padding(horizontal = 8.dp, vertical = 32.dp),
                 content = { fab2() }
             )
+        }
         }
     }
 }

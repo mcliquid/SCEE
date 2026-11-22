@@ -22,6 +22,7 @@ import de.westnordost.streetcomplete.quests.lanes.Direction.FORWARD
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.dialogs.WheelPickerDialog
 import de.westnordost.streetcomplete.ui.common.last_picked.LastPickedChipsRow
+import de.westnordost.streetcomplete.ui.common.quest.QuestFormKeyboardLayer
 import de.westnordost.streetcomplete.ui.common.street_side_select.MiniCompass
 import de.westnordost.streetcomplete.ui.theme.divider
 import org.jetbrains.compose.resources.stringResource
@@ -46,6 +47,14 @@ fun LanesForm(
     var showPickerForDirection by remember { mutableStateOf<Direction?>(null) }
 
     val rotation = wayRotation - mapRotation
+    val quickSelectVisible = !isOneway && value.forward == null && value.backward == null
+    QuestFormKeyboardLayer(
+        onLastPicked = if (quickSelectVisible) {
+            { onValueChanged(Lanes(1, 1)) }
+        } else {
+            null
+        },
+    )
 
     Box(modifier = modifier
         .fillMaxWidth()
@@ -74,7 +83,7 @@ fun LanesForm(
         )
 
         // just one quick-select button: 2 lanes covers most
-        if (!isOneway && value.forward == null && value.backward == null) {
+        if (quickSelectVisible) {
             LastPickedChipsRow(
                 items = listOf(1),
                 onClick = { onValueChanged(Lanes(it, it)) },

@@ -31,6 +31,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
+import de.westnordost.streetcomplete.ui.common.quest.trackQuestFormTextInputFocus
 
 enum class TextFieldStyle { Filled, Outlined }
 
@@ -74,12 +75,13 @@ fun TextField2(
     // If color is not provided via the text style, use content color as a default
     val textColor = textStyle.color.takeOrElse { colors.textColor(enabled).value }
     val mergedTextStyle = textStyle.merge(TextStyle(color = textColor))
+    val keyboardFocusModifier = modifier.trackQuestFormTextInputFocus()
 
     @OptIn(ExperimentalMaterialApi::class)
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = modifier.textFieldDefaults(
+        modifier = keyboardFocusModifier.textFieldDefaults(
             style = style,
             enabled = enabled,
             label = label,
@@ -149,12 +151,13 @@ fun TextField2(
     // If color is not provided via the text style, use content color as a default
     val textColor = textStyle.color.takeOrElse { colors.textColor(enabled).value }
     val mergedTextStyle = textStyle.merge(TextStyle(color = textColor))
+    val keyboardFocusModifier = modifier.trackQuestFormTextInputFocus()
 
     @OptIn(ExperimentalMaterialApi::class)
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = modifier.textFieldDefaults(
+        modifier = keyboardFocusModifier.textFieldDefaults(
             style = style,
             enabled = enabled,
             label = label,

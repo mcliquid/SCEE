@@ -45,6 +45,7 @@ import de.westnordost.streetcomplete.ui.common.NonPredictiveBackHandler
 import de.westnordost.streetcomplete.ui.common.bottom_sheet.BottomSheetFormScaffold
 import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmDiscardDialog
 import de.westnordost.streetcomplete.ui.common.quest.AnswerItem
+import de.westnordost.streetcomplete.ui.common.quest.QuestFormKeyboardLayer
 import de.westnordost.streetcomplete.ui.common.quest.LocalElement
 import de.westnordost.streetcomplete.ui.common.quest.LocalLastMapClick
 import de.westnordost.streetcomplete.ui.common.quest.MapClick
@@ -164,6 +165,10 @@ fun OverlayForm(
                 null
             },
             content = {
+                QuestFormKeyboardLayer(
+                    onSubmit = onClickOk,
+                    canSubmit = { isComplete && hasChanges && !confirmDiscard },
+                )
                 OverlayContent(
                     modifier = Modifier.fillMaxWidth(),
                     otherAnswers = { otherAnswers() + createDefaultOtherAnswers() },

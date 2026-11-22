@@ -17,6 +17,9 @@ import androidx.compose.ui.window.DialogProperties
 import com.cheonjaeung.compose.grid.SimpleGridCells
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.item_select.ItemSelectGrid
+import de.westnordost.streetcomplete.ui.common.item_select.ItemSelectGridWithShortcutHints
+import de.westnordost.streetcomplete.ui.common.quest.QuestFormDialogKeyboardHost
+import de.westnordost.streetcomplete.ui.common.quest.QuestFormKeyboardLayer
 import de.westnordost.streetcomplete.ui.ktx.fadingVerticalScrollEdges
 import org.jetbrains.compose.resources.stringResource
 
@@ -47,28 +50,36 @@ fun <I> SimpleItemSelectDialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
-        AlertDialogLayout(
-            modifier = modifier,
-            title = { Text(stringResource(Res.string.quest_roofShape_select_one)) },
-            content = {
-                Column(Modifier
-                    .fadingVerticalScrollEdges(scrollState, 64.dp)
-                    .verticalScroll(scrollState)
-                    .padding(horizontal = 24.dp),
-                ) {
-                    ItemSelectGrid(
-                        columns = columns,
-                        items = items,
-                        selectedItem = null,
-                        onSelect = { if (it != null) select(it) },
-                        itemContent = itemContent,
-                        modifier = Modifier.padding(bottom = 24.dp)
-                    )
-                }
+        QuestFormKeyboardLayer(
+            numberedOptions = {
+                items.take(9).map { item -> { select(item) } }
             },
-            shape = shape,
-            backgroundColor = backgroundColor,
-            contentColor = contentColor
+            onEscape = onDismissRequest,
         )
+        QuestFormDialogKeyboardHost(onEscape = onDismissRequest) {
+            AlertDialogLayout(
+                modifier = modifier,
+                title = { Text(stringResource(Res.string.quest_roofShape_select_one)) },
+                content = {
+                    Column(Modifier
+                        .fadingVerticalScrollEdges(scrollState, 64.dp)
+                        .verticalScroll(scrollState)
+                        .padding(horizontal = 24.dp),
+                    ) {
+                        ItemSelectGridWithShortcutHints(
+                            columns = columns,
+                            items = items,
+                            selectedItem = null,
+                            onSelect = { if (it != null) select(it) },
+                            itemContent = itemContent,
+                            modifier = Modifier.padding(bottom = 24.dp),
+                        )
+                    }
+                },
+                shape = shape,
+                backgroundColor = backgroundColor,
+                contentColor = contentColor
+            )
+        }
     }
 }

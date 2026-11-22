@@ -1,10 +1,13 @@
 package de.westnordost.streetcomplete.ui.common.quest
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
@@ -39,7 +42,13 @@ fun QuestAnswerButtonBar(
     answers: List<AnswerItem> = emptyList(),
     otherAnswers: @Composable (() -> List<AnswerItem>)? = null,
 ) {
+    var expandedOtherAnswers by rememberSaveable { mutableStateOf(false) }
     if (otherAnswers == null && answers.isEmpty()) return
+
+    QuestFormKeyboardLayer(
+        numberedOptions = { answers.take(9).map { item -> { item.action() } } },
+        suppressShortcuts = { expandedOtherAnswers },
+    )
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -48,6 +57,8 @@ fun QuestAnswerButtonBar(
         if (otherAnswers != null) {
             OtherAnswersTextButton(
                 answers = otherAnswers,
+                expanded = expandedOtherAnswers,
+                onExpandedChange = { expandedOtherAnswers = it },
                 modifier = Modifier.weight(1f),
             )
         }
@@ -61,13 +72,21 @@ fun QuestAnswerButtonBar(
                     .weight(1f)
                     .defaultMinSize(minWidth = 80.dp, minHeight = 48.dp),
             ) {
-                Text(
-                    text = item.text,
-                    textAlign = TextAlign.Center,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    if (LocalQuestFormKeyboardShortcutsEnabled.current && index < 9) {
+                        QuestFormShortcutDigitHint(digit = index + 1)
+                    }
+                    Text(
+                        text = item.text,
+                        textAlign = TextAlign.Center,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         }
     }
@@ -76,13 +95,13 @@ fun QuestAnswerButtonBar(
 @Composable
 private fun OtherAnswersTextButton(
     answers: @Composable () -> List<AnswerItem>,
+    expanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var expanded by rememberSaveable { mutableStateOf(false) }
-
     Box(modifier) {
         TextButton(
-            onClick = { expanded = true },
+            onClick = { onExpandedChange(true) },
             modifier = Modifier
                 .fillMaxWidth()
                 .defaultMinSize(minWidth = 80.dp, minHeight = 48.dp),
@@ -97,10 +116,10 @@ private fun OtherAnswersTextButton(
         }
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false }
+            onDismissRequest = { onExpandedChange(false) },
         ) {
             for (answer in answers()) {
-                DropdownMenuItem(onClick = { expanded = false; answer.action() }) {
+                DropdownMenuItem(onClick = { onExpandedChange(false); answer.action() }) {
                     Text(answer.text)
                 }
             }

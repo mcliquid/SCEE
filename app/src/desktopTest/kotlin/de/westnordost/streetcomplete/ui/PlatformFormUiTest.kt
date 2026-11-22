@@ -7,5 +7,6 @@ class PlatformFormUiTest {
     @Test fun `desktop enables persistent close and escape dismiss`() {
         assertTrue(showsPersistentQuestFormCloseButton())
         assertTrue(supportsQuestFormEscapeDismiss())
+        assertTrue(supportsQuestFormKeyboardShortcuts())
     }
 }

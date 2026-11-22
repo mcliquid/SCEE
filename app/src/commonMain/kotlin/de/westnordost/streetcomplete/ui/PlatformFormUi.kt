@@ -5,3 +5,6 @@ expect fun showsPersistentQuestFormCloseButton(): Boolean
 
 /** [androidx.compose.ui.input.key.Key.Escape] dismisses the open quest form (desktop). */
 expect fun supportsQuestFormEscapeDismiss(): Boolean
+
+/** Numbered 1–9 / Y/N/L / Enter shortcuts for quest and overlay forms (desktop only). */
+expect fun supportsQuestFormKeyboardShortcuts(): Boolean

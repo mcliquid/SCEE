@@ -7,5 +7,6 @@ class PlatformFormUiAndroidTest {
     @Test fun `android keeps touch sheet dismiss semantics`() {
         assertFalse(showsPersistentQuestFormCloseButton())
         assertFalse(supportsQuestFormEscapeDismiss())
+        assertFalse(supportsQuestFormKeyboardShortcuts())
     }
 }

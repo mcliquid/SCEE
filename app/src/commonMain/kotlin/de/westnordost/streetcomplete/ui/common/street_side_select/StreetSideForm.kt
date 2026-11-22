@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.osm.Sides
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.last_picked.LastPickedChipsRow
+import de.westnordost.streetcomplete.ui.common.quest.QuestFormKeyboardLayer
 import de.westnordost.streetcomplete.ui.theme.divider
 import org.jetbrains.compose.resources.painterResource
 
@@ -42,6 +43,14 @@ import org.jetbrains.compose.resources.painterResource
     isRightSideEnabled: Boolean = true,
 ) {
     val rotation = geometryRotation - mapRotation
+    val showLastPickedNow = enabled && lastPicked.isNotEmpty() && showLastPicked
+    QuestFormKeyboardLayer(
+        onLastPicked = if (showLastPickedNow) {
+            { lastPicked.firstOrNull()?.let { onValueChanged(it) } }
+        } else {
+            null
+        },
+    )
 
     val unknownPainter = painterResource(
         if (!isLeftHandTraffic) Res.drawable.street_side_unknown

@@ -38,6 +38,7 @@ import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.FloatingOkButton
 import de.westnordost.streetcomplete.ui.common.FloatingSmallerButton
 import de.westnordost.streetcomplete.ui.common.NonPredictiveBackHandler
+import de.westnordost.streetcomplete.ui.common.quest.LocalQuestFormKeyboardShortcutsEnabled
 import de.westnordost.streetcomplete.ui.common.bottom_sheet.BottomSheetFormScaffold
 import de.westnordost.streetcomplete.ui.common.bottom_sheet.BottomSheetMapClickDismissEffect
 import de.westnordost.streetcomplete.ui.common.dialogs.ConfirmDiscardDialog
@@ -191,6 +192,18 @@ private fun QuestForm(
 
     var confirmDiscard by remember { mutableStateOf(false) }
 
+    val yesLabel = stringResource(Res.string.quest_generic_hasFeature_yes)
+    val noLabel = stringResource(Res.string.quest_generic_hasFeature_no)
+    val keyboardShortcutsActive = LocalQuestFormKeyboardShortcutsEnabled.current
+    val binaryYesNo = remember(answers, content, yesLabel, noLabel, keyboardShortcutsActive) {
+        if (!keyboardShortcutsActive || content != null || answers.size != 2) null
+        else {
+            val yes = answers.find { it.text == yesLabel }
+            val no = answers.find { it.text == noLabel }
+            if (yes != null && no != null) QuestFormBinaryYesNo(onYes = yes.action, onNo = no.action)
+            else null
+        }
+    }
     fun dismiss() {
         if (hasChanges) {
             confirmDiscard = true
@@ -277,6 +290,11 @@ private fun QuestForm(
         fixme = if (fixme != null) { {
             ObjectFixme(text = fixme)
         } } else null,        content = {
+            QuestFormKeyboardLayer(
+                onSubmit = onClickOk,
+                canSubmit = { isComplete && onClickOk != null && !confirmDiscard },
+                binaryYesNo = binaryYesNo,
+            )
             QuestAnswerContent(
                 modifier = Modifier.fillMaxWidth(),
                 answers = answers,

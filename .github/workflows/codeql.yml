@@ -66,9 +66,9 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x gradlew
-          # CodeQL's Kotlin extractor hooks kotlinc JVM execs; --no-daemon and
-          # out-of-process compilation are required so Gradle actually launches
-          # traceable compiler processes (see GitHub CodeQL docs for compiled languages).
+          # CodeQL hooks the compiler via LD_PRELOAD. Kotlin 2.4+ removed
+          # out-of-process; in-process runs kotlinc inside the Gradle JVM (see
+          # kotlinlang.org/docs/compiler-execution-strategy.html).
           ./gradlew \
             "-Dorg.gradle.jvmargs=-Xmx3584m -XX:+UseG1GC -Dfile.encoding=UTF-8" \
             "-Dkotlin.daemon.jvmargs=-Xmx1536m -XX:+UseG1GC" \
@@ -83,7 +83,7 @@ jobs:
             --no-parallel \
             --no-configuration-cache \
             --no-daemon \
-            -Pkotlin.compiler.execution.strategy=out-of-process \
+            -Pkotlin.compiler.execution.strategy=in-process \
             --console=plain
 
       - name: Perform CodeQL Analysis

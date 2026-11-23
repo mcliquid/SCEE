@@ -1,6 +1,4 @@
 import com.esotericsoftware.yamlbeans.YamlReader
-import java.io.File
-import java.net.URI
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -50,31 +48,22 @@ class CountryMetadataYamlTest {
         assertEquals(true, parsed["LU"])
     }
 
-    @Test fun `parses upstream duplicate LU fixture`() {
-        val text = URI(
-            "https://raw.githubusercontent.com/streetcomplete/countrymetadata/master/data/hasAdvisorySpeedLimitSign.yml",
-        ).toURL().readText()
+    @Test fun `parses frozen duplicate LU fixture`() {
+        val text = CountryMetadataTestFixtures.readProperty("hasAdvisorySpeedLimitSign.yml")
         val parsed = parseCountryMetadataYaml(text)
         assertEquals(true, parsed["LU"])
         assertEquals(true, parsed["LT"])
     }
 
-    @Test fun `matches yamlbeans for upstream duplicate LU fixture`() {
-        val text = URI(
-            "https://raw.githubusercontent.com/streetcomplete/countrymetadata/master/data/hasAdvisorySpeedLimitSign.yml",
-        ).toURL().readText()
+    @Test fun `matches yamlbeans for frozen duplicate LU fixture`() {
+        val text = CountryMetadataTestFixtures.readProperty("hasAdvisorySpeedLimitSign.yml")
         val old = YamlReader(text).read() as Map<String, Any>
         val neu = parseCountryMetadataYaml(text)
         assertMapsContentEqual(normalizeMetadataMap(old), normalizeMetadataMap(neu))
     }
 
     @Test fun `matches yamlbeans for block lists with inline comments`() {
-        val text =
-            """
-            DE:
-              - Bank A # 3
-              - Bank B
-            """.trimIndent()
+        val text = CountryMetadataTestFixtures.readProperty("atmOperators.yml")
         val old = YamlReader(text).read() as Map<String, Any>
         val neu = parseCountryMetadataYaml(text)
         assertMapsContentEqual(normalizeMetadataMap(old), normalizeMetadataMap(neu))
@@ -99,15 +88,13 @@ class CountryMetadataYamlTest {
     }
 
     @Test fun `keeps Norway country code as string key`() {
-        val parsed = parseCountryMetadataYaml("NO: true\ndefault: false")
-        assertEquals(true, parsed["NO"])
-        assertEquals(false, parsed["default"])
+        val parsed = parseCountryMetadataYaml(CountryMetadataTestFixtures.readProperty("domesticSocketTypes.yml"))
+        assertTrue(parsed.containsKey("NO"))
+        assertEquals(listOf("typef", "typec"), parsed["NO"])
     }
 
-    @Test fun `parses local metadata fixture`() {
-        val root = File(System.getProperty("scee.project.root"))
-        val text = root.resolve("res/country_metadata/orchardProduces.yml").readText()
-        val parsed = parseCountryMetadataYaml(text)
+    @Test fun `parses frozen orchardProduces fixture`() {
+        val parsed = parseCountryMetadataYaml(CountryMetadataTestFixtures.readProperty("orchardProduces.yml"))
         assertTrue(parsed.containsKey("DE"))
         assertTrue(parsed["DE"] is List<*>)
     }

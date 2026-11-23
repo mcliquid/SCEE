@@ -19,6 +19,7 @@ dependencies {
     implementation(libs.jsoup)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kaml)
+    implementation(libs.snakeyaml)
     implementation(libs.markdown)
 }
 

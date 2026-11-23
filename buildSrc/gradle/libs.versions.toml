@@ -8,6 +8,7 @@ yamlbeans = "1.17"
 jsoup = "1.24.1"
 kotlinxSerialization = "1.13.0"
 kaml = "0.104.0"
+snakeyaml = "2.7"
 markdown = "0.7.18"
 junit = "4.13.2"
 
@@ -25,4 +26,5 @@ yamlbeans = { module = "com.esotericsoftware.yamlbeans:yamlbeans", version.ref =
 jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
 kaml = { module = "com.charleskorn.kaml:kaml", version.ref = "kaml" }
+snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }
 markdown = { module = "org.jetbrains:markdown", version.ref = "markdown" }

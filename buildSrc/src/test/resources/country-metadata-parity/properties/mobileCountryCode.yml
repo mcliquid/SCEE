@@ -1,0 +1,5 @@
+# frozen excerpt: numeric scalars and NO country code key
+default: 0
+AD: 213
+DE: 262
+NO: 242

@@ -5,6 +5,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import de.westnordost.osmfeatures.FeatureDictionary
+import de.westnordost.streetcomplete.data.osm.edits.ElementEditsController
 import de.westnordost.streetcomplete.data.osmnotes.edits.*
 import de.westnordost.streetcomplete.screens.main.edithistory.EditHistorySidebar
 import de.westnordost.streetcomplete.screens.main.edithistory.EditItem
@@ -34,7 +35,11 @@ class EditHistoryProtectedUndoTest {
         every { get(any()) } returns edit
         every { getCreationAttempt(any()) } returns NoteCreationAttempt("preserved", null)
     }
+    private val elementEdits = mock<ElementEditsController> {
+        every { editNeedsUserAttention(any()) } returns false
+    }
     private val koin = koinApplication { modules(module {
+        single<ElementEditsController> { elementEdits }
         single<NoteEditsController> { controller }
         single { NoteEditsUploader(controller, mock(), mock(), mock(), mock(), mock()) }
         single<Lazy<FeatureDictionary>>(named("FeatureDictionaryLazy")) { lazy { error("unused") } }

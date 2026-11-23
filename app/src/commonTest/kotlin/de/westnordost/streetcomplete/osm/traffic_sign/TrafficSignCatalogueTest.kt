@@ -17,7 +17,7 @@ class TrafficSignCatalogueTest {
     @Test fun `bundled catalogue has the pinned version`() {
         assertEquals("DE", catalogueDE.country)
         assertEquals("0.8.0", catalogueDE.version)
-        val versionFile = TrafficSignTestData.readText("$RESOURCES_DIR/files/traffic_signs/VERSION")
+        val versionFile = TrafficSignTestData.readTextLf("$RESOURCES_DIR/files/traffic_signs/VERSION")
         assertTrue(versionFile.startsWith("@osm-traffic-signs/converter@0.8.0\n"))
     }
 

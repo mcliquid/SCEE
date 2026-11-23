@@ -27,6 +27,10 @@ object TrafficSignTestData {
     fun readText(path: String): String =
         SystemFileSystem.source(Path(path)).buffered().use { it.readString() }
 
+    /** Like [readText], but normalizes line endings to LF (Windows checkouts may use CRLF). */
+    fun readTextLf(path: String): String =
+        readText(path).replace("\r\n", "\n").replace("\r", "\n")
+
     fun readBytesOrNull(path: String): ByteArray? {
         val p = Path(path)
         if (!SystemFileSystem.exists(p)) return null

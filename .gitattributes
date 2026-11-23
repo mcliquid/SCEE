@@ -10,6 +10,8 @@ app/src/commonMain/composeResources/files/brewery/** text eol=lf
 app/src/commonMain/composeResources/files/cuisine/** text eol=lf
 app/src/commonMain/composeResources/files/tag_editor/** text eol=lf
 app/src/commonMain/composeResources/files/tree/** text eol=lf
+# Pinned converter metadata: tests read this file from the working tree (TrafficSignCatalogueTest).
+app/src/commonMain/composeResources/files/traffic_signs/VERSION text eol=lf
 .github/scripts/ci-test-with-diagnostics.sh text eol=lf
 .github/scripts/ci-diagnostics-lib.sh text eol=lf
 .github/scripts/ci-test-with-diagnostics.test.sh text eol=lf

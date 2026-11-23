@@ -78,9 +78,9 @@ bicycle_parking_type_handle... CC-BY-SA 4.0      Hiddewie https://commons.wikime
 bicycle_parking_type_saddle... CC-BY-SA 4.0      mcliquid https://commons.wikimedia.org/wiki/File:Fahrradparkplatz_Sattelhalter_1.jpg
 bicycle_parking_type_two_ti... CC0               Bukk https://commons.wikimedia.org/wiki/File:Double_stack_bike_stand.jpg
 bicycle_parking_type_floor     CC0               Nakaner https://wiki.openstreetmap.org/wiki/File:Fahrradparkplatz_mit_Schild_und_ohne_Buegel.jpg
-bicycle_parking_type_wave      CC-BY-SA 4.0      IlPinguinoOSM https://commons.wikimedia.org/wiki/File:Bike_parking_green_wave_style_rack.jpg
-bicycle_parking_type_anchors   CC-BY 4.0         Archpdx https://commons.wikimedia.org/wiki/File:Concrete_bike_stand_with_anchors.jpg
-bicycle_parking_type_ground_... CC0 1.0           Lest69 https://commons.wikimedia.org/wiki/File:Concrete_bike_stand.jpg
+bicycle_parking_type_wave      CC-BY-SA 4.0      Frinship https://commons.wikimedia.org/wiki/File:School_wave_rack.jpg (cropped and resized)
+bicycle_parking_type_anchors   CC0 1.0           Will Patrol Tonight https://wiki.openstreetmap.org/wiki/File:Anchor-style_bicycle_parking_in_Salt_Lake_City_Utah.jpg (cropped and resized)
+bicycle_parking_type_ground_... Public Domain     Jengelh https://wiki.openstreetmap.org/wiki/File:Bicycle_ground_slots.jpg (cropped and resized)
 
 bicycle_rental_docking_stat... CC-BY-SA 3.0      Siyuwj https://commons.wikimedia.org/wiki/File:Bicycle_rental_site_of_Tiangongyuan_Station.JPG
 bicycle_rental_dropoff_poin... CC-BY-SA 4.0      Alexander Migl https://commons.wikimedia.org/wiki/File:Stuttgart-Vaihingen_Train_Station_Mobility_Hub_IMG_5767.jpg

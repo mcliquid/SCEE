@@ -55,6 +55,9 @@ class AddBikeParkingTypeTest {
             BUILDING to "building",
             HANDLEBAR_HOLDER to "handlebar_holder",
             SADDLE_HOLDER to "saddle_holder",
+            WAVE to "wave",
+            ANCHORS to "anchors",
+            GROUND_SLOTS to "ground_slots",
             TWO_TIER to "two-tier",
             FLOOR to "floor",
             BOLLARD to "bollard",
@@ -81,6 +84,19 @@ class AddBikeParkingTypeTest {
     @Test fun `not eligible after bicycle_parking is set`() {
         val answered = mapOf("amenity" to "bicycle_parking", "bicycle_parking" to "bollard")
         assertFalse(quest.isApplicableTo(node(tags = answered)))
+    }
+
+    @Test fun `not eligible when bicycle_parking is an unknown wiki value`() {
+        val tags = mapOf("amenity" to "bicycle_parking", "bicycle_parking" to "rack")
+        assertFalse(quest.isApplicableTo(node(tags = tags)))
+        assertFalse(quest.isApplicableTo(way(tags = tags)))
+    }
+
+    @Test fun `new types serialize and deserialize`() {
+        for (type in listOf(WAVE, ANCHORS, GROUND_SLOTS)) {
+            val encoded = Json.encodeToString(BikeParkingType.serializer(), type)
+            assertEquals(type, Json.decodeFromString(BikeParkingType.serializer(), encoded))
+        }
     }
 
     @Test fun `access no still excluded`() {

@@ -568,6 +568,9 @@
 
     <!-- additional strings for quests available in StreetComplete -->
     <string name="quest_bicycle_parking_type_saddleholder">Saddle holder</string>
+    <string name="quest_bicycle_parking_type_wave">Wave rack (serpentine stand, lock perpendicular to rail)</string>
+    <string name="quest_bicycle_parking_type_anchors">Anchor (ground or wall loop to thread a lock through)</string>
+    <string name="quest_bicycle_parking_type_ground_slots">Ground slots (wheel slot in the pavement)</string>
     <string name="quest_surface_value_metal_grid">Metal grid</string>
     <string name="quest_surface_value_stepping_stones">Stepping stones</string>
     <string name="quest_surface_value_chipseal">Chipseal</string>

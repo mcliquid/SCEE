@@ -10,6 +10,9 @@ val BikeParkingType.title: StringResource get() = when (this) {
     WALL_LOOPS ->       Res.string.quest_bicycle_parking_type_wheelbender
     BOLLARD ->          Res.string.quest_bicycle_parking_type_bollard
     SAFE_LOOPS ->       Res.string.quest_bicycle_parking_type_safeloops
+    WAVE ->             Res.string.quest_bicycle_parking_type_wave
+    ANCHORS ->          Res.string.quest_bicycle_parking_type_anchors
+    GROUND_SLOTS ->     Res.string.quest_bicycle_parking_type_ground_slots
     SHED ->             Res.string.quest_bicycle_parking_type_shed
     LOCKERS ->          Res.string.quest_bicycle_parking_type_locker
     BUILDING ->         Res.string.quest_bicycle_parking_type_building
@@ -24,6 +27,9 @@ val BikeParkingType.icon: DrawableResource get() = when (this) {
     WALL_LOOPS ->       Res.drawable.bicycle_parking_type_wheelbenders
     BOLLARD ->          Res.drawable.bicycle_parking_type_bollard
     SAFE_LOOPS ->       Res.drawable.bicycle_parking_type_safeloops
+    WAVE ->             Res.drawable.bicycle_parking_type_wave
+    ANCHORS ->          Res.drawable.bicycle_parking_type_anchors
+    GROUND_SLOTS ->     Res.drawable.bicycle_parking_type_ground_slots
     SHED ->             Res.drawable.bicycle_parking_type_shed
     LOCKERS ->          Res.drawable.bicycle_parking_type_lockers
     BUILDING ->         Res.drawable.bicycle_parking_type_building

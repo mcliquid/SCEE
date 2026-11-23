@@ -598,7 +598,6 @@
     <string name="quest_elevatorBicycleAccess_title">Kann man in diesem Aufzug ein Fahrrad transportieren?</string>
     <string name="quest_elevatorBicycleAccess_answer_private">Dieser Aufzug ist privat</string>
     <string name="quest_saunaAvailability_title">Gibt es hier eine Sauna?</string>
-    <string name="quest_bicycle_parking_type_saddleholder">Sattelhalter</string>
     <string name="quest_swimming_pool_indoor_and_outdoor">Beides (innen und außen)</string>
     <string name="quest_swimming_pool_indoor_only">Nur innen</string>
     <string name="quest_swimming_pool_outdoor_only">Nur außen</string>

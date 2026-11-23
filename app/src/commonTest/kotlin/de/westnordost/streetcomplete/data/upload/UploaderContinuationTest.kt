@@ -46,6 +46,7 @@ class UploaderContinuationTest {
     private val elementController = mock<ElementEditsController> {
         every { claimOldestUnsynced(any()) } returns null
         every { getAllUnsynced() } returns emptyList()
+        every { unsyncedEditIdsNeedingUserAttention() } returns emptyList()
     }
     private val elements = ElementEditsUploader(
         elementController, edits,
@@ -115,6 +116,7 @@ class UploaderContinuationTest {
         val rejected = de.westnordost.streetcomplete.testutils.edit().copy(review =
             de.westnordost.streetcomplete.data.osm.edits.ElementEditReview(1, 400, "invalid", 123))
         every { elementController.getAllUnsynced() } returns listOf(rejected)
+        every { elementController.unsyncedEditIdsNeedingUserAttention() } returns listOf(rejected.id)
         assertFailsWith<de.westnordost.streetcomplete.data.osm.edits.ElementEditsNeedReviewException> { uploader.upload() }
         verify { edits.getOldestUnsynced() }
         verifySuspend(exactly(1)) { external.upload() }

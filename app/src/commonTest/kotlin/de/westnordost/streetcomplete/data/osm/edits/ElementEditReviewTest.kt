@@ -298,6 +298,17 @@ class ElementEditReviewTest : StreetCompleteDatabaseTestCase() {
         controller.releaseUploadClaim(edit.id)
     }
 
+    @Test fun `waiting dependent chain does not require review exception`() = runBlocking<Unit> {
+        addCreateNode()
+        val nodeId = controller.getIdProvider(controller.getAllUnsynced().single().id).getAll().single().id
+        addTagEdit(Node(nodeId, p(), emptyMap(), 1))
+        assertEquals(emptyList(), controller.unsyncedEditIdsNeedingUserAttention())
+        server.whileInFlight = { throw ConnectionException("offline") }
+        val error = runCatching { uploader.upload() }.exceptionOrNull()
+        assertFalse(error is ElementEditsNeedReviewException)
+        assertEquals(0, countReviews())
+    }
+
     @Test fun `unowned negative edit is never sent and independent edit continues`() = runBlocking<Unit> {
         addTagEdit(Node(-999, p(), emptyMap(), 1))
         addTag(7)

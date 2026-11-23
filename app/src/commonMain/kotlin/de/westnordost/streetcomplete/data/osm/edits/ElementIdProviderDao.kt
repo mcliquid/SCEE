@@ -53,6 +53,15 @@ class ElementIdProviderDao(private val db: Database) {
         db.query(NAME, where = "$EDIT_ID = $editId") { it.toElementKey() }
     )
 
+    /** Local [editId] that was assigned temporary [key], if any. */
+    fun getEditIdForTemporaryKey(key: ElementKey): Long? {
+        if (key.id >= 0) return null
+        return db.queryOne(NAME,
+            where = "$ELEMENT_TYPE = ? AND $ELEMENT_ID = ?",
+            args = arrayOf(key.type.name, -key.id)
+        ) { it.getLong(EDIT_ID) }
+    }
+
     fun delete(editId: Long): Int =
         db.delete(NAME, "$EDIT_ID = $editId")
 

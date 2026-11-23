@@ -37,10 +37,10 @@ class RejectedElementEditDialogTest {
     }) }
     @After fun close() { koin.close() }
 
-    private fun show(root: Long = 1, undo: () -> Unit = {}) {
+    private fun show(root: Long = 1) {
         every { controller.get(any()) } returns edit(id = 1).copy(review = ElementEditReview(root, 400, "Invalid tag", 123))
         compose.setContent { KoinIsolatedContext(koin) { MaterialTheme {
-            RejectedElementEditDialog(1, onDismiss = {}, onUndo = undo)
+            RejectedElementEditDialog(1, onDismiss = {})
         } } }
         compose.waitUntil { compose.onAllNodesWithText("Invalid tag").fetchSemanticsNodes().isNotEmpty() }
     }
@@ -63,13 +63,6 @@ class RejectedElementEditDialogTest {
         compose.onNodeWithText("Retry upload").performClick()
         compose.waitUntil { scheduled == 1 }
         verify { controller.retryRejectedEdit(9) }
-    }
-
-    @Test fun `undo routes to existing lifecycle without retrying`() {
-        var undos = 0
-        show(undo = { undos++ })
-        compose.onNodeWithText("Undo this edit").performClick()
-        assertEquals(1, undos)
     }
 
     @Test fun `claim refusal remains visible and does not claim retry success`() {

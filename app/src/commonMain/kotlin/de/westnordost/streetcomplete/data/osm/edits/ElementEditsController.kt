@@ -45,6 +45,11 @@ interface ElementEditsController : ElementEditsSource {
 
     fun releaseUploadClaim(editId: Long)
 
+    /** Problem states the user must see (reject, blocked dependency, orphan) — not routine temp-ID waiting. */
+    fun editNeedsUserAttention(edit: ElementEdit): Boolean
+
+    fun unsyncedEditIdsNeedingUserAttention(): List<Long>
+
     fun markSynced(edit: ElementEdit, elementUpdates: MapDataUpdates)
 
     fun markSyncFailed(edit: ElementEdit)

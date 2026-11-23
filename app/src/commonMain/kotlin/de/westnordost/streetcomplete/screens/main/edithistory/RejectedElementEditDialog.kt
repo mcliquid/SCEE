@@ -21,7 +21,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 @Composable
-internal fun RejectedElementEditDialog(editId: Long, onDismiss: () -> Unit, onUndo: () -> Unit) {
+internal fun RejectedElementEditDialog(editId: Long, onDismiss: () -> Unit) {
     val controller = koinInject<ElementEditsController>()
     val uploads = koinInject<UploadController>()
     val scope = rememberCoroutineScope()
@@ -42,9 +42,6 @@ internal fun RejectedElementEditDialog(editId: Long, onDismiss: () -> Unit, onUn
         } },
         buttonRow = {
             TextButton(enabled = !busy, onClick = onDismiss) { Text(stringResource(Res.string.cancel)) }
-            TextButton(enabled = !busy && edit != null, onClick = onUndo) {
-                Text(stringResource(Res.string.element_review_undo))
-            }
             if (review != null) TextButton(enabled = !busy, onClick = {
                 busy = true
                 scope.launch {

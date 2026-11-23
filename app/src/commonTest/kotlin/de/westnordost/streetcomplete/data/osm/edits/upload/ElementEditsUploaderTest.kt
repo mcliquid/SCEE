@@ -49,7 +49,10 @@ class ElementEditsUploaderTest {
     private lateinit var listener: OnUploadedChangeListener
 
     @BeforeTest fun setUp() {
-        elementEditsController = mock { every { getAllUnsynced() } returns emptyList() }
+        elementEditsController = mock {
+            every { getAllUnsynced() } returns emptyList()
+            every { unsyncedEditIdsNeedingUserAttention() } returns emptyList()
+        }
         mapDataController = mock()
         noteEditsController = mock()
 

@@ -77,10 +77,9 @@ class ElementEditsUploader(
             if (ApplicationConstants.DEBUG && !UserLoginController.loggedIn)
                 break // slow uploading is much better to read in logs
         }
-        val pending = elementEditsController.getAllUnsynced()
-        blocked.retainAll(pending.mapTo(HashSet()) { it.id })
-        pending.filter { it.review != null || it.action.elementKeys.any { key -> key.id <= 0 } }
-            .mapTo(blocked) { it.id }
+        val pendingIds = elementEditsController.getAllUnsynced().mapTo(HashSet()) { it.id }
+        blocked.retainAll(pendingIds)
+        elementEditsController.unsyncedEditIdsNeedingUserAttention().forEach { blocked.add(it) }
         if (blocked.isNotEmpty()) throw ElementEditsNeedReviewException(blocked.toList())
     } }
 

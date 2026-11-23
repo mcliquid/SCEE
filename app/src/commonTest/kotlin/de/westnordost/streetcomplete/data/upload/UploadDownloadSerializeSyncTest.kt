@@ -280,7 +280,10 @@ private class SerializeSyncHarness {
     lateinit var releaseExternal: CompletableDeferred<Unit>
     lateinit var externalDownloadEntered: CompletableDeferred<Unit>
 
-    val elementEditsController: ElementEditsController = mock { every { getAllUnsynced() } returns emptyList() }
+    val elementEditsController: ElementEditsController = mock {
+        every { getAllUnsynced() } returns emptyList()
+        every { unsyncedEditIdsNeedingUserAttention() } returns emptyList()
+    }
     val mapDataController: MapDataController = mock()
     val noteEditsController: NoteEditsController = mock()
     val noteController: NoteController = mock()

@@ -41,6 +41,7 @@ fun EditHistoryItem(
     selected: Boolean,
     onSelect: () -> Unit,
     onUndo: () -> Unit,
+    onReviewInfo: (() -> Unit)? = null,
     edit: Edit,
     modifier: Modifier = Modifier,
     undoEnabled: Boolean = true,
@@ -70,10 +71,15 @@ fun EditHistoryItem(
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                MapButton(onClick = onUndo, enabled = undoEnabled, contentPadding = 8.dp) {
-                    if (edit is ElementEdit && (edit.review != null || edit.action.elementKeys.any { it.id <= 0 }))
-                        Icon(painterResource(Res.drawable.ic_info_outline_24), stringResource(Res.string.element_review_attention))
-                    else UndoIcon()
+                androidx.compose.foundation.layout.Row {
+                    if (onReviewInfo != null) {
+                        MapButton(onClick = onReviewInfo, enabled = undoEnabled, contentPadding = 8.dp) {
+                            Icon(painterResource(Res.drawable.ic_info_outline_24), stringResource(Res.string.element_review_attention))
+                        }
+                    }
+                    MapButton(onClick = onUndo, enabled = undoEnabled, contentPadding = 8.dp) {
+                        UndoIcon()
+                    }
                 }
             }
         }

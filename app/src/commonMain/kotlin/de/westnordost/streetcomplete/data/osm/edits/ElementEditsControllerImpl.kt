@@ -102,6 +102,24 @@ class ElementEditsControllerImpl(
         edit
     }
 
+    private fun unsyncedWithReviews(): Map<Long, ElementEdit> {
+        val blocked = blockedByReview()
+        return editCache.values.filter { !it.isSynced }.associate { it.id to it.copy(review = blocked[it.id] ?: it.review) }
+    }
+
+    override fun editNeedsUserAttention(edit: ElementEdit): Boolean = lock.withLock {
+        val unsynced = unsyncedWithReviews()
+        val current = unsynced[edit.id] ?: return false
+        elementEditNeedsUserAttention(current, unsynced, elementIdProviderDB::getEditIdForTemporaryKey)
+    }
+
+    override fun unsyncedEditIdsNeedingUserAttention(): List<Long> = lock.withLock {
+        val unsynced = unsyncedWithReviews()
+        unsynced.values.filter {
+            elementEditNeedsUserAttention(it, unsynced, elementIdProviderDB::getEditIdForTemporaryKey)
+        }.map { it.id }
+    }
+
     private fun blockedByReview(): Map<Long, ElementEditReview> {
         val blocked = editCache.values.filterNot { it.isSynced }
             .mapNotNull { edit -> edit.review?.let { edit.id to it } }.toMap().toMutableMap()

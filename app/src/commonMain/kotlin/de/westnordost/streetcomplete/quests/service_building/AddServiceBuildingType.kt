@@ -46,7 +46,7 @@ class AddServiceBuildingType : OsmFilterQuestType<ServiceBuildingType>() {
         GroupedItemSelectQuestForm(
             submitOnSelection = true,
             on = on,
-            groups = ServiceBuildingTypeCategory.entries,
+            groups = ServiceBuildingTypeCategory.groups,
             topItems = listOf(
                 ServiceBuildingType.MINOR_SUBSTATION,
                 ServiceBuildingType.GAS_PRESSURE_REGULATION,
@@ -56,8 +56,8 @@ class AddServiceBuildingType : OsmFilterQuestType<ServiceBuildingType>() {
             ),
             groupContent = {
                 ImageWithDescription(
-                    painter = painterResource(it.iconRes),
-                    title = stringResource(it.titleRes),
+                    painter = painterResource(it.category.iconRes),
+                    title = stringResource(it.category.titleRes),
                     description = null,
                     imageSize = DpSize(48.dp, 48.dp)
                 )

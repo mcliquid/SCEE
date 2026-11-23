@@ -44,16 +44,25 @@ enum class ServiceBuildingType(val tags: List<Pair<String, String>>) {
     DISUSED(listOf("disused" to "yes")),
 }
 
-enum class ServiceBuildingTypeCategory(
-    override val item: ServiceBuildingType?,
-    override val children: List<ServiceBuildingType>
-) : Group<ServiceBuildingType> {
-    POWER(ServiceBuildingType.POWER, listOf(MINOR_SUBSTATION, SUBSTATION, INDUSTRIAL_SUBSTATION, TRACTION_SUBSTATION, SWITCHGEAR, PLANT)),
-    WATER(ServiceBuildingType.WATER, listOf(WATER_WELL, COVERED_RESERVOIR, WATER_PUMPING_STATION)),
-    GAS(ServiceBuildingType.GAS, listOf(GAS_PUMPING_STATION, GAS_PRESSURE_REGULATION)),
-    TELECOM(ServiceBuildingType.TELECOM, listOf(TELECOM_EXCHANGE, INTERNET_EXCHANGE)),
-    RAILWAY(null, listOf(RAILWAY_VENTILATION_SHAFT, RAILWAY_SIGNAL_BOX, RAILWAY_ENGINE_SHED, RAILWAY_WASH)),
-    OTHER_SERVICE(null, listOf(OIL_PUMPING_STATION, SEWERAGE, HEATING, VENTILATION_SHAFT, MONITORING_STATION)),
+enum class ServiceBuildingTypeCategory {
+    POWER, WATER, GAS, TELECOM, RAILWAY, OTHER_SERVICE;
+
+    companion object {
+        val groups: List<Group<ServiceBuildingTypeCategory, ServiceBuildingType>> = listOf(
+            Group(POWER, ServiceBuildingType.POWER, listOf(
+                MINOR_SUBSTATION, SUBSTATION, INDUSTRIAL_SUBSTATION, TRACTION_SUBSTATION, SWITCHGEAR, PLANT,
+            )),
+            Group(WATER, ServiceBuildingType.WATER, listOf(WATER_WELL, COVERED_RESERVOIR, WATER_PUMPING_STATION)),
+            Group(GAS, ServiceBuildingType.GAS, listOf(GAS_PUMPING_STATION, GAS_PRESSURE_REGULATION)),
+            Group(TELECOM, ServiceBuildingType.TELECOM, listOf(TELECOM_EXCHANGE, INTERNET_EXCHANGE)),
+            Group(RAILWAY, null, listOf(
+                RAILWAY_VENTILATION_SHAFT, RAILWAY_SIGNAL_BOX, RAILWAY_ENGINE_SHED, RAILWAY_WASH,
+            )),
+            Group(OTHER_SERVICE, null, listOf(
+                OIL_PUMPING_STATION, SEWERAGE, HEATING, VENTILATION_SHAFT, MONITORING_STATION,
+            )),
+        )
+    }
 }
 
 val ServiceBuildingType.titleRes: StringResource get() = when (this) {

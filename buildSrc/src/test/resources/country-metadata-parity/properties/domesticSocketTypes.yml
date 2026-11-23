@@ -1,0 +1,4 @@
+# frozen excerpt: NO country code key with list value
+default: []
+NO: [typef, typec]
+DE: [typef]

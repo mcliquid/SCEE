@@ -1,0 +1,8 @@
+# frozen excerpt: block lists, inline comments, numeric list element
+default: []
+DE:
+  - Bank A # 3
+  - Bank B
+MM:
+  - KBZ Bank
+  - 1

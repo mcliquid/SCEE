@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.quests
 
 import de.westnordost.osmfeatures.Feature
 import de.westnordost.streetcomplete.ApplicationConstants.EE_QUEST_OFFSET
+import de.westnordost.streetcomplete.quests.bicycle_bypass.AddBicycleBypass
 import de.westnordost.streetcomplete.quests.bicycle_in_pedestrian_street.AddBicycleInPedestrianStreet
 import de.westnordost.streetcomplete.quests.elevator_bicycle_access.AddElevatorBicycleAccess
 import de.westnordost.streetcomplete.quests.water_bottle_fill.AddWaterBottleFill
@@ -384,6 +385,7 @@ fun getQuestTypeList(
     199 to AddParkingCharge(),
 
     20 to AddTrafficCalmingType(),
+    EE_QUEST_OFFSET + 215 to AddBicycleBypass(), // bicycle side bypass at chokers etc.; disabled by default
 
     // steps
     21 to AddHandrail(), // for accessibility of pedestrian routing, can be gathered when walking past

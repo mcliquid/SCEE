@@ -5,6 +5,7 @@ import de.westnordost.streetcomplete.quests.access_restriction.CheckAgricultural
 import de.westnordost.streetcomplete.quests.seating.AddSeating
 import de.westnordost.streetcomplete.quests.seating.Seating
 import de.westnordost.streetcomplete.quests.barrier_opening.AddBarrierOpening
+import de.westnordost.streetcomplete.quests.bicycle_bypass.AddBicycleBypass
 import de.westnordost.streetcomplete.quests.barrier_opening.BarrierWidth
 import de.westnordost.streetcomplete.quests.width.WidthAnswer
 import de.westnordost.streetcomplete.osm.length.Length
@@ -34,6 +35,19 @@ internal fun questContractFixtures(): List<QuestContract<*>> = buildList {
             { seating.isApplicableTo(node(tags = it)) == true },
             setOf("outdoor_seating", "outdoor_seating:conditional")))
     }
+    val bicycleBypass = AddBicycleBypass()
+    for (answer in listOf(true, false)) {
+        add(QuestContract(bicycleBypass, answer, mapOf("traffic_calming" to "choker"),
+            { tags ->
+                val n = node(1, tags = tags)
+                bicycleBypass.getApplicableElements(TestMapDataWithGeometry(listOf(
+                    n,
+                    way(2, listOf(1, 3), mapOf("highway" to "residential")),
+                    node(3),
+                ))).any { it.id == n.id }
+            },
+            setOf("traffic_calming")))
+    }
     val barrier = AddBarrierOpening(object : ArSupportChecker { override fun invoke() = false })
     for (ar in listOf(false, true)) {
         add(QuestContract(barrier, BarrierWidth(WidthAnswer(Length.Meters(1.2), ar)),
@@ -53,6 +67,10 @@ class QuestContractTest {
 
     @Test fun `seating preserves specific outdoor seating and conditional information`() {
         questContractFixtures().filter { it.quest is AddSeating }.forEach { it.verify() }
+    }
+
+    @Test fun `bicycle bypass writes only bicycle_bypass and closes quest`() {
+        questContractFixtures().filter { it.quest is AddBicycleBypass }.forEach { it.verify() }
     }
 
     @Test fun `measured barrier width closes legacy estimate quest on a footway`() {

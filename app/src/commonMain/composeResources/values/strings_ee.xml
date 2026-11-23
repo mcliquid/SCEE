@@ -352,6 +352,10 @@
     <string name="quest_elevatorBicycleAccess_title">Can bicycles be transported in this elevator?</string>
     <string name="quest_elevatorBicycleAccess_answer_private">This elevator is private</string>
 
+    <!-- bicycle bypass at traffic calming (choker/chicane) -->
+    <string name="quest_bicycleBypass_title">Can bicycles bypass this traffic calming feature?</string>
+    <string name="quest_bicycleBypass_hint">Answer yes only if bicycles can pass beside the obstacle on the road, without riding over the traffic calming itself.</string>
+
     <!-- sauna availability quest -->
     <string name="quest_saunaAvailability_title">Is there a sauna here?</string>
 

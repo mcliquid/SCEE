@@ -15,7 +15,7 @@ abstract class BundledAssetsContract {
         "brewery/brewerySuggestions.txt" to "23479c39d6b872a304cf4f405b1de4edbafaa2dfb6062bc5d3ab6ba10813db98",
         "cuisine/cuisineSuggestions.txt" to "4bad07ff52f04c2611274fb99a2f35880edaf8685b45351cc4b2f09f61a678df",
         "tag_editor/keySuggestionsForFeature.json" to "4859073c5e0d82f3360b905a872a1230d421ce4c9ad48e737c47aa84b9f4b0fb",
-        "tag_editor/valueSuggestionsByKey.json" to "2bef1bef248e6d4f33d44cba6e553d3149739a86c4b340fdb51c3e4c81f2be55",
+        "tag_editor/valueSuggestionsByKey.json" to "3744610492e8ad829ad0647f9aed0e5cd19b1eebd41c2eea01e7b8661a378d4b",
         "tree/osmGenus.txt" to "364ecbf5a506cefd8467a875e6d36a061274572c8109338800468fd96038ed6f",
         "tree/osmSpecies.txt" to "3b6d7ba840860eefb74afd45556c9c3f5874eee78d9ef323f847dbc2d2a61543",
         "tree/otherDataGenus.txt" to "11b706f0c078373ea5ba57c8f0702794d6ca696e2e214349574d1b8bc0264403",

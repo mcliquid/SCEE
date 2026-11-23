@@ -126,9 +126,11 @@ class UploadDownloadSerializeSyncTest {
         env.noteUploadEntered.awaitSoon()
         env.externalUploadEntered.awaitSoon()
 
+        assertTrue(env.serializeSync.isLocked)
         assertFalse(env.downloadMutationEntered.isCompleted)
         assertTrue(env.downloader.isDownloadInProgress)
 
+        env.releaseProtectedUploadWork.complete(Unit)
         upload.awaitSoon()
         env.downloadMutationEntered.awaitSoon()
         env.releaseDownload.complete(Unit)
@@ -274,6 +276,7 @@ private class SerializeSyncHarness {
     val secondElementEntered = CompletableDeferred<Unit>()
     val noteUploadEntered = CompletableDeferred<Unit>()
     val externalUploadEntered = CompletableDeferred<Unit>()
+    var releaseProtectedUploadWork = CompletableDeferred<Unit>().also { it.complete(Unit) }
     lateinit var releaseExternal: CompletableDeferred<Unit>
     lateinit var externalDownloadEntered: CompletableDeferred<Unit>
 
@@ -352,6 +355,7 @@ private class SerializeSyncHarness {
             overlap.enterUpload("external")
             try {
                 externalUploadEntered.complete(Unit)
+                releaseProtectedUploadWork.await()
             } finally {
                 overlap.exitUpload("external")
             }
@@ -400,6 +404,7 @@ private class SerializeSyncHarness {
     }
 
     fun gateFirstElementUpload() {
+        releaseProtectedUploadWork = CompletableDeferred()
         everySuspend { singleUploader.upload(any(), any()) } calls { (edit: ElementEdit) ->
             overlap.enterUpload("element-${edit.id}")
             try {

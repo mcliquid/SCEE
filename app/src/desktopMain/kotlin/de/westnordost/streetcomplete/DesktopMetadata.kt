@@ -29,16 +29,19 @@ internal fun desktopMetadataDirectory(
         require(prefix != connection.entryName)
         val entries = jar.entries().asSequence().filter { !it.isDirectory && it.name.startsWith(prefix) }.toList()
         require(entries.isNotEmpty()) { "Missing bundled metadata" }
-        val index = entries.sortedBy { it.name }.joinToString("\n") { "${it.name}:${it.size}:${it.crc}" }
+        val bundled = entries.map { BundledJarEntry(it, validatedRelativeJarPath(it.name, prefix)) }
+        val index = bundled.sortedBy { it.entry.name }.joinToString("\n") {
+            "${it.entry.name}:${it.entry.size}:${it.entry.crc}"
+        }
         val digest = MessageDigest.getInstance("SHA-256").digest(index.toByteArray()).joinToString("") { "%02x".format(it) }
         val directory = File(cacheDirectory, digest)
         val rootPath = directory.toPath().toAbsolutePath().normalize()
-        fun complete() = File(directory, ".complete").isFile && entries.all {
-            val file = jarEntryTarget(rootPath, it, prefix).let { target ->
+        fun complete() = File(directory, ".complete").isFile && bundled.all {
+            val file = resolvePathInsideRoot(rootPath, it.relativePath).let { target ->
                 requireCanonicalInsideRoot(rootPath, target)
                 target.toFile()
             }
-            file.isFile && file.length() == it.size
+            file.isFile && file.length() == it.entry.size
         }
         Files.createDirectories(cacheDirectory.toPath())
         FileChannel.open(File(cacheDirectory, ".lock").toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE).use { channel ->
@@ -55,12 +58,12 @@ internal fun desktopMetadataDirectory(
                 val temporary = Files.createTempDirectory(cacheDirectory.toPath(), ".metadata-").toFile()
                 val temporaryRoot = temporary.toPath().toAbsolutePath().normalize()
                 try {
-                    for (entry in entries) {
-                        val target = jarEntryTarget(temporaryRoot, entry, prefix)
+                    for (item in bundled) {
+                        val target = resolvePathInsideRoot(temporaryRoot, item.relativePath)
                         requireCanonicalInsideRoot(temporaryRoot, target)
                         val file = target.toFile()
                         check(file.parentFile.mkdirs() || file.parentFile.isDirectory)
-                        jar.getInputStream(entry).use { input -> file.outputStream().use { input.copyTo(it) } }
+                        jar.getInputStream(item.entry).use { input -> file.outputStream().use { input.copyTo(it) } }
                     }
                     File(temporary, ".complete").writeText(digest)
                     Files.move(temporary.toPath(), directory.toPath(), StandardCopyOption.ATOMIC_MOVE)
@@ -73,13 +76,25 @@ internal fun desktopMetadataDirectory(
     }
 }
 
-internal fun jarEntryTarget(root: Path, entry: JarEntry, prefix: String): Path {
-    val relative = entry.name.removePrefix(prefix).replace('\\', '/')
-    require(relative.isNotEmpty() && relative != "." && !relative.startsWith('/')) { "Invalid resource path" }
-    val target = root.resolve(relative).normalize()
+internal data class BundledJarEntry(val entry: JarEntry, val relativePath: String)
+
+internal fun validatedRelativeJarPath(entryName: String, prefix: String): String {
+    require(entryName.startsWith(prefix)) { "Invalid resource path" }
+    val relative = entryName.substring(prefix.length).replace('\\', '/')
+    require(relative.isNotEmpty() && relative != "." && !relative.startsWith('/') && !relative.contains("..")) {
+        "Invalid resource path"
+    }
+    return relative
+}
+
+internal fun resolvePathInsideRoot(root: Path, relativePath: String): Path {
+    val target = root.resolve(relativePath).normalize()
     require(target.startsWith(root)) { "Invalid resource path" }
     return target
 }
+
+internal fun jarEntryTarget(root: Path, entry: JarEntry, prefix: String): Path =
+    resolvePathInsideRoot(root, validatedRelativeJarPath(entry.name, prefix))
 
 internal fun requireCanonicalInsideRoot(root: Path, target: Path) {
     val rootDir = root.toFile()

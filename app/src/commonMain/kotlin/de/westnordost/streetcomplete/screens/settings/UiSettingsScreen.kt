@@ -13,26 +13,20 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AppBarDefaults
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.screens.main.hasHardwareKeyShortcuts
 import de.westnordost.streetcomplete.data.preferences.Preferences
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.*
 import de.westnordost.streetcomplete.ui.common.BackIcon
-import de.westnordost.streetcomplete.ui.common.RadioGroup
-import de.westnordost.streetcomplete.ui.common.TextField2
-import de.westnordost.streetcomplete.ui.common.dialogs.AlertDialog
 import de.westnordost.streetcomplete.ui.common.dialogs.TextInputDialog
 import de.westnordost.streetcomplete.ui.common.dialogs.WheelPickerDialog
 import de.westnordost.streetcomplete.ui.common.settings.Preference
@@ -179,37 +173,6 @@ fun UiSettingsScreen(
             }
         )
     if (showNearbyQuestDialog) {
-        val items = remember { listOfNotNull(
-            0 to Res.string.show_nearby_quests_disable,
-            1 to Res.string.show_nearby_quests_visible,
-            if (prefs.expertMode) 2 to Res.string.show_nearby_quests_all_types else null,
-            if (prefs.expertMode) 3 to Res.string.show_nearby_quests_even_hidden else null
-        ) }
-        var selected by remember { mutableIntStateOf(prefs.getInt(Prefs.SHOW_NEARBY_QUESTS, 0)) }
-        var distance by remember { mutableStateOf(TextFieldValue(prefs.getFloat(Prefs.SHOW_NEARBY_QUESTS_DISTANCE, 0.0f).toString())) }
-        AlertDialog(
-            onDismissRequest = { showNearbyQuestDialog = false },
-            title = { Text(stringResource(Res.string.pref_show_nearby_quests_title)) },
-            buttonRow = {
-                TextButton({ showNearbyQuestDialog = false }) { Text(stringResource(Res.string.cancel)) }
-                TextButton({
-                    prefs.putFloat(Prefs.SHOW_NEARBY_QUESTS_DISTANCE, (distance.text.toFloatOrNull() ?: 0f)
-                        .coerceAtLeast(0.0f).coerceAtMost(10.0f))
-                    showNearbyQuestDialog = false
-                }) { Text(stringResource(Res.string.ok)) }
-            },
-            text = {
-                Column {
-                    RadioGroup(
-                        items,
-                        { selected = it.first },
-                        selectedOption = items.getOrNull(selected),
-                        itemContent = { Text(stringResource(it.second)) }
-                    )
-                    Text(stringResource(Res.string.show_nearby_quests_distance))
-                    TextField2(distance, { distance = it }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
-                }
-            }
-        )
+        ShowNearbyQuestsDialog(prefs) { showNearbyQuestDialog = false }
     }
 }

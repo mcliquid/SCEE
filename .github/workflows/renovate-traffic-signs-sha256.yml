@@ -1,5 +1,6 @@
-# Renovate bumps trafficSignsVersion from npm; the pin must be the tarball SHA-256 (hex), not registry dist.integrity (sha512).
-name: Sync traffic sign tarball SHA-256
+# Renovate bumps trafficSignsVersion in app/build.gradle.kts; this workflow pins the tarball SHA-256
+# and, when the converter version changes, refreshes the bundled catalogues and parity reference.
+name: Renovate traffic sign coordinated refresh
 
 on:
   pull_request:
@@ -8,73 +9,294 @@ on:
     paths: [app/build.gradle.kts]
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: renovate-traffic-signs-sha256-${{ github.event.pull_request.number }}
+  group: renovate-traffic-sign-coordinated-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  pin-sha256:
+  generate:
+    name: Generate catalogue refresh
     if: >-
       startsWith(github.head_ref, 'renovate/') &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.user.login == 'renovate[bot]'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    outputs:
+      has_tree_changes: ${{ steps.refresh.outputs.has_tree_changes }}
+      pr_head_sha: ${{ steps.record_head.outputs.sha }}
+      traffic_sign_version: ${{ steps.refresh.outputs.traffic_sign_version }}
     steps:
-      - name: Checkout PR branch (pins to update)
+      - name: Record PR head SHA
+        id: record_head
+        run: echo "sha=${{ github.event.pull_request.head.sha }}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout PR branch (untrusted content, read-only generation)
         uses: actions/checkout@v7
         with:
           ref: ${{ github.head_ref }}
           path: pr
+          persist-credentials: false
 
-      - name: Checkout trusted pin script from base branch
+      - name: Checkout trusted scripts and base pins
         uses: actions/checkout@v7
         with:
           ref: ${{ github.event.pull_request.base.sha }}
-          sparse-checkout: .github/scripts/pin-traffic-signs-sha256.mjs
+          sparse-checkout: |
+            .github/scripts
+            app/build.gradle.kts
           sparse-checkout-cone-mode: false
           path: trusted
+          persist-credentials: false
+
+      - name: Skip unless coordinated catalogue refresh needed
+        id: version_gate
+        env:
+          BASE_GRADLE: trusted/app/build.gradle.kts
+          HEAD_GRADLE: pr/app/build.gradle.kts
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          files=$(gh api --paginate "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --jq '.[].filename')
+          refresh="$(node --input-type=module --eval "
+            import fs from 'node:fs';
+            import { pathToFileURL } from 'node:url';
+            const libUrl = pathToFileURL('trusted/.github/scripts/traffic-sign-renovate-lib.mjs').href;
+            const { shouldRunCoordinatedCatalogueRefresh } = await import(libUrl);
+            const base = fs.readFileSync(process.env.BASE_GRADLE, 'utf8');
+            const head = fs.readFileSync(process.env.HEAD_GRADLE, 'utf8');
+            const paths = process.argv[1].trim().split(/\n+/).filter(Boolean);
+            console.log(shouldRunCoordinatedCatalogueRefresh(base, head, paths) ? 'true' : 'false');
+          " <<<"$files")"
+          if [ "$refresh" = "true" ]; then
+            echo "refresh=true" >> "$GITHUB_OUTPUT"
+            echo "Converter version bump without catalogue refresh on PR; running coordinated refresh."
+          else
+            echo "refresh=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping coordinated refresh (version unchanged, or allowlisted refresh outputs already on PR)."
+          fi
+
+      - name: Assert PR file set
+        if: steps.version_gate.outputs.refresh == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          files=$(gh api --paginate "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files" --jq '.[].filename')
+          node --input-type=module --eval "
+            import { pathToFileURL } from 'node:url';
+            const libUrl = pathToFileURL('trusted/.github/scripts/traffic-sign-renovate-lib.mjs').href;
+            const { assertRenovateInitialPrFiles } = await import(libUrl);
+            const paths = process.argv[1].trim().split(/\\n+/).filter(Boolean);
+            assertRenovateInitialPrFiles(paths);
+          " <<<"$files"
+
+      - name: set up JDK 25
+        if: steps.version_gate.outputs.refresh == 'true'
+        uses: actions/setup-java@v6
+        with:
+          java-version: "25"
+          distribution: "temurin"
+
+      - uses: gradle/actions/setup-gradle@v6.4.1
+        if: steps.version_gate.outputs.refresh == 'true'
 
       - uses: actions/setup-node@v7
+        if: steps.version_gate.outputs.refresh == 'true'
         with:
           node-version: "26"
 
-      - name: Pin tarball SHA-256 for trafficSignsVersion
-        env:
-          GRADLE_PATH: pr/app/build.gradle.kts
+      - name: Publish pinned osmfeatures to mavenLocal
+        if: steps.version_gate.outputs.refresh == 'true'
+        working-directory: pr
         run: |
           set -euo pipefail
-          cp pr/app/build.gradle.kts "${RUNNER_TEMP}/build.gradle.before"
-          node trusted/.github/scripts/pin-traffic-signs-sha256.mjs
-          node --input-type=module -e "
-            import fs from 'node:fs';
-            import { assertOnlySha256PinChange } from './trusted/.github/scripts/pin-traffic-signs-sha256.mjs';
-            assertOnlySha256PinChange(
-              fs.readFileSync('${RUNNER_TEMP}/build.gradle.before', 'utf8'),
-              fs.readFileSync('pr/app/build.gradle.kts', 'utf8'),
-            );
-          "
+          chmod +x third_party/osmfeatures/publish-to-maven-local.sh
+          ./third_party/osmfeatures/publish-to-maven-local.sh
 
-      - name: Commit pin if needed
+      - name: Run coordinated refresh (pin, dry-run, apply, parity)
+        id: refresh
+        if: steps.version_gate.outputs.refresh == 'true'
         working-directory: pr
         env:
-          PIN_BRANCH: ${{ github.head_ref }}
+          REPO_ROOT: ${{ github.workspace }}/pr
+          TRUSTED_DIR: ${{ github.workspace }}/trusted
         run: |
           set -euo pipefail
-          if git diff --quiet -- app/build.gradle.kts; then
-            echo "No trafficSignsSha256 change needed"
-            exit 0
-          fi
-          other_changes="$(git status --porcelain --untracked-files=no | grep -v 'app/build.gradle.kts' || true)"
-          if [ -n "$other_changes" ]; then
-            echo "Unexpected working tree changes:"
-            git status --porcelain
+          chmod +x "$TRUSTED_DIR/.github/scripts/run-renovate-traffic-sign-refresh.sh"
+          "$TRUSTED_DIR/.github/scripts/run-renovate-traffic-sign-refresh.sh"
+        continue-on-error: false
+
+      - name: Upload update report on failure
+        if: failure() && steps.version_gate.outputs.refresh == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: traffic-signs-update-report
+          path: pr/app/build/traffic-signs-update/*.md
+          if-no-files-found: ignore
+
+      - name: Package allowlisted changes
+        id: package
+        if: steps.version_gate.outputs.refresh == 'true' && steps.refresh.outputs.has_tree_changes == 'true'
+        working-directory: pr
+        env:
+          TRUSTED_DIR: ${{ github.workspace }}/trusted
+        run: |
+          set -euo pipefail
+          mapfile -t paths < <(git diff --name-only; git ls-files --others --exclude-standard)
+          if [ "${#paths[@]}" -eq 0 ]; then
+            echo "No paths to package."
             exit 1
+          fi
+          printf '%s\n' "${paths[@]}" > "${RUNNER_TEMP}/refresh-paths.txt"
+          tar --posix -czf "${RUNNER_TEMP}/refresh-artifact.tar.gz" --files-from="${RUNNER_TEMP}/refresh-paths.txt"
+          MANIFEST="$(cat "${RUNNER_TEMP}/refresh-paths.txt")"
+          export MANIFEST
+          node --input-type=module --eval "
+            import path from 'node:path';
+            import { pathToFileURL } from 'node:url';
+            const trusted = path.resolve(process.env.TRUSTED_DIR);
+            const artUrl = pathToFileURL(path.join(trusted, '.github/scripts/traffic-sign-artifact.mjs')).href;
+            const { validateRefreshTarBeforeExtract } = await import(artUrl);
+            const manifest = process.env.MANIFEST.trim().split(/\\n+/).filter(Boolean);
+            validateRefreshTarBeforeExtract('${RUNNER_TEMP}/refresh-artifact.tar.gz', manifest);
+          "
+          cp "${RUNNER_TEMP}/refresh-paths.txt" "${RUNNER_TEMP}/refresh-manifest.txt"
+
+      - name: Upload refresh artifact
+        if: steps.package.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: traffic-sign-refresh
+          path: |
+            ${{ runner.temp }}/refresh-artifact.tar.gz
+            ${{ runner.temp }}/refresh-manifest.txt
+
+      - name: Job summary when skipped
+        if: steps.version_gate.outputs.refresh == 'true' && steps.refresh.outputs.has_tree_changes != 'true'
+        run: |
+          echo "### Traffic sign refresh" >> "$GITHUB_STEP_SUMMARY"
+          echo "No commit needed (catalogue already current or no file changes)." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Job summary when version gate skipped
+        if: steps.version_gate.outputs.refresh == 'false'
+        run: |
+          echo "### Traffic sign refresh" >> "$GITHUB_STEP_SUMMARY"
+          echo "Skipped: NSI/preset-only bump, or catalogue refresh outputs already on this PR (incl. after bot commit)." >> "$GITHUB_STEP_SUMMARY"
+
+  commit:
+    name: Commit refresh to Renovate branch
+    needs: generate
+    if: >-
+      needs.generate.outputs.has_tree_changes == 'true' &&
+      needs.generate.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Verify PR head SHA unchanged
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ needs.generate.outputs.pr_head_sha }}
+        run: |
+          set -euo pipefail
+          actual=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" --jq .head.sha)
+          if [ "$actual" != "$EXPECTED_SHA" ]; then
+            echo "::error::PR head moved ($actual != $EXPECTED_SHA). Refusing push to avoid overwriting concurrent commits."
+            exit 1
+          fi
+
+      - name: Checkout trusted allowlist script (base SHA)
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          sparse-checkout: |
+            .github/scripts/traffic-sign-renovate-lib.mjs
+            .github/scripts/traffic-sign-artifact.mjs
+            .github/scripts/apply-traffic-sign-artifact.mjs
+          sparse-checkout-cone-mode: false
+          path: trusted
+
+      - name: Checkout PR branch for commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.generate.outputs.pr_head_sha }}
+          path: pr
+
+      - name: Download refresh artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: traffic-sign-refresh
+          path: ${{ runner.temp }}/artifact
+
+      - name: Apply artifact and validate allowlist
+        working-directory: pr
+        env:
+          TRUSTED_DIR: ${{ github.workspace }}/trusted
+          EXPECTED_SHA: ${{ needs.generate.outputs.pr_head_sha }}
+        run: |
+          set -euo pipefail
+          actual="$(git rev-parse HEAD)"
+          if [ "$actual" != "$EXPECTED_SHA" ]; then
+            echo "::error::Checkout head ($actual) != recorded PR head ($EXPECTED_SHA)"
+            exit 1
+          fi
+          node "$TRUSTED_DIR/.github/scripts/apply-traffic-sign-artifact.mjs" \
+            "${RUNNER_TEMP}/artifact/refresh-artifact.tar.gz" \
+            "${RUNNER_TEMP}/artifact/refresh-manifest.txt" \
+            "$PWD"
+          mapfile -t paths < <(git diff --name-only; git ls-files --others --exclude-standard)
+          CHANGED_PATHS="$(printf '%s\n' "${paths[@]}")"
+          export CHANGED_PATHS
+          node --input-type=module --eval "
+            import path from 'node:path';
+            import { pathToFileURL } from 'node:url';
+            const trusted = path.resolve(process.env.TRUSTED_DIR);
+            const libUrl = pathToFileURL(path.join(trusted, '.github/scripts/traffic-sign-renovate-lib.mjs')).href;
+            const { assertBotCommitAllowlist } = await import(libUrl);
+            const paths = process.env.CHANGED_PATHS.trim().split(/\\n+/).filter(Boolean);
+            assertBotCommitAllowlist(paths);
+          "
+
+      - name: Commit and push if needed
+        working-directory: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PIN_BRANCH: ${{ github.head_ref }}
+          VERSION: ${{ needs.generate.outputs.traffic_sign_version }}
+          EXPECTED_SHA: ${{ needs.generate.outputs.pr_head_sha }}
+        run: |
+          set -euo pipefail
+          actual=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}" --jq .head.sha)
+          if [ "$actual" != "$EXPECTED_SHA" ]; then
+            echo "::error::PR head moved before push ($actual != $EXPECTED_SHA)"
+            exit 1
+          fi
+          mapfile -t paths < <(git diff --name-only; git ls-files --others --exclude-standard)
+          if [ "${#paths[@]}" -eq 0 ]; then
+            echo "Nothing to commit after applying artifact."
+            exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -- app/build.gradle.kts
-          git commit -m "chore(deps): sync trafficSignsSha256 with npm tarball"
+          git add -- "${paths[@]}"
+          if git diff --cached --quiet; then
+            echo "No staged changes."
+            exit 0
+          fi
+          git commit -m "chore(deps): refresh traffic sign catalogues for @osm-traffic-signs/converter@${VERSION}"
           git push origin "HEAD:${PIN_BRANCH}"
+
+      - name: Note follow-up CI
+        run: |
+          {
+            echo "### Bot commit pushed"
+            echo "GitHub enqueues new \`pull_request\` (\`synchronize\`) workflow runs after a \`GITHUB_TOKEN\` push, typically in **approval-required** state until a user with write access approves them (see GitHub Docs: *Triggering a workflow* / \`pull_request\`)."
+            echo "Push events on \`SCEE-mc\` from \`GITHUB_TOKEN\` do **not** start new workflow runs."
+            echo "If Kotlin test counters still expect the old catalogue size, unit tests may fail until they are updated manually (by design)."
+          } >> "$GITHUB_STEP_SUMMARY"

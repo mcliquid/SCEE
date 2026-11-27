@@ -38,7 +38,7 @@
       "versioningTemplate": "regex:^(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)$"
     },
     {
-      "description": "Traffic sign converter npm pin (version; SHA-256 via renovate-traffic-signs-sha256 workflow)",
+      "description": "Traffic sign converter npm pin (version; coordinated refresh via renovate-traffic-signs-sha256 workflow)",
       "customType": "regex",
       "managerFilePatterns": ["/^app\\/build\\.gradle\\.kts$/"],
       "matchStrings": ["val trafficSignsVersion = \"(?<currentValue>[^\"]+)\""],
@@ -62,6 +62,13 @@
       "description": "False positive: ABI list in androidApp ndk.abiFilters",
       "matchManagers": ["gradle"],
       "matchPackageNames": ["armeabi-v7a:arm64-v8a"],
+      "enabled": false
+    },
+    {
+      "description": "Traffic sign converter: only via Gradle pin + coordinated refresh workflow (not parity tooling npm)",
+      "matchManagers": ["npm"],
+      "matchFileNames": ["tools/traffic-sign-parity/package.json"],
+      "matchPackageNames": ["@osm-traffic-signs/converter"],
       "enabled": false
     },
     {

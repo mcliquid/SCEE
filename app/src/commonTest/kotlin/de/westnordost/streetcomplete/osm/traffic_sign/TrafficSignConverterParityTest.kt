@@ -97,7 +97,7 @@ class TrafficSignConverterParityTest {
 
     @Test fun `SCEE and the converter agree on all cases or differ with documented reason`() {
         val (header, cases) = readReference()
-        assertEquals("@osm-traffic-signs/converter@0.8.0", header["converter"]!!.jsonPrimitive.content)
+        assertEquals("@osm-traffic-signs/converter@0.8.1", header["converter"]!!.jsonPrimitive.content)
         val versionFile = TrafficSignTestData.readTextLf("src/commonMain/composeResources/files/traffic_signs/VERSION")
         assertTrue(versionFile.startsWith(header["converter"]!!.jsonPrimitive.content + "\n"))
 

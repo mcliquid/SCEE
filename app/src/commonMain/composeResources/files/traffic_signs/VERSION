@@ -1,5 +1,5 @@
-@osm-traffic-signs/converter@0.8.0
-sha256 f0f112f9f7daaf0801000104fac17f19c58fc872016afc7b6930d2f3a23ad70f
-source https://registry.npmjs.org/@osm-traffic-signs/converter/-/converter-0.8.0.tgz
+@osm-traffic-signs/converter@0.8.1
+sha256 e9faffd774c0c380451ca336ed22e371016f2c7e96db4b5be0a3658c4b7a0d51
+source https://registry.npmjs.org/@osm-traffic-signs/converter/-/converter-0.8.1.tgz
 licence of catalogue data: AGPL-3.0-or-later (https://github.com/osmberlin/osm-traffic-sign-tool)
 licence of sign images: as stated per sign in the catalogue (AT: Public Domain; AU: Public Domain; BE: Public Domain; BR: Public Domain; CA: Public Domain; DE: Public Domain; FR: Public Domain; IT: Public Domain; PL: Public Domain)

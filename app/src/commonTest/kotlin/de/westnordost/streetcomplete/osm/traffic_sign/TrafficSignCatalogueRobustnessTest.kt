@@ -187,14 +187,14 @@ class TrafficSignCatalogueRobustnessTest {
 
     private val json = TrafficSignTestData.readText("$RESOURCES_DIR/files/traffic_signs/DE.json")
 
-    @Test fun `all 290 signs of the bundled catalogue are valid, have an image and no problems at all`() {
+    @Test fun `all 293 signs of the bundled catalogue are valid, have an image and no problems at all`() {
         val problems = TrafficSignCatalogue.validate(json) { sign ->
             TrafficSignTestData.readBytesOrNull("$RESOURCES_DIR/${sign.imagePath("DE")}") != null
         }
         assertEquals(emptyList(), problems)
         val result = TrafficSignCatalogue.parseLenient(json)
         assertEquals(emptyList(), result.problems)
-        assertEquals(290, result.catalogue!!.signs.size)
+        assertEquals(293, result.catalogue!!.signs.size)
     }
 
     @Test fun `the bundled catalogue is read the same by the lenient and the strict parser`() {
@@ -203,7 +203,7 @@ class TrafficSignCatalogueRobustnessTest {
         assertEquals(strict.signs, lenient.signs)
         assertEquals(strict.relations, lenient.relations)
         assertEquals(strict.version, lenient.version)
-        assertEquals(290, strict.signs.size)
+        assertEquals(293, strict.signs.size)
         assertEquals(45, strict.relations.size)
         // the provider gives the same
         val provided = TrafficSignCatalogues { json }.get("DE")!!
@@ -211,12 +211,12 @@ class TrafficSignCatalogueRobustnessTest {
     }
 
     @Test fun `a broken sign in the real catalogue only takes that sign away`() {
-        // replace the kind of one of the 290 signs
+        // replace the kind of one of the 293 signs
         val broken = json.replaceFirst("\"kind\": \"exception_modifier\"", "\"kind\": \"unknown_kind\"")
         assertTrue(broken != json)
         val result = TrafficSignCatalogue.parseLenient(broken)
         val catalogue = requireNotNull(result.catalogue)
-        assertEquals(289, catalogue.signs.size)
+        assertEquals(292, catalogue.signs.size)
         assertEquals(1, result.problems.size)
         assertTrue("unknown_kind" in result.problems.single().message)
         assertFailsWith<IllegalArgumentException> { TrafficSignCatalogue.parse(broken) }

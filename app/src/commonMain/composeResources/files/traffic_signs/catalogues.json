@@ -1,5 +1,5 @@
 {
-    "package": "@osm-traffic-signs/converter@0.8.0",
+    "package": "@osm-traffic-signs/converter@0.8.1",
     "countries": [
         {
             "country": "AT",
@@ -351,8 +351,8 @@
         },
         {
             "country": "DE",
-            "catalogueSigns": 290,
-            "importedSigns": 290,
+            "catalogueSigns": 293,
+            "importedSigns": 293,
             "skippedSigns": 0,
             "erroneousSigns": 0,
             "imageLicences": [

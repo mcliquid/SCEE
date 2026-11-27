@@ -16,16 +16,16 @@ class TrafficSignCatalogueTest {
 
     @Test fun `bundled catalogue has the pinned version`() {
         assertEquals("DE", catalogueDE.country)
-        assertEquals("0.8.0", catalogueDE.version)
+        assertEquals("0.8.1", catalogueDE.version)
         val versionFile = TrafficSignTestData.readTextLf("$RESOURCES_DIR/files/traffic_signs/VERSION")
-        assertTrue(versionFile.startsWith("@osm-traffic-signs/converter@0.8.0\n"))
+        assertTrue(versionFile.startsWith("@osm-traffic-signs/converter@0.8.1\n"))
     }
 
     @Test fun `bundled catalogue is complete`() {
-        assertEquals(290, catalogueDE.signs.size)
+        assertEquals(293, catalogueDE.signs.size)
         val byKind = catalogueDE.signs.groupingBy { it.kind }.eachCount()
-        assertEquals(213, byKind[TrafficSignKind.TRAFFIC_SIGN])
-        assertEquals(31, byKind[TrafficSignKind.EXCEPTION_MODIFIER])
+        assertEquals(215, byKind[TrafficSignKind.TRAFFIC_SIGN])
+        assertEquals(32, byKind[TrafficSignKind.EXCEPTION_MODIFIER])
         assertEquals(46, byKind[TrafficSignKind.CONDITION_MODIFIER])
         assertEquals(45, catalogueDE.relations.size)
     }

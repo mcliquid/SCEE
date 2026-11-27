@@ -1,6 +1,6 @@
 {
   "country": "AT",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "signs": [
     {
       "osmValuePart": "50.1",

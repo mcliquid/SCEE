@@ -1,6 +1,6 @@
 {
   "country": "DE",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "signs": [
     {
       "osmValuePart": "237",
@@ -5339,6 +5339,37 @@
       "image": {
         "kind": "remote",
         "sourceUrl": "https://wiki.openstreetmap.org/wiki/File:Zusatzzeichen_1026-33_-_Einsatzfahrzeuge_frei_(450x600),_StVO_1992.svg",
+        "licence": "Public Domain"
+      }
+    },
+    {
+      "osmValuePart": "1026-34",
+      "signId": "1026-34",
+      "name": "Zusatzzeichen 1026-34",
+      "descriptiveName": "Krankenfahrzeuge frei",
+      "description": null,
+      "kind": "exception_modifier",
+      "tagRecommendationsByGeometry": [
+        {
+          "geometries": [
+            "way"
+          ],
+          "highwayValues": [],
+          "accessTags": [
+            {
+              "key": "emergency",
+              "value": "yes"
+            }
+          ]
+        }
+      ],
+      "comments": [],
+      "catalogue": {
+        "signCategory": "exception_modifier"
+      },
+      "image": {
+        "kind": "remote",
+        "sourceUrl": "https://wiki.openstreetmap.org/wiki/File:Zusatzzeichen_1026-34_-_Krankenfahrzeuge_frei,_StVO_1992.svg",
         "licence": "Public Domain"
       }
     },
@@ -10988,6 +11019,66 @@
       "image": {
         "kind": "remote",
         "sourceUrl": "https://de.wikipedia.org/wiki/Datei:Zeichen_626-20_-_Leitplatte,_Aufstellung_links_(750x500),_StVO_2013.svg",
+        "licence": "Public Domain"
+      }
+    },
+    {
+      "osmValuePart": "626-10",
+      "signId": "626-10",
+      "name": "Zeichen 626-10",
+      "descriptiveName": "Leitplatte, Aufstellung rechts",
+      "description": null,
+      "kind": "traffic_sign",
+      "tagRecommendationsByGeometry": [
+        {
+          "geometries": [
+            "node"
+          ]
+        }
+      ],
+      "comments": [],
+      "compatibility": {
+        "canReceiveModifiers": false
+      },
+      "catalogue": {
+        "focus": {
+          "all": true
+        },
+        "signCategory": "object_sign"
+      },
+      "image": {
+        "kind": "remote",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Zeichen_626-10_-_Leitplatte,_Aufstellung_rechts,_StVO_2013.svg",
+        "licence": "Public Domain"
+      }
+    },
+    {
+      "osmValuePart": "626-30",
+      "signId": "626-30",
+      "name": "Zeichen 626-30",
+      "descriptiveName": "Leitplatte, Aufstellung Mitte, beidseitige Vorbeifahrt",
+      "description": null,
+      "kind": "traffic_sign",
+      "tagRecommendationsByGeometry": [
+        {
+          "geometries": [
+            "node"
+          ]
+        }
+      ],
+      "comments": [],
+      "compatibility": {
+        "canReceiveModifiers": false
+      },
+      "catalogue": {
+        "focus": {
+          "all": true
+        },
+        "signCategory": "object_sign"
+      },
+      "image": {
+        "kind": "remote",
+        "sourceUrl": "https://commons.wikimedia.org/wiki/File:Zeichen_626-30_-_Leitplatte_(750x500);_StVO_2013.svg",
         "licence": "Public Domain"
       }
     },

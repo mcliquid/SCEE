@@ -133,7 +133,7 @@ jobs:
 
       - name: Upload update report on failure
         if: failure() && steps.version_gate.outputs.refresh == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: traffic-signs-update-report
           path: pr/app/build/traffic-signs-update/*.md
@@ -169,7 +169,7 @@ jobs:
 
       - name: Upload refresh artifact
         if: steps.package.outcome == 'success'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: traffic-sign-refresh
           path: |
@@ -229,7 +229,7 @@ jobs:
           path: pr
 
       - name: Download refresh artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: traffic-sign-refresh
           path: ${{ runner.temp }}/artifact

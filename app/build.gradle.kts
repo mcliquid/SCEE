@@ -46,7 +46,7 @@ val nsiVersion = "8.0.20261101"
 /** Version of the traffic sign catalogue (npm package @osm-traffic-signs/converter) to use and the
  *  SHA-256 of its npm tarball
  *  see https://www.npmjs.com/package/@osm-traffic-signs/converter for latest version */
-val trafficSignsVersion = "0.8.0"
+val trafficSignsVersion = "0.8.1"
 val trafficSignsSha256 = "f0f112f9f7daaf0801000104fac17f19c58fc872016afc7b6930d2f3a23ad70f"
 
 /** Project ID of the crowdsource translation platform (from where to pull translations from) */

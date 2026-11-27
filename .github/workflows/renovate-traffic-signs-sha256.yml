@@ -154,7 +154,8 @@ jobs:
           fi
           printf '%s\n' "${paths[@]}" > "${RUNNER_TEMP}/refresh-paths.txt"
           tar --posix -czf "${RUNNER_TEMP}/refresh-artifact.tar.gz" --files-from="${RUNNER_TEMP}/refresh-paths.txt"
-          export MANIFEST="$(cat "${RUNNER_TEMP}/refresh-paths.txt")"
+          MANIFEST="$(cat "${RUNNER_TEMP}/refresh-paths.txt")"
+          export MANIFEST
           node --input-type=module --eval "
             import path from 'node:path';
             import { pathToFileURL } from 'node:url';
@@ -250,7 +251,8 @@ jobs:
             "${RUNNER_TEMP}/artifact/refresh-manifest.txt" \
             "$PWD"
           mapfile -t paths < <(git diff --name-only; git ls-files --others --exclude-standard)
-          export CHANGED_PATHS="$(printf '%s\n' "${paths[@]}")"
+          CHANGED_PATHS="$(printf '%s\n' "${paths[@]}")"
+          export CHANGED_PATHS
           node --input-type=module --eval "
             import path from 'node:path';
             import { pathToFileURL } from 'node:url';
@@ -292,7 +294,9 @@ jobs:
 
       - name: Note follow-up CI
         run: |
-          echo "### Bot commit pushed" >> "$GITHUB_STEP_SUMMARY"
-          echo "GitHub enqueues new \`pull_request\` (\`synchronize\`) workflow runs after a \`GITHUB_TOKEN\` push, typically in **approval-required** state until a user with write access approves them (see GitHub Docs: *Triggering a workflow* / \`pull_request\`)." >> "$GITHUB_STEP_SUMMARY"
-          echo "Push events on \`SCEE-mc\` from \`GITHUB_TOKEN\` do **not** start new workflow runs." >> "$GITHUB_STEP_SUMMARY"
-          echo "If Kotlin test counters still expect the old catalogue size, unit tests may fail until they are updated manually (by design)." >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Bot commit pushed"
+            echo "GitHub enqueues new \`pull_request\` (\`synchronize\`) workflow runs after a \`GITHUB_TOKEN\` push, typically in **approval-required** state until a user with write access approves them (see GitHub Docs: *Triggering a workflow* / \`pull_request\`)."
+            echo "Push events on \`SCEE-mc\` from \`GITHUB_TOKEN\` do **not** start new workflow runs."
+            echo "If Kotlin test counters still expect the old catalogue size, unit tests may fail until they are updated manually (by design)."
+          } >> "$GITHUB_STEP_SUMMARY"

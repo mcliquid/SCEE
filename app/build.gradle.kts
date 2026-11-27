@@ -47,7 +47,7 @@ val nsiVersion = "8.0.20261101"
  *  SHA-256 of its npm tarball
  *  see https://www.npmjs.com/package/@osm-traffic-signs/converter for latest version */
 val trafficSignsVersion = "0.8.1"
-val trafficSignsSha256 = "f0f112f9f7daaf0801000104fac17f19c58fc872016afc7b6930d2f3a23ad70f"
+val trafficSignsSha256 = "e9faffd774c0c380451ca336ed22e371016f2c7e96db4b5be0a3658c4b7a0d51"
 
 /** Project ID of the crowdsource translation platform (from where to pull translations from) */
 val poEditorProjectId = "97843"

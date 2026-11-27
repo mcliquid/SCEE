@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="footway_kind_sidewalk">Gehweg</string>
+    <string name="footway_kind_crossing">Querung</string>
+    <string name="footway_kind_traffic_island">Verkehrsinsel</string>
+    <string name="footway_kind_access_aisle">Zugangsstreifen (Parkplatz)</string>
+    <string name="footway_kind_unspecified">Nicht näher angegeben</string>
+    <string name="footway_kind_unspecified_description">Ohne footway-Tag</string>
+    <string name="footway_kind_unsupported">Anderer Wert (nicht auswählbar)</string>
+</resources>

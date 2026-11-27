@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- SCEE-mc: kind of footway (footway=*) in the sidewalk overlay -->
+    <string name="footway_kind_sidewalk">Sidewalk</string>
+    <string name="footway_kind_crossing">Crossing</string>
+    <string name="footway_kind_traffic_island">Traffic island</string>
+    <string name="footway_kind_access_aisle">Access aisle</string>
+    <string name="footway_kind_unspecified">Not specified</string>
+    <string name="footway_kind_unspecified_description">No footway tag</string>
+    <string name="footway_kind_unsupported">Other value (not selectable)</string>
+</resources>

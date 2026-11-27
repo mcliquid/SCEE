@@ -12,10 +12,11 @@ import de.westnordost.streetcomplete.data.overlays.OverlayAction
 import de.westnordost.streetcomplete.data.overlays.OverlayColor
 import de.westnordost.streetcomplete.data.overlays.OverlayStyle
 import de.westnordost.streetcomplete.data.user.achievements.EditTypeAchievement.PEDESTRIAN
-import de.westnordost.streetcomplete.osm.ALL_PATHS
 import de.westnordost.streetcomplete.osm.ALL_ROADS
 import de.westnordost.streetcomplete.overlays.cycleway.SeparateCyclewayForm
 import de.westnordost.streetcomplete.osm.any
+import de.westnordost.streetcomplete.osm.footway.FootwayKind
+import de.westnordost.streetcomplete.osm.footway.parseFootwayKind
 import de.westnordost.streetcomplete.osm.isPrivateOnFoot
 import de.westnordost.streetcomplete.osm.maxspeed.MAX_SPEED_TYPE_KEYS
 import de.westnordost.streetcomplete.osm.sidewalk.Sidewalk
@@ -28,7 +29,7 @@ class SidewalkOverlay : Overlay {
 
     override val title = Res.string.overlay_sidewalk
     override val icon = Res.drawable.quest_sidewalk
-    override val changesetComment = "Specify whether roads have sidewalks"
+    override val changesetComment = "Specify sidewalks and kinds of footways"
     override val wikiLink: String = "Key:sidewalk"
     override val achievements = listOf(PEDESTRIAN)
     override val hidesQuestTypes = setOf(AddSidewalk::class.simpleName!!)
@@ -56,13 +57,19 @@ class SidewalkOverlay : Overlay {
         countryInfo: CountryInfo,
     ) {
         requireNotNull(element)
-        if (element.tags["highway"] in ALL_ROADS) {
-            SidewalkOverlayForm(on, element, geometry, countryInfo)
-        } else if (element.tags["highway"] in ALL_PATHS) {
-            SeparateCyclewayForm(on, element, countryInfo)
+        when (element.tags["highway"]) {
+            in ALL_ROADS -> SidewalkOverlayForm(on, element, geometry, countryInfo)
+            "footway" -> FootwayKindForm(on, element)
+            "path", "cycleway" -> SeparateCyclewayForm(on, element, countryInfo)
+            // steps, bridleway: not selectable, see getFootwayStyle. The separate cycleway form
+            // would retag highway=* for these
+            else -> {}
         }
     }
 }
+
+/** highways that are only displayed for orientation, but have no form in this overlay */
+private val NOT_SELECTABLE_PATHS = setOf("steps", "bridleway")
 
 private fun getFootwayStyle(element: Element): OverlayStyle.Polyline {
     val foot = element.tags["foot"] ?: when (element.tags["highway"]) {
@@ -70,15 +77,33 @@ private fun getFootwayStyle(element: Element): OverlayStyle.Polyline {
         "path" -> "yes"
         else -> null
     }
+    val isAccessibleOnFoot = foot in listOf("yes", "designated")
+    val footwayKind = parseFootwayKind(element.tags)
 
-    return when {
+    val style = when {
+        // highway=footway is displayed by its kind of footway, because that is what is edited here
+        footwayKind != null ->
+            OverlayStyle.Polyline(OverlayStyle.Stroke(
+                if (isAccessibleOnFoot) footwayKind.color else OverlayColor.Invisible
+            ))
         parseSidewalkSides(element.tags)?.any { it == Sidewalk.YES } == true ->
             getSidewalkStyle(element)
-        foot in listOf("yes", "designated") ->
+        isAccessibleOnFoot ->
             OverlayStyle.Polyline(OverlayStyle.Stroke(OverlayColor.Sky))
         else ->
             OverlayStyle.Polyline(OverlayStyle.Stroke(OverlayColor.Invisible))
     }
+    return if (element.tags["highway"] in NOT_SELECTABLE_PATHS) style.copy(disabled = true) else style
+}
+
+/** Not specified is neutral (same as other foot paths), an unsupported value is not an error */
+private val FootwayKind.color get() = when (this) {
+    FootwayKind.UNSPECIFIED ->    OverlayColor.Sky
+    FootwayKind.SIDEWALK ->       OverlayColor.Blue
+    FootwayKind.CROSSING ->       OverlayColor.Orange
+    FootwayKind.TRAFFIC_ISLAND -> OverlayColor.Gold
+    FootwayKind.ACCESS_AISLE ->   OverlayColor.Lime
+    FootwayKind.UNSUPPORTED ->    OverlayColor.Purple
 }
 
 private fun getSidewalkStyle(element: Element): OverlayStyle.Polyline {

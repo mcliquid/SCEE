@@ -6,8 +6,8 @@ The catalogues of traffic signs (`app/src/commonMain/composeResources/files/traf
 [`@osm-traffic-signs/converter`](https://www.npmjs.com/package/@osm-traffic-signs/converter)
 (source: https://github.com/osmberlin/osm-traffic-sign-tool, data AGPL-3.0-or-later). The pinned
 version and the SHA-256 of its tarball are in `app/build.gradle.kts` (`trafficSignsVersion`,
-`trafficSignsSha256`) and in `traffic_signs/VERSION`. Nothing updates itself: the update is a manual
-Gradle task, `:app:updateTrafficSigns` (the presets tasks `updatePresets`,
+`trafficSignsSha256`) and in `traffic_signs/VERSION`. Local updates use the Gradle task
+`:app:updateTrafficSigns` (the presets tasks `updatePresets`,
 `downloadAndConvertPresetIcons` and `generateTagSuggestions` are for other data and not involved).
 
 ## Commands (PowerShell, from the repository root)
@@ -31,6 +31,93 @@ cd ..\..
 ```
 Without parameters, `.\gradlew.bat :app:updateTrafficSigns` checks the pinned version against the files
 (it reports "identical"; running it repeatedly changes nothing).
+
+## Renovate automation (GitHub Actions)
+
+Renovate bumps `trafficSignsVersion` in `app/build.gradle.kts` (custom regex manager). The workflow
+[`.github/workflows/renovate-traffic-signs-sha256.yml`](../.github/workflows/renovate-traffic-signs-sha256.yml)
+runs **only** for Renovate PRs to `SCEE-mc` when `trafficSignsVersion` changes (not for NSI/preset
+bumps in the same file).
+
+**Automatic steps** (trusted orchestration scripts from the PR **base** SHA; generation uses
+`contents: read`, commit uses `contents: write`):
+
+1. Tarball SHA-256 pin (`trafficSignsSha256` in `build.gradle.kts`)
+2. `:app:updateTrafficSigns` dry-run and report check
+3. Apply catalogue update when the report has file changes (`-PtrafficSignsApply=true`)
+4. `tools/traffic-sign-parity`: exact npm version, `reference.mjs`, `reference.mjs --check`
+5. One bot commit on the Renovate branch (allowlisted paths only)
+
+Renovate does **not** manage `@osm-traffic-signs/converter` in `tools/traffic-sign-parity/package.json`
+(anymore); the workflow keeps parity tooling in sync with the Gradle pin.
+
+**Security model**
+
+- Workflow logic under `.github/scripts/` is checked out from the **merge base** of the PR, not from
+  the Renovate branch.
+- The generation job uses `persist-credentials: false`; only the commit job pushes with `GITHUB_TOKEN`.
+- Tarball SHA-256 verification stays in Gradle / `pin-traffic-signs-sha256.mjs` (HTTPS registry only).
+- npm runs with `NPM_CONFIG_IGNORE_SCRIPTS=true` / `--ignore-scripts`.
+- Bot commits may touch only: `app/build.gradle.kts`, `app/src/commonMain/composeResources/files/traffic_signs/**`,
+  `app/traffic-signs-update/history/**`, `tools/traffic-sign-parity/package.json`, `package-lock.json`,
+  `reference.jsonl`. Never `app/src/commonTest/**`.
+- Before push, the workflow checks that the PR head SHA has not moved (no overwrite of concurrent edits).
+- **Never** uses `-PtrafficSignsAcceptReview=true` automatically.
+
+Gradle and `reference.mjs` are project tooling executed with repo permissions; their logic is not
+replaced by the workflow scripts—they run as documented below.
+
+**Manual review required**
+
+If the dry-run report contains **“Needs a manual review”**, the workflow **fails**, uploads the
+report artifact, and **does not** commit. Finish the update locally (read the report, apply with
+`-PtrafficSignsAcceptReview=true` only after human review, regenerate parity, adjust tests, open your
+own PR).
+
+**Windows checkout note (local parity only)**
+
+`DE.json` and most catalogue JSON files use `* text=auto` without a fixed `eol=lf` (unlike
+`traffic_signs/VERSION` and `reference.jsonl`). With `core.autocrlf=true`, the working copy can
+differ in byte length from `git show` and from `reference.mjs`’s npm package comparison even when
+the committed blob is correct. Ubuntu CI and refresh workflows use LF checkouts; use `git show
+HEAD:…/DE.json` or run `reference.mjs --check` on Linux when validating locally on Windows.
+
+**Manual steps after a successful bot refresh**
+
+- Update **deliberate** expected counts/strings in `TrafficSignCatalogueTest` and
+  `TrafficSignCatalogueRobustnessTest` when sign totals change (the bot does **not** edit tests).
+- PR unit tests (`Gradle unit tests`) must pass after those edits; a failing catalogue count test is
+  intentional until you adjust expectations.
+- Read `reference.jsonl` diff when sign coverage grows (new parity rows for new DE signs/combinations).
+- Device smoke-check for new graphics in the picker when signs were added.
+
+**Idempotency**
+
+While the PR is open, SCEE-mc may still advertise the **previous** converter version (e.g. 0.8.0)
+while the Renovate branch already targets **0.8.1** — comparing versions alone would re-run the
+pipeline forever. The workflow therefore runs the coordinated refresh **only** when the PR file list
+is the initial Renovate bump (`app/build.gradle.kts` only). After the bot commit (catalogue + parity
+paths on the PR), further `synchronize` events **skip** generate/commit (no Apply, no artifact, no
+second bot commit). The shell refresh script itself still skips Apply when the dry-run log contains
+`(identical to the existing files)`.
+
+**After a failed refresh**
+
+Fix the Renovate branch locally or close the PR; do not merge a branch that failed the coordinated
+refresh or still has mismatched pins/catalogue/parity. Re-push to the Renovate branch only after
+Renovate rebases or you follow the manual commands above.
+
+**CI after the bot commit (GitHub policy, same repository)**
+
+Per [GitHub Docs — Triggering a workflow](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow) and [Events that trigger workflows — `pull_request`](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows):
+
+- A push with `GITHUB_TOKEN` does **not** trigger `push` workflows (e.g. unit tests on `SCEE-mc`).
+- Updating the PR branch **does** enqueue `pull_request` runs with activity `synchronize`, but they often start in **approval-required** state until someone with **write** access approves “Run workflows” on the PR (fork rules differ; this repo uses same-repo Renovate branches).
+- Other `pull_request` activity types (`labeled`, `edited`, …) do not start runs.
+
+So after the bot commit, unit tests / CodeQL / dependency review on the new head are expected but may need **manual workflow approval** once per push. No PAT is used by this automation. Settings that affect this: Actions enabled, fork PR approval policy (not applicable to same-repo Renovate), and org rules for required reviewers.
+
+`gitIgnoredAuthors` in `renovate.json` only affects Renovate rebases, not GitHub’s workflow approval rules.
 
 ## What the task does
 1. Reads the registry data of the version (`latest` is resolved), downloads the tarball and verifies it: the given SHA-256, or, for a new version without one, the integrity (sha512) of the registry.

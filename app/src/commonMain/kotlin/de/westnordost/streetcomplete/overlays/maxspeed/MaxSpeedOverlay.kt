@@ -33,10 +33,13 @@ class MaxSpeedOverlay(
     override fun getStyledElements(mapData: MapDataWithGeometry): Sequence<Pair<Element, OverlayStyle>> =
         mapData.filter(MAX_SPEED_OVERLAY_FILTER).map { way ->
             val interpretation = interpretMaxSpeed(way.tags)
-            // country is only needed to put directional values on the correct side
-            val isLeftHandTraffic = interpretation.isDirectional &&
-                mapData.getWayGeometry(way.id)?.center?.let { getCountryInfoByLocation(it).isLeftHandTraffic } == true
-            way to maxSpeedWayStyle(interpretation, isLeftHandTraffic)
+            // country is only needed to put directional values on the correct side and for the
+            // unit of zone codes, so it is only looked up if necessary
+            val countryInfo by lazy {
+                mapData.getWayGeometry(way.id)?.center?.let { getCountryInfoByLocation(it) }
+            }
+            val isLeftHandTraffic = interpretation.isDirectional && countryInfo?.isLeftHandTraffic == true
+            way to maxSpeedWayStyle(interpretation, isLeftHandTraffic) { countryInfo?.zoneSpeedUnitOf(it) }
         }
 
     @Composable

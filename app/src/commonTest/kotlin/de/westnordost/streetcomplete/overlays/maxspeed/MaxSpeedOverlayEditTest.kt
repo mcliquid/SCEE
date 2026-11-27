@@ -5,9 +5,14 @@ import de.westnordost.streetcomplete.data.meta.IncompleteCountryInfo
 import de.westnordost.streetcomplete.data.meta.SpeedMeasurementUnit.KILOMETERS_PER_HOUR
 import de.westnordost.streetcomplete.data.meta.SpeedMeasurementUnit.MILES_PER_HOUR
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChanges
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryChange
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryModify
 import de.westnordost.streetcomplete.data.overlays.OverlayColor
 import de.westnordost.streetcomplete.data.overlays.OverlayStyle
+import de.westnordost.streetcomplete.osm.maxspeed.MaxSpeedUnit
 import de.westnordost.streetcomplete.osm.maxspeed.Speed
+import de.westnordost.streetcomplete.osm.maxspeed.interpretMaxSpeed
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
 import de.westnordost.streetcomplete.testutils.way
 import kotlin.test.Test
@@ -114,14 +119,138 @@ class MaxSpeedOverlayEditTest {
         assertEquals(mapOf("maxspeed" to "25 mph"), apply(tags, createMaxSpeedTagChanges(tags, general(Speed(25, MILES_PER_HOUR)))))
     }
 
-    @Test fun `outdated implicit type code is removed, sign is kept`() {
-        val urban = mapOf("maxspeed:type" to "DE:urban")
-        assertEquals(mapOf("maxspeed" to "30"), apply(urban, createMaxSpeedTagChanges(urban, general(kmh(30)))))
-        val zone = mapOf("maxspeed" to "30", "maxspeed:type" to "DE:zone30")
-        assertEquals(mapOf("maxspeed" to "50"), apply(zone, createMaxSpeedTagChanges(zone, general(kmh(50)))))
+    @Test fun `implicit type codes are protected, the form is not editable`() {
+        val withCode = listOf(
+            mapOf("maxspeed:type" to "DE:urban"),
+            mapOf("source:maxspeed" to "DE:urban"),
+            mapOf("maxspeed" to "50", "maxspeed:type" to "DE:urban"),
+            mapOf("maxspeed" to "50", "source:maxspeed" to "DE:urban"),
+            mapOf("maxspeed" to "30", "maxspeed:type" to "DE:zone30"),
+            mapOf("maxspeed:forward" to "50", "maxspeed:backward" to "30", "maxspeed:type" to "DE:urban"),
+        )
+        for (tags in withCode) {
+            assertEquals(MaxSpeedEditState.NotEditable(MaxSpeedEditState.Reason.IMPLICIT_TYPE), getMaxSpeedEditState(tags), "$tags")
+            // so no numeric change can remove the code, nor add a `sign`
+            assertFailsWith<IllegalArgumentException>("$tags") { createMaxSpeedTagChanges(tags, general(kmh(20))) }
+            assertNull(createMaxSpeedTagChanges(tags, getMaxSpeedEditState(tags)), "$tags")
+        }
+    }
+
+    @Test fun `sign and other non code values stay editable and are kept, no sign is invented`() {
         val sign = mapOf("maxspeed" to "50", "maxspeed:type" to "sign")
         assertEquals(mapOf("maxspeed" to "30", "maxspeed:type" to "sign"), apply(sign, createMaxSpeedTagChanges(sign, general(kmh(30)))))
-        assertEquals(mapOf("maxspeed:type" to "DE:urban"), getOutdatedTypeTags(urban + ("name" to "x")))
+        val plain = mapOf("highway" to "residential", "maxspeed" to "50")
+        assertEquals(mapOf("highway" to "residential", "maxspeed" to "30"), apply(plain, createMaxSpeedTagChanges(plain, general(kmh(30)))))
+        val missing = mapOf("highway" to "residential")
+        assertEquals(mapOf("highway" to "residential", "maxspeed" to "30"), apply(missing, createMaxSpeedTagChanges(missing, general(kmh(30)))))
+    }
+
+    /* ------------------------------------ zones --------------------------------------- */
+
+    @Test fun `lower local limit keeps zone membership`() {
+        val tags = mapOf("highway" to "residential", "maxspeed" to "30", "zone:maxspeed" to "DE:30")
+        val edited = apply(tags, createMaxSpeedTagChanges(tags, general(kmh(20))))
+        assertEquals(mapOf("highway" to "residential", "maxspeed" to "20", "zone:maxspeed" to "DE:30"), edited)
+        // and the result is not shown as contradictory
+        val style = maxSpeedWayStyle(interpretMaxSpeed(edited), false) { MaxSpeedUnit.KMH }
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Purple), style.stroke)
+        assertEquals("20", style.label)
+    }
+
+    @Test fun `zone traffic and non numeric zone maxspeed are kept`() {
+        val tags = mapOf("maxspeed" to "50", "zone:traffic" to "DE:urban", "zone:maxspeed" to "DE:urban")
+        assertEquals(
+            mapOf("maxspeed" to "30", "zone:traffic" to "DE:urban", "zone:maxspeed" to "DE:urban"),
+            apply(tags, createMaxSpeedTagChanges(tags, general(kmh(30))))
+        )
+    }
+
+    @Test fun `higher limit or none with zone membership is shown neutrally and stays editable`() {
+        val higher = mapOf("maxspeed" to "50", "zone:maxspeed" to "DE:30")
+        assertEquals(general(kmh(50)), getMaxSpeedEditState(higher))
+        val style = maxSpeedWayStyle(interpretMaxSpeed(higher), false) { MaxSpeedUnit.KMH }
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Aquamarine), style.stroke)
+        assertEquals("50", style.label)
+        val none = maxSpeedWayStyle(interpretMaxSpeed(mapOf("maxspeed" to "none", "zone:maxspeed" to "DE:30")), false) { MaxSpeedUnit.KMH }
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Orange, dashed = true), none.stroke)
+    }
+
+    @Test fun `free text in source maxspeed is kept`() {
+        val tags = mapOf("maxspeed" to "50", "source:maxspeed" to "https://portal-mainroads.opendata.arcgis.com/datasets")
+        assertEquals(tags + ("maxspeed" to "60"), apply(tags, createMaxSpeedTagChanges(tags, general(kmh(60)))))
+    }
+
+    /* --------------------------------- type conflicts --------------------------------- */
+
+    @Test fun `contradicting type keys are not editable`() {
+        val tags = mapOf("maxspeed" to "50", "maxspeed:type" to "PL:urban", "source:maxspeed" to "PL:rural")
+        assertEquals(MaxSpeedEditState.NotEditable(MaxSpeedEditState.Reason.TYPE_CONFLICT), getMaxSpeedEditState(tags))
+        assertFailsWith<IllegalArgumentException> { createMaxSpeedTagChanges(tags, general(kmh(30))) }
+    }
+
+    @Test fun `equivalent type keys are no conflict`() {
+        val tags = mapOf("maxspeed" to "30", "maxspeed:type" to "DE:zone30", "source:maxspeed" to "DE:zone:30")
+        // protected because of the implicit type, but not reported as conflict
+        assertEquals(MaxSpeedEditState.NotEditable(MaxSpeedEditState.Reason.IMPLICIT_TYPE), getMaxSpeedEditState(tags))
+    }
+
+    /* ------------------------------------ preview ------------------------------------- */
+
+    @Test fun `preview is exactly the saved diff plus the untouched related tags`() {
+        val tags = mapOf(
+            "highway" to "residential",
+            "maxspeed" to "50",
+            "maxspeed:type" to "sign",
+            "maxspeed:conditional" to "30 @ (22:00-06:00)",
+            "source:maxspeed:advisory" to "sign",
+            "zone:traffic" to "DE:urban",
+            "zone:maxspeed" to "DE:30",
+            "name" to "x",
+        )
+        val changes = createMaxSpeedTagChanges(tags, general(kmh(30)))!!
+        val preview = createMaxSpeedTagPreview(tags, changes)
+        assertEquals(changes.changes, preview.changes.toSet())
+        assertEquals(listOf<StringMapEntryChange>(StringMapEntryModify("maxspeed", "50", "30")), preview.changes)
+        assertEquals(
+            listOf(
+                "maxspeed:conditional" to "30 @ (22:00-06:00)",
+                "maxspeed:type" to "sign",
+                "source:maxspeed:advisory" to "sign",
+                "zone:maxspeed" to "DE:30",
+                "zone:traffic" to "DE:urban",
+            ),
+            preview.unchanged
+        )
+        // no tag is both changed and unchanged, and the unchanged ones really are unchanged
+        val changedKeys = preview.changes.map { it.key }.toSet()
+        assertTrue(preview.unchanged.none { it.first in changedKeys })
+        val edited = apply(tags, changes)
+        for ((key, value) in preview.unchanged) assertEquals(value, edited[key])
+    }
+
+    @Test fun `type code is shown before anything is changed`() {
+        val tags = mapOf("highway" to "residential", "maxspeed:type" to "DE:urban", "source:maxspeed" to "survey")
+        val preview = createMaxSpeedTagPreview(tags, createMaxSpeedTagChanges(tags, getMaxSpeedEditState(tags)))
+        assertTrue(preview.changes.isEmpty())
+        assertEquals(listOf("maxspeed:type" to "DE:urban", "source:maxspeed" to "survey"), preview.unchanged)
+    }
+
+    @Test fun `added value is shown as addition`() {
+        val tags = mapOf("highway" to "residential", "zone:maxspeed" to "DE:30")
+        val preview = createMaxSpeedTagPreview(tags, createMaxSpeedTagChanges(tags, general(kmh(20))))
+        assertEquals(listOf<StringMapEntryChange>(StringMapEntryAdd("maxspeed", "20")), preview.changes)
+        assertEquals(listOf("zone:maxspeed" to "DE:30"), preview.unchanged)
+    }
+
+    @Test fun `no-op and cancel produce no changes`() {
+        val tags = mapOf("maxspeed" to "30", "maxspeed:type" to "sign", "zone:maxspeed" to "DE:30")
+        val unchanged = createMaxSpeedTagChanges(tags, getMaxSpeedEditState(tags))
+        assertNull(unchanged)
+        val preview = createMaxSpeedTagPreview(tags, unchanged)
+        assertTrue(preview.changes.isEmpty())
+        assertEquals(tags.toList().sortedBy { it.first }, preview.unchanged)
+        // changing the value and going back to the original value is no change either
+        assertNull(createMaxSpeedTagChanges(tags, general(kmh(30))))
     }
 
     @Test fun `forward and backward are edited separately`() {
@@ -187,7 +316,7 @@ class MaxSpeedOverlayEditTest {
     /* ------------------------------- undo and refresh --------------------------------- */
 
     @Test fun `reversed changes restore the original tags (undo)`() {
-        val tags = mapOf("highway" to "residential", "maxspeed" to "50", "maxspeed:type" to "DE:urban")
+        val tags = mapOf("highway" to "residential", "maxspeed" to "50", "maxspeed:type" to "sign", "zone:maxspeed" to "DE:30")
         val changes = createMaxSpeedTagChanges(tags, general(kmh(30)))!!
         val edited = apply(tags, changes)
         assertEquals(tags, edited.toMutableMap().also { changes.reversed().applyTo(it) })

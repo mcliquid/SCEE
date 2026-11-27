@@ -35,12 +35,16 @@ sealed interface MaxSpeedValue {
 }
 
 enum class MaxSpeedIssue {
-    /** a numeric limit contradicts the speed of a zone code (e.g. `maxspeed=50` + `maxspeed:type=DE:zone30`) */
+    /** a numeric limit contradicts the speed of a zone type code (e.g. `maxspeed=50` + `maxspeed:type=DE:zone30`).
+     *  Not raised for `zone:maxspeed`, which is only the zone membership */
     ZONE_SPEED_MISMATCH,
-    /** `maxspeed=none` together with a zone code */
+    /** `maxspeed=none` together with a zone type code */
     UNRESTRICTED_IN_ZONE,
     /** any of the speed values could not be parsed */
     INVALID_VALUE,
+    /** `maxspeed`, `maxspeed:type` and `source:maxspeed` name different speed limit codes
+     *  (e.g. `maxspeed:type=PL:urban` + `source:maxspeed=PL:rural`) */
+    TYPE_CONFLICT,
 }
 
 data class MaxSpeedInterpretation(
@@ -48,8 +52,12 @@ data class MaxSpeedInterpretation(
     val forward: MaxSpeedValue?,
     /** binding limit against way direction; null = not tagged */
     val backward: MaxSpeedValue?,
-    /** value of `maxspeed:type`, `source:maxspeed` or `zone:maxspeed` if it is a speed limit code */
+    /** where the limit comes from: the speed limit code in `maxspeed:type` or `source:maxspeed`.
+     *  null if not tagged or if these keys contradict each other ([MaxSpeedIssue.TYPE_CONFLICT]) */
     val typeCode: MaxSpeedValue.Code?,
+    /** zone the way belongs to (`zone:maxspeed`). Membership only: a lower signed limit within the
+     *  zone does not contradict it */
+    val zoneCode: MaxSpeedValue.Code?,
     val forwardAdvisory: MaxSpeedValue?,
     val backwardAdvisory: MaxSpeedValue?,
     val hasForwardConditional: Boolean,
@@ -61,7 +69,7 @@ data class MaxSpeedInterpretation(
     val hasAdvisory: Boolean get() = forwardAdvisory != null || backwardAdvisory != null
     val hasConditional: Boolean get() = hasForwardConditional || hasBackwardConditional
     val isMissing: Boolean get() =
-        !hasBindingValue && typeCode == null && !hasAdvisory && !hasConditional && issues.isEmpty()
+        !hasBindingValue && typeCode == null && zoneCode == null && !hasAdvisory && !hasConditional && issues.isEmpty()
 }
 
 fun interpretMaxSpeed(tags: Map<String, String>): MaxSpeedInterpretation {
@@ -74,9 +82,13 @@ fun interpretMaxSpeed(tags: Map<String, String>): MaxSpeedInterpretation {
     val forwardAdvisory = tags["maxspeed:advisory:forward"]?.let(::parseMaxSpeedValue) ?: advisory
     val backwardAdvisory = tags["maxspeed:advisory:backward"]?.let(::parseMaxSpeedValue) ?: advisory
 
-    val typeCode = TYPE_KEYS.firstNotNullOfOrNull { key ->
-        tags[key]?.let { parseMaxSpeedValue(normalizeZoneMaxSpeed(key, it)) as? MaxSpeedValue.Code }
-    }
+    // values that are no code (sign, free text, URLs, ...) say nothing about the type
+    val typeCodes = TYPE_KEYS.mapNotNull { key -> tags[key]?.let { parseMaxSpeedValue(it) as? MaxSpeedValue.Code } }
+    val allCodes = listOfNotNull(general as? MaxSpeedValue.Code) + typeCodes
+    val hasTypeConflict = allCodes.map { it.meaning() }.distinct().size > 1
+    val typeCode = if (hasTypeConflict) null else typeCodes.firstOrNull()
+
+    val zoneCode = tags["zone:maxspeed"]?.let { parseMaxSpeedValue(normalizeZoneMaxSpeed(it)) as? MaxSpeedValue.Code }
 
     val generalConditional = tags.containsKey("maxspeed:conditional")
     val hasForwardConditional = generalConditional || tags.containsKey("maxspeed:forward:conditional")
@@ -86,19 +98,23 @@ fun interpretMaxSpeed(tags: Map<String, String>): MaxSpeedInterpretation {
     val values = listOfNotNull(forward, backward, forwardAdvisory, backwardAdvisory)
     if (values.any { it is MaxSpeedValue.Invalid }) issues.add(MaxSpeedIssue.INVALID_VALUE)
 
-    val zoneSpeed = typeCode?.zoneSpeed ?: (general as? MaxSpeedValue.Code)?.zoneSpeed
-    if (zoneSpeed != null) {
-        val numericGeneral = general as? MaxSpeedValue.Numeric
-        if (numericGeneral != null && numericGeneral.unit == MaxSpeedUnit.KMH && numericGeneral.value != zoneSpeed) {
-            issues.add(MaxSpeedIssue.ZONE_SPEED_MISMATCH)
-        }
+    if (hasTypeConflict) issues.add(MaxSpeedIssue.TYPE_CONFLICT)
+
+    val numericKmh = (general as? MaxSpeedValue.Numeric)?.takeIf { it.unit == MaxSpeedUnit.KMH }?.value
+    // the type says the limit *is* the zone speed: any other number contradicts it
+    val typeZoneSpeed = typeCode?.zoneSpeed ?: (general as? MaxSpeedValue.Code)?.zoneSpeed
+    if (typeZoneSpeed != null) {
+        if (numericKmh != null && numericKmh != typeZoneSpeed) issues.add(MaxSpeedIssue.ZONE_SPEED_MISMATCH)
         if (general == MaxSpeedValue.Unrestricted) issues.add(MaxSpeedIssue.UNRESTRICTED_IN_ZONE)
     }
+    // zone membership (`zone:maxspeed`) is never compared with the limit: a different local limit
+    // within the zone does not prove an error
 
     return MaxSpeedInterpretation(
         forward = forward,
         backward = backward,
         typeCode = typeCode,
+        zoneCode = zoneCode,
         forwardAdvisory = forwardAdvisory,
         backwardAdvisory = backwardAdvisory,
         hasForwardConditional = hasForwardConditional,
@@ -135,14 +151,19 @@ fun parseMaxSpeedValue(value: String): MaxSpeedValue {
     return MaxSpeedValue.Invalid(v)
 }
 
-/** `zone:maxspeed=DE:30` means the same as `maxspeed:type=DE:zone30` */
-private fun normalizeZoneMaxSpeed(key: String, value: String): String {
-    if (key != "zone:maxspeed") return value
+/** `zone:maxspeed=DE:30` names the same zone as `maxspeed:type=DE:zone30` */
+private fun normalizeZoneMaxSpeed(value: String): String {
     val match = ZONE_MAXSPEED_NUMBER_REGEX.matchEntire(value) ?: return value
     return "${match.groupValues[1]}:zone${match.groupValues[2]}"
 }
 
-private val TYPE_KEYS = listOf("maxspeed:type", "source:maxspeed", "zone:maxspeed")
+/** codes that mean the same compare equal, e.g. `DE:zone30` and `DE:zone:30` */
+private fun MaxSpeedValue.Code.meaning(): String =
+    if (zoneSpeed != null) "$country:zone$zoneSpeed" else "$country:$type"
+
+/** keys that say where the current limit comes from. `zone:maxspeed` and `zone:traffic` are zone
+ *  memberships and deliberately not part of this */
+private val TYPE_KEYS = listOf("maxspeed:type", "source:maxspeed")
 
 /** number, optionally followed by a space and a unit. Everything with digits but another format is
  *  not considered numeric */

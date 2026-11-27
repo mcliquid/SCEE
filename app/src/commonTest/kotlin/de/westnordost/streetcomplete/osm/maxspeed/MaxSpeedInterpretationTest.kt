@@ -215,7 +215,45 @@ class MaxSpeedInterpretationTest {
     }
 
     @Test fun `zone maxspeed with number is normalized to a zone`() {
-        assertEquals(30, interpret("zone:maxspeed" to "DE:30").typeCode?.zoneSpeed)
+        assertEquals(30, interpret("zone:maxspeed" to "DE:30").zoneCode?.zoneSpeed)
+    }
+
+    @Test fun `zone maxspeed is zone membership, not the type of the limit`() {
+        val i = interpret("maxspeed" to "20", "maxspeed:type" to "sign", "zone:maxspeed" to "DE:30")
+        assertNull(i.typeCode)
+        assertEquals(30, i.zoneCode?.zoneSpeed)
+        assertFalse(i.isMissing)
+        assertFalse(interpret("zone:maxspeed" to "DE:30").isMissing)
+    }
+
+    @Test fun `free text and urls in source maxspeed are no type`() {
+        for (value in listOf("survey", "https://portal-mainroads.opendata.arcgis.com/datasets", "Unless otherwise posted 25 MPH")) {
+            val i = interpret("maxspeed" to "50", "source:maxspeed" to value)
+            assertNull(i.typeCode, value)
+            assertTrue(i.issues.isEmpty(), value)
+        }
+    }
+
+    /* --------------------------------- type conflicts --------------------------------- */
+
+    @Test fun `contradicting type keys are a conflict and none of them is taken as type`() {
+        val i = interpret("maxspeed:type" to "PL:urban", "source:maxspeed" to "PL:rural")
+        assertEquals(setOf(MaxSpeedIssue.TYPE_CONFLICT), i.issues)
+        assertNull(i.typeCode)
+        assertEquals(setOf(MaxSpeedIssue.TYPE_CONFLICT), interpret("maxspeed" to "PL:urban", "source:maxspeed" to "PL:rural").issues)
+    }
+
+    @Test fun `equivalent type values are no conflict`() {
+        assertTrue(interpret("maxspeed:type" to "DE:urban", "source:maxspeed" to "DE:urban").issues.isEmpty())
+        assertTrue(interpret("maxspeed" to "30", "maxspeed:type" to "DE:zone30", "source:maxspeed" to "DE:zone:30").issues.isEmpty())
+        assertTrue(interpret("maxspeed" to "DE:urban", "maxspeed:type" to "DE:urban").issues.isEmpty())
+        assertEquals("DE:zone30", interpret("maxspeed:type" to "DE:zone30", "source:maxspeed" to "DE:zone:30").typeCode?.raw)
+    }
+
+    @Test fun `sign, free text and zone membership are no type conflict`() {
+        assertTrue(interpret("maxspeed" to "50", "maxspeed:type" to "sign", "source:maxspeed" to "survey").issues.isEmpty())
+        assertTrue(interpret("maxspeed:type" to "DE:urban", "zone:maxspeed" to "DE:30").issues.isEmpty())
+        assertTrue(interpret("maxspeed:type" to "DE:urban", "zone:traffic" to "DE:rural").issues.isEmpty())
     }
 
     /* ------------------------------------- issues ------------------------------------- */
@@ -227,7 +265,17 @@ class MaxSpeedInterpretationTest {
 
     @Test fun `numeric limit contradicting zone`() {
         assertEquals(setOf(MaxSpeedIssue.ZONE_SPEED_MISMATCH), interpret("maxspeed" to "50", "maxspeed:type" to "DE:zone30").issues)
-        assertEquals(setOf(MaxSpeedIssue.ZONE_SPEED_MISMATCH), interpret("maxspeed" to "50", "zone:maxspeed" to "DE:30").issues)
+        assertEquals(setOf(MaxSpeedIssue.ZONE_SPEED_MISMATCH), interpret("maxspeed" to "20", "maxspeed:type" to "DE:zone30").issues)
+        assertEquals(setOf(MaxSpeedIssue.ZONE_SPEED_MISMATCH), interpret("maxspeed" to "50", "source:maxspeed" to "DE:zone30").issues)
+    }
+
+    @Test fun `zone membership is never compared with the limit`() {
+        for (value in listOf("10", "20", "30", "50", "none")) {
+            val i = interpret("maxspeed" to value, "zone:maxspeed" to "DE:30")
+            assertTrue(i.issues.isEmpty(), value)
+            assertEquals(30, i.zoneCode?.zoneSpeed, value)
+        }
+        assertTrue(interpret("maxspeed" to "10", "maxspeed:type" to "sign", "zone:maxspeed" to "DE:30").issues.isEmpty())
     }
 
     @Test fun `matching zone is fine`() {

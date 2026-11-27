@@ -3,6 +3,11 @@ package de.westnordost.streetcomplete.overlays.maxspeed
 import de.westnordost.streetcomplete.ApplicationConstants.EE_QUEST_OFFSET
 import de.westnordost.streetcomplete.data.meta.CountryInfo
 import de.westnordost.streetcomplete.data.meta.IncompleteCountryInfo
+import de.westnordost.streetcomplete.data.meta.SpeedMeasurementUnit
+import de.westnordost.streetcomplete.data.meta.SpeedMeasurementUnit.KILOMETERS_PER_HOUR
+import de.westnordost.streetcomplete.data.meta.SpeedMeasurementUnit.MILES_PER_HOUR
+import de.westnordost.streetcomplete.data.osm.geometry.ElementPolylinesGeometry
+import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.overlays.OverlayColor
 import de.westnordost.streetcomplete.data.overlays.OverlayStyle
 import de.westnordost.streetcomplete.osm.maxspeed.interpretMaxSpeed
@@ -10,6 +15,7 @@ import de.westnordost.streetcomplete.overlays.cycleway.CyclewayOverlay
 import de.westnordost.streetcomplete.overlays.overlaysRegistry
 import de.westnordost.streetcomplete.overlays.smoothness.SmoothnessOverlay
 import de.westnordost.streetcomplete.testutils.TestMapDataWithGeometry
+import de.westnordost.streetcomplete.testutils.createMapData
 import de.westnordost.streetcomplete.testutils.inMemoryPrefs
 import de.westnordost.streetcomplete.testutils.way
 import kotlin.test.Test
@@ -23,8 +29,13 @@ class MaxSpeedOverlayTest {
     private val countryInfo = CountryInfo(null, listOf(IncompleteCountryInfo(isLeftHandTraffic = false)))
     private val overlay = MaxSpeedOverlay { countryInfo }
 
-    private fun style(vararg tags: Pair<String, String>, leftHandTraffic: Boolean = false) =
-        maxSpeedWayStyle(interpretMaxSpeed(mapOf(*tags)), leftHandTraffic)
+    private fun country(code: String?, vararg units: SpeedMeasurementUnit) =
+        CountryInfo(code, listOf(IncompleteCountryInfo(isLeftHandTraffic = false, speedUnits = units.toList())))
+    private val germany = country("DE", KILOMETERS_PER_HOUR)
+    private val unitedKingdom = country("GB", MILES_PER_HOUR)
+
+    private fun style(vararg tags: Pair<String, String>, leftHandTraffic: Boolean = false, countryInfo: CountryInfo = germany) =
+        maxSpeedWayStyle(interpretMaxSpeed(mapOf(*tags)), leftHandTraffic) { countryInfo.zoneSpeedUnitOf(it) }
 
     /* ------------------------------------ registration -------------------------------- */
 
@@ -115,6 +126,104 @@ class MaxSpeedOverlayTest {
         val explicit = style("maxspeed" to "30", "maxspeed:type" to "DE:zone30")
         assertEquals(OverlayStyle.Stroke(OverlayColor.Blue), explicit.stroke)
         assertEquals("30", explicit.label)
+    }
+
+    @Test fun `mph zone code is colored and labeled in mph`() {
+        val s = style("highway" to "residential", "maxspeed:type" to "GB:zone20", countryInfo = unitedKingdom)
+        // 32 km/h, like maxspeed=20 mph; as km/h it would be purple (≤ 20)
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Aquamarine, dashed = true), s.stroke)
+        assertEquals(OverlayColor.Aquamarine, style("maxspeed" to "20 mph").stroke!!.color)
+        assertEquals("Z20 mph", s.label)
+        val zone40 = style("maxspeed:type" to "GB:zone40", countryInfo = unitedKingdom)
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Lime, dashed = true), zone40.stroke) // 64 km/h
+        assertEquals("Z40 mph", zone40.label)
+    }
+
+    @Test fun `km per hour zone codes stay as they were`() {
+        val type = style("maxspeed:type" to "DE:zone30")
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Blue, dashed = true), type.stroke)
+        assertEquals("Z30", type.label)
+        val zone20 = style("maxspeed:type" to "DE:zone20")
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Purple, dashed = true), zone20.stroke)
+        assertEquals("Z20", zone20.label)
+        // explicit numbers are not affected by the unit of the country
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Purple), style("maxspeed" to "20", countryInfo = unitedKingdom).stroke)
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Aquamarine), style("maxspeed" to "20 mph", countryInfo = germany).stroke)
+    }
+
+    @Test fun `zone code with unknown unit is not shown as km per hour`() {
+        val unknownCountry = style("maxspeed:type" to "GB:zone20", countryInfo = country(null))
+        assertEquals(OverlayStyle.Stroke(MaxSpeedMissingColor, dashed = true), unknownCountry.stroke)
+        assertEquals("GB:zone20", unknownCountry.label)
+        // code of another country than the one the way is in
+        assertEquals("GB:zone20", style("maxspeed:type" to "GB:zone20", countryInfo = germany).label)
+        // country that uses several units on signs
+        val mixed = style("maxspeed:type" to "BZ:zone20", countryInfo = country("BZ", MILES_PER_HOUR, KILOMETERS_PER_HOUR))
+        assertEquals(OverlayStyle.Stroke(MaxSpeedMissingColor, dashed = true), mixed.stroke)
+        assertEquals("BZ:zone20", mixed.label)
+    }
+
+    @Test fun `zone membership is shown if nothing else is tagged`() {
+        val s = style("highway" to "residential", "zone:maxspeed" to "DE:30")
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Blue, dashed = true), s.stroke)
+        assertEquals("Z30", s.label)
+    }
+
+    @Test fun `zone membership with a different limit is not red`() {
+        val lower = style("maxspeed" to "20", "maxspeed:type" to "sign", "zone:maxspeed" to "DE:30")
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Purple), lower.stroke)
+        assertEquals("20", lower.label)
+        val higher = style("maxspeed" to "50", "zone:maxspeed" to "DE:30")
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Aquamarine), higher.stroke)
+        assertEquals("50", higher.label)
+        assertEquals("∞", style("maxspeed" to "none", "zone:maxspeed" to "DE:30").label)
+    }
+
+    @Test fun `type conflict is red`() {
+        val s = style("maxspeed:type" to "PL:urban", "source:maxspeed" to "PL:rural")
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Red), s.stroke)
+        assertEquals("! ?", s.label)
+        val withValue = style("maxspeed" to "50", "maxspeed:type" to "PL:urban", "source:maxspeed" to "PL:rural")
+        assertEquals("! 50", withValue.label)
+    }
+
+    /** styles a single way with geometry through [MaxSpeedOverlay.getStyledElements], i.e. the actual
+     *  path that looks up the country, and records where the country was looked up */
+    private fun styleViaOverlay(countryInfo: CountryInfo, vararg tags: Pair<String, String>): Pair<OverlayStyle.Polyline, List<LatLon>> {
+        val lookups = mutableListOf<LatLon>()
+        val overlay = MaxSpeedOverlay { lookups.add(it); countryInfo }
+        val road = way(1, nodes = listOf(1, 2), tags = mapOf("highway" to "residential", *tags))
+        val center = LatLon(51.0, 7.0)
+        val mapData = createMapData(mapOf(road to ElementPolylinesGeometry(listOf(listOf(LatLon(50.9, 7.0), LatLon(51.1, 7.0))), center)))
+        val style = assertIs<OverlayStyle.Polyline>(overlay.getStyledElements(mapData).single().second)
+        return style to lookups
+    }
+
+    @Test fun `zone unit is looked up for the way - mph`() {
+        val (s, lookups) = styleViaOverlay(unitedKingdom, "maxspeed:type" to "GB:zone20")
+        assertEquals(listOf(LatLon(51.0, 7.0)), lookups)
+        assertEquals("Z20 mph", s.label)
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Aquamarine, dashed = true), s.stroke)
+    }
+
+    @Test fun `zone unit is looked up for the way - km per hour`() {
+        val (s, lookups) = styleViaOverlay(germany, "maxspeed:type" to "DE:zone30")
+        assertEquals(listOf(LatLon(51.0, 7.0)), lookups)
+        assertEquals("Z30", s.label)
+        assertEquals(OverlayStyle.Stroke(OverlayColor.Blue, dashed = true), s.stroke)
+    }
+
+    @Test fun `zone unit is looked up for the way - unknown unit`() {
+        val (s, lookups) = styleViaOverlay(country(null), "maxspeed:type" to "GB:zone20")
+        assertEquals(listOf(LatLon(51.0, 7.0)), lookups)
+        assertEquals("GB:zone20", s.label)
+        assertEquals(OverlayStyle.Stroke(MaxSpeedMissingColor, dashed = true), s.stroke)
+    }
+
+    @Test fun `country is not looked up if not needed`() {
+        val (s, lookups) = styleViaOverlay(unitedKingdom, "maxspeed" to "30 mph")
+        assertTrue(lookups.isEmpty())
+        assertEquals("30 mph", s.label)
     }
 
     @Test fun `variable is teal dashed`() {

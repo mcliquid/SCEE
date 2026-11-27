@@ -17,6 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import de.westnordost.streetcomplete.data.meta.CountryInfo
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryAdd
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryDelete
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapEntryModify
 import de.westnordost.streetcomplete.data.osm.edits.update_tags.UpdateElementTagsAction
 import de.westnordost.streetcomplete.data.osm.mapdata.Element
 import de.westnordost.streetcomplete.data.overlays.Action
@@ -40,13 +43,11 @@ fun MaxSpeedOverlayForm(on: (OverlayAction) -> Unit, element: Element, countryIn
     val original = remember(element) { getMaxSpeedEditState(element.tags) }
     var state by remember(element) { mutableStateOf(original) }
     val interpretation = remember(element) { interpretMaxSpeed(element.tags) }
-    val keptTags = remember(element) {
-        element.tags.filterKeys { it.startsWith("maxspeed:") && it.contains(KEPT_KEY_REGEX) }
-            .entries.sortedBy { it.key }
-    }
     val changes = remember(state) {
         if (isMaxSpeedEditComplete(original, state)) createMaxSpeedTagChanges(element.tags, state) else null
     }
+    // derived from exactly the changes that are saved on OK
+    val preview = remember(changes) { createMaxSpeedTagPreview(element.tags, changes) }
 
     OverlayForm(
         on = on,
@@ -81,7 +82,7 @@ fun MaxSpeedOverlayForm(on: (OverlayAction) -> Unit, element: Element, countryIn
                     )
                 }
                 is MaxSpeedEditState.NotEditable -> {
-                    val value = maxSpeedLabel(interpretation) ?: "–"
+                    val value = maxSpeedLabel(interpretation) { countryInfo.zoneSpeedUnitOf(it) } ?: "–"
                     Text(stringResource(Res.string.maxspeed_overlay_value, value), style = MaterialTheme.typography.titleMedium)
                     Text(stringResource(Res.string.maxspeed_overlay_not_editable))
                     Button(onClick = { on(Action.EditTags) }, modifier = Modifier.fillMaxWidth()) {
@@ -89,23 +90,32 @@ fun MaxSpeedOverlayForm(on: (OverlayAction) -> Unit, element: Element, countryIn
                     }
                 }
             }
-            if (changes != null) {
-                for ((key, value) in getOutdatedTypeTags(element.tags)) {
-                    Text(stringResource(Res.string.maxspeed_overlay_type_removed, "$key=$value"))
+            for (change in preview.changes) {
+                val text = when (change) {
+                    is StringMapEntryAdd ->
+                        stringResource(Res.string.maxspeed_overlay_tag_added, "${change.key} = ${change.value}")
+                    is StringMapEntryModify ->
+                        stringResource(Res.string.maxspeed_overlay_tag_changed, "${change.key} = ${change.valueBefore} → ${change.value}")
+                    // the form currently never removes tags (ways with type codes are not editable)
+                    is StringMapEntryDelete ->
+                        stringResource(Res.string.maxspeed_overlay_type_removed, "${change.key} = ${change.valueBefore}")
                 }
+                Text(text, modifier = Modifier.fillMaxWidth())
             }
             for (issue in interpretation.issues) {
                 val text = when (issue) {
                     MaxSpeedIssue.ZONE_SPEED_MISMATCH -> Res.string.maxspeed_overlay_issue_zone_mismatch
                     MaxSpeedIssue.UNRESTRICTED_IN_ZONE -> Res.string.maxspeed_overlay_issue_unrestricted_in_zone
                     MaxSpeedIssue.INVALID_VALUE -> Res.string.maxspeed_overlay_issue_invalid
+                    MaxSpeedIssue.TYPE_CONFLICT -> Res.string.maxspeed_overlay_issue_type_conflict
                 }
                 Text(stringResource(text), color = MaterialTheme.colors.error)
             }
-            if (keptTags.isNotEmpty()) {
+            if (preview.unchanged.isNotEmpty()) {
+                val title = if (changes != null) Res.string.maxspeed_overlay_kept_tags else Res.string.maxspeed_overlay_current_tags
                 Text(
-                    stringResource(Res.string.maxspeed_overlay_kept_tags) + "\n" +
-                        keptTags.joinToString("\n") { "${it.key} = ${it.value}" },
+                    stringResource(title) + "\n" +
+                        preview.unchanged.joinToString("\n") { (key, value) -> "$key = $value" },
                     style = MaterialTheme.typography.body2,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -163,5 +173,3 @@ internal fun isMaxSpeedEditComplete(original: MaxSpeedEditState, state: MaxSpeed
     }
 
 private fun Speed.toOsmStringOrNull(): String? = if (isComplete()) toOsmString() else null
-
-private val KEPT_KEY_REGEX = Regex("conditional|advisory|variable|type|hgv|lanes")

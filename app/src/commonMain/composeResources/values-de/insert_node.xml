@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="insert_node_preset_conflict_title">Vorhandene Tags weichen vom Preset ab</string>
+    <string name="insert_node_preset_conflict_message">Dieser Knoten hat bereits Werte, die das gewählte Preset ändern würde. Vorhandene Werte bleiben erhalten, sofern du sie nicht ersetzt. Alle Tags kannst du danach weiterhin bearbeiten.</string>
+    <string name="insert_node_preset_conflict_keep">Vorhandene behalten</string>
+    <string name="insert_node_preset_conflict_replace">Preset-Werte übernehmen</string>
+    <string name="insert_node_choose_target">Mehrere mögliche Ziele. Bitte eines wählen:</string>
+    <string name="insert_node_target_existing_node">Bestehender Knoten von: %1$s</string>
+    <string name="insert_node_target_shared_segment">Gemeinsames Segment von: %1$s</string>
+    <string name="insert_node_target_new_connection">Neue Verbindung von: %1$s</string>
+    <string name="insert_node_target_shared_node_note">Dieser Knoten gehört zu mehreren Wegen. Hinzugefügte Tags gelten für diesen einen gemeinsamen Knoten. Es werden nur auf diesem Gerät geladene Wege angezeigt.</string>
+</resources>

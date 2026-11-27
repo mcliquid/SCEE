@@ -23,6 +23,7 @@ import de.westnordost.streetcomplete.data.download.tiles.DownloadedTilesSource
 import de.westnordost.streetcomplete.data.elementfilter.toElementFilterExpression
 import de.westnordost.streetcomplete.osm.Tags
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
+import de.westnordost.streetcomplete.data.osm.edits.update_tags.StringMapChanges
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osm.mapdata.Node
 import de.westnordost.streetcomplete.data.preferences.Preferences
@@ -46,6 +47,19 @@ import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import kotlin.time.Duration.Companion.milliseconds
 
+/** The node resulting from the tag editor's [changes]: these are a diff to the tags of
+ *  [existingVertex] if given, otherwise to [presetTags] of a new node at [position]. */
+internal fun nodeFromEditorChanges(
+    existingVertex: Node?,
+    presetTags: Map<String, String>,
+    position: LatLon,
+    changes: StringMapChanges,
+): Node {
+    val tags = (existingVertex?.tags ?: presetTags).toMutableMap()
+    changes.applyTo(tags)
+    return existingVertex?.copy(tags = tags) ?: Node(0, position, tags)
+}
+
 @Composable
 fun AddPoiForm(
     feature: Feature,
@@ -53,7 +67,12 @@ fun AddPoiForm(
     onAdd: (node: Node) -> Unit,
     onDismiss: () -> Unit,
     onSetMapMarkers: (Iterable<Marker>) -> Unit,
-    showPin: Boolean = true
+    showPin: Boolean = true,
+    /** If the feature is added to an existing vertex: that vertex as it is shown in the editor.
+     *  The node passed to [onAdd] then keeps its id and contains the existing tags plus the edits. */
+    existingVertex: Node? = null,
+    /** Tags initially shown in the editor for [existingVertex] (existing tags + preset tags) */
+    existingVertexInitialTags: Map<String, String>? = null,
 ) {
     val scope = rememberCoroutineScope { Dispatchers.IO }
     val mapDataWithEditsSource: MapDataWithEditsSource = koinInject()
@@ -114,16 +133,17 @@ fun AddPoiForm(
         EditTagsForm(
             onConfirmed = {
                 answer = {
-                val tags = feature.addTags.toMutableMap()
-                it.applyTo(tags)
-                val node = Node(0, position, tags)
+                val node = nodeFromEditorChanges(existingVertex, feature.addTags, position, it)
+                val tags = node.tags
                 onAdd(node)
-                if (feature.addTags != tags && !node.isPlace())
+                // existing vertex: tags contain unrelated existing tags, don't remember them for the feature
+                if (existingVertex == null && feature.addTags != tags && !node.isPlace())
                     prefs.putString(Prefs.CREATE_NODE_LAST_TAGS_FOR_FEATURE + feature.id, Json.encodeToString(tags))
                 onDismiss() }
             },
             onDismiss = onDismiss,
-            originalElement = Node(0, position, feature.addTags)
+            originalElement = existingVertex ?: Node(0, position, feature.addTags),
+            initialTags = existingVertexInitialTags ?: existingVertex?.tags ?: feature.addTags,
         )
     }
     if (answer != null) {

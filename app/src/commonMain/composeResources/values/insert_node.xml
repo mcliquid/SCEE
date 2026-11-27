@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="insert_node_preset_conflict_title">Existing tags differ from the preset</string>
+    <string name="insert_node_preset_conflict_message">This node already has values that the selected preset would change. Existing values are kept unless you replace them. You can still edit every tag afterwards.</string>
+    <string name="insert_node_preset_conflict_keep">Keep existing</string>
+    <string name="insert_node_preset_conflict_replace">Use preset values</string>
+    <string name="insert_node_choose_target">Several possible targets. Choose one:</string>
+    <string name="insert_node_target_existing_node">Existing node of: %1$s</string>
+    <string name="insert_node_target_shared_segment">Segment shared by: %1$s</string>
+    <string name="insert_node_target_new_connection">New connection of: %1$s</string>
+    <string name="insert_node_target_shared_node_note">This node is shared by several ways. Tags you add apply to this one shared node. Only ways loaded on this device are listed.</string>
+</resources>

@@ -91,7 +91,10 @@ import kotlin.time.Duration.Companion.milliseconds
 fun EditTagsForm(
     onConfirmed: (StringMapChanges) -> Unit,
     onDismiss: () -> Unit,
-    originalElement: Element = LocalElement.current!!
+    originalElement: Element = LocalElement.current!!,
+    /** Tags shown initially. The result passed to [onConfirmed] is always the diff to the tags of
+     *  [originalElement], so tags that are neither shown nor edited are never touched. */
+    initialTags: Map<String, String> = originalElement.tags,
 ) {
     val mapDataSource: MapDataWithEditsSource = koinInject()
     val featureDictionary: FeatureDictionary = koinInject()
@@ -101,13 +104,13 @@ fun EditTagsForm(
     val countryInfos: CountryInfos = koinInject()
     val geometry = mapDataSource.getGeometry(originalElement.type, originalElement.id) ?: ElementPointGeometry((originalElement as Node).position)
     val countryInfo = remember { countryInfos.get(countryBoundaries, geometry.center) }
-    var updatedTags by rememberSaveable { mutableStateOf<Map<String, String>>(originalElement.tags.toSortedMap()) }
+    var updatedTags by rememberSaveable { mutableStateOf<Map<String, String>>(initialTags.toSortedMap()) }
     val questElement = remember(updatedTags) { originalElement.copy(tags = updatedTags, timestampEdited = nowAsEpochMilliseconds()) }
     var confirmDiscard by remember { mutableStateOf(false) }
     var shownQuest by remember { mutableStateOf<OsmQuest?>(null) }
 
     fun dismiss() {
-        if (updatedTags != originalElement.tags) {
+        if (updatedTags != initialTags) {
             confirmDiscard = true
         } else {
             onDismiss()
@@ -274,9 +277,7 @@ fun EditTagsForm(
             FloatingOkButton(
                 visible = tagsChangedAndOk(originalElement, updatedTags, mapDataSource),
                 onClick = {
-                    val newTags = updatedTags.mapNotNull {
-                        (k, v) -> if (k.isBlank() && v.isBlank()) null else k.trim() to v.trim()
-                    }.toMap()
+                    val newTags = normalizeEditedTags(updatedTags)
                     if (lastFeature != null)
                         newTags.forEach { (k, v) ->
                             // store key for feature
@@ -295,7 +296,7 @@ fun EditTagsForm(
                             }
                         }
 
-                    onConfirmed(newTags.createChanges(originalElement.tags).create())
+                    onConfirmed(editedTagsToChanges(updatedTags, originalElement.tags))
                 },
             )
         },
@@ -354,6 +355,18 @@ fun <T> TagEditorQuestFormContainer(
 }
 
 private val emptyEntry = "" to ""
+
+/** Tags as confirmed in the tag editor: blank rows dropped, keys and values trimmed */
+internal fun normalizeEditedTags(editedTags: Map<String, String>): Map<String, String> =
+    editedTags.mapNotNull { (k, v) ->
+        if (k.isBlank() && v.isBlank()) null else k.trim() to v.trim()
+    }.toMap()
+
+/** The diff the tag editor reports on confirmation: edited tags compared to [originalTags] */
+internal fun editedTagsToChanges(
+    editedTags: Map<String, String>,
+    originalTags: Map<String, String>,
+): StringMapChanges = normalizeEditedTags(editedTags).createChanges(originalTags).create()
 
 private fun tagsChangedAndOk(originalElement: Element, newTags: Map<String, String>, mapDataSource: MapDataWithEditsSource): Boolean =
     newTags != mapOf(emptyEntry)

@@ -2,6 +2,7 @@ package de.westnordost.streetcomplete.screens.main.bottom_sheet
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -14,7 +15,7 @@ import de.westnordost.streetcomplete.data.osm.edits.ElementEditType
 import de.westnordost.streetcomplete.data.osm.edits.MapDataWithEditsSource
 import de.westnordost.streetcomplete.data.osm.edits.addNodeEdit
 import de.westnordost.streetcomplete.data.osm.edits.create.CreateNodeAction
-import de.westnordost.streetcomplete.data.osm.edits.create.createNodeAction
+import de.westnordost.streetcomplete.data.osm.edits.create.createInsertNodeAction
 import de.westnordost.streetcomplete.data.osm.edits.tagEdit
 import de.westnordost.streetcomplete.quests.waterway_crossing.AddWaterwayCrossing
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
@@ -44,6 +45,7 @@ import de.westnordost.streetcomplete.ui.common.quest.MapClick
 import de.westnordost.streetcomplete.ui.common.quest.MapOverlayContent
 import de.westnordost.streetcomplete.ui.common.quest.Marker
 import de.westnordost.streetcomplete.util.math.PositionOnWay
+import de.westnordost.streetcomplete.util.math.VertexOfWay
 import org.jetbrains.compose.resources.DrawableResource
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Deferred
@@ -408,13 +410,35 @@ fun MainBottomSheet(
                 }
             } else {
                 val mapDataSource: MapDataWithEditsSource = koinInject()
-                AddPoiForm(
-                    feature = selected!!.first,
-                    position = selected!!.second.position,
+                val (feature, positionOnWay) = selected!!
+                // the existing vertex exactly as it is shown in the tag editor; the edit stores only
+                // the diff to it (see createInsertNodeAction)
+                val shownVertex = remember(positionOnWay) {
+                    (positionOnWay as? VertexOfWay)?.let { mapDataSource.getNode(it.nodeId) }
+                }
+                val presetConflicts = remember(shownVertex, feature) {
+                    shownVertex?.let { getPresetTagConflicts(it.tags, feature.addTags) }.orEmpty()
+                }
+                var replaceConflicting by remember(shownVertex, feature) { mutableStateOf<Boolean?>(null) }
+                if (presetConflicts.isNotEmpty() && replaceConflicting == null) {
+                    InsertNodePresetConflictDialog(
+                        conflicts = presetConflicts,
+                        onKeepExisting = { if (replaceConflicting == null) replaceConflicting = false },
+                        onReplace = { replaceConflicting = true },
+                    )
+                } else if (positionOnWay is VertexOfWay && shownVertex == null) {
+                    // vertex vanished in the meantime: nothing to edit
+                    LaunchedEffect(Unit) { onDismiss() }
+                } else AddPoiForm(
+                    feature = feature,
+                    position = positionOnWay.position,
+                    existingVertex = shownVertex,
+                    existingVertexInitialTags = shownVertex?.let {
+                        getInitialTagsForExistingVertex(it.tags, feature.addTags, replaceConflicting == true)
+                    },
                     onAdd = { element ->
-                        val action = createNodeAction(selected!!.second, mapDataSource) { changeBuilder ->
-                            changeBuilder.keys.forEach { if (it !in element.tags) changeBuilder.remove(it) }
-                            element.tags.forEach { changeBuilder[it.key] = it.value }
+                        val action = createInsertNodeAction(positionOnWay, shownVertex, element.tags) { nodeId ->
+                            mapDataSource.getWaysForNode(nodeId).map { it.id }
                         }
                         if (action != null) {
                             submitEditAfterLocalSave(

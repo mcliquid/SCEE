@@ -9,7 +9,6 @@ import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.util.ktx.asSequenceOfPairs
 import de.westnordost.streetcomplete.util.ktx.truncate
 import kotlinx.serialization.Serializable
-import kotlin.math.abs
 import kotlin.math.min
 
 @Serializable
@@ -138,98 +137,6 @@ private fun LatLon.getNearestPositionToWays(
         return PositionOnWaySegment(nearestWay.id, nearestPoint, nearestSegment)
     }
     return null
-}
-
-/** same as getPositionOnWays, but using PositionOnWaysSegment instead of PositionOnWaySegment
- * (i.e. allowing multiple ways), and before that checks for crossing ways */
-fun LatLon.getPositionOnWaysForInsertNodeForm(
-    ways: Collection<Pair<Way, List<LatLon>>>,
-    maxDistance: Double,
-    snapToVertexDistance: Double = 0.0
-): PositionOnWay? {
-    if (snapToVertexDistance > 0.0) {
-        val nearestVertex = getNearestVertexOfWays(ways, min(maxDistance, snapToVertexDistance))
-        if (nearestVertex != null) return nearestVertex
-    }
-    // distanceToArcs is called often, and if there is no nearby position found: called (at least)
-    // twice for every segment. This mini-cache mitigates calling it twice (also possibly more often
-    // for two ways having the same segments, but that's likely negligible)
-    val distanceToArcsCache = HashMap<Pair<LatLon, LatLon>, Double>(ways.size * 3)
-
-    return getNearestCrossingOfTwoWays(ways, maxDistance, distanceToArcsCache)
-        ?: getNearestPositionToWaysOnMultipleWays(ways, maxDistance, distanceToArcsCache)
-}
-
-private fun LatLon.getNearestPositionToWaysOnMultipleWays(
-    ways: Collection<Pair<Way, List<LatLon>>>,
-    maxDistance: Double,
-    distanceToArcsCache: MutableMap<Pair<LatLon, LatLon>, Double>,
-): PositionOnWaysSegment? {
-    var minDistance = Double.MAX_VALUE
-    var nearestWays = mutableListOf<InsertIntoWayAt>()
-    for ((way, positions) in ways) {
-        for (segment in positions.asSequenceOfPairs()) {
-            // todo: do level / layer checks (maybe)
-            val distance = distanceToArcsCache.getOrPut(segment) { distanceToArc(segment.first, segment.second) }
-            if (distance > maxDistance) continue
-            if (abs(distance - minDistance) < 5e-4) {
-                // we could check whether segments are actually parallel with small distance only,
-                // but since we check for crossing ways right before this, there are only very few
-                // ways we could filter out here (very near and almost parallel) -> maybe do something if an actual situation demands it
-                if (nearestWays.any { it.wayId == way.id })
-                    continue // don't add another segment of the same way, for now don't care if the second one would be closer
-                nearestWays.add(InsertIntoWayAt(way.id, segment.first, segment.second))
-            } else if (distance < minDistance) {
-                minDistance = distance
-                nearestWays = mutableListOf(InsertIntoWayAt(way.id, segment.first, segment.second))
-            }
-        }
-    }
-    if (nearestWays.isNotEmpty()) {
-        val nearestPoint = nearestPointOnArc(nearestWays.first().pos1, nearestWays.first().pos2)
-        return PositionOnWaysSegment(nearestPoint, nearestWays)
-    }
-    return null
-}
-
-fun LatLon.getNearestCrossingOfTwoWays(
-    ways: Collection<Pair<Way, List<LatLon>>>,
-    maxDistance: Double,
-    distanceToArcsCache: MutableMap<Pair<LatLon, LatLon>, Double>,
-): PositionOnCrossingWaySegments? {
-    val nearbyWaySegments = mutableListOf<Pair<Way, Pair<LatLon, LatLon>>>()
-    for ((way, positions) in ways) {
-        for (segment in positions.asSequenceOfPairs()) {
-            val distance = distanceToArcsCache.getOrPut(segment) { distanceToArc(segment.first, segment.second) }
-            if (distance <= maxDistance) {
-                nearbyWaySegments.add(way to segment)
-            }
-        }
-    }
-    // check whether any tow of those cross (hmm, this could be many checks and also slow -> log)
-    var minDistance = Double.MAX_VALUE
-    var bestPosition: PositionOnCrossingWaySegments? = null
-    nearbyWaySegments.forEachIndexed { i, (way, segment) ->
-        // check whether it crosses any way with higher index
-        if (i == nearbyWaySegments.lastIndex) return@forEachIndexed
-        // this double loop has the potential to explode, but actually it's rarely more than 5 ways,
-        // and thus much faster then finding distance to segments anyway
-        for (j in i+1 until nearbyWaySegments.size) {
-            val secondSegment = nearbyWaySegments[j].second
-            val secondWay = nearbyWaySegments[j].first
-            if (way.id == secondWay.id) continue // ignore ways crossing themselves
-            // todo: do level / layer checks (maybe)
-            val intersection = intersectionOf(segment.first, segment.second, secondSegment.first, secondSegment.second) ?: continue
-            val distance = distanceTo(intersection)
-            if (distance < minDistance && distance <= maxDistance) {
-                minDistance = distance
-                val insert1 = InsertIntoWayAt(way.id, segment.first, segment.second)
-                val insert2 = InsertIntoWayAt(secondWay.id, secondSegment.first, secondSegment.second)
-                bestPosition = PositionOnCrossingWaySegments(intersection, listOf(insert1, insert2))
-            }
-        }
-    }
-    return bestPosition
 }
 
 private val ElementGeometry.wayLatLons: List<LatLon> get() = when (this) {

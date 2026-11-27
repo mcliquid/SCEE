@@ -1,6 +1,6 @@
 package de.westnordost.streetcomplete.screens.main.bottom_sheet
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.RadioButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
@@ -26,11 +27,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.AbsoluteAlignment
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import de.westnordost.streetcomplete.ui.common.NonPredictiveBackHandler
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import de.westnordost.osmfeatures.Feature
@@ -48,7 +49,6 @@ import de.westnordost.streetcomplete.data.osm.edits.waterway_crossing.WaterwayCr
 import de.westnordost.streetcomplete.data.osm.geometry.ElementGeometry
 import de.westnordost.streetcomplete.data.osm.geometry.ElementPointGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
-import de.westnordost.streetcomplete.data.osm.mapdata.MapData
 import de.westnordost.streetcomplete.data.osm.mapdata.MapDataWithGeometry
 import de.westnordost.streetcomplete.data.osm.mapdata.Way
 import de.westnordost.streetcomplete.data.preferences.Preferences
@@ -56,7 +56,12 @@ import de.westnordost.streetcomplete.data.visiblequests.LevelFilter
 import de.westnordost.streetcomplete.resources.Res
 import de.westnordost.streetcomplete.resources.cancel
 import de.westnordost.streetcomplete.resources.crosshair
+import de.westnordost.streetcomplete.resources.insert_node_choose_target
 import de.westnordost.streetcomplete.resources.insert_node_select_way
+import de.westnordost.streetcomplete.resources.insert_node_target_existing_node
+import de.westnordost.streetcomplete.resources.insert_node_target_new_connection
+import de.westnordost.streetcomplete.resources.insert_node_target_shared_node_note
+import de.westnordost.streetcomplete.resources.insert_node_target_shared_segment
 import de.westnordost.streetcomplete.resources.waterway_crossing_edit
 import de.westnordost.streetcomplete.screens.main.map.getIcon
 import de.westnordost.streetcomplete.screens.main.map.getTitle
@@ -79,7 +84,8 @@ import de.westnordost.streetcomplete.util.math.PositionOnWaysSegment
 import de.westnordost.streetcomplete.util.math.VertexOfWay
 import de.westnordost.streetcomplete.util.math.contains
 import de.westnordost.streetcomplete.util.math.enclosingBoundingBox
-import de.westnordost.streetcomplete.util.math.getPositionOnWaysForInsertNodeForm
+import de.westnordost.streetcomplete.util.math.affectedWayIds
+import de.westnordost.streetcomplete.util.math.getInsertNodeTargets
 import kotlinx.coroutines.runBlocking
 import org.jetbrains.compose.resources.getSystemResourceEnvironment
 import org.jetbrains.compose.resources.painterResource
@@ -121,25 +127,42 @@ fun InsertNodeForm(
         mapDataBbox = position.enclosingBoundingBox(100.0)
         mapData = mapDataSource.getMapDataWithGeometry(mapDataBbox)
     }
-    val ways: List<Pair<Way, List<LatLon>>> = remember(position) {
-        mapData.ways.mapNotNull { way ->
-            if (!levelFilter.levelAllowed(way)) return@mapNotNull null
-            val positions = way.nodeIds.map {
-                val node = mapData.getNode(it) ?: throw IllegalStateException("node $it of way ${way.id} not in map data")
-                node.position
+    // all loaded ways with complete geometry (also those hidden by the level filter, so that shared
+    // nodes and segments are recognized as such). Ways with incomplete geometry are skipped, but
+    // then nothing is preselected so that this can't silently lead to choosing another way.
+    val (ways, hasIncompleteWays) = remember(position, mapData) {
+        var incomplete = false
+        val complete = mapData.ways.mapNotNull { way ->
+            val positions = way.nodeIds.mapNotNull { mapData.getNode(it)?.position }
+            if (positions.size != way.nodeIds.size) {
+                incomplete = true
+                return@mapNotNull null
             }
             way to positions
         }
+        complete to incomplete
     }
+    val waysById = remember(ways) { ways.associate { it.first.id to it.first } }
     NonPredictiveBackHandler { restoreBackgroundAndDismiss() }
-    val positionOnWay = remember(position, ways) {
-        position.getPositionOnWaysForInsertNodeForm(
+    val targets = remember(position, ways) {
+        position.getInsertNodeTargets(
             ways = ways,
+            isCandidate = { levelFilter.levelAllowed(it) },
             maxDistance = maxDistanceToCrosshair,
-            snapToVertexDistance = snapToVertexDistance
+            snapToVertexDistance = snapToVertexDistance,
+            ambiguityDistance = maxDistanceToCrosshair / 6,
+            allowPreselection = !hasIncompleteWays,
         )
     }
-    val connectedWays = remember(positionOnWay) { positionOnWay?.getWays(mapData).orEmpty() }
+    // explicit selection survives target recomputation while the same candidate remains valid
+    var userSelected by remember { mutableStateOf<PositionOnWay?>(null) }
+    val positionOnWay = remember(userSelected, targets) {
+        userSelected?.takeIf { sel -> targets.candidates.any { it == sel } } ?: targets.preselected
+    }
+    val highlightedWays = remember(targets, positionOnWay) {
+        val wayIds = positionOnWay?.affectedWayIds ?: targets.candidates.flatMap { it.affectedWayIds }
+        wayIds.distinct().mapNotNull { waysById[it] }
+    }
     // The existing node insertion query is node-based. A wider local query also finds waterways
     // whose segment crosses here but whose endpoints are outside the 100 m insertion box.
     var crossing by remember(position) { mutableStateOf<WaterwayCrossing?>(null) }
@@ -156,10 +179,9 @@ fun InsertNodeForm(
             onConfirmed = { onCrossingEdit(it, selectedCrossing.position) })
         return
     }
-    var selectedWay: Way? by remember(connectedWays) { mutableStateOf(connectedWays.firstOrNull()) }
     val showMarkers = LocalMapMarkersCallback.current
-    LaunchedEffect(connectedWays) {
-        showMarkers?.invoke(connectedWays.flatMap { way ->
+    LaunchedEffect(highlightedWays) {
+        showMarkers?.invoke(highlightedWays.flatMap { way ->
             way.nodeIds.mapNotNull {
                 val node = mapData.getNode(it) ?: return@mapNotNull null
                 if (node.tags.isEmpty()) return@mapNotNull null
@@ -170,7 +192,7 @@ fun InsertNodeForm(
                 )
             }
         })
-        highlightGeometries?.invoke(connectedWays.mapNotNull { mapData.getWayGeometry(it.id) })
+        highlightGeometries?.invoke(highlightedWays.mapNotNull { mapData.getWayGeometry(it.id) })
     }
     var showFeatureSearch by remember { mutableStateOf(false) }
     Box(Modifier.fillMaxSize()) {
@@ -192,16 +214,43 @@ fun InsertNodeForm(
             content = {
                 val featureDictionary: FeatureDictionary = koinInject()
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.padding(6.dp)) {
-                    connectedWays.forEach {
-                        val label = runBlocking { getNameAndLocationLabel(getSystemResourceEnvironment(), LayoutDirection.Ltr, it, featureDictionary, false) }
-                        Text(label ?: AnnotatedString("${it.type} ${it.id}"), Modifier.fillMaxWidth().clickable { selectedWay = it })
+                    fun wayLabel(way: Way): String =
+                        runBlocking { getNameAndLocationLabel(getSystemResourceEnvironment(), LayoutDirection.Ltr, way, featureDictionary, false) }
+                            ?.text ?: "${way.type} ${way.id}"
+                    if (targets.candidates.size > 1 && positionOnWay == null) {
+                        Text(stringResource(Res.string.insert_node_choose_target))
+                    }
+                    targets.candidates.forEach { target ->
+                        val labels = target.affectedWayIds.mapNotNull { waysById[it] }.joinToString(", ") { wayLabel(it) }
+                        val text = when (target) {
+                            is VertexOfWay -> stringResource(Res.string.insert_node_target_existing_node, labels)
+                            is PositionOnWaySegment -> labels
+                            is PositionOnWaysSegment -> stringResource(Res.string.insert_node_target_shared_segment, labels)
+                            is PositionOnCrossingWaySegments -> stringResource(Res.string.insert_node_target_new_connection, labels)
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .selectable(selected = target == positionOnWay, onClick = { userSelected = target })
+                        ) {
+                            RadioButton(selected = target == positionOnWay, onClick = null)
+                            Text(text, Modifier.padding(start = 4.dp))
+                        }
                     }
                     Divider()
-                    Text(
-                        selectedWay?.tags?.entries?.joinToString("\n") { "${it.key} = ${it.value}" }
-                            ?: stringResource(Res.string.insert_node_select_way),
-                        Modifier.heightIn(max = 150.dp).verticalScroll(rememberScrollState())
-                    )
+                    val selected = positionOnWay
+                    val details = when {
+                        selected == null -> stringResource(Res.string.insert_node_select_way)
+                        selected is VertexOfWay -> listOfNotNull(
+                            if (selected.wayIds.size > 1) stringResource(Res.string.insert_node_target_shared_node_note) else null,
+                            mapData.getNode(selected.nodeId)?.tags?.entries?.joinToString("\n") { "${it.key} = ${it.value}" }
+                        ).joinToString("\n\n")
+                        else -> selected.affectedWayIds.mapNotNull { waysById[it] }.joinToString("\n\n") { way ->
+                            way.tags.entries.joinToString("\n") { "${it.key} = ${it.value}" }
+                        }
+                    }
+                    Text(details, Modifier.heightIn(max = 150.dp).verticalScroll(rememberScrollState()))
                     Divider()
                     if (crossing != null) {
                         TextButton(onClick = { editCrossing = true }) { Text(stringResource(Res.string.waterway_crossing_edit)) }
@@ -240,11 +289,4 @@ fun InsertNodeForm(
             )
         }
     }
-}
-
-private fun PositionOnWay.getWays(mapData: MapData) = when (this) {
-    is PositionOnWaySegment -> listOf(mapData.getWay(wayId)!!)
-    is VertexOfWay -> wayIds.map { mapData.getWay(it)!! }
-    is PositionOnWaysSegment -> insertIntoWaysAt.map { mapData.getWay(it.wayId)!! }
-    is PositionOnCrossingWaySegments -> insertIntoWaysAt.map { mapData.getWay(it.wayId)!! }
 }

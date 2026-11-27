@@ -46,6 +46,7 @@ private val questsWithoutContract = setOf(
     "AddBikeParkingAccess",
     "AddBikeParkingCapacity",
     "AddBikeParkingCargoCapacity",
+    "AddBikeParkingCharge",
     "AddBikeParkingCover",
     "AddBikeParkingFee",
     "AddBikeParkingType",

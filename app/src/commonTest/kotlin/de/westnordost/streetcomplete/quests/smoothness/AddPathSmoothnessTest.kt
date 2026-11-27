@@ -90,4 +90,37 @@ class AddPathSmoothnessTest {
             "bicycle" to "dismount",
         ))))
     }
+
+    @Test fun `not applicable when both parts have their own smoothness`() {
+        assertFalse(questType.isApplicableTo(way(nodes = listOf(1, 2, 3), tags = mapOf(
+            "highway" to "path",
+            "surface" to "asphalt",
+            "footway:smoothness" to "good",
+            "cycleway:smoothness" to "bad",
+        ))))
+    }
+
+    @Test fun `applicable when only one part has its own smoothness`() {
+        // the common smoothness is the fallback for the other part
+        for (part in listOf("footway:smoothness", "cycleway:smoothness")) {
+            assertTrue(
+                questType.isApplicableTo(way(nodes = listOf(1, 2, 3), tags = mapOf(
+                    "highway" to "path",
+                    "surface" to "asphalt",
+                    part to "good",
+                ))),
+                part
+            )
+        }
+    }
+
+    @Test fun `applicable with part smoothness on segregated=no`() {
+        assertTrue(questType.isApplicableTo(way(nodes = listOf(1, 2, 3), tags = mapOf(
+            "highway" to "path",
+            "surface" to "asphalt",
+            "segregated" to "no",
+            "footway:smoothness" to "good",
+            "cycleway:smoothness" to "bad",
+        ))))
+    }
 }

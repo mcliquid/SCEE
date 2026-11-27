@@ -106,6 +106,25 @@ class SmoothnessOverlayAnswerTest {
         )
     }
 
+    @Test fun `T10 surface change invalidates only common smoothness, not part values`() {
+        assertEquals(
+            mapOf(
+                "surface" to "sett",
+                "smoothness" to "bad",
+                "footway:smoothness" to "good",
+                "cycleway:smoothness" to "intermediate",
+                "check_date:footway:smoothness" to "2019-01-01",
+            ),
+            SingleSmoothnessAnswer(BAD, Surface.SETT).appliedTo(mapOf(
+                "surface" to "asphalt",
+                "smoothness" to "excellent",
+                "footway:smoothness" to "good",
+                "check_date:footway:smoothness" to "2019-01-01",
+                "cycleway:smoothness" to "intermediate",
+            ))
+        )
+    }
+
     @Test fun `T11 invalid surface is left untouched`() {
         assertEquals(
             mapOf("surface" to "cobblestone", "smoothness" to "bad"),
@@ -149,6 +168,26 @@ class SmoothnessOverlayAnswerTest {
     @Test fun `T14 no segregated tag is added for paths with separate surfaces`() {
         val result = PartsSmoothnessAnswer(cycleway = GOOD).appliedTo(mapOf("highway" to "path", "cycleway:surface" to "asphalt"))
         assertEquals(null, result["segregated"])
+    }
+
+    @Test fun `explicit split confirmation writes segregated=yes`() {
+        assertEquals(
+            mapOf(
+                "highway" to "path",
+                "foot" to "designated",
+                "bicycle" to "designated",
+                "surface" to "asphalt",
+                "segregated" to "yes",
+                "footway:smoothness" to "good",
+                "check_date:footway:smoothness" to today,
+            ),
+            PartsSmoothnessAnswer(footway = GOOD, confirmSegregated = true).appliedTo(mapOf(
+                "highway" to "path",
+                "foot" to "designated",
+                "bicycle" to "designated",
+                "surface" to "asphalt",
+            ))
+        )
     }
 
     @Test fun `T15 untouched part and its check date stay unchanged`() {

@@ -38,6 +38,10 @@ data class SmoothnessOverlayDraft(
     val cycleway: SmoothnessSelection,
     /** a mode switch waiting for the confirmation to discard the input of the current mode */
     val pendingModeSwitch: Boolean = false,
+    /** whether the user explicitly split a way that was edited as a whole into a segregated
+     *  foot- and cycleway ("Split into cycling and walking parts"). Existing part values alone
+     *  never count as such a confirmation. */
+    val segregationConfirmed: Boolean = false,
 ) {
     val hasChanges: Boolean get() =
         if (isSegregated) footway.isTouched || cycleway.isTouched
@@ -63,6 +67,8 @@ data class SmoothnessOverlayDraft(
         footway = footway.reset(),
         cycleway = cycleway.reset(),
         pendingModeSwitch = false,
+        // only the split away from the original whole-way mode confirms segregation
+        segregationConfirmed = !isSegregated && !canSwitchBack,
     )
 
     fun selectNewSurface(surface: Surface, currentSurface: Surface?): SmoothnessOverlayDraft {
@@ -77,6 +83,7 @@ data class SmoothnessOverlayDraft(
         isSegregated -> PartsSmoothnessAnswer(
             footway = footway.selected.takeIf { footway.isTouched },
             cycleway = cycleway.selected.takeIf { cycleway.isTouched },
+            confirmSegregated = segregationConfirmed,
         )
         else -> SingleSmoothnessAnswer(whole.selected!!, newSurface)
     }

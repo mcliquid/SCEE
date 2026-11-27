@@ -104,7 +104,8 @@ class SmoothnessOverlayDraftTest {
         val draft = initial.selectNewSurface(Surface.GRAVEL, asphalt)
             .requestModeSwitch().confirmModeSwitch()
             .let { it.copy(cycleway = it.cycleway.select(EXCELLENT)) }
-        assertEquals(PartsSmoothnessAnswer(cycleway = EXCELLENT), draft.toAnswer())
+        // switching from the whole way into parts is the explicit split confirmation
+        assertEquals(PartsSmoothnessAnswer(cycleway = EXCELLENT, confirmSegregated = true), draft.toAnswer())
     }
 
     @Test fun `saving in single mode writes surface and smoothness`() {

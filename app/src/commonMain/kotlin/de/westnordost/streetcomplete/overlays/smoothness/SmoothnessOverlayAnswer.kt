@@ -23,11 +23,13 @@ data class SingleSmoothnessAnswer(
 ) : SmoothnessOverlayAnswer
 
 /** Smoothness of the foot- and cycleway parts. Only parts that the user changed or explicitly
- *  confirmed are set, untouched parts are null and stay unchanged. */
+ *  confirmed are set, untouched parts are null and stay unchanged. [confirmSegregated] is set if
+ *  the user explicitly split the way into segregated parts, like in the surface overlay. */
 @Serializable
 data class PartsSmoothnessAnswer(
     val footway: Smoothness? = null,
     val cycleway: Smoothness? = null,
+    val confirmSegregated: Boolean = false,
 ) : SmoothnessOverlayAnswer
 
 fun SmoothnessOverlayAnswer.applyTo(tags: Tags) {
@@ -39,6 +41,9 @@ fun SmoothnessOverlayAnswer.applyTo(tags: Tags) {
             SmoothnessValueAnswer(smoothness).applyTo(tags)
         }
         is PartsSmoothnessAnswer -> {
+            // same statement as splitting the way in the surface overlay (SegregatedSurface).
+            // An explicit segregated=no is never overridden
+            if (confirmSegregated && tags["segregated"] != "no") tags["segregated"] = "yes"
             footway?.let { applyPartSmoothness(tags, "footway", it) }
             cycleway?.let { applyPartSmoothness(tags, "cycleway", it) }
             removeStaleCommonSmoothness(tags)

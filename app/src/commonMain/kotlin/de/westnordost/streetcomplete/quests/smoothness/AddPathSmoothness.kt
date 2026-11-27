@@ -17,6 +17,10 @@ import de.westnordost.streetcomplete.resources.*
 
 class AddPathSmoothness : OsmFilterQuestType<SmoothnessAnswer>() {
 
+    /* Where both the foot- and the cycleway part have their own smoothness, a common smoothness
+       applies to neither part (it would only be a contradicting duplicate, see SmoothnessOverlay),
+       unless segregated=no says the way is one single path. With only one part value, the common
+       smoothness still is the fallback for the other part, so it is still asked. */
     override val elementFilter = """
         ways with
           highway ~ ${ALL_PATHS_EXCEPT_STEPS.joinToString("|")}
@@ -26,6 +30,7 @@ class AddPathSmoothness : OsmFilterQuestType<SmoothnessAnswer>() {
           and (!conveying or conveying = no)
           and (!indoor or indoor = no)
           and !cycleway:surface and !footway:surface
+          and (segregated = no or !footway:smoothness or !cycleway:smoothness)
           and (
             !smoothness
             or smoothness older today -4 years

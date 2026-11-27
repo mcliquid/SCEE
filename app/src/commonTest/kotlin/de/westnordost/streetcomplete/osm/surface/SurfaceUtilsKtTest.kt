@@ -91,6 +91,24 @@ class SurfaceUtilsKtTest {
         )
     }
 
+    @Test fun `syncing common surface removes only common smoothness metadata`() {
+        assertEquals(
+            setOf(
+                StringMapEntryDelete("surface", "asphalt"),
+                StringMapEntryDelete("smoothness", "excellent"),
+            ),
+            appliedCommonSurfaceFromFootAndCyclewaySurface(mapOf(
+                "footway:surface" to "asphalt",
+                "cycleway:surface" to "gravel",
+                "surface" to "asphalt",
+                "smoothness" to "excellent",
+                "footway:smoothness" to "good",
+                "cycleway:smoothness" to "bad",
+                "check_date:footway:smoothness" to "2019-01-01",
+            ))
+        )
+    }
+
     @Test
     fun `NATURAL_SURFACES includes laterite via SOFT_NATURAL_SURFACES inheritance`() {
         assertTrue(NATURAL_SURFACES.contains("laterite"))
